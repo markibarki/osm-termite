@@ -7,8 +7,21 @@ import org.json.JSONObject;
  *
  * @author sutter
  */
-public interface DataParser<T> {
+public abstract class DataParser<TK, TV> {
 	
-	public T parseData(JSONObject json, ArrayList<T> parentData);
+	protected ArrayList<TV> valueParents = new ArrayList<TV>();
+	protected ArrayList<TK> keyParents = new ArrayList<TK>();
+	
+	public void addValueParentData(TV data) {}
+	
+	public void removeValueParentData(TV data) {}
+	
+	public void addKeyParentData(TK data) {}
+	
+	public void removeKeyParentData(TK data) {}
+	
+	public abstract TV parseValueData(JSONObject json);
+	
+	public abstract TK parseKeyData(JSONObject json);
 	
 }
