@@ -9,15 +9,68 @@ import org.json.*;
  * 
  * @author sutter
  */
-public class KeyObject<T> extends PropertyObject<T> {
+public class KeyObject<TK, TV> {
 	
 	public final static boolean DEFAULT_EXCLUSIVE = false;
 	
-	private ArrayList<PropertyObject> values = new ArrayList<PropertyObject>();
+	private String name;
+	private ArrayList<PropertyObject<TK,TV>> values = new ArrayList<PropertyObject<TK,TV>>();
 	private boolean isExclusive = false;
+	private TK data = null;
+	
+	/** This method parses the Key Object. The DataParser object should
+	 * be sent in to parse the data. If the data parser is missing, no data
+	 * will be parsed. */
+	public <TV> void parse(JSONObject json, DataParser<TK, TV> dataParser) throws Exception {
+		
+		//get name
+		name = json.optString("name","unnamed");
+		
+		//get data
+		if(dataParser != null) {
+			data = dataParser.parseKeyData(json);
+			if(data != null) {
+				dataParser.addKeyParentData(data);
+			}
+		}
+		else {
+			data = null;
+		}
+		
+		//get keys
+		PropertyObject prop;
+		JSONArray valuesJson = json.optJSONArray("values");
+		if(valuesJson != null) {
+			JSONObject valueJson;
+			int cnt = valuesJson.length();
+			for(int i = 0; i < cnt; i++) {
+				valueJson = valuesJson.getJSONObject(i);
+				prop = new PropertyObject<TK,TV>();
+				prop.parse(valueJson,dataParser);
+				values.add(prop);
+			}
+		}
+		//get is exclusie
+		isExclusive = json.optBoolean("exclusive",DEFAULT_EXCLUSIVE);
+		
+		//remove the local data from the parent data list
+		if((dataParser != null)&&(data != null)) {
+			dataParser.removeKeyParentData(data);
+		}
+	}
+	
+	/** This method returns the name. */
+	public String getName() {
+		return name;
+	}
+	
+	/** This method returns the data for this object. */
+	public TK getData() {
+		return data;
+	}
 	
 	/** This method returns the values for this key. */
-	public ArrayList<PropertyObject> getValues() {
+	public ArrayList<PropertyObject<TK,TV>> getValues() {
 		return values;
 	}
 	
@@ -27,69 +80,60 @@ public class KeyObject<T> extends PropertyObject<T> {
 		return isExclusive;
 	}
 	
-	/** This method loads the most specific data object for the given
-	 * map object. It checks for a matching property among the child values of the 
-	 * key first, then it searches among the child keys. */
-	@Override
-	public PropertyObject getPropertyObject(MapObject mapObject) {
-		//see if the map object has this key
-		String value = mapObject.getProperty(this.getName());
-		if(value != null) {
-			for(PropertyObject prop:values) {
-				//check for a match
-				if(value.equalsIgnoreCase(prop.getName())) {
-					//this matches - check for a more specific value
-					PropertyObject childProperty = prop.getPropertyObject(mapObject);
-					//if yes there is a child object
-					//if no, return this property
-					if(childProperty != null) return childProperty;
-					else return prop;
-				}
-				//else try the next key
+	
+	/** This method finds a matching property node for this map object, checking
+	 * the child node corresponding to the matching child value for this key.  */
+	public TV getPropertyData(MapObject mapObject) {
+		String keyValue = mapObject.getProperty(name);
+		if(keyValue != null) {
+			PropertyObject<TK,TV> matchingProp = this.getKeyValue(keyValue);
+			if(matchingProp != null) {
+				return matchingProp.getPropertyData(mapObject);
+			}
+			else {
+				return null;
 			}
 		}
+
 		//no matching child keys, return this
-		return super.getPropertyObject(mapObject);
+		return null;
 	}
 	
-	/** This method returns the first key object for the specified map object and key name. */
-	@Override
-	public KeyObject getKeyObject(MapObject mapObject, String keyName) {
-		//see if the key in in the list for this object
-		super.getKeyObject(mapObject,keyName);
+	/** This method attempts to find a matching key object for this map object
+	 * and key name. It checks if the local key is a match and, if not, it checks
+	 * if the child property that matches the map object has a matching key. */
+	public KeyObject<TK,TV> getKey(MapObject mapObject, String keyName) {
+		//check if this key is a match
+		//map object does not need to have this key already
+		if(keyName.equalsIgnoreCase(name)) return this;
 		
-		//see if the key is associated with any property values for this key
-		for(PropertyObject prop:values) {
-			KeyObject childKey = prop.getKeyObject(mapObject, keyName);
-			if(childKey != null) return childKey;
+		//check for a match on child property matching this map object
+		//the map object must have this key to check properties
+		String keyValue = mapObject.getProperty(name);
+		if(keyValue != null) {
+			PropertyObject<TK,TV> matchingProp = this.getKeyValue(keyValue);
+			if(matchingProp != null) return matchingProp.getKey(mapObject, keyName);
 		}
+		
 		//none found
 		return null;
 	}
 	
+	/** This method returns the property object that contains the given value
+	 * for this key. If a match is not found null is returned. */
+	public PropertyObject<TK,TV> getKeyValue(String keyValue) {
+		for(PropertyObject<TK,TV> prop:values) {
+			//return the matching property
+			if(keyValue.equalsIgnoreCase(prop.getName())) {
+				return prop;
+			}
+		}
+		return null;
+	}
+	
+	
 	//===============================
 	// protected methods
 	//===============================
-	
-	/** This method parses the extra data in the key object beyond the property object. */
-	@Override
-	protected void parseAdditionalData(JSONObject json, DataParser<T> dataParser, 
-			ArrayList<T> parentData) throws Exception {
-		//get keys
-		ArrayList<PropertyObject> props = new ArrayList<PropertyObject>();
-		PropertyObject prop;
-		JSONArray valuesJson = json.optJSONArray("values");
-		if(valuesJson != null) {
-			JSONObject valueJson;
-			int cnt = valuesJson.length();
-			for(int i = 0; i < cnt; i++) {
-				valueJson = valuesJson.getJSONObject(i);
-				prop = new PropertyObject<T>();
-				prop.parse(valueJson,dataParser,parentData);
-				values.add(prop);
-			}
-		}
-		//get is exclusie
-		isExclusive = json.optBoolean("exclusive",DEFAULT_EXCLUSIVE);
-	}
+
 }

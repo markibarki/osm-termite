@@ -4,13 +4,33 @@
  */
 package intransix.osm.termite.map;
 
+import java.util.ArrayList;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.json.JSONObject;
-import org.json.JSONArray;
 
 /**
- *
+ * Things to test:
+ * 
+ * Parse
+ * a) parse json with multiple levels of keys and values, with no data
+ * b) same as 1 but with data on keys and values
+ * 0.1) check name of parsed data 
+ * 
+ * Lookup Data
+ * 1.1) classify object that matches a key (in root) and a value on the key
+ * 1.2) classify object that matches a key (in root) but not a value on key
+ * 1.3) classify an object that does not match any keys (in root)
+ * 
+ * Lookup Key
+ * 2.1) lookup key that exists in root
+ * 2.2) lookup key that exists outside of root.
+ * 2.3) lookup a key that exists outside of root but map object does not have a matching property
+ * 
+ * Lookup Key Value
+ * 3.1, 3.2, 3.3) Do all the test cases in lookup key with a valid value
+ * 3.4, 3.5, 3.6) Do all the test cases in lookup key with an invalid value
+ * 
  * @author sutter
  */
 public class PropertyObjectTest {
@@ -47,11 +67,14 @@ public class PropertyObjectTest {
 				+ "          'data':{'fill':'red','stroke':'white'},"
 				+ "          'keys':[{"
 				+ "            'name':'bathroom',"
-				+ "            'keys':["
-				+ "              {'name':'gender',"
-				+ "	               'values':[{'name':'male'},{'name':'female'},{'name':'unisex'}]"
-				+ "              }"
-				+ "            ]"
+				+ "            'values':["
+				+ "              {'name':'yes',"
+				+ "                'keys':["
+				+ "                  {'name':'gender',"
+				+ "	                   'values':[{'name':'male'},{'name':'female'},{'name':'unisex'}]"
+				+ "                  }"
+				+ "                ]"
+				+ "			     }]"
 				+ "          }]"
 				+ "        },"
 				+ "        {'name':'stairs','data':{'fill':'red','stroke':null}},"
@@ -84,59 +107,104 @@ public class PropertyObjectTest {
 			//no data, single level keys
 			JSONObject json = new JSONObject(jsonString);
 			
-			PropertyObject<Object> po = new PropertyObject<Object>();
-			po.parse(json, null, null);
+			//parse with no data
+			PropertyObject<Object,Object> pond = new PropertyObject<Object,Object>();
+			pond.parse(json, null);
 			
+			//parse with data
+			PropertyObject<StyleData,StyleData> po = new PropertyObject<StyleData,StyleData>();
+			po.parse(json, new TestDataParser());
+			
+			// TEST 0.1
 			//name should be theme
 			assertTrue(po.getName().equalsIgnoreCase("theme"));
+			assertTrue(pond.getName().equalsIgnoreCase("theme"));
 			
 			MapObject mapObject;
 			PropertyObject out;
 			
 			mapObject = new MapObject();
 			
-			//PROPERTY LOOKUP
+			StyleData st;
+			KeyObject<StyleData,StyleData> key;
+			PropertyObject<StyleData,StyleData> prop;
 			
 			//no properties in map object, should return the root object
-			out = po.getPropertyObject(mapObject);
-			assertTrue(out.getName().equalsIgnoreCase("theme"));
 			
-			mapObject.setProperty("buildingpart","unit");
-			//returns unit object
-			out = po.getPropertyObject(mapObject);
-			assertTrue(out.getName().equalsIgnoreCase("unit"));
+			//TEST 1.3) classify an object that does not match any keys (in root)
+			st = po.getPropertyData(mapObject);
+			assertTrue(st.matches("dark gray","dark black"));
+			//TEST 2.1) lookup key that exists in root
+			key = po.getKey(mapObject,"buildingpart");
+			assertTrue(keyMatches(key,"buildingpart"));
+			//TEST 2.3) lookup a key that exists outside of root but map object 
+			//does not have a matching property
+			key = po.getKey(mapObject,"gender");
+			assertTrue(keyMatches(key,null));
+			//TEST 3.1) lookup key that exists in root with valid value
+			prop = po.getKeyValue(mapObject,"buildingpart","room");
+			assertTrue(propertyMatches(prop,"room"));
+			//TEST 3.3) lookup a key that exists outside of root but map object 
+			//does not have a matching property, with valid value
+			prop = po.getKeyValue(mapObject,"gender","male");
+			assertTrue(propertyMatches(prop,null));
+			//TEST 3.4) lookup key that exists in root with invalid value
+			prop = po.getKeyValue(mapObject,"buildingpart","duck");
+			assertTrue(propertyMatches(prop,null));
+			//TEST 3.6) lookup a key that exists outside of root but map object 
+			//does not have a matching property, with invalid value
+			prop = po.getKeyValue(mapObject,"gender","android");
+			assertTrue(propertyMatches(prop,null));
 			
+			//add a property to the map object that doesn't exist
+			mapObject.setProperty("buildingpart","elbow");
+			
+			//TEST 1.2) classify object that matches a key (in root) but not a value on key
+			st = po.getPropertyData(mapObject);
+			assertTrue(st.matches("dark gray","dark black"));
+
+			//add a valid property
 			mapObject.setProperty("buildingpart","room");
-			//returns room object
-			out = po.getPropertyObject(mapObject);
-			assertTrue(out.getName().equalsIgnoreCase("room"));
 			
-//THIS RETURNS THE BATHROOM. I THINK KEY OR PROPERTY IS RETURNED. IS THIS OK?
+			//TEST 1.1) classify object that matches a key (in root) and a value on the key
+			st = po.getPropertyData(mapObject);
+			assertTrue(st.matches("red","white"));
+			//TEST 2.2) lookup key that exists outside of root.
+			key = po.getKey(mapObject,"bathroom");
+			assertTrue(keyMatches(key,"bathroom"));
+			//TEST 3.2) lookup a key that exists outside of root with a valid value 
+			prop = po.getKeyValue(mapObject,"bathroom","yes");
+			assertTrue(propertyMatches(prop,"yes"));
+			//TEST 3.5) lookup key that exists in root with an invalid value
+			prop = po.getKeyValue(mapObject,"bathroom","maybe");
+			assertTrue(propertyMatches(prop,null));
+			
+			//additional tests
 			mapObject.setProperty("bathroom","yes");
-			//returns room property - no match inside bathroom key
-			out = po.getPropertyObject(mapObject);
-			assertTrue(out.getName().equalsIgnoreCase("room"));
-			
 			mapObject.setProperty("gender","male");
-			//returs male property
-			out = po.getPropertyObject(mapObject);
-			assertTrue(out.getName().equalsIgnoreCase("male"));
 			
-			//KEY LOOKUP
-			KeyObject key;
+			//returns male data - but this is the same as room - not much of a test
+			st = po.getPropertyData(mapObject);
+			assertTrue(st.matches("red","white"));
 			
-			//should get buildingpart key
-			key = po.getKeyObject(mapObject,"buildingpart");
-			assertTrue(key.getName().equalsIgnoreCase("buildingpart"));
+			//lookup gender - should work
+			key = po.getKey(mapObject,"gender");
+			assertTrue(keyMatches(key,"gender"));
 			
-//THIS FINDS THE KEY ANYWAY. FIX THAT.
-			//direction key exists but is not on the path for this object
-			key = po.getKeyObject(mapObject,"direction");
-			assertTrue(key == null);
+			//lookup gender male - should work
+			prop = po.getKeyValue(mapObject,"gender","male");
+			assertTrue(propertyMatches(prop,"male"));
 			
-			//bathroom key is on path
-			key = po.getKeyObject(mapObject,"bathroom");
-			assertTrue(key.getName().equalsIgnoreCase("bathroom"));
+			//lookup gender female - should work because we don't exclude 
+			//values for which we have a different value
+			//(but we might want to not allow it if a different value exists already)
+			prop = po.getKeyValue(mapObject,"gender","female");
+			assertTrue(propertyMatches(prop,"female"));
+			
+			//lookup furnishing - should work because we allow multiple keys
+			//(but this is a key we might want to make exclusive with "buildingpart")
+			key = po.getKey(mapObject,"furnishing");
+			assertTrue(keyMatches(key,"furnishing"));
 			
 			System.out.println("test done");
 			
@@ -147,5 +215,100 @@ public class PropertyObjectTest {
 			//flag an unexpected exception
 			assertTrue(false);
 		}
+	}
+	
+	private boolean keyMatches(KeyObject key, String name) {
+		if(name != null) {
+			return key.getName().equalsIgnoreCase(name);
+		}
+		else {
+			return key == null;
+		}
+	}
+	
+	private boolean propertyMatches(PropertyObject prop, String name) {
+		if(name != null) {
+			return prop.getName().equalsIgnoreCase(name);
+		}
+		else {
+			return prop == null;
+		}
+	}
+	
+	/** This creates a Style object that parses two fields from a json with
+	 * a default to a parent value. */
+	private static class StyleData {
+		String fill;
+		String stroke;
+		
+		public static StyleData parse(JSONObject json, StyleData parent) {
+			StyleData st = new StyleData();
+			String defaultFill = null;
+			String defaultStroke = null;
+			if(parent != null) {
+				defaultFill = parent.fill;
+				defaultStroke = parent.stroke;
+			}
+			else {
+				defaultFill = "dark gray";
+				defaultStroke = "dark black";
+			}
+			if(json != null) {
+				st.fill = json.optString("fill",defaultFill);
+				st.stroke = json.optString("stroke",defaultStroke);
+			}
+			else {
+				st.fill = defaultFill;
+				st.stroke = defaultStroke;
+			}
+			return st;
+		}
+		
+		public boolean matches(String fill, String stroke) {
+			boolean fillMatch = (fill != null) ? fill.equalsIgnoreCase(this.fill) : this.fill == null;
+			boolean strokeMatch = (stroke != null) ? stroke.equalsIgnoreCase(this.stroke) : this.stroke == null;
+			return fillMatch && strokeMatch;
+		}
+	}
+	
+	/** This is a data parser that keeps track of key and value together and 
+	 * passes uses the the most recent for default values for the child object.
+	 */
+	private static class TestDataParser extends DataParser<StyleData,StyleData> {
+		protected ArrayList<StyleData> parents = new ArrayList<StyleData>();
+
+		public void addValueParentData(StyleData data) {
+			parents.add(data);
+		}
+
+		public void removeValueParentData(StyleData data) {
+			parents.remove(data);
+		}
+
+		public void addKeyParentData(StyleData data) {
+			parents.add(data);
+		}
+
+		public void removeKeyParentData(StyleData data) {
+			parents.remove(data);
+		}
+		
+		public StyleData parseValueData(JSONObject json) {
+			return parseData(json);
+		}
+	
+		public StyleData parseKeyData(JSONObject json) {
+			return parseData(json);
+		}
+		
+		private StyleData parseData(JSONObject json) {
+			StyleData parent = null;
+			if(!parents.isEmpty()) {
+				parent = parents.get(parents.size()-1);
+			}
+			JSONObject dataJson = json.optJSONObject("data");
+			return StyleData.parse(dataJson, parent);
+		}
+		
 	}
 }
