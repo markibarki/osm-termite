@@ -14,8 +14,8 @@ public class SvgGeometry {
 	// Fields
 	//====================================
 	public String id;
-	public Integer fill;
-	public Integer stroke;
+	public String fill;
+	public String stroke;
 	public double strokeWidth;
 	public Shape shape;
 	
@@ -44,7 +44,7 @@ public class SvgGeometry {
 		if((fillString == null)||(fillString.length() == 0)) fillString = null;
 		
 		if(fillString != null) {
-			fill = colorToInt(fillString);
+			fill = formatColor(fillString);
 		}
 		else {
 			fill = null;
@@ -57,7 +57,7 @@ public class SvgGeometry {
 		if((strokeString == null)||(strokeString.length() == 0)) strokeString = null;
 		
 		if(strokeString != null) {
-			stroke = colorToInt(strokeString);
+			stroke = formatColor(strokeString);
 		}
 		else {
 			stroke = null;
@@ -84,10 +84,9 @@ public class SvgGeometry {
 	// Private Functions
 	//====================================
 	
-	private Integer colorToInt(String colorString) {
+	private String formatColor(String colorString) {
 		if(colorString.equals("none")) return null;
-		colorString = colorString.replace("#","0x");
-		return Integer.decode(colorString);
+		return colorString;
 	}
 	
 	private static HashMap<String,String> getStyleTable(String style) {

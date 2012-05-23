@@ -1,35 +1,32 @@
 package intransix.osm.termite.theme;
 
 import intransix.osm.termite.map.geom.Feature;
-import java.awt.Color;
-import java.util.ArrayList;
+import intransix.osm.termite.map.*;
+import org.json.*;
 
 /**
- *
+ * This is a theme implemented as a property tree.
+ * 
  * @author sutter
  */
 public class Theme {
 	
-	//I NEED TO RETHINK HOW THIS WORKS
-	private Style defaultStyle;
-	private ArrayList<Style> styles = new ArrayList<Style>();
+	PropertyNode<Style,Style> treeRoot = null;
 	
-	public void addStyle(Style style) {
-		styles.add(style);
+	/** This method parses a property tree for the theme. */
+	public static Theme parse(JSONObject json) throws Exception {
+		StyleParser styleParser = new StyleParser();
+	
+		Theme theme = new Theme();
+		theme.treeRoot = new PropertyNode<Style,Style>();
+		theme.treeRoot.parse(json,null,styleParser);
+		return theme;
 	}
 	
-	public void setDeafultStyle(Style style) {
-		this.defaultStyle = style;
-	}
-	
+	/** This method sets the style for a feature. */
 	public void loadStyle(Feature feature) {
-		for(Style style:styles) {
-			if(style.matches(feature)) {
-				feature.setStyle(style);
-				return;
-			}
-		}
-		feature.setStyle(defaultStyle);	
+		Style style = treeRoot.getPropertyData(feature);
+		feature.setStyle(style);	
 	}
 	
 }

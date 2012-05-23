@@ -58,6 +58,10 @@ public class MapObject {
 		this.tags.put(tag,propertyValue);
 	}
 	
+	public void removeProperty(String tag) {
+		this.tags.remove(tag);
+	}
+	
 	/** This method returns the given string property. If it is not found 
 	 * null is returned. 
 	 * @param property		The key for the property

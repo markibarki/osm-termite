@@ -17,7 +17,7 @@ import org.json.JSONObject;
  * b) same as 1 but with data on keys and values
  * 0.1) check name of parsed data 
  * 
- * Lookup Data
+ * Lookup Data or Lookup ClassifyingObject
  * 1.1) classify object that matches a key (in root) and a value on the key
  * 1.2) classify object that matches a key (in root) but not a value on key
  * 1.3) classify an object that does not match any keys (in root)
@@ -108,12 +108,12 @@ public class PropertyObjectTest {
 			JSONObject json = new JSONObject(jsonString);
 			
 			//parse with no data
-			PropertyObject<Object,Object> pond = new PropertyObject<Object,Object>();
-			pond.parse(json, null);
+			PropertyNode<Object,Object> pond = new PropertyNode<Object,Object>();
+			pond.parse(json, null, null);
 			
 			//parse with data
-			PropertyObject<StyleData,StyleData> po = new PropertyObject<StyleData,StyleData>();
-			po.parse(json, new TestDataParser());
+			PropertyNode<StyleData,StyleData> po = new PropertyNode<StyleData,StyleData>();
+			po.parse(json, null, new TestDataParser());
 			
 			// TEST 0.1
 			//name should be theme
@@ -121,13 +121,13 @@ public class PropertyObjectTest {
 			assertTrue(pond.getName().equalsIgnoreCase("theme"));
 			
 			MapObject mapObject;
-			PropertyObject out;
+			PropertyNode out;
 			
 			mapObject = new MapObject();
 			
 			StyleData st;
-			KeyObject<StyleData,StyleData> key;
-			PropertyObject<StyleData,StyleData> prop;
+			KeyNode<StyleData,StyleData> key;
+			PropertyNode<StyleData,StyleData> prop;
 			
 			//no properties in map object, should return the root object
 			
@@ -184,8 +184,8 @@ public class PropertyObjectTest {
 			mapObject.setProperty("gender","male");
 			
 			//returns male data - but this is the same as room - not much of a test
-			st = po.getPropertyData(mapObject);
-			assertTrue(st.matches("red","white"));
+			prop = po.getClassifyingProperty(mapObject);
+			assertTrue(propertyMatches(prop,"male"));
 			
 			//lookup gender - should work
 			key = po.getKey(mapObject,"gender");
@@ -217,7 +217,7 @@ public class PropertyObjectTest {
 		}
 	}
 	
-	private boolean keyMatches(KeyObject key, String name) {
+	private boolean keyMatches(KeyNode key, String name) {
 		if(name != null) {
 			return key.getName().equalsIgnoreCase(name);
 		}
@@ -226,7 +226,7 @@ public class PropertyObjectTest {
 		}
 	}
 	
-	private boolean propertyMatches(PropertyObject prop, String name) {
+	private boolean propertyMatches(PropertyNode prop, String name) {
 		if(name != null) {
 			return prop.getName().equalsIgnoreCase(name);
 		}
@@ -275,37 +275,26 @@ public class PropertyObjectTest {
 	 * passes uses the the most recent for default values for the child object.
 	 */
 	private static class TestDataParser extends DataParser<StyleData,StyleData> {
-		protected ArrayList<StyleData> parents = new ArrayList<StyleData>();
-
-		public void addValueParentData(StyleData data) {
-			parents.add(data);
-		}
-
-		public void removeValueParentData(StyleData data) {
-			parents.remove(data);
-		}
-
-		public void addKeyParentData(StyleData data) {
-			parents.add(data);
-		}
-
-		public void removeKeyParentData(StyleData data) {
-			parents.remove(data);
-		}
 		
-		public StyleData parseValueData(JSONObject json) {
-			return parseData(json);
+		@Override
+		public StyleData parseValueData(JSONObject json, KeyNode<StyleData,StyleData> parentKey) {
+			StyleData parentData = null;
+			if(parentKey != null) {
+				parentData = parentKey.getData();
+			}
+			return parseData(json,parentData);
 		}
 	
-		public StyleData parseKeyData(JSONObject json) {
-			return parseData(json);
+		@Override
+		public StyleData parseKeyData(JSONObject json, PropertyNode<StyleData,StyleData> parentValue) {
+			StyleData parentData = null;
+			if(parentValue != null) {
+				parentData = parentValue.getData();
+			}
+			return parseData(json,parentData);
 		}
 		
-		private StyleData parseData(JSONObject json) {
-			StyleData parent = null;
-			if(!parents.isEmpty()) {
-				parent = parents.get(parents.size()-1);
-			}
+		private StyleData parseData(JSONObject json, StyleData parent) {
 			JSONObject dataJson = json.optJSONObject("data");
 			return StyleData.parse(dataJson, parent);
 		}
