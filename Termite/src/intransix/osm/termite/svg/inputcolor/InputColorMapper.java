@@ -49,12 +49,14 @@ public class InputColorMapper {
 	private PropertyNode<Object,String> getColorProperty(
 			PropertyNode<Object,String> prop, String colorString) {
 		
+		String propColor = prop.getData();
+		
 		//check this object for a match
-		if(colorString.equalsIgnoreCase(prop.getName())) return prop;
+		if((propColor != null)&&(colorString.equalsIgnoreCase(propColor))) return prop;
 		
 		//check children for a match
 		PropertyNode<Object,String> resultProp = null;
-		for(KeyNode<Object,String> key:treeRoot.getKeys()) {
+		for(KeyNode<Object,String> key:prop.getKeys()) {
 			for(PropertyNode<Object,String> childProp:key.getValues()) {
 				resultProp = getColorProperty(childProp,colorString);
 				if(resultProp != null) return resultProp;

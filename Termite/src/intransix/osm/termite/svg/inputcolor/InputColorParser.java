@@ -11,7 +11,7 @@ public class InputColorParser extends DataParser<Object,String> {
 	@Override
 	public String parseValueData(JSONObject json, KeyNode<Object,String> parentKey) {
 		try {
-			return json.optString("inputColor",null);
+			return json.optString("inputcolor",null);
 		}
 		catch(Exception ex) {
 			return null;
