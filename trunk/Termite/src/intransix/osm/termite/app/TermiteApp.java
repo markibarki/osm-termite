@@ -1,15 +1,11 @@
 package intransix.osm.termite.app;
 
-import javax.swing.*; 
-
 import intransix.osm.termite.app.gui.TermiteGui;
 import intransix.osm.termite.app.gui.MapPanel;
 
 import intransix.osm.termite.theme.*;
 import intransix.osm.termite.map.geom.*;
 import intransix.osm.termite.util.JsonIO;
-import java.awt.Color;
-import java.awt.geom.Path2D;
 
 import intransix.osm.termite.svg.*;
 import intransix.osm.termite.svg.inputcolor.*;
@@ -80,6 +76,8 @@ public class TermiteApp {
 		String themeFileName = "theme.json";
 		String inputColorName = "inputColor.json";
 		String svgFileName = "test.svg";
+		java.io.File svgFile = new java.io.File(svgFileName);
+		String svgUriString = svgFile.toURI().toString();
 		
 		//load the theme
 		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
@@ -89,7 +87,7 @@ public class TermiteApp {
 		InputColorMapper icm = InputColorMapper.parse(inputColorJson);
 		
 		SvgConverter svgConverter = new SvgConverter();
-		svgConverter.loadSvg(svgFileName,icm);
+		svgConverter.loadSvg(svgUriString,icm);
 		
 		Structure structure = svgConverter.structure;
 		

@@ -28,7 +28,7 @@ public class KeyNode<TK, TV> {
 		this.parentValue = parentValue;
 		
 		//get name
-		name = json.optString("name","unnamed");
+		name = json.optString("key","unnamed");
 		
 		//get data
 		if(dataParser != null) {

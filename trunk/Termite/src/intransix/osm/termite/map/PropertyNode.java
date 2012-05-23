@@ -25,7 +25,7 @@ public class PropertyNode<TK, TV> {
 		this.parentKey = parentKey;
 		
 		//get name
-		name = json.optString("name","unnamed");
+		name = json.optString("value","unnamed");
 		
 		//get data
 		if(dataParser != null) {

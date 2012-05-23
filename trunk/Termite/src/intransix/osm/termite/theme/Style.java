@@ -65,7 +65,7 @@ public class Style {
 			
 			//load outline color
 			String outlineString = json.optString("outline",null);
-			if(bodyString != null) {
+			if(outlineString != null) {
 				st.outlineColor = Color.decode(outlineString);
 			}
 			else if(parent != null) {
@@ -74,7 +74,12 @@ public class Style {
 			
 			//load the outline width
 			float defaultOutlineWidth = (parent != null) ? parent.outlineWidth : DEFAULT_OUTLINE_WIDTH;
-			st.outlineWidth = (float)json.optDouble("outlineWidth",defaultOutlineWidth);
+			st.outlineWidth = (float)json.optDouble("width",defaultOutlineWidth);
+		}
+		else if(parent != null) {
+			st.bodyColor = parent.bodyColor;
+			st.outlineColor = parent.outlineColor;
+			st.outlineWidth = parent.outlineWidth;
 		}
 
 		return st;
@@ -107,7 +112,7 @@ class StyleParser extends DataParser<Style,Style> {
 	}
 
 	private Style parseData(JSONObject json, Style parent) {
-		JSONObject dataJson = json.optJSONObject("data");
+		JSONObject dataJson = json.optJSONObject("style");
 		return Style.parse(dataJson, parent);
 	}
 }

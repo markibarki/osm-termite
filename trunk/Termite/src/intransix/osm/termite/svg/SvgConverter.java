@@ -35,8 +35,12 @@ public Structure structure;
 			String fillColor = geom.fill;
 			String strokeColor = geom.stroke;
 			String inputColor = null;
-			if(fillColor != null) fillColor = inputColor;
-			else inputColor = strokeColor;
+			if(fillColor != null) inputColor = fillColor;
+			else if(strokeColor != null) inputColor = strokeColor;
+			else {
+				//do something here - exception?
+				continue;
+			}
 			
 			Shape shape = geom.shape;
 			if(shape instanceof Path2D) {
