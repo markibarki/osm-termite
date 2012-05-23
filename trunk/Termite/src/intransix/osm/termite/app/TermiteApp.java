@@ -7,8 +7,14 @@ import intransix.osm.termite.app.gui.MapPanel;
 
 import intransix.osm.termite.theme.*;
 import intransix.osm.termite.map.geom.*;
+import intransix.osm.termite.util.JsonIO;
 import java.awt.Color;
 import java.awt.geom.Path2D;
+
+import intransix.osm.termite.svg.*;
+import intransix.osm.termite.svg.inputcolor.*;
+
+import org.json.*;
 
 
 /**
@@ -36,7 +42,13 @@ public class TermiteApp {
 		gui.setVisible(true);
 		
 		//load a dummy map
-		loadMap();
+		try {
+			loadMap();
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			exit();
+		}
 	}
 	
 	public void exit() {
@@ -63,77 +75,23 @@ public class TermiteApp {
 	//=====================
 	
 	//dummy method
-	private void loadMap() {
-		Theme theme = new Theme();
-		theme.addStyle(new Style("buildingpart","room",Color.BLUE,Color.ORANGE,2));
-		theme.addStyle(new Style("buildingpart","stairs",Color.GRAY,Color.BLACK,2));
-		theme.addStyle(new Style("buildingpart","hallway",Color.GREEN,null,0));
-		theme.addStyle(new Style("buildingpart","wall",Color.BLACK,null,4));
-		theme.addStyle(new Style("buildingpart","door",Color.RED,Color.BLACK,2));
-		theme.addStyle(new Style("furnishing","table",Color.GRAY,Color.BLACK,2));
-		theme.addStyle(new Style("furnishing","chair",Color.DARK_GRAY,Color.BLACK,2));
-		theme.addStyle(new Style("furnishing","shelf",Color.MAGENTA,Color.BLACK,2));
-		theme.setDeafultStyle(new Style("app","object",Color.LIGHT_GRAY,Color.BLACK,2));
+	private void loadMap() throws Exception {
 		
-		//make a map and do something with it, for a test
-		Structure structure = new Structure();
-		structure.setId(1);
-		Level level = new Level();
-		level.setId(1);
-		structure.addLevel(level);
+		String themeFileName = "theme.json";
+		String inputColorName = "inputColor.json";
+		String svgFileName = "test.svg";
 		
+		//load the theme
+		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
+		Theme theme = Theme.parse(themeJson);
 		
-		PathFeature f;
-		Path2D path;
+		JSONObject inputColorJson = JsonIO.readJsonFile(inputColorName);
+		InputColorMapper icm = InputColorMapper.parse(inputColorJson);
 		
-		path = new Path2D.Double();
-		path.moveTo(10,10);
-		path.lineTo(100,10);
-		path.lineTo(100,100);
-		path.lineTo(10,10);
-		path.closePath();
-		f = new PathFeature(Feature.FeatureType.AREA);
-		f.setPath(path);
-		f.setId(1);
-		f.setProperty("buildingpart","room");
-		level.addFeature(f);
+		SvgConverter svgConverter = new SvgConverter();
+		svgConverter.loadSvg(svgFileName,icm);
 		
-		path = new Path2D.Double();
-		path.moveTo(50,80);
-		path.lineTo(200,120);
-		path.lineTo(100,200);
-		path.lineTo(50,80);
-		path.closePath();
-		f = new PathFeature(Feature.FeatureType.AREA);
-		f.setPath(path);
-		f.setId(2);
-		f.setProperty("buildingpart","hallway");
-		level.addFeature(f);
-		
-		path = new Path2D.Double();
-		path.moveTo(300,100);
-		path.lineTo(200,140);
-		path.lineTo(70,230);
-		f = new PathFeature(Feature.FeatureType.LINE);
-		f.setPath(path);
-		f.setId(3);
-		f.setProperty("furnishing","shelf");
-		level.addFeature(f);
-		
-		path = new Path2D.Double();
-		path.moveTo(160,100);
-		path.lineTo(120,140);
-		path.lineTo(120,60);
-		path.closePath();
-		path.moveTo(150,100);
-		path.lineTo(130,120);
-		path.lineTo(130,80);
-		path.closePath();
-		path.setWindingRule(Path2D.WIND_EVEN_ODD);
-		f = new PathFeature(Feature.FeatureType.MULTIAREA);
-		f.setPath(path);
-		f.setId(4);
-		level.addFeature(f);
+		Structure structure = svgConverter.structure;
 		
 		//add to the map panel
 		MapPanel mapDisplay = gui.getMap();
