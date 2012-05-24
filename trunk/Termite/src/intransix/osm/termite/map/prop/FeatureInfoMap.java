@@ -1,4 +1,4 @@
-package intransix.osm.termite.svg.inputcolor;
+package intransix.osm.termite.map.prop;
 
 import intransix.osm.termite.map.geom.Feature;
 import intransix.osm.termite.map.*;
@@ -9,55 +9,68 @@ import org.json.*;
  * 
  * @author sutter
  */
-public class InputColorMapper {
+public class FeatureInfoMap {
 	
-	PropertyNode<Object,String> treeRoot = null;
+	PropertyNode<Object,FeatureInfo> treeRoot = null;
 	
 	/** This method parses a property tree for the theme. */
-	public static InputColorMapper parse(JSONObject json) throws Exception {
-		InputColorParser parser = new InputColorParser();
+	public static FeatureInfoMap parse(JSONObject json) throws Exception {
+		FeatureInfoParser parser = new FeatureInfoParser();
 	
-		InputColorMapper icm = new InputColorMapper();
-		icm.treeRoot = new PropertyNode<Object,String>();
+		FeatureInfoMap icm = new FeatureInfoMap();
+		icm.treeRoot = new PropertyNode<Object,FeatureInfo>();
 		icm.treeRoot.parse(json,null,parser);
 		return icm;
 		
 	}
 	
 	/** This method sets the style for a feature. */
-	public String getColorString(Feature feature) {
+	public FeatureInfo getFeatureInfo(Feature feature) {
 		return treeRoot.getPropertyData(feature);	
 	}
 	
 	/** This updates the properties of a feature to match those for the input color. */
 	public void updateFeature(Feature feature, String inputColorString) {
 		//find the original color
-		PropertyNode<Object,String> origClassifyingProp = treeRoot.getClassifyingProperty(feature);
+		PropertyNode<Object,FeatureInfo> origClassifyingProp = treeRoot.getClassifyingProperty(feature);
 				
 		//lookup new color
-		PropertyNode<Object,String> newClassifyingProp = getColorProperty(treeRoot,inputColorString);
+		PropertyNode<Object,FeatureInfo> newClassifyingProp = getColorProperty(treeRoot,inputColorString);
+		
+		if(newClassifyingProp == null) {
+//we should store that there was an error!!!
+			newClassifyingProp = treeRoot;
+		}
 		
 		//update the properties
 		if(origClassifyingProp != newClassifyingProp) {
 			removeKeys(feature,origClassifyingProp);
 			addKeys(feature,newClassifyingProp);
+			
+			//set the new feature property object
+			feature.setFeatureInfo(newClassifyingProp.getData());
 		}
 	}
 	
 	
 	/** This method looks up a PropertyNode for a given input color. */
-	private PropertyNode<Object,String> getColorProperty(
-			PropertyNode<Object,String> prop, String colorString) {
+	private PropertyNode<Object,FeatureInfo> getColorProperty(
+			PropertyNode<Object,FeatureInfo> prop, String colorString) {
 		
-		String propColor = prop.getData();
+		//get the input color for this property
+		String propColor = null;
+		FeatureInfo fp = prop.getData();
+		if(fp != null) {
+			propColor = fp.getInputColor();
+		}
 		
 		//check this object for a match
 		if((propColor != null)&&(colorString.equalsIgnoreCase(propColor))) return prop;
 		
 		//check children for a match
-		PropertyNode<Object,String> resultProp = null;
-		for(KeyNode<Object,String> key:prop.getKeys()) {
-			for(PropertyNode<Object,String> childProp:key.getValues()) {
+		PropertyNode<Object,FeatureInfo> resultProp = null;
+		for(KeyNode<Object,FeatureInfo> key:prop.getKeys()) {
+			for(PropertyNode<Object,FeatureInfo> childProp:key.getValues()) {
 				resultProp = getColorProperty(childProp,colorString);
 				if(resultProp != null) return resultProp;
 			}
