@@ -18,37 +18,56 @@
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
    id="defs33" />
 <rect
-   width="76"
-   height="80"
-   x="48"
-   y="51"
-   id="rect3"
-   style="fill:#e0d090;stroke:#231f20;stroke-miterlimit:10" />
-<rect
-   width="76"
-   height="73"
-   x="48"
-   y="173"
-   id="rect5"
-   style="fill:#e0c0a0;stroke:#231f20;stroke-miterlimit:10" />
-<rect
    width="79"
    height="80"
-   x="168"
-   y="51"
+   x="155.23553"
+   y="48.872589"
    id="rect7"
-   style="fill:#ffc0c0;stroke:#231f20;stroke-miterlimit:10" />
-<rect
+   style="fill:#ffc0c0;stroke:#231f20;stroke-miterlimit:10" /><polygon
+   points="247,131 247,173 168,173 168,246 124,246 124,173 48,173 48,131 124,131 124,51 168,51 168,131 "
+   transform="translate(-12.764465,-2.1274109)"
+   id="polygon11"
+   style="fill:#e0e0e0;stroke:#231f20;stroke-miterlimit:10" /><rect
+   width="17"
+   height="11"
+   x="203.23553"
+   y="99.872589"
+   id="rect29"
+   style="fill:#88c8a8;stroke:#231f20;stroke-miterlimit:10" /><rect
+   width="45"
+   height="19"
+   x="175.23553"
+   y="69.872589"
+   id="rect25"
+   style="fill:#88b8b8;stroke:#231f20;stroke-miterlimit:10" /><rect
+   width="76"
+   height="80"
+   x="35.235535"
+   y="48.872589"
+   id="rect3"
+   style="fill:#e0d090;stroke:#231f20;stroke-miterlimit:10" /><rect
+   width="76"
+   height="73"
+   x="35.235535"
+   y="170.87259"
+   id="rect5"
+   style="fill:#e0c0a0;stroke:#231f20;stroke-miterlimit:10" /><rect
    width="79"
    height="73"
-   x="168"
-   y="173"
+   x="155.23553"
+   y="170.87259"
    id="rect9"
-   style="fill:#e0e080;stroke:#231f20;stroke-miterlimit:10" />
-<polygon
-   points="168,51 168,131 247,131 247,173 168,173 168,246 124,246 124,173 48,173 48,131 124,131 124,51 "
-   id="polygon11"
-   style="fill:#e0e0e0;stroke:#231f20;stroke-miterlimit:10" />
+   style="fill:#e0e080;stroke:#231f20;stroke-miterlimit:10" /><rect
+   width="19.5"
+   height="11"
+   x="175.23553"
+   y="99.872589"
+   id="rect27"
+   style="fill:#88c8a8;stroke:#231f20;stroke-miterlimit:10" />
+
+
+
+
 <polyline
    fill="none"
    stroke="#404080"
@@ -102,25 +121,10 @@
    y="241"
    id="rect23"
    style="fill:#b0d090;stroke:#231f20;stroke-miterlimit:10" />
-<rect
-   width="45"
-   height="19"
-   x="188"
-   y="72"
-   id="rect25"
-   style="fill:#88b8b8;stroke:#231f20;stroke-miterlimit:10" />
-<rect
-   width="19.5"
-   height="11"
-   x="188"
-   y="102"
-   id="rect27"
-   style="fill:#88c8a8;stroke:#231f20;stroke-miterlimit:10" />
-<rect
-   width="17"
-   height="11"
-   x="216"
-   y="102"
-   id="rect29"
-   style="fill:#88c8a8;stroke:#231f20;stroke-miterlimit:10" />
-</svg>
+
+
+
+<path
+   d="m 264.40677,488.13561 -38.22308,-6.23871 -26.80854,27.95044 -5.87822,-38.28017 -34.86674,-16.85928 34.59014,-17.41974 5.25971,-38.37004 27.2561,27.51418 38.11742,-6.85472 -17.74494,34.42444 z"
+   id="path2996"
+   style="fill:#ff0000;fill-opacity:1;stroke:#800080" /></svg>
