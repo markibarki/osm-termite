@@ -2,6 +2,7 @@ package intransix.osm.termite.map.geom;
 
 import intransix.osm.termite.map.MapObject;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  *
@@ -17,6 +18,10 @@ public class Level extends MapObject {
 	
 	public ArrayList<Feature> getFeatures() {
 		return features;
+	}
+	
+	public void orderFeatures() {
+		Collections.sort(features);
 	}
 	
 }
