@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
-import intransix.osm.termite.svg.inputcolor.InputColorMapper;
+import intransix.osm.termite.map.prop.FeatureInfoMap;
 import java.awt.geom.*;
 import java.awt.*;
 
@@ -17,7 +17,7 @@ public class SvgConverter {
 
 public Structure structure;
 	
-	public void loadSvg(String fileName, InputColorMapper inputColorMapper) {
+	public void loadSvg(String fileName, FeatureInfoMap inputColorMapper) {
 		Document doc = loadXmlDoc(fileName);
 		
 		SvgDocument svgDocument = new SvgDocument();
@@ -54,6 +54,10 @@ public Structure structure;
 				level.addFeature(f);
 			}
 		}
+		
+		//order the feature since we updated the list
+		//we need to figure out a good way of doing this
+		level.orderFeatures();
 		
 		
 ////////////////////////////////////////////////////////////
