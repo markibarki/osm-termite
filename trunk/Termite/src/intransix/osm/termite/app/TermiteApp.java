@@ -1,5 +1,6 @@
 package intransix.osm.termite.app;
 
+import intransix.osm.termite.map.prop.FeatureInfoMap;
 import intransix.osm.termite.app.gui.TermiteGui;
 import intransix.osm.termite.app.gui.MapPanel;
 
@@ -8,7 +9,6 @@ import intransix.osm.termite.map.geom.*;
 import intransix.osm.termite.util.JsonIO;
 
 import intransix.osm.termite.svg.*;
-import intransix.osm.termite.svg.inputcolor.*;
 
 import org.json.*;
 
@@ -74,7 +74,7 @@ public class TermiteApp {
 	private void loadMap() throws Exception {
 		
 		String themeFileName = "theme.json";
-		String inputColorName = "inputColor.json";
+		String featureInfoName = "featureInfo.json";
 		String svgFileName = "test.svg";
 		java.io.File svgFile = new java.io.File(svgFileName);
 		String svgUriString = svgFile.toURI().toString();
@@ -83,8 +83,8 @@ public class TermiteApp {
 		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
 		Theme theme = Theme.parse(themeJson);
 		
-		JSONObject inputColorJson = JsonIO.readJsonFile(inputColorName);
-		InputColorMapper icm = InputColorMapper.parse(inputColorJson);
+		JSONObject featureInfoJson = JsonIO.readJsonFile(featureInfoName);
+		FeatureInfoMap icm = FeatureInfoMap.parse(featureInfoJson);
 		
 		SvgConverter svgConverter = new SvgConverter();
 		svgConverter.loadSvg(svgUriString,icm);
