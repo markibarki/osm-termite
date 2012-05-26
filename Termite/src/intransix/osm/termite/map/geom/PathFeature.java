@@ -12,9 +12,21 @@ import intransix.osm.termite.theme.Style;
 public class PathFeature extends Feature {
 	
 	private Path2D path;
+	private boolean isArea = false;
 	
-	public PathFeature(FeatureType featureType) {
-		super(featureType);
+	public PathFeature(boolean isArea) {
+		this.isArea = isArea;
+	}
+	
+	public PathFeature() {
+	}
+	
+	public void setIsArea(boolean isArea) {
+		this.isArea = isArea;
+	}
+	
+	public boolean getIsArea() {
+			return isArea;
 	}
 	
 	public Path2D getPath() {
@@ -25,6 +37,12 @@ public class PathFeature extends Feature {
 		this.path = path;
 	}
 	
+	public void updatePath(Path2D path, boolean isArea) {
+//for now just replace
+		this.path = path;
+		this.isArea = isArea;
+	}
+	
 	public void render(Graphics2D g) {
 		Style style = this.getStyle();
 		if((path != null)&&(style != null)) {
@@ -33,12 +51,11 @@ public class PathFeature extends Feature {
 			Color fillColor = null;
 			Color strokeColor = null;
 			Stroke stroke = null;
-			FeatureType ft = getFeatureType();
-			if((ft == FeatureType.AREA)||(ft == FeatureType.MULTIAREA)) {
+			if(isArea) {
 				fillColor = style.getBodyColor();
 				strokeColor = style.getOutlineColor();
 			}
-			if((ft == FeatureType.LINE)||(ft == FeatureType.MULTILINE)) {
+			else {
 				fillColor = null;
 				strokeColor = style.getBodyColor();
 			}

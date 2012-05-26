@@ -4,8 +4,56 @@ import org.apache.batik.dom.svg.*;
 import org.w3c.dom.svg.*;
 import java.awt.*;
 import java.awt.geom.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Document;
 
-public class SvgGeometryLoader {
+public class SvgCoordinateLoader {
+	
+	public static Element getElement(Document doc, SvgGeometry geom) {
+
+		String id = geom.id;
+		Shape shape = geom.shape;
+		String fillColor = geom.fill;
+		String strokeColor = geom.stroke;
+		double strokeWidth = geom.strokeWidth;
+			
+		Element element;	
+		
+		if(shape instanceof Path2D) {
+			element = doc.createElementNS(null, "path");
+			String pathString = getPathString((Path2D)shape);
+			element.setAttributeNS(null, "d", pathString);
+		}
+		else if(shape instanceof Ellipse2D) {
+			double cx = ((Ellipse2D)shape).getCenterX();
+			double cy = ((Ellipse2D)shape).getCenterY();
+			double rx = ((Ellipse2D)shape).getWidth();
+			double ry = ((Ellipse2D)shape).getHeight();
+			element = doc.createElementNS(null, "ellipse");
+			element.setAttributeNS(null, "cx", String.valueOf(cx));
+			element.setAttributeNS(null, "cy", String.valueOf(cy));
+			element.setAttributeNS(null, "rx", String.valueOf(rx));
+			element.setAttributeNS(null, "ry", String.valueOf(ry));
+		}
+		else {
+//handle this better
+throw new RuntimeException("Unrecognized geometry");
+		}
+		
+		//set id
+		element.setAttributeNS(null,"id", id);
+		
+		//set fill
+		if(fillColor == null) fillColor = "none";
+		element.setAttributeNS(null, "fill",fillColor);
+		
+		//set stroke
+		if(strokeColor == null) strokeColor = "none";
+		element.setAttributeNS(null, "stroke", strokeColor);
+		element.setAttributeNS(null, "stroke-width", String.valueOf(strokeWidth));
+		
+		return element;
+	}
 	
 	public static Shape loadGeometry(SVGGraphicsElement node, 
 			TransformManager transformManager) {
@@ -16,22 +64,22 @@ public class SvgGeometryLoader {
 			shape = loadRectangle((SVGOMRectElement)node);
 		}
 		else if(node instanceof SVGOMPolygonElement) {
-			shape = SvgGeometryLoader.loadPolygon((SVGOMPolygonElement)node);
+			shape = SvgCoordinateLoader.loadPolygon((SVGOMPolygonElement)node);
 		}
 		else if(node instanceof SVGOMPolylineElement) {
-			shape = SvgGeometryLoader.loadPolyline((SVGOMPolylineElement)node);
+			shape = SvgCoordinateLoader.loadPolyline((SVGOMPolylineElement)node);
 		}
 		else if(node instanceof SVGOMPathElement) {
-			shape = SvgGeometryLoader.loadPath((SVGOMPathElement)node);
+			shape = SvgCoordinateLoader.loadPath((SVGOMPathElement)node);
 		}
 		else if(node instanceof SVGOMLineElement) {
-			shape = SvgGeometryLoader.loadLine((SVGOMLineElement)node);
+			shape = SvgCoordinateLoader.loadLine((SVGOMLineElement)node);
 		}
 		else if(node instanceof SVGOMCircleElement) {
-			shape = SvgGeometryLoader.loadCircle((SVGOMCircleElement)node);
+			shape = SvgCoordinateLoader.loadCircle((SVGOMCircleElement)node);
 		}
 		else if(node instanceof SVGOMEllipseElement) {
-			shape = SvgGeometryLoader.loadEllipse((SVGOMEllipseElement)node);
+			shape = SvgCoordinateLoader.loadEllipse((SVGOMEllipseElement)node);
 		}
 		
 		if(shape != null) {	
@@ -378,6 +426,56 @@ public class SvgGeometryLoader {
 	private static Point2D getReflection(double baseX, double baseY, double reflecteeX, double reflecteeY) {
 		return new Point2D.Double(baseX + (baseX - reflecteeX),baseY + (baseY - reflecteeY));
 	}
+	
+	/** This is a utility to return the string for a path. */
+	private static String getPathString(Path2D path) {
+		PathIterator pi = path.getPathIterator(null);
+
+		StringBuilder sb = new StringBuilder();
+		double[] points = new double[6];
+		boolean isFirst = true;
+		for(; !pi.isDone(); pi.next()) {
+			//handle leading space
+			if(isFirst) {
+				isFirst = false;
+			}
+			else {
+				sb.append(' ');
+			}
+
+			int type = pi.currentSegment(points);
+			switch(type) {
+			case PathIterator.SEG_MOVETO:
+				sb.append("M");
+				writeList(sb,points,2);
+				break;
+			case PathIterator.SEG_LINETO:
+				sb.append("L");
+				writeList(sb,points,2);
+				break;
+			case PathIterator.SEG_CUBICTO:
+				sb.append("C");
+				writeList(sb,points,6);
+				break;
+			case PathIterator.SEG_QUADTO:
+				sb.append("Q");
+				writeList(sb,points,4);
+				break;
+			case PathIterator.SEG_CLOSE:
+				sb.append("Z");
+				break;
+			}
+		}
+		return sb.toString();
+	}
+	
+	private static  void writeList(StringBuilder sb, double[] points, int count) {
+		for(int i = 0; i < count; i++) {
+			if(i > 0) sb.append(' ');
+			sb.append(String.format("%1$.3f",points[i]));
+		}
+	}
+
 }
 
 

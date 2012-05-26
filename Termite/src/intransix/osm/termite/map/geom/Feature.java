@@ -15,18 +15,13 @@ public abstract class Feature extends MapObject implements Comparable<Feature> {
 	// Constants
 	//====================
 	
-	/** This gives the feature type. */
-	public enum FeatureType {
-		POINT, LINE, MULTILINE, AREA, MULTIAREA
-	}
-	
 	public final static int DEFAULT_ZORDER = 999;
 	
 	//====================
 	// Private Proeprties
 	//====================
 
-	private FeatureType featureType;
+	private Level level;
 	private Style style;
 	private FeatureInfo featureInfo;
 	
@@ -34,12 +29,8 @@ public abstract class Feature extends MapObject implements Comparable<Feature> {
 	// Public Methods
 	//====================
 	
-	/** This method returns the feature type.
-	 * 
-	 * @return		The feature type 
-	 */
-	public FeatureType getFeatureType() {
-		return featureType;
+	public Level getLevel() {
+		return level;
 	}
 
 	public void setStyle(Style style) {
@@ -86,12 +77,14 @@ public abstract class Feature extends MapObject implements Comparable<Feature> {
 	}
 	
 	//====================
-	// Public Methods
+	// Package Methods
 	//====================
 	
 	/** Constructor. It should only be called by members of this package. */
-	Feature(FeatureType featureType) {
-		this.featureType = featureType;
+	Feature() {}
+	
+	void setLevel(Level level) {
+		this.level = level;
 	}
 	
 	

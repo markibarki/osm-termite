@@ -1,5 +1,7 @@
 package intransix.osm.termite.svg;
 
+import intransix.osm.termite.map.geom.Level;
+import intransix.osm.termite.map.prop.FeatureInfoMap;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
@@ -33,7 +35,15 @@ public class SvgDocument extends TransformManager {
 	
 	public Rectangle2D getDocSize() { return docSize;}
 	
+	public void setDocSize(Rectangle2D docSize) {
+		this.docSize = docSize;
+	}
+	
 	public ArrayList<SvgGeometry> getObjectList() { return geomList;}
+	
+	public void addGeometry(SvgGeometry geom) {
+		geomList.add(geom);
+	}
 	
 	/** This method loads the SVG document. */
 	public void load(Document svgDocument) {
@@ -53,6 +63,28 @@ public class SvgDocument extends TransformManager {
 		TransformManager transformManager = new TransformManager();
 		NodeList children = element.getChildNodes();
 		processChildren(children,transformManager);
+	}
+	
+	public Document create() {
+		
+		DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
+		Document doc =  impl.createDocument(SVGDOMImplementation.SVG_NAMESPACE_URI, "svg", null);
+		
+		int width = (int)Math.ceil(docSize.getWidth());
+		int height = (int)Math.ceil(docSize.getHeight());
+
+		Element svgElement = doc.getDocumentElement();
+		svgElement.setAttributeNS(null,"id", "svg0");
+		svgElement.setAttributeNS(null, "width", String.valueOf(width));
+		svgElement.setAttributeNS(null, "height", String.valueOf(height));
+		
+		//children geometry
+		for(SvgGeometry geom:geomList) {
+			Element element = SvgCoordinateLoader.getElement(doc, geom);
+			svgElement.appendChild(element);
+		}
+		
+		return doc;
 	}
 	
 	//======================================
@@ -86,7 +118,7 @@ public class SvgDocument extends TransformManager {
 					transformManager.restoreToMark(mark);
 				}
 				else if(node instanceof SVGGraphicsElement) {
-					Shape shape = SvgGeometryLoader.loadGeometry((SVGGraphicsElement)node,transformManager);
+					Shape shape = SvgCoordinateLoader.loadGeometry((SVGGraphicsElement)node,transformManager);
 					SvgGeometry geom = new SvgGeometry((SVGGraphicsElement)node,shape);
 					geomList.add(geom);
 				}

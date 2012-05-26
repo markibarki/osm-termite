@@ -22,6 +22,12 @@ public class FeatureInfo {
 	public final static int DEFAULT_ALLOWED_TYPES = ALLOWED_TYPES_ALL;
 	public final static int DEFAULT_DEFAULT_PATH = GEOM_TYPE_LINE;
 	
+	public final static String DEFAULT_EXPORT_STROKE = "#606060";
+	public final static float DEFAULT_EXPORT_STROKE_WIDTH = 2;
+	public final static float DEFAULT_POINT_RADIUS = 5;
+	
+	public final static String DEFAULT_IMPORT_FILL = "#FF0000";
+	
 	//this is used for draw order
 	private int zorder = DEFAULT_ZORDER;
 	
