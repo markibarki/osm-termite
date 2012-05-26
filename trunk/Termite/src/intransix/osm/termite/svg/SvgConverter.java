@@ -8,16 +8,22 @@ import org.w3c.dom.Document;
 import intransix.osm.termite.map.prop.FeatureInfoMap;
 import java.awt.geom.*;
 import java.awt.*;
+import java.io.PrintStream;
+import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.apache.batik.dom.svg.SVGDOMImplementation;
+import org.w3c.dom.DOMImplementation;
 
 /**
  * This method converts between a map level and an SVG document
  * @author sutter
  */
 public class SvgConverter {
-
-public Structure structure;
 	
-	public void loadSvg(String fileName, FeatureInfoMap inputColorMapper) {
+	public void loadSvg(Level level, String fileName, FeatureInfoMap featureInfoMap) {
 		Document doc = loadXmlDoc(fileName);
 		
 		SvgDocument svgDocument = new SvgDocument();
@@ -25,44 +31,101 @@ public Structure structure;
 		
 ////////////////////////////////////////////////////////////
 //this is just for testing
-		this.structure = new Structure();
-		structure.setId(1);
-		Level level = new Level();
-		level.setId(1);
-		structure.addLevel(level);
+		
+		Structure structure = level.getStructure();
+		structure.setBounds(svgDocument.getDocSize());
 		
 		for(SvgGeometry geom:svgDocument.getObjectList()) {
+			
+			//get the object color
 			String fillColor = geom.fill;
 			String strokeColor = geom.stroke;
 			String inputColor = null;
-			if(fillColor != null) inputColor = fillColor;
-			else if(strokeColor != null) inputColor = strokeColor;
+			boolean isArea;
+			if(fillColor != null) {
+				inputColor = fillColor;
+				isArea = true;
+			}
+			else if(strokeColor != null) {
+				inputColor = strokeColor;
+				isArea = false;
+			}
 			else {
 				//do something here - exception?
 				continue;
 			}
 			
+			//check if feature exists
+			Feature feature = level.getFeature(geom.id);		
+			
+			//update the shape
 			Shape shape = geom.shape;
 			if(shape instanceof Path2D) {
-				PathFeature.FeatureType featureType = (fillColor != null) ?
-						PathFeature.FeatureType.AREA : PathFeature.FeatureType.LINE;
-				PathFeature f = new PathFeature(featureType);
-				f.setPath((Path2D)shape);
+				if(feature != null) {
+if(feature instanceof PointFeature) {
+	throw new RuntimeException("Switching from Node to Way not currently supported!");
+}
+				}
+				else {
+					feature = new PathFeature();
+					level.addFeature(feature);
+				}
 				
-				inputColorMapper.updateFeature(f,inputColor);
-				
-				level.addFeature(f);
+				//update path
+				((PathFeature)feature).updatePath((Path2D)shape,isArea);
 			}
+			if(shape instanceof Ellipse2D) {
+				if(feature != null) {
+if(feature instanceof PathFeature) {
+	throw new RuntimeException("Switching from Way to Node not currently supported!");
+}
+				}
+				else {
+					feature = new PointFeature();
+					level.addFeature(feature);
+				}
+				
+				//create point from circle
+				double x = ((Ellipse2D)shape).getCenterX();
+				double y = ((Ellipse2D)shape).getCenterY();
+				Point2D point = new Point2D.Double(x,y);
+				
+				//update point
+				((PointFeature)feature).updatePoint(point);
+			}
+			
+			//update the properties
+			featureInfoMap.updateFeatureProperties(feature,inputColor);
 		}
 		
 		//order the feature since we updated the list
 		//we need to figure out a good way of doing this
 		level.orderFeatures();
 		
-		
 ////////////////////////////////////////////////////////////
 	}
 	
+	public void createSvg(Level level, String fileName, FeatureInfoMap featureInfoMap) {
+		//create xml doc
+		SvgDocument svgDocument = new SvgDocument();
+		
+		Structure structure = level.getStructure();
+		svgDocument.setDocSize(structure.getBounds());
+		for(Feature feature:level.getFeatures()) {
+			SvgGeometry geom = new SvgGeometry(feature,featureInfoMap);
+			svgDocument.addGeometry(geom);
+		}
+		
+		Document doc = svgDocument.create();
+		
+		//write the document
+		writeXmlDoc(doc,fileName);
+	}
+
+
+	//==========================
+	// Private Methods
+	//==========================
 	
 	/** This method loads the SVG document. */
 	private Document loadXmlDoc(String fileName) {
@@ -76,5 +139,29 @@ public Structure structure;
 		    return null;
 		}
 	}
+	
+	// This method writes a DOM document to a file
+    private boolean writeXmlDoc(Document doc, String fileName) {
+        try {     	
+        	doc.normalizeDocument();
+        	
+            // Prepare the DOM document for writing
+            DOMSource source = new DOMSource(doc);
+    
+            // Prepare the output file        
+            PrintStream outStream = new PrintStream(fileName);
+            Result result = new StreamResult(outStream);
+
+            // Write the DOM document to the file
+            Transformer xformer = TransformerFactory.newInstance().newTransformer();
+            xformer.transform(source, result);
+			outStream.flush();
+			outStream.close();
+			return true;
+        } catch (Exception e) {
+        	e.printStackTrace();
+			return false;
+        }
+    }
 	
 }

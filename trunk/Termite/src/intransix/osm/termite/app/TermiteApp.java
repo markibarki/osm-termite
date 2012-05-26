@@ -86,17 +86,28 @@ public class TermiteApp {
 		JSONObject featureInfoJson = JsonIO.readJsonFile(featureInfoName);
 		FeatureInfoMap icm = FeatureInfoMap.parse(featureInfoJson);
 		
-		SvgConverter svgConverter = new SvgConverter();
-		svgConverter.loadSvg(svgUriString,icm);
+		Structure structure = new Structure();
+		structure.setId("struct1");		
+		Level level = new Level();
+		level.setId("level1");
+		structure.addLevel(level);
 		
-		Structure structure = svgConverter.structure;
+		SvgConverter svgConverter = new SvgConverter();
+		svgConverter.loadSvg(level,svgUriString,icm);
 		
 		//add to the map panel
 		MapPanel mapDisplay = gui.getMap();
 		mapDisplay.setTheme(theme);
 		mapDisplay.setStructure(structure);
-		mapDisplay.setLevel(1);
+		mapDisplay.setLevel("level1");
 		mapDisplay.repaint();
+		
+		SvgConverter svgConverter2 = new SvgConverter();
+		svgConverter2.createSvg(level,"testOut.svg", icm);
+		
+		intransix.osm.termite.map.osm.ParseTest pt = new intransix.osm.termite.map.osm.ParseTest();
+		pt.parse();
+		
 	}
 
 }

@@ -1,12 +1,17 @@
 package intransix.osm.termite.svg;
 
+import intransix.osm.termite.map.geom.*;
+import intransix.osm.termite.map.prop.FeatureInfoMap;
+import intransix.osm.termite.map.prop.FeatureInfo;
 import java.util.HashMap;
 
 import org.apache.batik.dom.svg.*;
 import org.apache.batik.util.CSSConstants;
 import org.apache.batik.util.SVGConstants;
 import java.awt.Shape;
-
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 
 public class SvgGeometry {
 
@@ -78,7 +83,57 @@ public class SvgGeometry {
 		}
 	}
 	
+	public SvgGeometry(Feature feature, FeatureInfoMap featureInfoMap) {
+		FeatureInfo featureInfo = featureInfoMap.getFeatureInfo(feature);
+		String inputColor = null;
+		if(featureInfo != null) {
+			inputColor= featureInfo.getInputColor();
+		}
+		
+//get a better way to handle this
+if(inputColor == null) inputColor = FeatureInfo.DEFAULT_IMPORT_FILL;
 
+		boolean isArea;
+		if(feature instanceof PathFeature) {
+			//get the shape
+			this.shape = ((PathFeature)feature).getPath();
+			isArea = ((PathFeature)feature).getIsArea();
+		}
+		else if(feature instanceof PointFeature) {
+			isArea = true;
+			
+			//create a shape for the point
+			Point2D point = ((PointFeature)feature).getPoint();
+			Ellipse2D ellipse = new Ellipse2D.Double(point.getX(),point.getY(),
+					FeatureInfo.DEFAULT_POINT_RADIUS,FeatureInfo.DEFAULT_POINT_RADIUS);
+			this.shape = ellipse;
+		}
+		else {
+//get a better way to handle this
+throw new RuntimeException("Unrecognized feature type");
+		}
+		
+		//set the id
+		this.id = feature.getId();
+			
+		//set the color
+		if(isArea) {
+			this.fill = inputColor;
+			this.stroke = FeatureInfo.DEFAULT_EXPORT_STROKE;
+			this.strokeWidth = FeatureInfo.DEFAULT_EXPORT_STROKE_WIDTH;
+		}
+		else {
+			this.fill = null;
+			this.stroke = inputColor;
+			this.strokeWidth = FeatureInfo.DEFAULT_EXPORT_STROKE_WIDTH;
+		}
+	}
+	
+	//import functions/method
+	// - get id
+	// - lookup object
+	// - pass mapper and object (if not available)
+	// - update or create object
 
 	//====================================
 	// Private Functions

@@ -30,7 +30,7 @@ public class FeatureInfoMap {
 	}
 	
 	/** This updates the properties of a feature to match those for the input color. */
-	public void updateFeature(Feature feature, String inputColorString) {
+	public void updateFeatureProperties(Feature feature, String inputColorString) {
 		//find the original color
 		PropertyNode<Object,FeatureInfo> origClassifyingProp = treeRoot.getClassifyingProperty(feature);
 				

@@ -30,7 +30,7 @@ public class MapObject {
 	// Private Proeprties
 	//====================
 	
-	private long id;
+	private String id;
 	private HashMap<String,String> tags = new HashMap<String,String>();
 	
 	//====================
@@ -41,16 +41,16 @@ public class MapObject {
 	public MapObject() {
 	}
 	
-	/** This returns the ID for the object. The type of ID this refers to 
-	 * depends on the type of feature this is. 
+	/** This returns the ID for the object. The ID value should be encoded with
+	 * a prefix to indicate what kind of id it is. 
 	 * 
 	 * @return		The ID for the object 
 	 */
-	public long getId() {
+	public String getId() {
 		return id;
 	}
 	
-	public void setId(long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	

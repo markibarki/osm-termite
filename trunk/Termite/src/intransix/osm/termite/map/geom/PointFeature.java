@@ -16,16 +16,20 @@ public class PointFeature extends Feature {
 //private Rectangle2D rect = new Rectangle2D.Double();
 	
 	public PointFeature() {
-		super(FeatureType.POINT);
 	}
 	
 	/** This gets the point object for this feature. */
-	public Point2D getPoint(Point2D point) {
+	public Point2D getPoint() {
 		return point;
 	}
 	
 	/** This sets the value of the point. */
 	public void setPoint(Point2D point) {
+		this.point = point;
+	}
+	
+	public void updatePoint(Point2D point) {
+//for now just replace
 		this.point = point;
 	}
 	
