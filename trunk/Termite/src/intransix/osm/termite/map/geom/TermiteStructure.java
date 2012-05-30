@@ -8,12 +8,12 @@ import java.awt.geom.Rectangle2D;
  *
  * @author sutter
  */
-public class Structure extends MapObject {
+public class TermiteStructure extends MapObject {
 	
 	private Rectangle2D bounds;
 	
-	private Feature parent;
-	private ArrayList<Level> levels = new ArrayList<Level>();
+	private TermiteFeature parent;
+	private ArrayList<TermiteLevel> levels = new ArrayList<TermiteLevel>();
 	
 	public Rectangle2D getBounds() {
 		return bounds;
@@ -24,16 +24,16 @@ public class Structure extends MapObject {
 	}
 	
 	
-	public Feature getParent() {
+	public TermiteFeature getParent() {
 		return parent;
 	}
 	
-	public void addLevel(Level level) {
+	public void addLevel(TermiteLevel level) {
 		this.levels.add(level);
 		level.setStructure(this);
 	}
 	
-	public ArrayList<Level> getLevels() {
+	public ArrayList<TermiteLevel> getLevels() {
 		return levels;
 	}
 }

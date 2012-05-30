@@ -8,7 +8,7 @@ import java.awt.geom.*;
  * 
  * @author sutter
  */
-public class PointFeature extends Feature {
+public class PointFeature extends TermiteFeature {
 	
 	private Point2D point;
 	

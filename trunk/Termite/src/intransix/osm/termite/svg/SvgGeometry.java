@@ -83,7 +83,7 @@ public class SvgGeometry {
 		}
 	}
 	
-	public SvgGeometry(Feature feature, FeatureInfoMap featureInfoMap) {
+	public SvgGeometry(TermiteFeature feature, FeatureInfoMap featureInfoMap) {
 		FeatureInfo featureInfo = featureInfoMap.getFeatureInfo(feature);
 		String inputColor = null;
 		if(featureInfo != null) {

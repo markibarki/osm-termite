@@ -2,6 +2,7 @@ package intransix.osm.termite.map.osm;
 
 import java.util.HashMap;
 import intransix.osm.termite.map.MapObject;
+import java.util.ArrayList;
 
 import java.util.HashMap;
 import javax.xml.parsers.SAXParser;
@@ -26,6 +27,8 @@ public class OsmObject extends MapObject {
 	private String version;
 	private String changeset;
 	private String timestamp;
+	
+	private ArrayList<OsmRelation> parentRelation = new ArrayList<OsmRelation>();
 	
 	/** The argument is the combined type + osmId string. */
 	OsmObject(String id) {
@@ -81,6 +84,11 @@ public class OsmObject extends MapObject {
 			}
 		}
 		return defaultValue;
+	}
+	
+	
+	void addParentRelation(OsmRelation relation) {
+		this.parentRelation.add(relation);
 	}
 
 }

@@ -1,6 +1,6 @@
 package intransix.osm.termite.map.osm;
 
-import java.util.HashMap;
+import java.util.*;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
@@ -45,7 +45,12 @@ public class OsmXml extends DefaultHandler {
 		}
 		return obj;
 	}
+	
+	public Collection<OsmObject> getOsmObjects() {
+		return this.objectMap.values();
+	}
 
+	@Override
 	public void startElement(String uri, String localName, String name,
 			Attributes attributes) throws SAXException {
 		
@@ -67,6 +72,7 @@ public class OsmXml extends DefaultHandler {
 		}
 	}
 
+	@Override
 	public void endElement(String uri, String localName,
 			String name) throws SAXException {
 

@@ -1,6 +1,6 @@
 package intransix.osm.termite.map.prop;
 
-import intransix.osm.termite.map.geom.Feature;
+import intransix.osm.termite.map.geom.TermiteFeature;
 import intransix.osm.termite.map.*;
 import org.json.*;
 
@@ -25,12 +25,12 @@ public class FeatureInfoMap {
 	}
 	
 	/** This method sets the style for a feature. */
-	public FeatureInfo getFeatureInfo(Feature feature) {
+	public FeatureInfo getFeatureInfo(TermiteFeature feature) {
 		return treeRoot.getPropertyData(feature);	
 	}
 	
 	/** This updates the properties of a feature to match those for the input color. */
-	public void updateFeatureProperties(Feature feature, String inputColorString) {
+	public void updateFeatureProperties(TermiteFeature feature, String inputColorString) {
 		//find the original color
 		PropertyNode<Object,FeatureInfo> origClassifyingProp = treeRoot.getClassifyingProperty(feature);
 				
@@ -81,7 +81,7 @@ public class FeatureInfoMap {
 	
 	/** This method adds all the keys and values associated with the given 
 	 * classifying property. */
-	private void addKeys(Feature feature, PropertyNode prop) {
+	private void addKeys(TermiteFeature feature, PropertyNode prop) {
 		KeyNode parentKey = prop.getParentKey();
 		if(parentKey != null) {
 			//add the top level value
@@ -96,7 +96,7 @@ public class FeatureInfoMap {
 	
 	/** This method removes all the keys associated with the given 
 	 * classifying property. */
-	private void removeKeys(Feature feature, PropertyNode prop) {
+	private void removeKeys(TermiteFeature feature, PropertyNode prop) {
 		KeyNode parentKey = prop.getParentKey();
 		if(parentKey != null) {
 			feature.removeProperty(parentKey.getName());

@@ -23,7 +23,7 @@ import org.w3c.dom.DOMImplementation;
  */
 public class SvgConverter {
 	
-	public void loadSvg(Level level, String fileName, FeatureInfoMap featureInfoMap) {
+	public void loadSvg(TermiteLevel level, String fileName, FeatureInfoMap featureInfoMap) {
 		Document doc = loadXmlDoc(fileName);
 		
 		SvgDocument svgDocument = new SvgDocument();
@@ -32,7 +32,7 @@ public class SvgConverter {
 ////////////////////////////////////////////////////////////
 //this is just for testing
 		
-		Structure structure = level.getStructure();
+		TermiteStructure structure = level.getStructure();
 		structure.setBounds(svgDocument.getDocSize());
 		
 		for(SvgGeometry geom:svgDocument.getObjectList()) {
@@ -56,7 +56,7 @@ public class SvgConverter {
 			}
 			
 			//check if feature exists
-			Feature feature = level.getFeature(geom.id);		
+			TermiteFeature feature = level.getFeature(geom.id);		
 			
 			//update the shape
 			Shape shape = geom.shape;
@@ -105,13 +105,13 @@ if(feature instanceof PathFeature) {
 ////////////////////////////////////////////////////////////
 	}
 	
-	public void createSvg(Level level, String fileName, FeatureInfoMap featureInfoMap) {
+	public void createSvg(TermiteLevel level, String fileName, FeatureInfoMap featureInfoMap) {
 		//create xml doc
 		SvgDocument svgDocument = new SvgDocument();
 		
-		Structure structure = level.getStructure();
+		TermiteStructure structure = level.getStructure();
 		svgDocument.setDocSize(structure.getBounds());
-		for(Feature feature:level.getFeatures()) {
+		for(TermiteFeature feature:level.getFeatures()) {
 			SvgGeometry geom = new SvgGeometry(feature,featureInfoMap);
 			svgDocument.addGeometry(geom);
 		}

@@ -10,7 +10,7 @@ import org.xml.sax.Attributes;
  */
 public class OsmRelation extends OsmObject {
 	
-	private ArrayList<OsmObject> members = new ArrayList<OsmObject>();
+	private ArrayList<OsmMember> members = new ArrayList<OsmMember>();
 	
 	public class OsmMember {
 		String role;
@@ -41,6 +41,8 @@ public class OsmRelation extends OsmObject {
 				member.role = role;
 				member.type = type;
 				member.member = object;
+				members.add(member);
+				object.addParentRelation(this);
 			}
 		}
 	}

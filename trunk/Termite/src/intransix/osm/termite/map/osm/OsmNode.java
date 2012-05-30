@@ -2,6 +2,7 @@ package intransix.osm.termite.map.osm;
 
 import intransix.osm.termite.map.MapObject;
 import org.xml.sax.Attributes;
+import java.util.ArrayList;
 
 /**
  *
@@ -12,8 +13,10 @@ public class OsmNode extends OsmObject {
 	public final static double INVALID_ANGLE = 720;
 	
 	//node
-	double lat;
-	double lon;
+	private double lat;
+	private double lon;
+	private ArrayList<OsmWay> parentWays = new ArrayList<OsmWay>();
+	private ArrayList<OsmRelation> parentRelation = new ArrayList<OsmRelation>();
 	
 	/** The argument is the combined type + osmId string. */
 	public OsmNode(String id) {
@@ -28,8 +31,14 @@ public class OsmNode extends OsmObject {
 		//parse this node
 		if(name.equalsIgnoreCase("node")) {
 			lat = this.getDouble(attr,"lat",INVALID_ANGLE);
-			lon = this.getDouble(attr,"lat",INVALID_ANGLE);
+			lon = this.getDouble(attr,"lon",INVALID_ANGLE);
 		}
+	}
+	
+	
+	
+	void addParentWay(OsmWay way) {
+		this.parentWays.add(way);
 	}
 	
 }

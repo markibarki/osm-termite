@@ -8,25 +8,25 @@ import java.util.Collections;
  *
  * @author sutter
  */
-public class Level extends MapObject {
+public class TermiteLevel extends MapObject {
 	
-	private Structure structure;
-	private ArrayList<Feature> features = new ArrayList<Feature>();
+	private TermiteStructure structure;
+	private ArrayList<TermiteFeature> features = new ArrayList<TermiteFeature>();
 	
-	public Structure getStructure() {
+	public TermiteStructure getStructure() {
 		return structure;
 	}
 	
-	public void addFeature(Feature feature) {
+	public void addFeature(TermiteFeature feature) {
 		this.features.add(feature);
 		feature.setLevel(this);
 	}
 	
-	public ArrayList<Feature> getFeatures() {
+	public ArrayList<TermiteFeature> getFeatures() {
 		return features;
 	}
 	
-	public Feature getFeature(String idString) {
+	public TermiteFeature getFeature(String idString) {
 //implement this!!!
 return null;
 	}
@@ -39,7 +39,7 @@ return null;
 	// Package Methods
 	//====================
 
-	void setStructure(Structure structure) {
+	void setStructure(TermiteStructure structure) {
 		this.structure = structure;
 	}
 }
