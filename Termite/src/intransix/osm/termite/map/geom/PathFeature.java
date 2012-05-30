@@ -9,7 +9,7 @@ import intransix.osm.termite.theme.Style;
  * 
  * @author sutter
  */
-public class PathFeature extends Feature {
+public class PathFeature extends TermiteFeature {
 	
 	private Path2D path;
 	private boolean isArea = false;

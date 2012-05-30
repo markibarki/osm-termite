@@ -1,8 +1,8 @@
 package intransix.osm.termite.app.gui;
 
-import intransix.osm.termite.map.geom.Level;
-import intransix.osm.termite.map.geom.Feature;
-import intransix.osm.termite.map.geom.Structure;
+import intransix.osm.termite.map.geom.TermiteLevel;
+import intransix.osm.termite.map.geom.TermiteFeature;
+import intransix.osm.termite.map.geom.TermiteStructure;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.awt.*;
@@ -16,8 +16,8 @@ import intransix.osm.termite.theme.*;
 public class MapPanel extends JPanel {
 	
 	private Theme theme;
-	private Structure structure;
-	private Level currentLevel;
+	private TermiteStructure structure;
+	private TermiteLevel currentLevel;
 	
 	public MapPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
@@ -27,15 +27,15 @@ public class MapPanel extends JPanel {
 		this.theme = theme;
 	}
 	
-	public void setStructure(Structure structure) {
+	public void setStructure(TermiteStructure structure) {
 		this.structure = structure;
 	}
 	
 	public void setLevel(String levelId) {
 		if(structure == null) return;
 		
-		ArrayList<Level> levels = structure.getLevels();
-		for(Level level:levels) {
+		ArrayList<TermiteLevel> levels = structure.getLevels();
+		for(TermiteLevel level:levels) {
 			if(levelId.equalsIgnoreCase(level.getId())) {
 				currentLevel = level;
 				return;
@@ -62,7 +62,7 @@ public class MapPanel extends JPanel {
 		}
 		
 		if((currentLevel == null)||(theme == null)) return;
-		for(Feature feature:currentLevel.getFeatures()) {
+		for(TermiteFeature feature:currentLevel.getFeatures()) {
 			if(feature.getStyle() == null) {
 				theme.loadStyle(feature);
 			}	

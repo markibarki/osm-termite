@@ -86,9 +86,9 @@ public class TermiteApp {
 		JSONObject featureInfoJson = JsonIO.readJsonFile(featureInfoName);
 		FeatureInfoMap icm = FeatureInfoMap.parse(featureInfoJson);
 		
-		Structure structure = new Structure();
+		TermiteStructure structure = new TermiteStructure();
 		structure.setId("struct1");		
-		Level level = new Level();
+		TermiteLevel level = new TermiteLevel();
 		level.setId("level1");
 		structure.addLevel(level);
 		

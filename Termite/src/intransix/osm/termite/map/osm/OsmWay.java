@@ -12,6 +12,8 @@ public class OsmWay extends OsmObject {
 	
 	private ArrayList<OsmNode> nodes = new ArrayList<OsmNode>();
 	
+	private ArrayList<OsmRelation> parentRelation = new ArrayList<OsmRelation>();
+
 	/** The argument is the combined type + osmId string. */
 	public OsmWay(String id) {
 		super(id);
@@ -30,6 +32,7 @@ public class OsmWay extends OsmObject {
 			OsmNode node = (OsmNode)root.getOsmObject(ref,"node");
 			if(node != null) {
 				this.nodes.add(node);
+				node.addParentWay(this);
 			}
 		}
 	}
