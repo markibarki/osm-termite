@@ -13,7 +13,12 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class OsmXml extends DefaultHandler {
 	
-	HashMap<String,OsmObject> objectMap = new HashMap<String,OsmObject>();
+	//==========================
+	// Private Fields
+	//==========================
+	HashMap<Long,OsmNode> nodeMap = new HashMap<Long,OsmNode>();
+	HashMap<Long,OsmWay> wayMap = new HashMap<Long,OsmWay>();
+	HashMap<Long,OsmRelation> relationMap = new HashMap<Long,OsmRelation>();
 	
 	//osm (root)
 	String version;
@@ -22,32 +27,73 @@ public class OsmXml extends DefaultHandler {
 	OsmObject activeObject = null;
 	String activeObjectName = null;
 	
-	OsmObject getOsmObject(String osmId, String type) {
-		String id = type + osmId;
-		OsmObject obj = objectMap.get(id);
-		if(obj == null) {
-			//create a new object and add to map
-			if(type.equalsIgnoreCase("node")) {
-				obj = new OsmNode(id);
-			}
-			else if(type.equalsIgnoreCase("way")) {
-				obj = new OsmWay(id);
-			}
-			else if(type.equalsIgnoreCase("relation")) {
-				obj = new OsmRelation(id);
-			}
-			else {
-				//unknown object
-				return null;
-			}
-			
-			objectMap.put(id,obj);
+	public void parse(String fileName) {
+
+		try {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();
+
+			saxParser.parse(fileName, this);
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return obj;
+
+	}	
+	
+	OsmObject getOsmObject(long id, String type) {
+		if(type.equalsIgnoreCase(OsmObject.TYPE_NODE)) {
+			return getOsmNode(id);
+		}
+		else if(type.equalsIgnoreCase(OsmObject.TYPE_WAY)) {
+			return getOsmWay(id);
+		}
+		else if(type.equalsIgnoreCase(OsmObject.TYPE_RELATION)) {
+			return getOsmRelation(id);
+		}
+		else {
+			//unknown object
+			return null;
+		}
+	}
+
+	public OsmNode getOsmNode(long id) {
+		OsmNode node = nodeMap.get(id);
+		if(node == null) {
+			node = new OsmNode(id);
+			nodeMap.put(id,node);
+		}
+		return node;
 	}
 	
-	public Collection<OsmObject> getOsmObjects() {
-		return this.objectMap.values();
+	public OsmWay getOsmWay(long id) {
+		OsmWay way = wayMap.get(id);
+		if(way == null) {
+			way = new OsmWay(id);
+			wayMap.put(id,way);
+		}
+		return way;
+	}
+	
+	public OsmRelation getOsmRelation(long id) {
+		OsmRelation relation = relationMap.get(id);
+		if(relation == null) {
+			relation = new OsmRelation(id);
+			relationMap.put(id,relation);
+		}
+		return relation;
+	}
+	
+	public Collection<OsmNode> getOsmNodes() {
+		return nodeMap.values();
+	}
+	
+	public Collection<OsmWay> getOsmWays() {
+		return wayMap.values();
+	}
+	
+	public Collection<OsmRelation> getOsmRelations() {
+		return relationMap.values();
 	}
 
 	@Override
@@ -62,12 +108,15 @@ public class OsmXml extends DefaultHandler {
 			generator = attributes.getValue("generator");
 		}
 		else {
-			String osmId = attributes.getValue("id");
-			activeObject = getOsmObject(osmId,name);
-			if(activeObject != null) {
-				//we are processing a new object
-				activeObjectName = name;
-				activeObject.startElement(name,attributes,this);
+			long osmId = getLong(attributes,"id",OsmObject.INVALID_ID);
+			if(osmId != OsmObject.INVALID_ID) {
+				//lookup or create object
+				activeObject = getOsmObject(osmId,name);
+				if(activeObject != null) {
+					//we are processing a new object
+					activeObjectName = name;
+					activeObject.startElement(name,attributes,this);
+				}
 			}
 		}
 	}
@@ -85,5 +134,49 @@ public class OsmXml extends DefaultHandler {
 	}
 
 	public void characters(char ch[], int start, int length) throws SAXException {
+	}
+	
+		//helper methods
+	
+	protected static boolean getBoolean(Attributes attr, String key, boolean defaultValue) {
+		String value = attr.getValue(key);
+		if(value != null) {
+			//try to parse the string, on failure return default
+			try {
+				return Boolean.parseBoolean(value);
+			}
+			catch(Exception ex) {
+				//no action
+			}
+		}
+		return defaultValue;
+	}
+	
+	protected static long getLong(Attributes attr, String key, long defaultValue) {
+		String value = attr.getValue(key);
+		if(value != null) {
+			//try to parse the string, on failure return default
+			try {
+				return Long.decode(value);
+			}
+			catch(Exception ex) {
+				//no action
+			}
+		}
+		return defaultValue;
+	}
+	
+	protected static double getDouble(Attributes attr, String key, double defaultValue) {
+		String value = attr.getValue(key);
+		if(value != null) {
+			//try to parse the string, on failure return default
+			try {
+				return Double.parseDouble(value);
+			}
+			catch(Exception ex) {
+				//no action
+			}
+		}
+		return defaultValue;
 	}
 }

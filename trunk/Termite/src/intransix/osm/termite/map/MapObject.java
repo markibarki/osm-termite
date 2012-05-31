@@ -5,6 +5,7 @@
 package intransix.osm.termite.map;
 
 import java.util.HashMap;
+import java.util.Collection;
 
 /**
  * This object provides the functionality of an id and a set of tags, used
@@ -30,7 +31,6 @@ public class MapObject {
 	// Private Proeprties
 	//====================
 	
-	private String id;
 	private HashMap<String,String> tags = new HashMap<String,String>();
 	
 	//====================
@@ -41,17 +41,11 @@ public class MapObject {
 	public MapObject() {
 	}
 	
-	/** This returns the ID for the object. The ID value should be encoded with
-	 * a prefix to indicate what kind of id it is. 
-	 * 
-	 * @return		The ID for the object 
-	 */
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
+	/** This copies the property values from one map object to another. */
+	public void copyProperties(MapObject mapObject) {
+		for(String key:mapObject.tags.keySet()) {
+			this.tags.put(key, mapObject.tags.get(key));
+		}
 	}
 	
 	public void setProperty(String tag, String propertyValue) {
@@ -69,6 +63,10 @@ public class MapObject {
 	 */
 	public String getProperty(String tag) {
 		return tags.get(tag);
+	}
+	
+	public Collection<String> getPropertyKeys() {
+		return tags.keySet();
 	}
 	
 	/** This method returns the given property as an integer. If it is not found 

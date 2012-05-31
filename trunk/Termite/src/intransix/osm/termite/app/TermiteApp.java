@@ -8,6 +8,9 @@ import intransix.osm.termite.theme.*;
 import intransix.osm.termite.map.geom.*;
 import intransix.osm.termite.util.JsonIO;
 
+import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.geom.*;
+
 import intransix.osm.termite.svg.*;
 
 import org.json.*;
@@ -87,9 +90,9 @@ public class TermiteApp {
 		FeatureInfoMap icm = FeatureInfoMap.parse(featureInfoJson);
 		
 		TermiteStructure structure = new TermiteStructure();
-		structure.setId("struct1");		
+		structure.setId(1);		
 		TermiteLevel level = new TermiteLevel();
-		level.setId("level1");
+		level.setId(1);
 		structure.addLevel(level);
 		
 		SvgConverter svgConverter = new SvgConverter();
@@ -99,14 +102,16 @@ public class TermiteApp {
 		MapPanel mapDisplay = gui.getMap();
 		mapDisplay.setTheme(theme);
 		mapDisplay.setStructure(structure);
-		mapDisplay.setLevel("level1");
+		mapDisplay.setLevel(1);
 		mapDisplay.repaint();
 		
 		SvgConverter svgConverter2 = new SvgConverter();
 		svgConverter2.createSvg(level,"testOut.svg", icm);
 		
-		intransix.osm.termite.map.osm.ParseTest pt = new intransix.osm.termite.map.osm.ParseTest();
-		pt.parse();
+		OsmXml osmXml = new OsmXml();
+		osmXml.parse("test.xml");
+		TermiteData termiteData = new TermiteData();
+		termiteData.loadData(osmXml);
 		
 	}
 

@@ -1,7 +1,6 @@
 package intransix.osm.termite.map.osm;
 
 import java.util.ArrayList;
-import intransix.osm.termite.map.MapObject;
 import org.xml.sax.Attributes;
 
 /**
@@ -11,12 +10,14 @@ import org.xml.sax.Attributes;
 public class OsmWay extends OsmObject {
 	
 	private ArrayList<OsmNode> nodes = new ArrayList<OsmNode>();
-	
-	private ArrayList<OsmRelation> parentRelation = new ArrayList<OsmRelation>();
 
 	/** The argument is the combined type + osmId string. */
-	public OsmWay(String id) {
-		super(id);
+	public OsmWay(long id) {
+		super(TYPE_WAY,id);
+	}
+	
+	public ArrayList<OsmNode> getNodes() {
+		return nodes;
 	}
 	
 	@Override
@@ -26,13 +27,14 @@ public class OsmWay extends OsmObject {
 		
 		//parse this node
 		if(name.equalsIgnoreCase("way")) {
+			//mark loaded here - maybe we should wait though
+			this.setIsLoaded(true);
 		}
 		else if(name.equalsIgnoreCase("nd")) {
-			String ref = attr.getValue("ref");
+			long ref = OsmXml.getLong(attr,"ref",INVALID_ID);
 			OsmNode node = (OsmNode)root.getOsmObject(ref,"node");
 			if(node != null) {
 				this.nodes.add(node);
-				node.addParentWay(this);
 			}
 		}
 	}

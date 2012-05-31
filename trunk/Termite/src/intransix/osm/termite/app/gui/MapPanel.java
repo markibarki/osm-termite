@@ -31,12 +31,12 @@ public class MapPanel extends JPanel {
 		this.structure = structure;
 	}
 	
-	public void setLevel(String levelId) {
+	public void setLevel(long levelId) {
 		if(structure == null) return;
 		
 		ArrayList<TermiteLevel> levels = structure.getLevels();
 		for(TermiteLevel level:levels) {
-			if(levelId.equalsIgnoreCase(level.getId())) {
+			if(levelId != level.getId()) {
 				currentLevel = level;
 				return;
 			}

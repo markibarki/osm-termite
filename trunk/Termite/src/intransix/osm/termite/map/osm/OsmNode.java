@@ -15,12 +15,18 @@ public class OsmNode extends OsmObject {
 	//node
 	private double lat;
 	private double lon;
-	private ArrayList<OsmWay> parentWays = new ArrayList<OsmWay>();
-	private ArrayList<OsmRelation> parentRelation = new ArrayList<OsmRelation>();
 	
 	/** The argument is the combined type + osmId string. */
-	public OsmNode(String id) {
-		super(id);
+	public OsmNode(long id) {
+		super(TYPE_NODE,id);
+	}
+	
+	public double getLat() {
+		return lat;
+	}
+	
+	public double getLon() {
+		return lon;
 	}
 	
 	@Override
@@ -30,15 +36,11 @@ public class OsmNode extends OsmObject {
 		
 		//parse this node
 		if(name.equalsIgnoreCase("node")) {
-			lat = this.getDouble(attr,"lat",INVALID_ANGLE);
-			lon = this.getDouble(attr,"lon",INVALID_ANGLE);
+			lat = OsmXml.getDouble(attr,"lat",INVALID_ANGLE);
+			lon = OsmXml.getDouble(attr,"lon",INVALID_ANGLE);
 		}
-	}
-	
-	
-	
-	void addParentWay(OsmWay way) {
-		this.parentWays.add(way);
+		
+		this.setIsLoaded(true);
 	}
 	
 }

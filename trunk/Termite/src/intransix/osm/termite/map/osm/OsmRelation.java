@@ -10,17 +10,20 @@ import org.xml.sax.Attributes;
  */
 public class OsmRelation extends OsmObject {
 	
+	public final static String TAG_TYPE = "type";
+	public final static String TYPE_STRUCTURE = "structure";
+	public final static String TYPE_LEVEL = "level";
+	public final static String TYPE_MULTIPOLYGON = "multipolygon";
+	
 	private ArrayList<OsmMember> members = new ArrayList<OsmMember>();
 	
-	public class OsmMember {
-		String role;
-		String type;
-		OsmObject member;
+	/** The argument is the combined type + osmId string. */
+	public OsmRelation(long id) {
+		super(TYPE_RELATION, id);
 	}
 	
-	/** The argument is the combined type + osmId string. */
-	public OsmRelation(String id) {
-		super(id);
+	public ArrayList<OsmMember> getMembers() {
+		return members;
 	}
 	
 	@Override
@@ -30,10 +33,12 @@ public class OsmRelation extends OsmObject {
 		
 		//parse this node
 		if(name.equalsIgnoreCase("relation")) {
+			//mark loaded here - maybe we should wait though
+			this.setIsLoaded(true);
 		}
 		else if(name.equalsIgnoreCase("member")) {
 			String type = attr.getValue("type");
-			String ref = attr.getValue("ref");
+			long ref = OsmXml.getLong(attr,"ref",INVALID_ID);
 			String role = attr.getValue("role");
 			OsmObject object = root.getOsmObject(ref,type);
 			if(object != null) {
@@ -42,7 +47,6 @@ public class OsmRelation extends OsmObject {
 				member.type = type;
 				member.member = object;
 				members.add(member);
-				object.addParentRelation(this);
 			}
 		}
 	}
