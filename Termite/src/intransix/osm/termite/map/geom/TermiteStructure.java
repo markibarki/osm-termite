@@ -2,6 +2,7 @@ package intransix.osm.termite.map.geom;
 
 import intransix.osm.termite.map.MapObject;
 import intransix.osm.termite.map.osm.OsmMember;
+import intransix.osm.termite.map.osm.OsmModel;
 import intransix.osm.termite.map.osm.OsmRelation;
 import intransix.osm.termite.map.osm.OsmWay;
 import java.util.ArrayList;
@@ -12,10 +13,6 @@ import java.awt.geom.Rectangle2D;
  * @author sutter
  */
 public class TermiteStructure extends TermiteObject {
-	
-	public final static String ROLE_PARENT = "parent";
-	public final static String ROLE_LEVEL = "level";
-	public final static String ROLE_ANCHOR = "anchor";
 	
 	private long id;
 	private Rectangle2D bounds;
@@ -71,13 +68,13 @@ public class TermiteStructure extends TermiteObject {
 		for(OsmMember osmMember:osmRelation.getMembers()) {
 			long memberId = osmMember.member.getId();
 			//only allow multi ways
-			if(osmMember.role.equalsIgnoreCase(ROLE_PARENT)) {
+			if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_PARENT)) {
 				//footprint
 				this.parent = data.getTermiteWay(memberId, true);
 			}
-			else if(osmMember.role.equalsIgnoreCase(ROLE_LEVEL)) {
+			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_LEVEL)) {
 				TermiteLevel level;
-				if(data.getDoNodeLevelLabel()) {
+				if(OsmModel.doNodeLevelLabels) {
 					//METHOD 2 - shell geometry
 					if(osmMember.member instanceof OsmWay) {
 						OsmWay osmShell = (OsmWay)osmMember.member; 
@@ -103,7 +100,7 @@ public class TermiteStructure extends TermiteObject {
 				
 				this.addLevel(level);
 			}
-			else if(osmMember.role.equalsIgnoreCase(ROLE_ANCHOR)) {
+			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_ANCHOR)) {
 				anchor = data.getTermiteWay(osmMember.member.getId(), false);
 			}
 		}

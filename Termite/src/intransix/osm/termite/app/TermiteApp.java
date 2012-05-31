@@ -79,16 +79,17 @@ public class TermiteApp {
 		
 		String themeFileName = "theme.json";
 		String featureInfoName = "featureInfo.json";
-		String svgFileName = "test.svg";
-		java.io.File svgFile = new java.io.File(svgFileName);
-		String svgUriString = svgFile.toURI().toString();
+		String modelName = "model.json";
 		
 		//load the theme
 		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
 		Theme theme = Theme.parse(themeJson);
 		
 		JSONObject featureInfoJson = JsonIO.readJsonFile(featureInfoName);
-		FeatureInfoMap icm = FeatureInfoMap.parse(featureInfoJson);
+		FeatureInfoMap featureInfoMap = FeatureInfoMap.parse(featureInfoJson);
+		
+		JSONObject modelJson = JsonIO.readJsonFile(modelName);
+		OsmModel.parse(modelJson);
 		
 //		TermiteStructure structure = new TermiteStructure();
 //		structure.setId(1);		
@@ -96,6 +97,9 @@ public class TermiteApp {
 //		level.setId(1);
 //		structure.addLevel(level);
 //		
+//		String svgFileName = "test.svg";
+//		String svgUriString = svgFile.toURI().toString();
+//		java.io.File svgFile = new java.io.File(svgFileName)
 //		SvgConverter svgConverter = new SvgConverter();
 //		svgConverter.loadSvg(level,svgUriString,icm);
 //		
@@ -104,7 +108,7 @@ public class TermiteApp {
 		
 		OsmXml osmXml = new OsmXml();
 		osmXml.parse("test.xml");
-		TermiteData termiteData = new TermiteData();
+		TermiteData termiteData = new TermiteData(featureInfoMap);
 		termiteData.loadData(osmXml);
 		
 //bounds calculation///////
@@ -116,6 +120,18 @@ int unloadedCount = 0;
 for(OsmNode node:osmXml.getOsmNodes()) {
 	if(!node.getIsLoaded()) {
 		unloadedCount++;
+		for(OsmWay way:osmXml.getOsmWays()) {
+			if(way.getNodes().contains(node)) {
+				System.out.println("way found");
+			}
+		}
+		for(OsmRelation relation:osmXml.getOsmRelations()) {
+			for(OsmMember member:relation.getMembers()) {
+				if(member.member == node) {
+					System.out.println("relation found");
+				}
+			}
+		}
 		continue;
 	}
 	double lat = node.getLat();

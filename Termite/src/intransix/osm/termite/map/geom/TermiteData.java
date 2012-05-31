@@ -2,6 +2,8 @@ package intransix.osm.termite.map.geom;
 
 import java.util.HashMap;
 import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.prop.FeatureInfoMap;
+import intransix.osm.termite.map.prop.FeatureInfo;
 import java.util.Collection;
 
 /**
@@ -17,23 +19,19 @@ public class TermiteData {
 	private final static long FIRST_ID = -1;
 	
 	private long nextId = FIRST_ID;
+	private FeatureInfoMap featureInfoMap;
 	private HashMap<Long,TermiteNode> nodeMap = new HashMap<Long,TermiteNode>();
 	private HashMap<Long,TermiteWay> wayMap = new HashMap<Long,TermiteWay>();
 	private HashMap<Long,TermiteFeature> featureMap = new HashMap<Long,TermiteFeature>();
 	private HashMap<Long,TermiteLevel> levelMap = new HashMap<Long,TermiteLevel>();
 	private HashMap<Long,TermiteStructure> structureMap = new HashMap<Long,TermiteStructure>();
 	
-	private boolean doNodeLevelLabels = false;
-	
 	//=====================
 	// Public Methods
 	//=====================
 	
-	/** This returns the flag indicating of the nodes contain a reference to the level (true)
-	 * or if there is a level relation containing the features on the level (false).
-	 */
-	public boolean getDoNodeLevelLabel() {
-		return doNodeLevelLabels;
+	public TermiteData(FeatureInfoMap featureInfoMap) {
+		this.featureInfoMap = featureInfoMap;
 	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Lookup and create methods">
@@ -169,7 +167,7 @@ public class TermiteData {
 			TermiteNode termiteNode = this.getTermiteNode(osmNode.getId(),true);
 			termiteNode.load(osmNode, this);
 			
-			if(doNodeLevelLabels) {
+			if(OsmModel.doNodeLevelLabels) {
 				//Method 2 only:
 				
 				//check if this should be a feature
@@ -188,7 +186,7 @@ public class TermiteData {
 			TermiteWay termiteWay = this.getTermiteWay(osmWay.getId(),true);
 			termiteWay.load(osmWay, this);
 
-			if(doNodeLevelLabels) {
+			if(OsmModel.doNodeLevelLabels) {
 				//Method 2 only:
 				
 				//make a virtual feature if no multipolygon already claimed this way
@@ -199,7 +197,7 @@ public class TermiteData {
 		}
 		
 		//now distribute the nodes to the levels, in the case of method 2
-		if(doNodeLevelLabels) {
+		if(OsmModel.doNodeLevelLabels) {
 			for(TermiteNode termiteNode:nodeMap.values()) {
 				//lookup the level for this node
 				int zlevel = termiteNode.getZlevel();
@@ -215,6 +213,21 @@ public class TermiteData {
 				}
 			}
 		}
+		
+		//classify the features
+		for(TermiteFeature feature:featureMap.values()) {
+			FeatureInfo fi = featureInfoMap.getFeatureInfo(feature);
+			feature.setFeatureInfo(fi);
+			
+			if(fi != null) {
+				//check for setting the area parameter
+				if(feature.getProperty("area") == null) {
+					if(fi.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA) {
+						feature.setIsArea(true);
+					}
+				}
+			}
+		}
 	}
 	
 	//==========================
@@ -226,13 +239,18 @@ public class TermiteData {
 		virtualWay.setIsVirtual(true);
 		virtualWay.addNode(termiteNode);
 		
-		return createVirtualFeatureForWay(virtualWay);
+		TermiteFeature feature = createVirtualFeatureForWay(virtualWay);	
+		feature.copyProperties(termiteNode);
+		
+		return feature;
 	}
 	
 	TermiteFeature createVirtualFeatureForWay(TermiteWay termiteWay) {		
 		TermiteFeature virtualFeature = this.createFeature();
 		virtualFeature.setIsVirtual(true);
 		virtualFeature.addWay(termiteWay);
+		
+		virtualFeature.copyProperties(termiteWay);
 		
 		return virtualFeature;
 	}

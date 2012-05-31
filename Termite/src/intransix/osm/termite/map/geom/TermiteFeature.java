@@ -64,6 +64,10 @@ public class TermiteFeature extends TermiteObject {
 		this.style = null;
 	}
 	
+	public void setIsArea(boolean isArea) {
+		this.isArea = isArea;
+	}
+	
 	/** This method marks the graphic representation of this feature as no up to date. */
 	public void invalidate() {
 		isDirty = true;

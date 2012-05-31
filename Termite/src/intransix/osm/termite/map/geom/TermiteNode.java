@@ -14,13 +14,6 @@ public class TermiteNode extends TermiteObject {
 	//====================
 	// Properties
 	//====================
-	public static HashSet<String> GEOMETRIC_TAGS = new HashSet<String>(); 
-	static {
-		String[] temp = {TermiteLevel.TAG_ZLEVEL,TermiteLevel.TAG_STRUCTURE};
-		for(String tag:temp) {
-			GEOMETRIC_TAGS.add(tag);
-		}
-	}
 	
 	private Point2D point;
 	
@@ -38,11 +31,11 @@ public class TermiteNode extends TermiteObject {
 	}
 	
 	public int getZlevel() {
-		return this.getIntProperty(TermiteLevel.TAG_ZLEVEL,TermiteLevel.INVALID_ZLEVEL);
+		return this.getIntProperty(OsmModel.KEY_ZLEVEL,TermiteLevel.INVALID_ZLEVEL);
 	}
 	
 	public long getStructureId() {
-		return this.getLongProperty(TermiteLevel.TAG_STRUCTURE,INVALID_ID);
+		return this.getLongProperty(OsmModel.KEY_ZCONTEXT,INVALID_ID);
 	}
 	
 	//====================
@@ -71,7 +64,7 @@ public class TermiteNode extends TermiteObject {
 	/** This method returns true if the given node is a feature. */
 	boolean isFeature() {
 		for(String tag:this.getPropertyKeys()) {
-			if(!GEOMETRIC_TAGS.contains(tag)) return true;
+			if(!OsmModel.GEOMETRIC_KEYS.contains(tag)) return true;
 		}
 		return false;
 	}

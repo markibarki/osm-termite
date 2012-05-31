@@ -12,12 +12,6 @@ public class TermiteLevel extends TermiteObject {
 	
 	public final static int INVALID_ZLEVEL = Integer.MIN_VALUE;
 	
-	public final static String ROLE_FEATURE = "buildingpart";
-	public final static String ROLE_SHELL = "shell";
-	
-	public final static String TAG_ZLEVEL = "level";
-	public final static String TAG_STRUCTURE = "structure";
-	
 	private TermiteStructure structure;
 	private TermiteFeature shell;
 	private ArrayList<TermiteFeature> features = new ArrayList<TermiteFeature>();
@@ -31,11 +25,11 @@ public class TermiteLevel extends TermiteObject {
 	}
 	
 	public int getZlevel() {
-		return this.getIntProperty(TAG_ZLEVEL,INVALID_ZLEVEL);
+		return this.getIntProperty(OsmModel.KEY_ZLEVEL,INVALID_ZLEVEL);
 	}
 	
 	public long getStructureId() {
-		return this.getLongProperty(TAG_STRUCTURE,INVALID_ID);
+		return this.getLongProperty(OsmModel.KEY_ZCONTEXT,INVALID_ID);
 	}
 	
 	public void addFeature(TermiteFeature feature) {
@@ -79,7 +73,7 @@ public class TermiteLevel extends TermiteObject {
 			long memberId = osmMember.member.getId();
 			OsmObject member = osmMember.member;
 			//only allow multi ways
-			if(osmMember.role.equalsIgnoreCase(ROLE_FEATURE)) {
+			if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_FEATURE)) {
 				TermiteFeature feature;
 				if(member instanceof OsmNode) {
 					//create a virtual way and feature for this node
@@ -101,7 +95,7 @@ public class TermiteLevel extends TermiteObject {
 					this.addFeature(feature);
 				}
 			}
-			else if(osmMember.role.equalsIgnoreCase(ROLE_SHELL)) {
+			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_SHELL)) {
 				//get level shell
 				TermiteWay way = data.getTermiteWay(memberId, true);
 				shell = data.createVirtualFeatureForWay(way);
