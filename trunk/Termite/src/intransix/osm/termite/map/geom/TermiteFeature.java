@@ -31,8 +31,8 @@ public class TermiteFeature extends TermiteObject {
 	
 	private Style style;
 	private FeatureInfo featureInfo;
-	private Shape shape;
-	
+	private ArrayList<FeatureLevelGeom> featureGeomList = new ArrayList<FeatureLevelGeom>();
+	private boolean isDirty = true;
 	
 	
 	//====================
@@ -64,6 +64,11 @@ public class TermiteFeature extends TermiteObject {
 		this.style = null;
 	}
 	
+	/** This method marks the graphic representation of this feature as no up to date. */
+	public void invalidate() {
+		isDirty = true;
+	}
+	
 	//====================
 	// Package Methods
 	//====================
@@ -73,12 +78,24 @@ public class TermiteFeature extends TermiteObject {
 		super(id);
 	}
 	
-	void addLevel(TermiteLevel level) {
+	public boolean getIsDirty() {
+		return isDirty;
+	}
+	
+	public void setIsDirty(boolean isDirty) {
+		this.isDirty = isDirty;
+	}
+	
+	FeatureLevelGeom addLevel(TermiteLevel level) {
 		this.levels.add(level);
+		FeatureLevelGeom flg = new FeatureLevelGeom(this,level);
+		this.featureGeomList.add(flg);
+		return flg;
 	}
 	
 	void addWay(TermiteWay way) {
 		this.ways.add(way);
+//we should check this feature doesn't already have a way
 		way.setFeature(this);
 	}
 	
@@ -90,9 +107,13 @@ public class TermiteFeature extends TermiteObject {
 		for(OsmMember osmMember:osmRelation.getMembers()) {
 			//only allow multi ways
 			if(osmMember.member instanceof OsmWay) {
-				TermiteWay termiteWay = data.getTermiteWay(osmMember.member.getId(), false);
+				TermiteWay termiteWay = data.getTermiteWay(osmMember.member.getId(), true);
 				addWay(termiteWay);
 			}
 		}
+	}
+	
+	ArrayList<TermiteWay> getWays() {
+		return ways;
 	}
 }

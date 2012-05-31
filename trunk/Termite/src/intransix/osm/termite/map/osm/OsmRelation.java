@@ -11,7 +11,7 @@ import org.xml.sax.Attributes;
 public class OsmRelation extends OsmObject {
 	
 	public final static String TAG_TYPE = "type";
-	public final static String TYPE_STRUCTURE = "structure";
+	public final static String TYPE_STRUCTURE = "building";
 	public final static String TYPE_LEVEL = "level";
 	public final static String TYPE_MULTIPOLYGON = "multipolygon";
 	

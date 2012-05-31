@@ -12,14 +12,14 @@ public class TermiteLevel extends TermiteObject {
 	
 	public final static int INVALID_ZLEVEL = Integer.MIN_VALUE;
 	
-	public final static String ROLE_FEATURE = "feature";
+	public final static String ROLE_FEATURE = "buildingpart";
 	public final static String ROLE_SHELL = "shell";
 	
-	public final static String TAG_ZLEVEL = "zlevel";
+	public final static String TAG_ZLEVEL = "level";
 	public final static String TAG_STRUCTURE = "structure";
 	
 	private TermiteStructure structure;
-	private TermiteWay shell;
+	private TermiteFeature shell;
 	private ArrayList<TermiteFeature> features = new ArrayList<TermiteFeature>();
 	private ArrayList<FeatureLevelGeom> geomList = new ArrayList<FeatureLevelGeom>();
 	
@@ -39,12 +39,18 @@ public class TermiteLevel extends TermiteObject {
 	}
 	
 	public void addFeature(TermiteFeature feature) {
-		this.features.add(feature);
-		feature.addLevel(this);
+		if(features.contains(feature)) return;
+		features.add(feature);
+		FeatureLevelGeom flg = feature.addLevel(this);
+		geomList.add(flg);
 	}
 	
 	public ArrayList<TermiteFeature> getFeatures() {
 		return features;
+	}
+	
+	public ArrayList<FeatureLevelGeom> getLevelGeom() {
+		return geomList;
 	}
 	
 	public void orderFeatures() {
@@ -86,24 +92,25 @@ public class TermiteLevel extends TermiteObject {
 					feature = data.createVirtualFeatureForWay(termiteWay);
 				}
 				else {
-					//jsut look up feature directly
+					//just look up feature directly
 					feature = data.getTermiteFeature(memberId, true);
 				}
 				
 				//add feature to level
 				if(feature != null) {
-					this.features.add(feature);
-					feature.addLevel(this);
+					this.addFeature(feature);
 				}
 			}
 			else if(osmMember.role.equalsIgnoreCase(ROLE_SHELL)) {
 				//get level shell
-				shell = data.getTermiteWay(memberId, true);
+				TermiteWay way = data.getTermiteWay(memberId, true);
+				shell = data.createVirtualFeatureForWay(way);
+				this.addFeature(shell);
 			}
 		}
 	}
 	
-	void loadLevelFromShell(OsmWay osmShell, TermiteWay termiteShell) {
+	void loadLevelFromShell(OsmWay osmShell, TermiteFeature termiteShell) {
 		this.osmRelation = null;
 		this.shell = termiteShell;
 		copyProperties(osmShell);

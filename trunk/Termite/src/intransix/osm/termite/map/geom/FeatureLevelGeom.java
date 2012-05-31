@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.Shape;
+import java.awt.geom.*;
+import java.util.ArrayList;
 
 /**
  *
@@ -13,13 +15,36 @@ import java.awt.Shape;
  */
 public class FeatureLevelGeom implements Comparable<FeatureLevelGeom> {
 	
+	//temporary
+	private final static double RADIUS = .00004;
+	
 	private TermiteFeature feature;
 	private TermiteLevel level;
 	private Shape shape;
+	
+	public FeatureLevelGeom(TermiteFeature feature, TermiteLevel level) {
+		this.feature = feature;
+		this.level = level;
+	}
+	
+	public TermiteLevel getLevel() {
+		return level;
+	}
+	
+	public TermiteFeature getFeature() {
+		return feature;
+	}
 
 	/** renders the feature. */
-	public void render(Graphics2D g) {
+	public void render(Graphics2D g, float zoomScale) {
 		Style style = feature.getStyle();
+		if(style == null) return;
+		
+		if(feature.getIsDirty()) {
+			boolean success = createFeatureGeom();
+			if(!success) return;
+		}
+		
 		if((shape != null)&&(style != null)) {
 			
 			//load style params
@@ -34,7 +59,7 @@ public class FeatureLevelGeom implements Comparable<FeatureLevelGeom> {
 				fillColor = null;
 				strokeColor = style.getBodyColor();
 			}
-			stroke = style.getStroke(1);
+			stroke = style.getStroke(zoomScale);
 			
 			//render the object	
 			if(fillColor != null) {
@@ -70,5 +95,53 @@ public class FeatureLevelGeom implements Comparable<FeatureLevelGeom> {
 			thisZorder = thisFeatureInfo.getZorder();
 		}
 		return (thisZorder - otherZorder);	
+	}
+	
+	/** This method creates the geometry for the shape. */
+	private boolean createFeatureGeom() {
+		shape = null;
+		
+		int nodeCount = 0;
+		for(TermiteWay way:feature.getWays()) {
+			nodeCount += way.getNodes().size();
+		}
+		
+		if(nodeCount == 1) {
+			for(TermiteWay way:feature.getWays()) {
+				ArrayList<TermiteNode> nodes = way.getNodes();
+				if(!nodes.isEmpty()) {
+					TermiteNode node = nodes.get(0);
+					Point2D point = node.getPoint();
+					shape = new Ellipse2D.Double(point.getX(),point.getY(),RADIUS,RADIUS);
+					break;
+				}
+			}
+			return true;
+		}
+		else {
+			Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
+			for(TermiteWay way:feature.getWays()) {
+				boolean started = false;
+				for(TermiteNode node:way.getNodes()) {
+					//get this segment of the path
+					Point2D point = node.getPoint();
+					if(point != null) {
+						if(started) {
+							path.lineTo(point.getX(),point.getY());
+						}
+						else {
+							path.moveTo(point.getX(),point.getY());
+							started = true;
+						}
+					}
+					//close the path if this is an area
+					if(feature.getIsArea()) {
+						path.closePath();
+					}	
+				}
+			}
+			this.shape = path;
+			return true;
+		}
 	}
 }
