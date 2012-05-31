@@ -16,11 +16,18 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author sutter
  */
 public class OsmObject extends MapObject {
+	
+	public final static long INVALID_ID = 0;
+	
+	public final static String TYPE_NODE = "node";
+	public final static String TYPE_WAY = "way";
+	public final static String TYPE_RELATION = "relation";
 			
 	//common
-	private String id;
+	private long id;
+	private String type;
+	private boolean isLoaded = false;
 	
-	private String osmId;
 	private String user;
 	private String uid;
 	private boolean visible;
@@ -28,11 +35,22 @@ public class OsmObject extends MapObject {
 	private String changeset;
 	private String timestamp;
 	
-	private ArrayList<OsmRelation> parentRelation = new ArrayList<OsmRelation>();
-	
 	/** The argument is the combined type + osmId string. */
-	OsmObject(String id) {
+	OsmObject(String type, long id) {
+		this.type = type;
 		this.id = id;
+	}
+	
+	public boolean getIsLoaded() {
+		return isLoaded;
+	}
+	
+	public void setIsLoaded(boolean isLoaded) {
+		this.isLoaded = isLoaded;
+	}
+	
+	public long getId() {
+		return id;
 	}
 	
 	public void startElement(String name, Attributes attr, OsmXml root) {
@@ -47,48 +65,12 @@ public class OsmObject extends MapObject {
 	/** this method should be called by objects extending osm object so the
 	 * base values can be parsed. */
 	public void parseElementBase(String name, Attributes attr) {
-		osmId = attr.getValue("id");
 		user = attr.getValue("user");
 		uid = attr.getValue("uid");
-		visible = getBoolean(attr,"visible",true);
+		visible = OsmXml.getBoolean(attr,"visible",true);
 		version = attr.getValue("version");
 		changeset = attr.getValue("changeset");
 		timestamp = attr.getValue("timestamp");
-	}
-	
-	//helper methods
-	
-	protected boolean getBoolean(Attributes attr, String key, boolean defaultValue) {
-		String value = attr.getValue(key);
-		if(value != null) {
-			//try to parse the string, on failure return default
-			try {
-				return Boolean.parseBoolean(value);
-			}
-			catch(Exception ex) {
-				//no action
-			}
-		}
-		return defaultValue;
-	}
-	
-	protected double getDouble(Attributes attr, String key, double defaultValue) {
-		String value = attr.getValue(key);
-		if(value != null) {
-			//try to parse the string, on failure return default
-			try {
-				return Double.parseDouble(value);
-			}
-			catch(Exception ex) {
-				//no action
-			}
-		}
-		return defaultValue;
-	}
-	
-	
-	void addParentRelation(OsmRelation relation) {
-		this.parentRelation.add(relation);
 	}
 
 }
