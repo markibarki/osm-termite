@@ -27,8 +27,8 @@ public class OsmWay extends OsmObject {
 		
 		//parse this node
 		if(name.equalsIgnoreCase("way")) {
-			//mark loaded here - maybe we should wait though
-			this.setIsLoaded(true);
+			//parse common stuff
+			parseElementBase(name, attr);
 		}
 		else if(name.equalsIgnoreCase("nd")) {
 			long ref = OsmXml.getLong(attr,"ref",INVALID_ID);

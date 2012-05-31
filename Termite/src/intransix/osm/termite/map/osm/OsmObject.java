@@ -72,5 +72,10 @@ public class OsmObject extends MapObject {
 		changeset = attr.getValue("changeset");
 		timestamp = attr.getValue("timestamp");
 	}
+	
+	/** This is called when the object is finished being parsed. */
+	public void endElement(String name, OsmXml root) {
+		this.setIsLoaded(true);
+	}
 
 }

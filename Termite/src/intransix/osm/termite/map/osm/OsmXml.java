@@ -127,6 +127,9 @@ public class OsmXml extends DefaultHandler {
 
 		if(activeObjectName != null) {
 			if(activeObjectName.equalsIgnoreCase(name)) {
+				//finish parsing
+				activeObject.endElement(name, this);
+				
 				activeObject = null;
 				activeObjectName = null;
 			}
