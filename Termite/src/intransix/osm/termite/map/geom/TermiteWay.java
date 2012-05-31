@@ -49,4 +49,8 @@ public class TermiteWay extends TermiteObject {
 		this.feature = feature;
 	}
 	
+	ArrayList<TermiteNode> getNodes() {
+		return nodes;
+	}
+	
 }

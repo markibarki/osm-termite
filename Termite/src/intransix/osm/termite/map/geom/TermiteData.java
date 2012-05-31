@@ -36,6 +36,8 @@ public class TermiteData {
 		return doNodeLevelLabels;
 	}
 	
+	// <editor-fold defaultstate="collapsed" desc="Lookup and create methods">
+	
 	/** This method loads a node by ID. If create reference is true, a new node
 	 * will be created if the requested one is not found. */
 	public TermiteNode getTermiteNode(long id, boolean createReference) {
@@ -135,6 +137,8 @@ public class TermiteData {
 		structureMap.put(id,structure);
 		return structure;
 	}
+	
+	// </editor-fold>
 	
 	/** This method loads the osm format data into the native data model. */
 	public void loadData(OsmXml osmXml) {
@@ -236,7 +240,6 @@ public class TermiteData {
 	//==========================
 	// Private Methods
 	//==========================
-	
 	
 	/** This method gets the next available termite id, to be used for generating
 	 * temporary IDs. */

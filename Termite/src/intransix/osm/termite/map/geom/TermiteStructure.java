@@ -81,7 +81,9 @@ public class TermiteStructure extends TermiteObject {
 					//METHOD 2 - shell geometry
 					if(osmMember.member instanceof OsmWay) {
 						OsmWay osmShell = (OsmWay)osmMember.member; 
-						TermiteWay termiteShell = data.getTermiteWay(memberId, true);
+						TermiteWay termiteShellWay = data.getTermiteWay(memberId, true);
+						TermiteFeature termiteShell = termiteShellWay.getFeature();
+						if(termiteShell == null) termiteShell = data.createVirtualFeatureForWay(termiteShellWay);
 						level = data.getTermiteLevel(memberId, true);
 						level.loadLevelFromShell(osmShell, termiteShell);
 					}
@@ -98,6 +100,8 @@ public class TermiteStructure extends TermiteObject {
 					this.levels.add(level);
 					level.setStructure(this);
 				}
+				
+				this.addLevel(level);
 			}
 			else if(osmMember.role.equalsIgnoreCase(ROLE_ANCHOR)) {
 				anchor = data.getTermiteWay(osmMember.member.getId(), false);

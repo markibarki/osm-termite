@@ -12,6 +12,7 @@ import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.geom.*;
 
 import intransix.osm.termite.svg.*;
+import java.awt.geom.Rectangle2D;
 
 import org.json.*;
 
@@ -89,29 +90,51 @@ public class TermiteApp {
 		JSONObject featureInfoJson = JsonIO.readJsonFile(featureInfoName);
 		FeatureInfoMap icm = FeatureInfoMap.parse(featureInfoJson);
 		
-		TermiteStructure structure = new TermiteStructure();
-		structure.setId(1);		
-		TermiteLevel level = new TermiteLevel();
-		level.setId(1);
-		structure.addLevel(level);
-		
-		SvgConverter svgConverter = new SvgConverter();
-		svgConverter.loadSvg(level,svgUriString,icm);
-		
-		//add to the map panel
-		MapPanel mapDisplay = gui.getMap();
-		mapDisplay.setTheme(theme);
-		mapDisplay.setStructure(structure);
-		mapDisplay.setLevel(1);
-		mapDisplay.repaint();
-		
-		SvgConverter svgConverter2 = new SvgConverter();
-		svgConverter2.createSvg(level,"testOut.svg", icm);
+//		TermiteStructure structure = new TermiteStructure();
+//		structure.setId(1);		
+//		TermiteLevel level = new TermiteLevel();
+//		level.setId(1);
+//		structure.addLevel(level);
+//		
+//		SvgConverter svgConverter = new SvgConverter();
+//		svgConverter.loadSvg(level,svgUriString,icm);
+//		
+//		SvgConverter svgConverter2 = new SvgConverter();
+//		svgConverter2.createSvg(level,"testOut.svg", icm);
 		
 		OsmXml osmXml = new OsmXml();
 		osmXml.parse("test.xml");
 		TermiteData termiteData = new TermiteData();
 		termiteData.loadData(osmXml);
+		
+//bounds calculation///////
+double minX = 720;
+double minY = 720;
+double maxX = -720;
+double maxY = -720;
+int unloadedCount = 0;
+for(OsmNode node:osmXml.getOsmNodes()) {
+	if(!node.getIsLoaded()) {
+		unloadedCount++;
+		continue;
+	}
+	double lat = node.getLat();
+	double lon = node.getLon();
+	if(lat < minY) minY = lat;
+	if(lon < minX) minX = lon;
+	if(lat > maxY) maxY = lat;
+	if(lon > maxX) maxX = lon;
+}
+Rectangle2D bounds = new Rectangle2D.Double(minX,minY,maxX - minX, maxY - minY);
+////////
+		
+		//add to the map panel
+		MapPanel mapDisplay = gui.getMap();
+		mapDisplay.setTheme(theme);
+		mapDisplay.setMap(termiteData);
+mapDisplay.setBounds(bounds);
+		mapDisplay.setStructure(2127658);
+		mapDisplay.repaint();
 		
 	}
 

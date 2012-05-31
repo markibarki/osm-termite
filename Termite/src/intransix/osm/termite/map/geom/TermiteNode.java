@@ -33,6 +33,10 @@ public class TermiteNode extends TermiteObject {
 	// Public Methods
 	//====================
 	
+	public Point2D getPoint() {
+		return point;
+	}
+	
 	public int getZlevel() {
 		return this.getIntProperty(TermiteLevel.TAG_ZLEVEL,TermiteLevel.INVALID_ZLEVEL);
 	}
