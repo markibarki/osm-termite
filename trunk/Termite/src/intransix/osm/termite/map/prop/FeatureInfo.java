@@ -46,6 +46,10 @@ public class FeatureInfo {
 		return inputColor;
 	}
 	
+	public int getDefaultPath() {
+		return defaultPathType;
+	}
+	
 	public static FeatureInfo parse(JSONObject json, FeatureInfo parent) {
 		FeatureInfo fp = new FeatureInfo();
 		if(json != null) {
