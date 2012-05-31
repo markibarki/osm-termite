@@ -36,11 +36,12 @@ public class OsmNode extends OsmObject {
 		
 		//parse this node
 		if(name.equalsIgnoreCase("node")) {
+			//parse common stuff
+			parseElementBase(name, attr);
+			//node specific
 			lat = OsmXml.getDouble(attr,"lat",INVALID_ANGLE);
 			lon = OsmXml.getDouble(attr,"lon",INVALID_ANGLE);
 		}
-		
-		this.setIsLoaded(true);
 	}
 	
 }

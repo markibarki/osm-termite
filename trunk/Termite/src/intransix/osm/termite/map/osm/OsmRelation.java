@@ -33,8 +33,8 @@ public class OsmRelation extends OsmObject {
 		
 		//parse this node
 		if(name.equalsIgnoreCase("relation")) {
-			//mark loaded here - maybe we should wait though
-			this.setIsLoaded(true);
+			//parse common stuff
+			parseElementBase(name, attr);
 		}
 		else if(name.equalsIgnoreCase("member")) {
 			String type = attr.getValue("type");
