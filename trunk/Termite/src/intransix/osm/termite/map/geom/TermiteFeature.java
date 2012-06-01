@@ -68,8 +68,9 @@ public class TermiteFeature extends TermiteObject {
 		this.isArea = isArea;
 	}
 	
-	/** This method marks the graphic representation of this feature as no up to date. */
-	public void invalidate() {
+	/** This method should be called when the rendering information for the
+	 * feature changes. */
+	public void setDirty() {
 		isDirty = true;
 	}
 	
@@ -119,5 +120,19 @@ public class TermiteFeature extends TermiteObject {
 	
 	ArrayList<TermiteWay> getWays() {
 		return ways;
+	}
+	
+	void classify() {
+		FeatureInfo fi = TermiteData.getFeatureInfoMap().getFeatureInfo(this);
+		this.setFeatureInfo(fi);
+
+		if(fi != null) {
+			//check for setting the area parameter
+			if(this.getProperty("area") == null) {
+				if(fi.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA) {
+					this.setIsArea(true);
+				}
+			}
+		}
 	}
 }

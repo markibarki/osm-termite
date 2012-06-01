@@ -97,18 +97,13 @@ float zoomScale = (float)Math.sqrt(mapToPixels.getDeterminant());
 		g2.transform(mapToPixels);		
 		
 		if(bounds != null) {
-			g2.setColor(Color.RED);
+			g2.setColor(Color.cyan);
 			g2.fill(bounds);
 		}
 			
 		for(FeatureLevelGeom geom:currentLevel.getLevelGeom()) {
-			//check style is present
-			TermiteFeature feature = geom.getFeature();
-			if(feature.getStyle() == null) {
-				theme.loadStyle(feature);
-			}
 			//render geometry
-			geom.render(g2,zoomScale);
+			geom.render(g2,zoomScale,theme);
 		}
 		
 

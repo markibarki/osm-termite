@@ -72,8 +72,9 @@ public class TermiteLevel extends TermiteObject {
 		for(OsmMember osmMember:osmRelation.getMembers()) {
 			long memberId = osmMember.member.getId();
 			OsmObject member = osmMember.member;
-			//only allow multi ways
 			if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_FEATURE)) {
+				//method 1 - features collected by the level relation
+				//load features in level relation
 				TermiteFeature feature;
 				if(member instanceof OsmNode) {
 					//create a virtual way and feature for this node
@@ -97,6 +98,7 @@ public class TermiteLevel extends TermiteObject {
 			}
 			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_SHELL)) {
 				//get level shell
+				//in method 1 the ad shell object as a feature in the level
 				TermiteWay way = data.getTermiteWay(memberId, true);
 				shell = data.createVirtualFeatureForWay(way);
 				this.addFeature(shell);
@@ -104,6 +106,9 @@ public class TermiteLevel extends TermiteObject {
 		}
 	}
 	
+	/** This method is used for method 2 - level specified by node properties -
+	 * To create a level object from the shell for a given level. Here we need the
+	 * OSM object because the Termite object may not have been loaded yet. */
 	void loadLevelFromShell(OsmWay osmShell, TermiteFeature termiteShell) {
 		this.osmRelation = null;
 		this.shell = termiteShell;

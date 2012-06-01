@@ -5,6 +5,15 @@
 			"key":"buildingpart",
 			"values":[
 				{
+					"value":"unit",
+					"data":{
+						"zorder":1,
+						"allowedtypes":4,
+						"defaultpath":2,
+						"inputcolor":"#ffc0c0"
+					},
+				},
+				{
 					"value":"room",
 					"data":{
 						"zorder":1,
