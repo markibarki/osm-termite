@@ -10,6 +10,14 @@
 			},
 			"values":[
 				{
+					"value":"unit",
+					"style":{
+						"body":"#ffc0c0",
+						"outline":"#808080",
+						"width":2
+					}
+				},
+				{
 					"value":"room",
 					"style":{
 						"body":"#ffc0c0",

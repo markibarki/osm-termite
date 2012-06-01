@@ -8,6 +8,7 @@ import java.awt.Stroke;
 import java.awt.Shape;
 import java.awt.geom.*;
 import java.util.ArrayList;
+import intransix.osm.termite.theme.Theme;
 
 /**
  *
@@ -36,14 +37,22 @@ public class FeatureLevelGeom implements Comparable<FeatureLevelGeom> {
 	}
 
 	/** renders the feature. */
-	public void render(Graphics2D g, float zoomScale) {
-		Style style = feature.getStyle();
-		if(style == null) return;
-		
+	public void render(Graphics2D g, float zoomScale, Theme theme) {
+
 		if(feature.getIsDirty()) {
+			//classify feature
+			feature.classify();
+			
+			//load geometry
 			boolean success = createFeatureGeom();
 			if(!success) return;
+			
+			//get the style
+			theme.loadStyle(feature);
 		}
+			
+		Style style = feature.getStyle();
+		if(style == null) return;
 		
 		if((shape != null)&&(style != null)) {
 			
@@ -133,11 +142,11 @@ public class FeatureLevelGeom implements Comparable<FeatureLevelGeom> {
 							path.moveTo(point.getX(),point.getY());
 							started = true;
 						}
-					}
-					//close the path if this is an area
-					if(feature.getIsArea()) {
-						path.closePath();
 					}	
+				}
+				//close the path if this is an area
+				if(feature.getIsArea()) {
+					path.closePath();
 				}
 			}
 			this.shape = path;

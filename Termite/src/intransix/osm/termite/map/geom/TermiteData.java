@@ -3,8 +3,6 @@ package intransix.osm.termite.map.geom;
 import java.util.HashMap;
 import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.prop.FeatureInfoMap;
-import intransix.osm.termite.map.prop.FeatureInfo;
-import java.util.Collection;
 
 /**
  *
@@ -18,8 +16,9 @@ public class TermiteData {
 	
 	private final static long FIRST_ID = -1;
 	
+	private static FeatureInfoMap featureInfoMap;
+	
 	private long nextId = FIRST_ID;
-	private FeatureInfoMap featureInfoMap;
 	private HashMap<Long,TermiteNode> nodeMap = new HashMap<Long,TermiteNode>();
 	private HashMap<Long,TermiteWay> wayMap = new HashMap<Long,TermiteWay>();
 	private HashMap<Long,TermiteFeature> featureMap = new HashMap<Long,TermiteFeature>();
@@ -141,8 +140,11 @@ public class TermiteData {
 	/** This method loads the osm format data into the native data model. */
 	public void loadData(OsmXml osmXml) {
 		
+		//---------------------
+		// Create raw termite objects based on OSM objects
+		//---------------------
+		
 		//create the objects based on relations
-		//must do these first
 		for(OsmRelation osmRelation:osmXml.getOsmRelations()) {
 			String relationtype = osmRelation.getProperty(OsmRelation.TAG_TYPE);
 			//create the node
@@ -173,14 +175,15 @@ public class TermiteData {
 				//check if this should be a feature
 				//if so, create a virtual way and feature
 				if(termiteNode.isFeature()) {
-					createVirtualFeatureForNode(termiteNode);
+					TermiteFeature feature = createVirtualFeatureForNode(termiteNode);
+					//load the properties
+					feature.copyProperties(termiteNode);
 				}	
 			}	
 		}
 		
 		//create the termite ways
 		//WE MUST DO THIS AFTER RELATIONS SINCE WE RELY ON CHECK THAT RELATION EXISTS
-		//WE MUST DO THIS AFTER NODES TO GET NODE LEVELS IN METHOD 2.
 		for(OsmWay osmWay:osmXml.getOsmWays()) {
 			//create the node
 			TermiteWay termiteWay = this.getTermiteWay(osmWay.getId(),true);
@@ -191,8 +194,33 @@ public class TermiteData {
 				
 				//make a virtual feature if no multipolygon already claimed this way
 				if(termiteWay.getFeature() == null) {
-					createVirtualFeatureForWay(termiteWay);
+					TermiteFeature feature = createVirtualFeatureForWay(termiteWay);
+					//load the properties
+					feature.copyProperties(termiteWay);
 				}			
+			}
+		}
+		
+		//-------------------------
+		// Finish loading - now that all objects are created
+		//-------------------------
+		
+		//copy the properties from nodes and ways to features here
+		//we couldn't do it before because they may not have been loaded
+		if(!OsmModel.doNodeLevelLabels) {
+			for(TermiteFeature feature:featureMap.values()) {
+				for(TermiteWay way:feature.getWays()) {
+					if(way.getIsVirtual()) {
+						//get properties from nodes
+						for(TermiteNode node:way.getNodes()) {
+							feature.copyProperties(node);
+						}
+					}
+					else {
+						//get properties from way
+						feature.copyProperties(way);
+					}
+				}
 			}
 		}
 		
@@ -214,45 +242,40 @@ public class TermiteData {
 			}
 		}
 		
-		//classify the features
-		for(TermiteFeature feature:featureMap.values()) {
-			FeatureInfo fi = featureInfoMap.getFeatureInfo(feature);
-			feature.setFeatureInfo(fi);
-			
-			if(fi != null) {
-				//check for setting the area parameter
-				if(feature.getProperty("area") == null) {
-					if(fi.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA) {
-						feature.setIsArea(true);
-					}
-				}
-			}
-		}
+		
+//remove the comments here to classify before the first draw
+//		//classify the features
+//		//they will be calssified again when the data is rendered (made non-dirty)
+//		for(TermiteFeature feature:featureMap.values()) {
+//			feature.classify();
+//		}
 	}
 	
 	//==========================
 	// Package Methods
 	//==========================
 	
+	/** This method wraps a node that should be a feature into a feature. */
 	TermiteFeature createVirtualFeatureForNode(TermiteNode termiteNode) {
 		TermiteWay virtualWay = this.createWay();
 		virtualWay.setIsVirtual(true);
 		virtualWay.addNode(termiteNode);
 		
-		TermiteFeature feature = createVirtualFeatureForWay(virtualWay);	
-		feature.copyProperties(termiteNode);
-		
-		return feature;
+		return createVirtualFeatureForWay(virtualWay);	
 	}
 	
+	/** This method wraps a way that should be a feature info a feature. */
 	TermiteFeature createVirtualFeatureForWay(TermiteWay termiteWay) {		
 		TermiteFeature virtualFeature = this.createFeature();
 		virtualFeature.setIsVirtual(true);
 		virtualFeature.addWay(termiteWay);
 		
-		virtualFeature.copyProperties(termiteWay);
-		
 		return virtualFeature;
+	}
+	
+	/** This gets the feature info map. */
+	static FeatureInfoMap getFeatureInfoMap() {
+		return featureInfoMap;
 	}
 	
 	//==========================
