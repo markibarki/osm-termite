@@ -20,14 +20,17 @@ import intransix.osm.termite.theme.*;
 public class MapPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener  {
 	
 	public final static int DEFAULT_ZLEVEL = 0;
-	
-	private Theme theme;
-	private TermiteData map;
-	private TermiteStructure currentStructure;
-	private TermiteLevel currentLevel;
+	private final static double ROTATION_SCALE_FACTOR = 1.1;
 	
 	private AffineTransform mapToPixels = new AffineTransform();
 	private AffineTransform pixelsToMap = new AffineTransform();
+	private ArrayList<Layer> layers = new ArrayList<Layer>();
+	private ArrayList<MapListener> mapListeners = new ArrayList<MapListener>();
+	private double zoomScale = 1.0;
+	
+	private boolean panOn = false;
+	private double lastX;
+	private double lastY;
 	
 	public MapPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
@@ -36,23 +39,40 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		this.addMouseWheelListener(this);
     }
 	
-	public void setTheme(Theme theme) {
-		this.theme = theme;
+	public final AffineTransform getMapToPixels() {
+		return mapToPixels;
 	}
 	
-	public void setMap(TermiteData data) {
-		this.map = data;
+	public final AffineTransform getPixelsToMap() {
+		return pixelsToMap;
 	}
 	
-	public void setStructure(long id) {
-		currentStructure = map.getTermiteStructure(id,false);
-		this.setBounds(currentStructure.getBounds());
-		setLevel(DEFAULT_ZLEVEL);
+	public final double getZoomScale() {
+		 return zoomScale;
 	}
 	
-	public void setLevel(int zlevel) {
-		if(currentStructure == null) return;
-		currentLevel = currentStructure.lookupLevel(zlevel);
+	public void addLayer(Layer layer) {
+		this.layers.add(layer);
+		this.mapListeners.add(layer);
+		layer.setMapPanel(this);
+	}
+	
+	public void removeLayer(Layer layer) {
+		this.layers.remove(layer);
+		this.mapListeners.add(layer);
+	}
+	
+	public void setBounds(Rectangle2D bounds) {
+		Dimension dim = this.getPreferredSize();
+		double xScale = dim.width / bounds.getWidth();
+		double yScale = dim.height / bounds.getHeight();
+		double scale = (xScale > yScale) ? yScale : xScale;
+
+		double xOffset = bounds.getMinX();
+		double yOffset = bounds.getMinY();
+		mapToPixels.scale(scale, scale);
+		mapToPixels.translate(-xOffset,-yOffset);
+		updateTransforms();
 	}
 	
 //	@Override
@@ -70,26 +90,12 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		if((!rh.containsValue(RenderingHints.KEY_ANTIALIASING))||(rh.get(RenderingHints.KEY_ANTIALIASING) != RenderingHints.VALUE_ANTIALIAS_ON)) {
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		}
-		
-		if((currentLevel == null)||(theme == null)) return;
-		
-float zoomScale = (float)Math.sqrt(mapToPixels.getDeterminant());
-		
-		g2.transform(mapToPixels);		
-		
-		if(mapBounds != null) {
-			g2.setColor(Color.cyan);
-			g2.fill(mapBounds);
-		}
 			
-		for(FeatureLevelGeom geom:currentLevel.getLevelGeom()) {
-			//render geometry
-			geom.render(g2,zoomScale,theme);
+		AffineTransform originalTransform = g2.getTransform();
+		for(Layer layer:layers) {
+			layer.render(g2);
+			g2.setTransform(originalTransform);
 		}
-		
-
-		
-		g2.transform(pixelsToMap);
 	}
 	
 	//-------------------------
@@ -106,7 +112,10 @@ float zoomScale = (float)Math.sqrt(mapToPixels.getDeterminant());
 	}
 	
 	public void mouseDragged(MouseEvent e) {
-		System.out.println(e.paramString());
+//		System.out.println(e.paramString());
+		if(panOn) {
+			panStep(e.getX(),e.getY());
+		}
 	}
 	
 	public void mouseEntered(MouseEvent e) {
@@ -115,44 +124,94 @@ float zoomScale = (float)Math.sqrt(mapToPixels.getDeterminant());
 	
 	public void mouseExited(MouseEvent e) {
 		System.out.println(e.paramString());
+		if(panOn) {
+			endPan(e.getX(),e.getY());
+		}
 	}
 	
 	public void mouseMoved(MouseEvent e) {
-		System.out.println(e.paramString());
+//		System.out.println(e.paramString());
+		
 	}
 	
 	public void mousePressed(MouseEvent e) {
 		System.out.println(e.paramString());
+		if(e.getButton() == MouseEvent.BUTTON2) {
+			startPan(e.getX(),e.getY());
+		}
 	}
 	
 	public void mouseReleased(MouseEvent e) {
 		System.out.println(e.paramString());
+		if(panOn) {
+			endPan(e.getX(),e.getY());
+		}
 	}
 	
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		System.out.println(e.paramString());
+		
+		int rotation = e.getWheelRotation();
+		double scaleFactor = Math.pow(ROTATION_SCALE_FACTOR,rotation);
+		double x = e.getX();
+		double y = e.getY();
+		
+		zoom(scaleFactor,x,y);
+	}
+	
+	public void zoom(double zoomFactor, double x, double y) {
+		AffineTransform zt = new AffineTransform();
+		zt.translate((1-zoomFactor)*x, (1-zoomFactor)*y);
+		zt.scale(zoomFactor, zoomFactor);
+		mapToPixels.preConcatenate(zt);
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onZoom(zoomScale);
+		}
+		this.repaint();
+	}
+	
+	public void startPan(double x, double y) {
+		lastX = x;
+		lastY = y;
+		panOn = true;
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onPanStart();
+		}
+	}
+	
+	public void endPan(double x, double y) {
+		panOn = false;
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onPanEnd();
+		}
+	}
+	
+	public void panStep(double x, double y) {
+		translate(x-lastX,y-lastY);
+		lastX = x;
+		lastY = y;
+	}
+	
+	public void translate(double dx, double dy) {
+		AffineTransform zt = new AffineTransform();
+		zt.translate(dx,dy);
+		mapToPixels.preConcatenate(zt);
+		updateTransforms();
+		this.repaint();
 	}
 	
 	//=================================
 	// Private Methods
 	//=================================
-private Rectangle2D mapBounds;
-	public void setBounds(Rectangle2D bounds) {
-this.mapBounds = bounds;
-		Dimension dim = this.getPreferredSize();
-		double xScale = dim.width / bounds.getWidth();
-		double yScale = dim.height / bounds.getHeight();
-		double scale = (xScale > yScale) ? yScale : xScale;
-
-		double xOffset = bounds.getMinX();
-		double yOffset = bounds.getMinY();
-		mapToPixels.scale(scale, scale);
-		mapToPixels.translate(-xOffset,-yOffset);
+	
+	private void updateTransforms() {
+		zoomScale = Math.sqrt(mapToPixels.getDeterminant());
 		try {
 			pixelsToMap = mapToPixels.createInverse();
 		}
 		catch(Exception ex) {
-			//shouldn't happen
+			//should not fail
 		}
 	}
+
 }
