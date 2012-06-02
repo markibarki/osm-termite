@@ -37,7 +37,7 @@ public class FeatureLevelGeom implements Comparable<FeatureLevelGeom> {
 	}
 
 	/** renders the feature. */
-	public void render(Graphics2D g, float zoomScale, Theme theme) {
+	public void render(Graphics2D g, double zoomScale, Theme theme) {
 
 		if(feature.getIsDirty()) {
 			//classify feature

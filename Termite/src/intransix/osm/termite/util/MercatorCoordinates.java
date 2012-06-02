@@ -14,6 +14,7 @@ public class MercatorCoordinates {
 	
 	private final static double TWO_TO_25 = 0x01 << MERCATOR_ZOOM;
 	
+	public final static double MIN_SIZE = 0;
 	public final static double MAX_SIZE = TWO_TO_25;
 	
 	private final static double EARTH_CIRCUMFERENCE = 40040000.0; //somewhere between polar and equitorial value - I picked it at random though

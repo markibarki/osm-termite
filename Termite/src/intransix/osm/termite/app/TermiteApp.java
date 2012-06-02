@@ -14,6 +14,9 @@ import intransix.osm.termite.map.geom.*;
 import intransix.osm.termite.svg.*;
 import java.awt.geom.Rectangle2D;
 
+import intransix.osm.termite.app.gui.StructureLayer;
+import intransix.osm.termite.app.gui.TileLayer;
+
 import org.json.*;
 
 
@@ -105,12 +108,24 @@ public class TermiteApp {
 		osmXml.parse("test2.xml");
 		TermiteData termiteData = new TermiteData(featureInfoMap);
 		termiteData.loadData(osmXml);
+		
+		StructureLayer structureLayer = new StructureLayer();
+		structureLayer.setTheme(theme);
+		structureLayer.setMap(termiteData);
+		structureLayer.setStructure(2127658);
+		
+		TileLayer tileLayer = new TileLayer();
 				
 		//add to the map panel
 		MapPanel mapDisplay = gui.getMap();
-		mapDisplay.setTheme(theme);
-		mapDisplay.setMap(termiteData);
-		mapDisplay.setStructure(2127658);
+		mapDisplay.addLayer(tileLayer);
+		mapDisplay.addLayer(structureLayer);
+		
+		TermiteStructure structure = structureLayer.getCurrentStructure();
+		if(structure != null) {
+			mapDisplay.setBounds(structure.getBounds());
+		}
+		
 		mapDisplay.repaint();
 		
 	}

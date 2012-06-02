@@ -37,11 +37,11 @@ public class Style {
 		return outlineColor;
 	}
 	
-	public Stroke getStroke(float zoomScale) {
+	public Stroke getStroke(double zoomScale) {
 		if((outlineWidth == 0)||(outlineColor == null)) return null;
 		
 		if((outlineScale != zoomScale)||(stroke == null)) {
-			outlineScale = zoomScale;
+			outlineScale = (float)zoomScale;
 			stroke = new BasicStroke(outlineWidth/outlineScale);
 		}
 		return stroke;
