@@ -1,8 +1,11 @@
 package intransix.osm.termite.map.geom;
 
 import java.util.HashMap;
+import java.awt.geom.*;
 import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.prop.FeatureInfoMap;
+import intransix.osm.termite.util.MercatorCoordinates;
+
 
 /**
  *
@@ -18,12 +21,17 @@ public class TermiteData {
 	
 	private static FeatureInfoMap featureInfoMap;
 	
+	private Rectangle2D bounds = null;
+	
 	private long nextId = FIRST_ID;
 	private HashMap<Long,TermiteNode> nodeMap = new HashMap<Long,TermiteNode>();
 	private HashMap<Long,TermiteWay> wayMap = new HashMap<Long,TermiteWay>();
 	private HashMap<Long,TermiteFeature> featureMap = new HashMap<Long,TermiteFeature>();
 	private HashMap<Long,TermiteLevel> levelMap = new HashMap<Long,TermiteLevel>();
 	private HashMap<Long,TermiteStructure> structureMap = new HashMap<Long,TermiteStructure>();
+	
+	private TermiteStructure outdoorStructure;
+	private TermiteLevel outdoorLevel;
 	
 	//=====================
 	// Public Methods
@@ -224,24 +232,48 @@ public class TermiteData {
 			}
 		}
 		
-		//now distribute the nodes to the levels, in the case of method 2
-		if(OsmModel.doNodeLevelLabels) {
-			for(TermiteNode termiteNode:nodeMap.values()) {
-				//lookup the level for this node
-				int zlevel = termiteNode.getZlevel();
-				long structureId = termiteNode.getStructureId();
-
-				if(structureId != OsmObject.INVALID_ID) {
-					TermiteStructure structure = this.getTermiteStructure(structureId,false);
-					if(structure != null) {
-						TermiteLevel level = structure.lookupLevel(zlevel);
-						termiteNode.setLevel(level);
-//add code to add level to WAY and FEATURE
-					}
-				}
-			}
+//to include this, we need to populate the outdoor features in method 1
+		//finalize the structures and levels
+//		outdoorStructure = this.getTermiteStructure(TermiteObject.INVALID_ID,true);
+//		outdoorLevel = this.getTermiteLevel(TermiteObject.INVALID_ID,true);
+//		outdoorStructure.addLevel(outdoorLevel);
+//		outdoorLevel.setProperty(OsmModel.KEY_ZLEVEL,String.valueOf(0));
+//		outdoorLevel.setProperty(OsmModel.KEY_ZCONTEXT,String.valueOf(TermiteObject.INVALID_ID));		
+//		
+//		if(OsmModel.doNodeLevelLabels) {
+//			//now distribute the nodes to the levels, in the case of method 2
+//			for(TermiteNode termiteNode:nodeMap.values()) {
+//				//lookup the level for this node
+//				int zlevel = termiteNode.getZlevel();
+//				long structureId = termiteNode.getStructureId();
+//
+//				if(structureId != OsmObject.INVALID_ID) {
+//					TermiteStructure structure = this.getTermiteStructure(structureId,false);
+//					if(structure != null) {
+//						TermiteLevel level = structure.lookupLevel(zlevel);
+//						termiteNode.setLevel(level);
+//					}
+//				}
+//				else {
+//					//belongs in outdoors
+//					termiteNode.setLevel(outdoorLevel);
+//				}
+//			}
+//		}
+//		else {
+//			for(TermiteFeature feature:featureMap.values()) {
+//				if(feature.getLevels().isEmpty()) {
+//					outdoorLevel.addFeature(feature);
+//				}
+//			}
+//		}
+		
+		//calculate bounds
+		for(TermiteStructure structure:structureMap.values()) {
+			structure.calculateBounds();
 		}
 		
+
 		
 //remove the comments here to classify before the first draw
 //		//classify the features

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
+import java.awt.event.*;
 
 import intransix.osm.termite.theme.*;
 
@@ -16,7 +17,7 @@ import intransix.osm.termite.theme.*;
  *
  * @author sutter
  */
-public class MapPanel extends JPanel {
+public class MapPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener  {
 	
 	public final static int DEFAULT_ZLEVEL = 0;
 	
@@ -30,31 +31,10 @@ public class MapPanel extends JPanel {
 	
 	public MapPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
+		this.addMouseWheelListener(this);
     }
-	
-Rectangle2D bounds = null;
-public void setBounds(Rectangle2D bounds) {
-this.bounds = bounds;
-	Dimension dim = this.getPreferredSize();
-	double xScale = dim.width / bounds.getWidth();
-	double yScale = dim.height / bounds.getHeight();
-	double scale = (xScale > yScale) ? yScale : xScale;
-	
-	double xOffset = bounds.getMinX();
-	double yOffset = bounds.getMinY();
-double[] mat = new double[6];
-mapToPixels.getMatrix(mat);
-	mapToPixels.scale(scale, scale);
-mapToPixels.getMatrix(mat);
-	mapToPixels.translate(-xOffset,-yOffset);
-mapToPixels.getMatrix(mat);
-	try {
-		pixelsToMap = mapToPixels.createInverse();
-	}
-	catch(Exception ex) {
-		//shouldn't happen
-	}
-}
 	
 	public void setTheme(Theme theme) {
 		this.theme = theme;
@@ -66,6 +46,7 @@ mapToPixels.getMatrix(mat);
 	
 	public void setStructure(long id) {
 		currentStructure = map.getTermiteStructure(id,false);
+		this.setBounds(currentStructure.getBounds());
 		setLevel(DEFAULT_ZLEVEL);
 	}
 	
@@ -96,9 +77,9 @@ float zoomScale = (float)Math.sqrt(mapToPixels.getDeterminant());
 		
 		g2.transform(mapToPixels);		
 		
-		if(bounds != null) {
+		if(mapBounds != null) {
 			g2.setColor(Color.cyan);
-			g2.fill(bounds);
+			g2.fill(mapBounds);
 		}
 			
 		for(FeatureLevelGeom geom:currentLevel.getLevelGeom()) {
@@ -111,4 +92,67 @@ float zoomScale = (float)Math.sqrt(mapToPixels.getDeterminant());
 		g2.transform(pixelsToMap);
 	}
 	
+	//-------------------------
+	// Mouse Events
+	//-------------------------
+	
+	public void mouseClicked(MouseEvent e) {
+//		e.getButton();
+//		e.getClickCount();
+//		e.getLocationOnScreen();
+//		e.getPoint();
+//		e.isPopupTrigger();
+		System.out.println(e.paramString());
+	}
+	
+	public void mouseDragged(MouseEvent e) {
+		System.out.println(e.paramString());
+	}
+	
+	public void mouseEntered(MouseEvent e) {
+		System.out.println(e.paramString());
+	}
+	
+	public void mouseExited(MouseEvent e) {
+		System.out.println(e.paramString());
+	}
+	
+	public void mouseMoved(MouseEvent e) {
+		System.out.println(e.paramString());
+	}
+	
+	public void mousePressed(MouseEvent e) {
+		System.out.println(e.paramString());
+	}
+	
+	public void mouseReleased(MouseEvent e) {
+		System.out.println(e.paramString());
+	}
+	
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		System.out.println(e.paramString());
+	}
+	
+	//=================================
+	// Private Methods
+	//=================================
+private Rectangle2D mapBounds;
+	public void setBounds(Rectangle2D bounds) {
+this.mapBounds = bounds;
+		Dimension dim = this.getPreferredSize();
+		double xScale = dim.width / bounds.getWidth();
+		double yScale = dim.height / bounds.getHeight();
+		double scale = (xScale > yScale) ? yScale : xScale;
+
+		double xOffset = bounds.getMinX();
+		double yOffset = bounds.getMinY();
+		mapToPixels.scale(scale, scale);
+		mapToPixels.translate(-xOffset,-yOffset);
+		try {
+			pixelsToMap = mapToPixels.createInverse();
+		}
+		catch(Exception ex) {
+			//shouldn't happen
+		}
+	}
 }

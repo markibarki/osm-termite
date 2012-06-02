@@ -58,6 +58,10 @@ public class TermiteFeature extends TermiteObject {
 	public FeatureInfo getFeatureInfo() {
 		return featureInfo;
 	}
+	
+	public ArrayList<TermiteLevel> getLevels() {
+		return levels;
+	}
 
 	/** This clears the style value. */
 	public void clearStyle() {
