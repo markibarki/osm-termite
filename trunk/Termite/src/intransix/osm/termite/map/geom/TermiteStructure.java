@@ -5,6 +5,8 @@ import intransix.osm.termite.map.osm.OsmMember;
 import intransix.osm.termite.map.osm.OsmModel;
 import intransix.osm.termite.map.osm.OsmRelation;
 import intransix.osm.termite.map.osm.OsmWay;
+import intransix.osm.termite.util.MercatorCoordinates;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.awt.geom.Rectangle2D;
 
@@ -25,10 +27,6 @@ public class TermiteStructure extends TermiteObject {
 	
 	public Rectangle2D getBounds() {
 		return bounds;
-	}
-	
-	public void setBounds(Rectangle2D bounds) {
-		this.bounds = bounds;
 	}
 	
 	public TermiteWay getParent() {
@@ -58,6 +56,32 @@ public class TermiteStructure extends TermiteObject {
 	/** Constructor. It should only be called by members of this package. */
 	TermiteStructure(long id) {
 		super(id);
+	}
+	
+	void calculateBounds() {
+		//calculate bounds
+		double minX = MercatorCoordinates.MAX_SIZE;
+		double minY = MercatorCoordinates.MAX_SIZE;
+		double maxX = 0;
+		double maxY = 0;
+		for(TermiteLevel level:this.levels) {
+			for(TermiteFeature feature:level.getFeatures()) {
+				for(TermiteWay way:feature.getWays()) {
+					for(TermiteNode node:way.getNodes()) {
+						Point2D point = node.getPoint();
+						if(node == null) continue;
+
+						double x = point.getX();
+						double y = point.getY();
+						if(x < minX) minX = x;
+						if(y < minY) minY = y;
+						if(x > maxX) maxX = x;
+						if(y > maxY) maxY = y;
+					}
+				}
+			}
+		}
+		bounds = new Rectangle2D.Double(minX,minY,maxX - minX, maxY - minY);
 	}
 	
 	void load(OsmRelation osmRelation, TermiteData data) {

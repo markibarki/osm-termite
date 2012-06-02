@@ -91,11 +91,6 @@ public class TermiteApp {
 		JSONObject modelJson = JsonIO.readJsonFile(modelName);
 		OsmModel.parse(modelJson);
 		
-//		TermiteStructure structure = new TermiteStructure();
-//		structure.setId(1);		
-//		TermiteLevel level = new TermiteLevel();
-//		level.setId(1);
-//		structure.addLevel(level);
 //		
 //		String svgFileName = "test.svg";
 //		String svgUriString = svgFile.toURI().toString();
@@ -110,45 +105,11 @@ public class TermiteApp {
 		osmXml.parse("test2.xml");
 		TermiteData termiteData = new TermiteData(featureInfoMap);
 		termiteData.loadData(osmXml);
-		
-//bounds calculation///////
-double minX = 720;
-double minY = 720;
-double maxX = -720;
-double maxY = -720;
-int unloadedCount = 0;
-for(OsmNode node:osmXml.getOsmNodes()) {
-	if(!node.getIsLoaded()) {
-		unloadedCount++;
-		for(OsmWay way:osmXml.getOsmWays()) {
-			if(way.getNodes().contains(node)) {
-				System.out.println("way found");
-			}
-		}
-		for(OsmRelation relation:osmXml.getOsmRelations()) {
-			for(OsmMember member:relation.getMembers()) {
-				if(member.member == node) {
-					System.out.println("relation found");
-				}
-			}
-		}
-		continue;
-	}
-	double lat = node.getLat();
-	double lon = node.getLon();
-	if(lat < minY) minY = lat;
-	if(lon < minX) minX = lon;
-	if(lat > maxY) maxY = lat;
-	if(lon > maxX) maxX = lon;
-}
-Rectangle2D bounds = new Rectangle2D.Double(minX,minY,maxX - minX, maxY - minY);
-////////
-		
+				
 		//add to the map panel
 		MapPanel mapDisplay = gui.getMap();
 		mapDisplay.setTheme(theme);
 		mapDisplay.setMap(termiteData);
-mapDisplay.setBounds(bounds);
 		mapDisplay.setStructure(2127658);
 		mapDisplay.repaint();
 		

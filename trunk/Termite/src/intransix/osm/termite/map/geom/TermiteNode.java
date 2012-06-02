@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.util.MercatorCoordinates;
 
 /**
  *
@@ -50,7 +51,11 @@ public class TermiteNode extends TermiteObject {
 	void load(OsmNode osmNode, TermiteData data) {
 		this.osmNode = osmNode;
 		copyProperties(osmNode);
-		point = new Point2D.Double(osmNode.getLon(),osmNode.getLat());
+		double latRad = Math.toRadians(osmNode.getLat());
+		double lonRad = Math.toRadians(osmNode.getLon());
+		double my = MercatorCoordinates.latRadToMy(latRad);
+		double mx = MercatorCoordinates.lonRadToMx(lonRad);
+		point = new Point2D.Double(mx,my);
 	}
 	
 	void addWay(TermiteWay way) {
