@@ -33,7 +33,7 @@ public class Tile {
 		return url;
 	}
 	
-	public long getAge() {
+	public long getActiveTime() {
 		return activeTime;
 	}
 	

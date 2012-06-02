@@ -1,17 +1,10 @@
 package intransix.osm.termite.app.gui;
 
-import intransix.osm.termite.map.geom.TermiteLevel;
-import intransix.osm.termite.map.geom.TermiteFeature;
-import intransix.osm.termite.map.geom.TermiteStructure;
-import intransix.osm.termite.map.geom.TermiteData;
-import intransix.osm.termite.map.geom.FeatureLevelGeom;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.event.*;
-
-import intransix.osm.termite.theme.*;
 
 /**
  *
@@ -19,7 +12,6 @@ import intransix.osm.termite.theme.*;
  */
 public class MapPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener  {
 	
-	public final static int DEFAULT_ZLEVEL = 0;
 	private final static double ROTATION_SCALE_FACTOR = 1.1;
 	
 	private AffineTransform mapToPixels = new AffineTransform();
@@ -53,13 +45,19 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 	
 	public void addLayer(Layer layer) {
 		this.layers.add(layer);
-		this.mapListeners.add(layer);
 		layer.setMapPanel(this);
 	}
 	
 	public void removeLayer(Layer layer) {
 		this.layers.remove(layer);
-		this.mapListeners.add(layer);
+	}
+	
+	public void addMapListener(MapListener listener) {
+		this.mapListeners.add(listener);
+	}
+	
+	public void removeMapListener(MapListener listener) {
+		this.mapListeners.remove(listener);
 	}
 	
 	public void setBounds(Rectangle2D bounds) {
@@ -164,6 +162,7 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		zt.translate((1-zoomFactor)*x, (1-zoomFactor)*y);
 		zt.scale(zoomFactor, zoomFactor);
 		mapToPixels.preConcatenate(zt);
+		updateTransforms();
 		for(MapListener mapListener:mapListeners) {
 			mapListener.onZoom(zoomScale);
 		}

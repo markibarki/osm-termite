@@ -56,11 +56,6 @@ public class StructureLayer implements Layer {
 		return currentLevel;
 	}
 	
-		
-	public void onZoom(double zoomScale) {}
-	public void onPanStart() {}
-	public void onPanEnd() {}
-	
 	@Override
 	public void render(Graphics2D g2) {
 		
