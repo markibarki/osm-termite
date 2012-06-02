@@ -114,12 +114,17 @@ public class TermiteApp {
 		structureLayer.setMap(termiteData);
 		structureLayer.setStructure(2127658);
 		
-		TileLayer tileLayer = new TileLayer();
+		String mapQuestUrlTemplate = "http://otile1.mqcdn.com/tiles/1.0.0/osm/%3$d/%1$d/%2$d.jpg";
+		int mapQuestMaxZoom = 18;
+		int mapQuestTileSize = 256;
+		
+		TileLayer tileLayer = new TileLayer(mapQuestUrlTemplate,mapQuestMaxZoom,mapQuestTileSize);
 				
 		//add to the map panel
 		MapPanel mapDisplay = gui.getMap();
 		mapDisplay.addLayer(tileLayer);
 		mapDisplay.addLayer(structureLayer);
+		mapDisplay.addMapListener(tileLayer);
 		
 		TermiteStructure structure = structureLayer.getCurrentStructure();
 		if(structure != null) {

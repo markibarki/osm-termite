@@ -12,7 +12,7 @@ import java.awt.geom.AffineTransform;
  *
  * @author sutter
  */
-public interface Layer extends MapListener {
+public interface Layer {
 	
 	public void setMapPanel(MapPanel mapPanel);
 	
