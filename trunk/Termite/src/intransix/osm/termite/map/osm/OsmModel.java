@@ -41,6 +41,7 @@ public class OsmModel {
 	
 	public static HashSet<String> GEOMETRIC_KEYS = new HashSet<String>();
 	
+	/** This method parses a json file that holds model parameters. */
 	public static void parse(JSONObject json) throws Exception {
 		JSONObject nameDefs = json.optJSONObject("nameDefs");
 		if(nameDefs != null) {

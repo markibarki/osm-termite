@@ -20,10 +20,21 @@ public class OsmData {
 	//==========================
 	// Private Fields
 	//==========================
-	HashMap<Long,OsmNode> nodeMap = new HashMap<Long,OsmNode>();
-	HashMap<Long,OsmWay> wayMap = new HashMap<Long,OsmWay>();
-	HashMap<Long,OsmRelation> relationMap = new HashMap<Long,OsmRelation>();
 	
+	private String version;
+	private String generator;
+	
+	private HashMap<Long,OsmNode> nodeMap = new HashMap<Long,OsmNode>();
+	private HashMap<Long,OsmWay> wayMap = new HashMap<Long,OsmWay>();
+	private HashMap<Long,OsmRelation> relationMap = new HashMap<Long,OsmRelation>();
+	
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	
+	public void setGenerator(String generator) {
+		this.generator = generator;
+	}
 	
 	OsmObject getOsmObject(long id, String type) {
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
