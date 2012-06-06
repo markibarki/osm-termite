@@ -1,7 +1,6 @@
 package intransix.osm.termite.app;
 
-import intransix.osm.termite.map.model.TermiteStructure;
-import intransix.osm.termite.map.model.TermiteData;
+import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.map.prop.FeatureInfoMap;
 import intransix.osm.termite.app.gui.TermiteGui;
 import intransix.osm.termite.render.MapPanel;
@@ -12,6 +11,7 @@ import intransix.osm.termite.util.JsonIO;
 import intransix.osm.termite.map.osm.*;
 
 import intransix.osm.termite.render.structure.StructureLayer;
+import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
@@ -114,10 +114,16 @@ public class TermiteApp {
 		TermiteData termiteData = new TermiteData();
 		termiteData.loadData(osmData);
 		
+		TermiteStructure structure = termiteData.getStructure(2127658L);
+		TermiteLevel level = structure.lookupLevel(0);
+		
 		StructureLayer structureLayer = new StructureLayer();
 		structureLayer.setTheme(theme);
-		structureLayer.setMap(termiteData);
-		structureLayer.setStructure(2127658);
+		structureLayer.setLevel(level);
+		
+		EditLayer editLayer = new EditLayer();
+		editLayer.setLevel(level);
+		
 		
 		String mapQuestUrlTemplate = "http://otile1.mqcdn.com/tiles/1.0.0/osm/%3$d/%1$d/%2$d.jpg";
 		int mapQuestMaxZoom = 18;
@@ -129,9 +135,10 @@ public class TermiteApp {
 		MapPanel mapDisplay = gui.getMap();
 		mapDisplay.addLayer(tileLayer);
 		mapDisplay.addLayer(structureLayer);
+		mapDisplay.addLayer(editLayer);
+		
 		mapDisplay.addMapListener(tileLayer);
 		
-		TermiteStructure structure = structureLayer.getCurrentStructure();
 		if(structure != null) {
 			mapDisplay.setBounds(structure.getBounds());
 		}
