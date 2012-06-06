@@ -23,8 +23,6 @@ public class StructureLayer implements MapLayer {
 	public final static int DEFAULT_ZLEVEL = 0;
 	
 	private Theme theme;
-	private TermiteData map;
-	private TermiteStructure currentStructure;
 	private TermiteLevel currentLevel;
 	private MapPanel mapPanel;
 	
@@ -36,25 +34,11 @@ public class StructureLayer implements MapLayer {
 		this.theme = theme;
 	}
 	
-	public void setMap(TermiteData data) {
-		this.map = data;
+	public void setLevel(TermiteLevel level) {
+		currentLevel = level;
 	}
 	
-	public void setStructure(long id) {
-		currentStructure = map.getStructure(id);
-		setLevel(DEFAULT_ZLEVEL);
-	}
-	
-	public TermiteStructure getCurrentStructure() {
-		return currentStructure;
-	}
-	
-	public void setLevel(int zlevel) {
-		if(currentStructure == null) return;
-		currentLevel = currentStructure.lookupLevel(zlevel);
-	}
-	
-	public TermiteLevel getCurrentLevel() {
+	public TermiteLevel getLevel() {
 		return currentLevel;
 	}
 	
@@ -68,8 +52,6 @@ public class StructureLayer implements MapLayer {
 		double zoomScale = mapPanel.getZoomScale();
 		
 		if((localLevel == null)||(localTheme == null)) return;
-		
-		AffineTransform originalTransform = g2.getTransform();
 		
 		g2.transform(mapToPixels);		
 			
@@ -92,8 +74,6 @@ public class StructureLayer implements MapLayer {
 			}
 			pointFeature.render(g2,zoomScale,localTheme,localLevel);
 		}
-		
-		g2.setTransform(originalTransform);
 	}
 	
 	

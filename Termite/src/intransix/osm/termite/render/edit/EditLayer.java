@@ -1,0 +1,117 @@
+package intransix.osm.termite.render.edit;
+
+import intransix.osm.termite.render.MapPanel;
+import intransix.osm.termite.map.model.TermiteLevel;
+import intransix.osm.termite.map.model.TermiteNode;
+import intransix.osm.termite.map.model.TermiteWay;
+import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.structure.PathFeature;
+import intransix.osm.termite.render.structure.PointFeature;
+import intransix.osm.termite.theme.Theme;
+import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.AffineTransform;
+import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.util.MercatorCoordinates;
+import java.awt.Color;
+import java.awt.Shape;
+import java.awt.geom.*;
+
+/**
+ *
+ * @author sutter
+ */
+public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
+	
+	private final static double RADIUS_METERS = .5; 
+	
+	private final static Color SELECT_COLOR = Color.RED;
+	private final static Color HIGHLIGHT_COLOR = Color.MAGENTA;
+	private final static Color BACKGROUND_HIGHLIGHT_COLOR = Color.PINK;
+	
+	private TermiteLevel currentLevel;
+	private MapPanel mapPanel;
+	
+	private OsmNode activeNode = null;
+	
+	public void setLevel(TermiteLevel level) {
+		this.currentLevel = level;
+	}
+	
+	@Override 
+	public void setMapPanel(MapPanel mapPanel) {
+		this.mapPanel = mapPanel;
+		mapPanel.addMouseListener(this);
+		mapPanel.addMouseMotionListener(this);
+	}
+	
+	@Override
+	public void render(Graphics2D g2) {
+		
+		AffineTransform mapToPixels = mapPanel.getMapToPixels();
+		g2.transform(mapToPixels);		
+		
+		OsmNode localNode = activeNode;
+		if(localNode != null) {
+			g2.setColor(HIGHLIGHT_COLOR);
+			double metersPerMerc = MercatorCoordinates.metersPerMerc(localNode.getY() + OsmModel.myOffset);
+			double r = RADIUS_METERS / metersPerMerc;
+			Shape rect = new Rectangle2D.Double(localNode.getX()-r,localNode.getY()-r,2*r,2*r);
+			g2.fill(rect);
+		}
+	}
+	
+	//-------------------------
+	// Mouse Events
+	//-------------------------
+	
+	public void mouseClicked(MouseEvent e) {
+	}
+	
+	public void mouseDragged(MouseEvent e) {
+	}
+	
+	public void mouseEntered(MouseEvent e) {
+	}
+	
+	public void mouseExited(MouseEvent e) {
+		activeNode = null;
+	}
+	
+	public void mouseMoved(MouseEvent e) {
+		//read mouse location
+		double pixX = e.getX();
+		double pixY = e.getY();
+		Point2D point = new Point2D.Double(pixX,pixY);
+		AffineTransform pixelsToMap = mapPanel.getPixelsToMap();
+		pixelsToMap.transform(point, point);
+		
+		//get point radius
+		double metersPerMerc = MercatorCoordinates.metersPerMerc(point.getY() + OsmModel.myOffset);
+		double r = RADIUS_METERS / metersPerMerc;
+		
+		//loook for a point
+		for(TermiteNode tNode:currentLevel.getNodes()) {
+			OsmNode oNode = tNode.getOsmNode();
+			double d = point.distance(oNode.getX(),oNode.getY());
+			if(d < r) {
+				this.activeNode = oNode;
+				mapPanel.repaint();
+				return;
+			}
+		}
+		if(activeNode != null) {
+			activeNode = null;
+			mapPanel.repaint();
+		}
+	}
+	
+	public void mousePressed(MouseEvent e) {
+	}
+	
+	public void mouseReleased(MouseEvent e) {
+	}
+}
