@@ -1,5 +1,5 @@
 
-package intransix.osm.termite.app.gui;
+package intransix.osm.termite.render;
 
 /**
  *

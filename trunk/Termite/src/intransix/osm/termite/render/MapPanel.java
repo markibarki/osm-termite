@@ -1,4 +1,4 @@
-package intransix.osm.termite.app.gui;
+package intransix.osm.termite.render;
 
 import java.util.ArrayList;
 import javax.swing.*;
@@ -16,7 +16,7 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 	
 	private AffineTransform mapToPixels = new AffineTransform();
 	private AffineTransform pixelsToMap = new AffineTransform();
-	private ArrayList<Layer> layers = new ArrayList<Layer>();
+	private ArrayList<MapLayer> layers = new ArrayList<MapLayer>();
 	private ArrayList<MapListener> mapListeners = new ArrayList<MapListener>();
 	private double zoomScale = 1.0;
 	
@@ -43,12 +43,12 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		 return zoomScale;
 	}
 	
-	public void addLayer(Layer layer) {
+	public void addLayer(MapLayer layer) {
 		this.layers.add(layer);
 		layer.setMapPanel(this);
 	}
 	
-	public void removeLayer(Layer layer) {
+	public void removeLayer(MapLayer layer) {
 		this.layers.remove(layer);
 	}
 	
@@ -90,7 +90,7 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		}
 			
 		AffineTransform originalTransform = g2.getTransform();
-		for(Layer layer:layers) {
+		for(MapLayer layer:layers) {
 			layer.render(g2);
 			g2.setTransform(originalTransform);
 		}
@@ -162,6 +162,7 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		zt.translate((1-zoomFactor)*x, (1-zoomFactor)*y);
 		zt.scale(zoomFactor, zoomFactor);
 		mapToPixels.preConcatenate(zt);
+System.out.println("ZoomScale=" + zoomScale);
 		updateTransforms();
 		for(MapListener mapListener:mapListeners) {
 			mapListener.onZoom(zoomScale);

@@ -1,32 +1,24 @@
 package intransix.osm.termite.map.osm;
 
-import java.util.HashMap;
 import intransix.osm.termite.map.MapObject;
-import java.util.ArrayList;
-
-import java.util.HashMap;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+
 
 /**
  *
  * @author sutter
  */
-public class OsmObject extends MapObject {
+public abstract class OsmObject extends MapObject {
 	
 	public final static long INVALID_ID = 0;
-	
-	public final static String TYPE_NODE = "node";
-	public final static String TYPE_WAY = "way";
-	public final static String TYPE_RELATION = "relation";
+	public final static int INVALID_LOCAL_VERSION = -1;
+	public final static int INITIAL_LOCAL_VERSION = 1;
 			
 	//common
 	private long id;
 	private String type;
 	private boolean isLoaded = false;
+	private boolean isVirtual = false;
 	
 	private String user;
 	private String uid;
@@ -34,6 +26,8 @@ public class OsmObject extends MapObject {
 	private String version;
 	private String changeset;
 	private String timestamp;
+	
+	private int localVersion = 0;
 	
 	/** The argument is the combined type + osmId string. */
 	OsmObject(String type, long id) {
@@ -49,11 +43,27 @@ public class OsmObject extends MapObject {
 		this.isLoaded = isLoaded;
 	}
 	
+	public boolean getIsVirtual() {
+		return isVirtual;
+	}
+	
+	public void setIsVirtual(boolean isVirtual) {
+		this.isVirtual = isVirtual;
+	}
+	
 	public long getId() {
 		return id;
 	}
 	
-	public void startElement(String name, Attributes attr, OsmXml root) {
+	public void setLocalVersion(int localVersion) {
+		this.localVersion = localVersion;
+	}
+	
+	public int getLocalVersion() {
+		return localVersion;
+	}
+	
+	public void startElement(String name, Attributes attr, OsmData osmData) {
 		//parse a key/value pair
 		if(name.equalsIgnoreCase("tag")) {
 			String key = attr.getValue("k");
@@ -76,6 +86,24 @@ public class OsmObject extends MapObject {
 	/** This is called when the object is finished being parsed. */
 	public void endElement(String name, OsmXml root) {
 		this.setIsLoaded(true);
+	}
+	
+	//==========================
+	// Package Methods
+	//==========================
+	
+	/** This method makes a copy of this data object in the destination OsmData object.
+	 * This method should be overridden by the */
+	abstract void createCopy(OsmData destOsmData);
+	
+	/** This method copies relevent data from the base OsmObject needed for reproducing
+	 * the data set. */
+	void copyFromBase(OsmObject newObject) {
+		newObject.isLoaded = this.isLoaded;
+		newObject.isVirtual = this.isVirtual;
+		newObject.localVersion = this.localVersion;
+
+		newObject.copyProperties(this);
 	}
 
 }

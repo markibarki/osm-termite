@@ -1,6 +1,5 @@
 package intransix.osm.termite.map.prop;
 
-import intransix.osm.termite.map.geom.TermiteFeature;
 import intransix.osm.termite.map.*;
 import org.json.*;
 
@@ -25,14 +24,15 @@ public class FeatureInfoMap {
 	}
 	
 	/** This method sets the style for a feature. */
-	public FeatureInfo getFeatureInfo(TermiteFeature feature) {
-		return treeRoot.getPropertyData(feature);	
+	public FeatureInfo getFeatureInfo(MapObject mapObject) {
+		return treeRoot.getPropertyData(mapObject);	
 	}
 	
-	/** This updates the properties of a feature to match those for the input color. */
-	public void updateFeatureProperties(TermiteFeature feature, String inputColorString) {
+	/** This updates the properties of a feature to match those for the input color.\
+	 * It also returns the matching feature property object. */
+	public FeatureInfo updateFeatureProperties(MapObject mapObject, String inputColorString) {
 		//find the original color
-		PropertyNode<Object,FeatureInfo> origClassifyingProp = treeRoot.getClassifyingProperty(feature);
+		PropertyNode<Object,FeatureInfo> origClassifyingProp = treeRoot.getClassifyingProperty(mapObject);
 				
 		//lookup new color
 		PropertyNode<Object,FeatureInfo> newClassifyingProp = getColorProperty(treeRoot,inputColorString);
@@ -44,12 +44,11 @@ public class FeatureInfoMap {
 		
 		//update the properties
 		if(origClassifyingProp != newClassifyingProp) {
-			removeKeys(feature,origClassifyingProp);
-			addKeys(feature,newClassifyingProp);
-			
-			//set the new feature property object
-			feature.setFeatureInfo(newClassifyingProp.getData());
+			removeKeys(mapObject,origClassifyingProp);
+			addKeys(mapObject,newClassifyingProp);
 		}
+		
+		return newClassifyingProp.getData();
 	}
 	
 	
@@ -81,28 +80,28 @@ public class FeatureInfoMap {
 	
 	/** This method adds all the keys and values associated with the given 
 	 * classifying property. */
-	private void addKeys(TermiteFeature feature, PropertyNode prop) {
+	private void addKeys(MapObject mapObject, PropertyNode prop) {
 		KeyNode parentKey = prop.getParentKey();
 		if(parentKey != null) {
 			//add the top level value
-			feature.setProperty(parentKey.getName(),prop.getName());
+			mapObject.setProperty(parentKey.getName(),prop.getName());
 			//add the parent value
 			PropertyNode parentProp = parentKey.getParentValue();
 			if(parentProp != null) {
-				addKeys(feature,parentProp);
+				addKeys(mapObject,parentProp);
 			}
 		}
 	}
 	
 	/** This method removes all the keys associated with the given 
 	 * classifying property. */
-	private void removeKeys(TermiteFeature feature, PropertyNode prop) {
+	private void removeKeys(MapObject mapObject, PropertyNode prop) {
 		KeyNode parentKey = prop.getParentKey();
 		if(parentKey != null) {
-			feature.removeProperty(parentKey.getName());
+			mapObject.removeProperty(parentKey.getName());
 			PropertyNode parentProp = parentKey.getParentValue();
 			if(parentProp != null) {
-				removeKeys(feature,parentProp);
+				removeKeys(mapObject,parentProp);
 			}
 		}
 	}

@@ -1,10 +1,12 @@
-package intransix.osm.termite.app.gui;
+package intransix.osm.termite.render.structure;
 
-import intransix.osm.termite.map.geom.TermiteLevel;
-import intransix.osm.termite.map.geom.TermiteFeature;
-import intransix.osm.termite.map.geom.TermiteStructure;
-import intransix.osm.termite.map.geom.TermiteData;
-import intransix.osm.termite.map.geom.FeatureLevelGeom;
+import intransix.osm.termite.map.model.TermiteStructure;
+import intransix.osm.termite.map.model.TermiteData;
+import intransix.osm.termite.map.model.TermiteWay;
+import intransix.osm.termite.map.model.TermiteLevel;
+import intransix.osm.termite.map.model.TermiteNode;
+import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.theme.Theme;
 import java.util.ArrayList;
 import javax.swing.*;
@@ -16,7 +18,7 @@ import java.awt.event.*;
  *
  * @author sutter
  */
-public class StructureLayer implements Layer {
+public class StructureLayer implements MapLayer {
 	
 	public final static int DEFAULT_ZLEVEL = 0;
 	
@@ -39,7 +41,7 @@ public class StructureLayer implements Layer {
 	}
 	
 	public void setStructure(long id) {
-		currentStructure = map.getTermiteStructure(id,false);
+		currentStructure = map.getStructure(id);
 		setLevel(DEFAULT_ZLEVEL);
 	}
 	
@@ -59,18 +61,36 @@ public class StructureLayer implements Layer {
 	@Override
 	public void render(Graphics2D g2) {
 		
+		TermiteLevel localLevel = currentLevel;
+		Theme localTheme = theme;
+		
 		AffineTransform mapToPixels = mapPanel.getMapToPixels();
 		double zoomScale = mapPanel.getZoomScale();
 		
-		if((currentLevel == null)||(theme == null)) return;
+		if((localLevel == null)||(localTheme == null)) return;
 		
 		AffineTransform originalTransform = g2.getTransform();
 		
 		g2.transform(mapToPixels);		
 			
-		for(FeatureLevelGeom geom:currentLevel.getLevelGeom()) {
+		PathFeature pathFeature;
+		for(TermiteWay way:localLevel.getWays()) {
 			//render geometry
-			geom.render(g2,zoomScale,theme);
+			pathFeature = (PathFeature)way.getRenderData();
+			if(pathFeature == null) {
+				pathFeature = new PathFeature(way);
+				way.setRenderData(pathFeature);
+			}
+			pathFeature.render(g2,zoomScale,localTheme,localLevel);
+		}
+		PointFeature pointFeature;
+		for(TermiteNode node:localLevel.getNodes()) {
+			pointFeature = (PointFeature)node.getRenderData();
+			if(pointFeature == null) {
+				pointFeature = new PointFeature(node);
+				node.setRenderData(pointFeature);
+			}
+			pointFeature.render(g2,zoomScale,localTheme,localLevel);
 		}
 		
 		g2.setTransform(originalTransform);

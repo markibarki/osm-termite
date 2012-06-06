@@ -1,6 +1,5 @@
 package intransix.osm.termite.svg;
 
-import intransix.osm.termite.map.geom.*;
 import intransix.osm.termite.map.prop.FeatureInfoMap;
 import intransix.osm.termite.map.prop.FeatureInfo;
 import java.util.HashMap;

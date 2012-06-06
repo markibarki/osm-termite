@@ -1,6 +1,5 @@
 package intransix.osm.termite.svg;
 
-import intransix.osm.termite.map.geom.*;
 import java.io.IOException;
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.util.XMLResourceDescriptor;

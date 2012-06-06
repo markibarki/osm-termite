@@ -1,6 +1,5 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.MapObject;
 import java.util.ArrayList;
 import org.xml.sax.Attributes;
 
@@ -10,16 +9,11 @@ import org.xml.sax.Attributes;
  */
 public class OsmRelation extends OsmObject {
 	
-	public final static String TAG_TYPE = "type";
-	public final static String TYPE_STRUCTURE = "building";
-	public final static String TYPE_LEVEL = "level";
-	public final static String TYPE_MULTIPOLYGON = "multipolygon";
-	
 	private ArrayList<OsmMember> members = new ArrayList<OsmMember>();
 	
 	/** The argument is the combined type + osmId string. */
 	public OsmRelation(long id) {
-		super(TYPE_RELATION, id);
+		super(OsmModel.TYPE_RELATION, id);
 	}
 	
 	public ArrayList<OsmMember> getMembers() {
@@ -27,9 +21,9 @@ public class OsmRelation extends OsmObject {
 	}
 	
 	@Override
-	public void startElement(String name, Attributes attr, OsmXml root) {
+	public void startElement(String name, Attributes attr, OsmData osmData) {
 		//let the parent parse
-		super.startElement(name,attr,root);
+		super.startElement(name,attr,osmData);
 		
 		//parse this node
 		if(name.equalsIgnoreCase("relation")) {
@@ -40,7 +34,7 @@ public class OsmRelation extends OsmObject {
 			String type = attr.getValue("type");
 			long ref = OsmXml.getLong(attr,"ref",INVALID_ID);
 			String role = attr.getValue("role");
-			OsmObject object = root.getOsmObject(ref,type);
+			OsmObject object = osmData.getOsmObject(ref,type);
 			if(object != null) {
 				OsmMember member = new OsmMember();
 				member.role = role;
@@ -49,5 +43,24 @@ public class OsmRelation extends OsmObject {
 				members.add(member);
 			}
 		}
+	}
+	
+	//=====================
+	// Package Methods
+	//=====================
+	
+	/** This method makes a copy of this data object in the destination OsmData object. */
+	@Override
+	void createCopy(OsmData destOsmData) {
+		OsmRelation newRelation = destOsmData.getOsmRelation(this.getId());
+		for(OsmMember member:this.members) {
+			OsmObject newObject = destOsmData.getOsmObject(member.member.getId(),member.type);
+			OsmMember newMember = new OsmMember();
+			newMember.role = member.role;
+			newMember.type = member.type;
+			newMember.member = newObject;
+			newRelation.members.add(newMember);
+		}
+		copyFromBase(newRelation);
 	}
 }
