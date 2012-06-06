@@ -7,7 +7,8 @@ import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.util.MercatorCoordinates;
 
 /**
- *
+ * This class holds the active session data.
+ * 
  * @author sutter
  */
 public class TermiteData {
@@ -31,23 +32,41 @@ public class TermiteData {
 	// Public Methods
 	//=====================
 	
+	/**Constructor. */
 	public TermiteData() {
 	}
 
-	// <editor-fold defaultstate="collapsed" desc="sample code fold">
-	
+	/** This method looks up the TermiteLevel associated with the id. If the level
+	 * is not found null is returned. 
+	 * 
+	 * @param id		The OSM ID for the level relation associated with the level
+	 * @return			The TermiteLevel object
+	 */
 	public TermiteLevel getLevel(Long id) {
 		return this.levelMap.get(id);
 	}
 	
+	/** This method looks up the TermiteStructure associated with the id. If the structure
+	 * is not found null is returned. 
+	 * 
+	 * @param id		The OSM ID for the structure relation associated with the structure
+	 * @return			The TermiteStructure object
+	 */
 	public TermiteStructure getStructure(Long id) {
 		return this.structureMap.get(id);
 	}
 	
+	/** This method looks up the TermiteMultiPoly associated with the id. If the multipoly
+	 * is not found null is returned. 
+	 * 
+	 * @param id		The OSM ID for the multipoly relation associated with the multipoly
+	 * @return			The TermiteMultiPoly object
+	 */
 	public TermiteMultiPoly getMultiPoly(Long id) {
 		return this.multiPolyMap.get(id);
 	}
 	
+	/** This method looks up a level for the given structure id and zlevel velue. */
 	public TermiteLevel getLevel(Long structureId, int zlevel) {
 		TermiteStructure structure = getStructure(structureId);
 		if(structure != null) {
@@ -57,9 +76,8 @@ public class TermiteData {
 			return null;
 		}
 	}
-	// </editor-fold>
 	
-	/** This method loads the osm format data into the native data model. */
+	/** This method loads the osm format data into the data model. */
 	public void loadData(OsmData baseData) {
 		
 		this.baseData = baseData;
@@ -239,5 +257,6 @@ level = levels.get(0);
 	//==========================
 	
 	
-	
+	// <editor-fold defaultstate="collapsed" desc="sample code fold">
+	// </editor-fold>
 }
