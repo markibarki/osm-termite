@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.map;
 
-import java.util.ArrayList;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.json.JSONObject;
