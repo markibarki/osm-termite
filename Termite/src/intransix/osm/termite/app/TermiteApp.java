@@ -1,21 +1,19 @@
 package intransix.osm.termite.app;
 
+import intransix.osm.termite.map.model.TermiteStructure;
+import intransix.osm.termite.map.model.TermiteData;
 import intransix.osm.termite.map.prop.FeatureInfoMap;
 import intransix.osm.termite.app.gui.TermiteGui;
-import intransix.osm.termite.app.gui.MapPanel;
+import intransix.osm.termite.render.MapPanel;
 
 import intransix.osm.termite.theme.*;
-import intransix.osm.termite.map.geom.*;
 import intransix.osm.termite.util.JsonIO;
 
 import intransix.osm.termite.map.osm.*;
-import intransix.osm.termite.map.geom.*;
 
-import intransix.osm.termite.svg.*;
-import java.awt.geom.Rectangle2D;
-
-import intransix.osm.termite.app.gui.StructureLayer;
-import intransix.osm.termite.app.gui.TileLayer;
+import intransix.osm.termite.render.structure.StructureLayer;
+import intransix.osm.termite.render.tile.TileLayer;
+import intransix.osm.termite.util.MercatorCoordinates;
 
 import org.json.*;
 
@@ -84,6 +82,12 @@ public class TermiteApp {
 		String featureInfoName = "featureInfo.json";
 		String modelName = "model.json";
 		
+		double baseLat = 39.627177;
+		double baseLon = -79.997989;
+		
+		OsmModel.mxOffset = MercatorCoordinates.lonRadToMx(Math.toRadians(baseLon));
+		OsmModel.myOffset = MercatorCoordinates.latRadToMy(Math.toRadians(baseLat));
+		
 		//load the theme
 		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
 		Theme theme = Theme.parse(themeJson);
@@ -93,6 +97,7 @@ public class TermiteApp {
 		
 		JSONObject modelJson = JsonIO.readJsonFile(modelName);
 		OsmModel.parse(modelJson);
+		OsmModel.featureInfoMap = featureInfoMap;
 		
 //		
 //		String svgFileName = "test.svg";
@@ -105,9 +110,9 @@ public class TermiteApp {
 //		svgConverter2.createSvg(level,"testOut.svg", icm);
 		
 		OsmXml osmXml = new OsmXml();
-		osmXml.parse("test2.xml");
-		TermiteData termiteData = new TermiteData(featureInfoMap);
-		termiteData.loadData(osmXml);
+		OsmData osmData = osmXml.parse("test2.xml");
+		TermiteData termiteData = new TermiteData();
+		termiteData.loadData(osmData);
 		
 		StructureLayer structureLayer = new StructureLayer();
 		structureLayer.setTheme(theme);

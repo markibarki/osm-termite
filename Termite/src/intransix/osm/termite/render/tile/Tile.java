@@ -1,5 +1,6 @@
-package intransix.osm.termite.app.gui;
+package intransix.osm.termite.render.tile;
 
+import intransix.osm.termite.map.osm.OsmModel;
 import intransix.osm.termite.util.MercatorCoordinates;
 import java.awt.*;
 
@@ -25,7 +26,10 @@ public class Tile {
 	
 	public void render(Graphics2D g2) {
 		int mult = 1 << (MercatorCoordinates.MERCATOR_ZOOM - zoom);
-		g2.drawImage(image, mult*x, mult*y, mult, mult, null);
+		int xPix = (int)(mult * x - OsmModel.mxOffset);
+		int yPix = (int)(mult * y - OsmModel.myOffset);
+		
+		g2.drawImage(image,xPix,yPix, mult, mult, null);
 		
 	}
 	

@@ -1,5 +1,6 @@
 package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.prop.FeatureInfoMap;
 import org.json.*;
 import java.util.HashSet;
 
@@ -9,6 +10,12 @@ import java.util.HashSet;
  * @author sutter
  */
 public class OsmModel {
+	
+	public static double mxOffset = 0;
+	public static double myOffset = 0;
+	
+	public static FeatureInfoMap featureInfoMap;
+	
 	public static boolean doNodeLevelLabels = false;
 	
 	public static String TYPE_STRUCTURE = "structure";
@@ -24,6 +31,13 @@ public class OsmModel {
 	public static String KEY_REF = "ref";
 	public static String KEY_REF_SCOPE_GEOM = "ref:scope:geom";
 	public static String KEY_REF_SCOPE_RELATION = "ref:scope:rel";
+	
+	//osm standards
+	public final static String TYPE_NODE = "node";
+	public final static String TYPE_WAY = "way";
+	public final static String TYPE_RELATION = "relation";
+	public final static String TAG_TYPE = "type";
+	public final static String TYPE_MULTIPOLYGON = "multipolygon";
 	
 	public static HashSet<String> GEOMETRIC_KEYS = new HashSet<String>();
 	

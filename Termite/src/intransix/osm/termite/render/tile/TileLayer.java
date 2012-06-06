@@ -1,5 +1,9 @@
-package intransix.osm.termite.app.gui;
+package intransix.osm.termite.render.tile;
 
+import intransix.osm.termite.map.osm.OsmModel;
+import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.MapListener;
+import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.util.MercatorCoordinates;
 import java.awt.*;
 import java.awt.geom.*;
@@ -13,7 +17,7 @@ import java.awt.image.ImageObserver;
  * 
  * @author sutter
  */
-public class TileLayer implements Layer, ImageObserver, MapListener {
+public class TileLayer implements MapLayer, ImageObserver, MapListener {
 	
 	//=========================
 	// Properties
@@ -22,12 +26,16 @@ public class TileLayer implements Layer, ImageObserver, MapListener {
 	public final static int MAX_CACHE_SIZE = 50;
 	public final static int INVALID_ZOOM = -1;
 	
+	public final static int MAX_ZOOM_EXCESS = 4;
+	
 	private int zoom = INVALID_ZOOM;
 	private HashMap<String,Tile> tileCache = new HashMap<String,Tile>();
 	private MapPanel mapPanel;
 	private String urlTemplate;	
 	private int maxZoom;
 	private int tileSize;
+	
+	private boolean zoomTooHigh = false;
 
 	//=========================
 	// Public Methods
@@ -50,6 +58,8 @@ public class TileLayer implements Layer, ImageObserver, MapListener {
 	
 	@Override
 	public void render(Graphics2D g2) {
+		
+		if(zoomTooHigh) return;
 		
 		AffineTransform mapToPixels = mapPanel.getMapToPixels();
 		AffineTransform pixelsToMap = mapPanel.getPixelsToMap();
@@ -119,11 +129,19 @@ public class TileLayer implements Layer, ImageObserver, MapListener {
 	@Override
 	public void onZoom(double zoomScale) {
 		int desiredScale = (int)Math.round(Math.log( zoomScale / tileSize)/Math.log(2) + MercatorCoordinates.MERCATOR_ZOOM);
-		if(desiredScale > maxZoom) {
-			zoom = maxZoom;
+		
+		//make sure we don't try to zoom in too much - will crash system
+		if((desiredScale - maxZoom) > MAX_ZOOM_EXCESS) {
+			this.zoomTooHigh = true;
 		}
 		else {
-			zoom = desiredScale;
+			this.zoomTooHigh = false;
+			if(desiredScale > maxZoom) {
+				zoom = maxZoom;
+			}
+			else {
+				zoom = desiredScale;
+			}
 		}
 	}
 	
@@ -160,14 +178,13 @@ public class TileLayer implements Layer, ImageObserver, MapListener {
 			int activeZoom, int[] tileRange) {
 		
 		//convert the point to mercator
-		Point tileXY = new Point();
 		Point2D test = new Point2D.Double();
 		test.setLocation(pixX,pixY);
 		pixelsToMap.transform(test, test);
 		//get the tile this is on
 		int div = 1 << (MercatorCoordinates.MERCATOR_ZOOM - activeZoom);
-		int tileX = (int)(test.getX()/div);
-		int tileY = (int)(test.getY()/div);
+		int tileX = (int)((test.getX() + OsmModel.mxOffset)/div);
+		int tileY = (int)((test.getY() + OsmModel.myOffset)/div);
 		//update the required range
 		if(tileRange[0] > tileX) tileRange[0] = tileX;
 		if(tileRange[1] > tileY) tileRange[1] = tileY;

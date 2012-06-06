@@ -54,7 +54,7 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="intransix.osm.termite.app.gui.MapPanel" name="mapPanel1">
+    <Container class="intransix.osm.termite.render.MapPanel" name="mapPanel1">
       <Properties>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[1200, 800]"/>

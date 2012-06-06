@@ -1,5 +1,6 @@
 package intransix.osm.termite.app.gui;
 
+import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.app.TermiteApp;
 
 /**
@@ -39,7 +40,7 @@ public class TermiteGui extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        mapPanel1 = new intransix.osm.termite.app.gui.MapPanel();
+        mapPanel1 = new intransix.osm.termite.render.MapPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         quitItem = new javax.swing.JMenuItem();
@@ -95,7 +96,7 @@ public class TermiteGui extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuBar jMenuBar1;
-    private intransix.osm.termite.app.gui.MapPanel mapPanel1;
+    private intransix.osm.termite.render.MapPanel mapPanel1;
     private javax.swing.JMenuItem quitItem;
     // End of variables declaration//GEN-END:variables
 }
