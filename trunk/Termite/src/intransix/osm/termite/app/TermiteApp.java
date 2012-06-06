@@ -109,8 +109,8 @@ public class TermiteApp {
 //		SvgConverter svgConverter2 = new SvgConverter();
 //		svgConverter2.createSvg(level,"testOut.svg", icm);
 		
-		OsmXml osmXml = new OsmXml();
-		OsmData osmData = osmXml.parse("test2.xml");
+		OsmParser osmParser = new OsmParser();
+		OsmData osmData = osmParser.parse("test2.xml");
 		TermiteData termiteData = new TermiteData();
 		termiteData.loadData(osmData);
 		
