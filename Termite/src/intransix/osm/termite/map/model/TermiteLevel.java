@@ -5,10 +5,15 @@ import intransix.osm.termite.map.prop.FeatureInfo;
 import java.util.*;
 
 /**
- *
+ * This class encapsulates the data associated with a level in a structure. 
+ * 
  * @author sutter
  */
 public class TermiteLevel extends TermiteObject {
+	
+	//=========================
+	// Properties
+	//=========================
 	
 	public final static int DEFAULT_ZLEVEL = 0;
 	public final static int INVALID_ZLEVEL = Integer.MIN_VALUE;
@@ -22,24 +27,33 @@ public class TermiteLevel extends TermiteObject {
 	private OsmRelation osmRelation;
 	private OsmWay shell;
 	
+	//=========================
+	// Public Methods
+	//=========================
+	
+	/** This method gets the structure associated with the level. */
 	public TermiteStructure getStructure() {
 		return structure;
 	}
 	
+	/** This method gets the zlevel value associated with the level. */
 	public int getZlevel() {
 		return zlevel;
 	}
 	
+	/** This method sorts the features by draw order. */
 	public void orderFeatures() {
 		//sort the ways
 		Collections.sort(ways,new TermiteComparator());
 		//don't bother sorting the nodes
 	}
 	
+	/** This method returns the nodes on the level. */
 	public List<TermiteNode> getNodes() {
 		return nodes;
 	}
 	
+	/** This method returns the ways on the level. */
 	public List<TermiteWay> getWays() {
 		return ways;
 	}
@@ -47,15 +61,13 @@ public class TermiteLevel extends TermiteObject {
 	//====================
 	// Package Methods
 	//====================
-
-	ArrayList<TermiteNode> getTermiteNodes() {
-		return nodes;
-	}
 	
+	/** This method sets the structure object. */
 	void setStructure(TermiteStructure structure) {
 		this.structure = structure;
 	}
 	
+	/** This method loads the relation from the OsmRelation object. */
 	void loadFromRelation(OsmRelation osmRelation, TermiteData data) {
 		this.osmRelation = osmRelation;
 		
@@ -88,9 +100,8 @@ public class TermiteLevel extends TermiteObject {
 		}
 	}
 	
-	/** This method is used for method 2 - level specified by node properties -
-	 * To create a level object from the shell for a given level. Here we need the
-	 * OSM object because the Termite object may not have been loaded yet. */
+	/** This method loads the level from the shell object. It is used when the 
+	 * shell defines the level properties as opposed to a separate relation. */
 	void loadFromShell(OsmWay osmShell, TermiteData data) {
 		this.osmRelation = null;
 		this.shell = osmShell;
@@ -100,16 +111,19 @@ public class TermiteLevel extends TermiteObject {
 		this.zlevel = shell.getIntProperty(OsmModel.KEY_ZLEVEL,DEFAULT_ZLEVEL);
 	}
 	
+	/** This method adds a node to the level. */
 	void addNode(TermiteNode node) {
 		if(nodes.contains(node)) return;
 		nodes.add(node);
 	}
 	
+	/** This method adds a way to the level. */
 	void addWay(TermiteWay way) {
 		if(ways.contains(way)) return;
 		ways.add(way);
 	}
 	
+	/** This method returns the OsmObject associate with the level. */
 	@Override
 	OsmObject getOsmObject() {
 		return osmRelation;
