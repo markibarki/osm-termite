@@ -7,20 +7,30 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
+ * This class parses an OSM request data.
+ * 
  * @author sutter
  */
-public class OsmXml extends DefaultHandler {
+public class OsmParser extends DefaultHandler {
+	
+	//==========================
+	// Properties
+	//==========================
 	
 	OsmData osmData;
-	
-	//osm (root)
-	String version;
-	String generator;
 	
 	OsmObject activeObject = null;
 	String activeObjectName = null;
 	
+	//==========================
+	// Properties
+	//==========================
+	
+	/** This method parses an XMl data request from OSM.
+	 * 
+	 * @param fileName	The file to parse
+	 * @return			An OsmData object holding the data in the request
+	 */
 	public OsmData parse(String fileName) {
 
 		try {
@@ -42,6 +52,7 @@ public class OsmXml extends DefaultHandler {
 
 	}	
 	
+	/** This is the SAX parser start element method. */
 	@Override
 	public void startElement(String uri, String localName, String name,
 			Attributes attributes) throws SAXException {
@@ -50,8 +61,10 @@ public class OsmXml extends DefaultHandler {
 			activeObject.startElement(name,attributes,osmData);
 		}
 		else if(name.equalsIgnoreCase("osm")) {
-			version = attributes.getValue("version");
-			generator = attributes.getValue("generator");
+			String version = attributes.getValue("version");
+			osmData.setVersion(version);
+			String generator = attributes.getValue("generator");
+			osmData.setGenerator(generator);
 		}
 		else {
 			long osmId = getLong(attributes,"id",OsmObject.INVALID_ID);
@@ -67,6 +80,7 @@ public class OsmXml extends DefaultHandler {
 		}
 	}
 
+	/** This is the SAX parser end element method. */
 	@Override
 	public void endElement(String uri, String localName,
 			String name) throws SAXException {
@@ -83,11 +97,16 @@ public class OsmXml extends DefaultHandler {
 		}
 	}
 
+	/** This is the SAX parser characters method. */
 	public void characters(char ch[], int start, int length) throws SAXException {
 	}
 	
-		//helper methods
+		
+	//==========================
+	// Protected Methods
+	//==========================
 	
+	/** This method reads a boolean value from the attributes. */ 
 	protected static boolean getBoolean(Attributes attr, String key, boolean defaultValue) {
 		String value = attr.getValue(key);
 		if(value != null) {
@@ -102,6 +121,7 @@ public class OsmXml extends DefaultHandler {
 		return defaultValue;
 	}
 	
+	/** This method reads a long value from the attributes. */
 	protected static long getLong(Attributes attr, String key, long defaultValue) {
 		String value = attr.getValue(key);
 		if(value != null) {
@@ -116,6 +136,7 @@ public class OsmXml extends DefaultHandler {
 		return defaultValue;
 	}
 	
+	/** This method reads a double value from the attributes. */
 	protected static double getDouble(Attributes attr, String key, double defaultValue) {
 		String value = attr.getValue(key);
 		if(value != null) {

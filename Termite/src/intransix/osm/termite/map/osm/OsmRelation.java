@@ -4,22 +4,32 @@ import java.util.ArrayList;
 import org.xml.sax.Attributes;
 
 /**
- *
+ * This class holds the data for an OSM relation.
  * @author sutter
  */
 public class OsmRelation extends OsmObject {
 	
+	//=======================
+	// Properties
+	//=======================
+	
 	private ArrayList<OsmMember> members = new ArrayList<OsmMember>();
 	
-	/** The argument is the combined type + osmId string. */
+	//=======================
+	// Public Methods
+	//=======================
+	
+	/** Constructor. */
 	public OsmRelation(long id) {
 		super(OsmModel.TYPE_RELATION, id);
 	}
 	
+	/** This method gets the member list for this relation. */
 	public ArrayList<OsmMember> getMembers() {
 		return members;
 	}
 	
+	/** This method is used for XMl parsing. */
 	@Override
 	public void startElement(String name, Attributes attr, OsmData osmData) {
 		//let the parent parse
@@ -32,7 +42,7 @@ public class OsmRelation extends OsmObject {
 		}
 		else if(name.equalsIgnoreCase("member")) {
 			String type = attr.getValue("type");
-			long ref = OsmXml.getLong(attr,"ref",INVALID_ID);
+			long ref = OsmParser.getLong(attr,"ref",INVALID_ID);
 			String role = attr.getValue("role");
 			OsmObject object = osmData.getOsmObject(ref,type);
 			if(object != null) {
