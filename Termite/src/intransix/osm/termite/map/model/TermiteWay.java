@@ -41,6 +41,11 @@ public class TermiteWay extends TermiteObject {
 	public OsmWay getOsmWay() {
 		return osmWay;
 	}
+	
+	/** This method gets the multi poly relation for this way. */
+	public TermiteMultiPoly getMultiPoly() {
+		return multiPoly;
+	}
 
 	//====================
 	// Package Methods
@@ -55,6 +60,11 @@ public class TermiteWay extends TermiteObject {
 	/** This methods sets the OsmWay. */
 	void setOsmWay(OsmWay osmWay) {
 		this.osmWay = osmWay;
+	}
+	
+	/** This method sets the multi poly relation for this way. */
+	void setMultiPoly(TermiteMultiPoly multiPoly) {
+		this.multiPoly = multiPoly;
 	}
 	
 	/** This method gets the OSM object associated with this object. */

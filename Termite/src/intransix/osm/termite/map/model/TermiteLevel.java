@@ -86,9 +86,6 @@ public class TermiteLevel extends TermiteObject {
 					TermiteWay termiteWay = ((OsmWay)member).getTermiteWay();
 					termiteWay.addLevel(this);
 				}
-				else {
-//add support for multipoly
-				}
 			}
 			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_SHELL)) {
 				if(member instanceof OsmWay) {
