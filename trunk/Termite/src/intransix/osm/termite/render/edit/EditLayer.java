@@ -57,9 +57,8 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 		OsmNode localNode = activeNode;
 		if(localNode != null) {
 			g2.setColor(HIGHLIGHT_COLOR);
-			double metersPerMerc = MercatorCoordinates.metersPerMerc(localNode.getY() + OsmModel.myOffset);
-			double r = RADIUS_METERS / metersPerMerc;
-			Shape rect = new Rectangle2D.Double(localNode.getX()-r,localNode.getY()-r,2*r,2*r);
+			Shape rect = new Rectangle2D.Double(localNode.getX()-RADIUS_METERS,
+					localNode.getY()-RADIUS_METERS,2*RADIUS_METERS,2*RADIUS_METERS);
 			g2.fill(rect);
 		}
 	}
@@ -89,15 +88,11 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 		AffineTransform pixelsToMap = mapPanel.getPixelsToMap();
 		pixelsToMap.transform(point, point);
 		
-		//get point radius
-		double metersPerMerc = MercatorCoordinates.metersPerMerc(point.getY() + OsmModel.myOffset);
-		double r = RADIUS_METERS / metersPerMerc;
-		
 		//loook for a point
 		for(TermiteNode tNode:currentLevel.getNodes()) {
 			OsmNode oNode = tNode.getOsmNode();
 			double d = point.distance(oNode.getX(),oNode.getY());
-			if(d < r) {
+			if(d < RADIUS_METERS) {
 				this.activeNode = oNode;
 				mapPanel.repaint();
 				return;
