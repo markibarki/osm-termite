@@ -1,12 +1,10 @@
 package intransix.osm.termite.render.structure;
 
 import intransix.osm.termite.map.model.*;
-import intransix.osm.termite.map.osm.OsmModel;
 import intransix.osm.termite.map.osm.OsmNode;
 import intransix.osm.termite.map.osm.OsmObject;
 import intransix.osm.termite.theme.Style;
 import intransix.osm.termite.theme.Theme;
-import intransix.osm.termite.util.MercatorCoordinates;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
