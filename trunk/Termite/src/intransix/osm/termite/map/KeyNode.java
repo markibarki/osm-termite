@@ -4,12 +4,16 @@ import java.util.*;
 import org.json.*;
 
 /**
- * This encapsulates a key object, with is a type of property object which also specifies
- * allowed values for itself.
+ * This is a key node in a property tree. It encapsulates the  keys for 
+ * a given property, and in turn includes property values for this key.
  * 
  * @author sutter
  */
 public class KeyNode<TK, TV> {
+	
+	//===============
+	// Properties
+	//===============
 	
 	public final static boolean DEFAULT_EXCLUSIVE = false;
 	
@@ -18,6 +22,10 @@ public class KeyNode<TK, TV> {
 	private ArrayList<PropertyNode<TK,TV>> values = new ArrayList<PropertyNode<TK,TV>>();
 	private boolean isExclusive = false;
 	private TK data = null;
+	
+	//===============
+	// Public Methods
+	//===============
 	
 	/** This method parses the Key Object. The DataParser object should
 	 * be sent in to parse the data. If the data parser is missing, no data
