@@ -1,18 +1,13 @@
 package intransix.osm.termite.render.structure;
 
-import intransix.osm.termite.map.model.TermiteStructure;
-import intransix.osm.termite.map.model.TermiteData;
 import intransix.osm.termite.map.model.TermiteWay;
 import intransix.osm.termite.map.model.TermiteLevel;
 import intransix.osm.termite.map.model.TermiteNode;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.theme.Theme;
-import java.util.ArrayList;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
-import java.awt.event.*;
 
 /**
  *
