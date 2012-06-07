@@ -73,10 +73,8 @@ public class PointFeature {
 	void updateData() {
 		//update this object
 		this.termiteLevel = termiteNode.getLevel();
-		
-		double metersPerMerc = MercatorCoordinates.metersPerMerc(osmNode.getY() + OsmModel.myOffset);
-		double radiusMerc = RADIUS_METERS / metersPerMerc;
-		marker = new Ellipse2D.Double(osmNode.getX()-radiusMerc,osmNode.getY()-radiusMerc,2*radiusMerc,2*radiusMerc);
+		marker = new Ellipse2D.Double(osmNode.getX()-RADIUS_METERS,
+				osmNode.getY()-RADIUS_METERS,2*RADIUS_METERS,2*RADIUS_METERS);
 	}	
 		
 }

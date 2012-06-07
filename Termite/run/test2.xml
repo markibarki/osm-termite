@@ -2333,8 +2333,10 @@
   <member type="way" ref="158932954" role="outer"/>
   <tag k="type" v="multipolygon"/>
  </relation>
- <relation id="2127656" user="sutter_dave" uid="177052" visible="true" version="6" changeset="11763325" timestamp="2012-06-01T00:36:35Z">
-  <member type="relation" ref="2175578" role="buildingpart"/>
+ <relation id="2127656" user="sutter_dave" uid="177052" visible="true" version="7" changeset="11820783" timestamp="2012-06-06T23:09:44Z">
+  <member type="way" ref="158932954" role="buildingpart"/>
+  <member type="way" ref="162750352" role="buildingpart"/>
+  <member type="way" ref="158933080" role="buildingpart"/>
   <member type="way" ref="96822105" role="shell"/>
   <member type="way" ref="158932955" role="buildingpart"/>
   <member type="node" ref="1723440852" role="buildingpart"/>

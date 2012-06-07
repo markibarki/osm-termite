@@ -4,6 +4,7 @@ import intransix.osm.termite.map.osm.OsmModel;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.MapListener;
 import intransix.osm.termite.render.MapPanel;
+import intransix.osm.termite.util.LocalCoordinates;
 import intransix.osm.termite.util.MercatorCoordinates;
 import java.awt.*;
 import java.awt.geom.*;
@@ -182,9 +183,9 @@ public class TileLayer implements MapLayer, ImageObserver, MapListener {
 		test.setLocation(pixX,pixY);
 		pixelsToMap.transform(test, test);
 		//get the tile this is on
-		int div = 1 << (MercatorCoordinates.MERCATOR_ZOOM - activeZoom);
-		int tileX = (int)((test.getX() + OsmModel.mxOffset)/div);
-		int tileY = (int)((test.getY() + OsmModel.myOffset)/div);
+		int tileToMerc = 1 << (MercatorCoordinates.MERCATOR_ZOOM - zoom);
+		int tileX = (int)(LocalCoordinates.localToMercX(test.getX())/tileToMerc);
+		int tileY = (int)(LocalCoordinates.localToMercY(test.getY())/tileToMerc);
 		//update the required range
 		if(tileRange[0] > tileX) tileRange[0] = tileX;
 		if(tileRange[1] > tileY) tileRange[1] = tileY;

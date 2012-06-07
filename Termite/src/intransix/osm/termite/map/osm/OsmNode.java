@@ -2,6 +2,7 @@ package intransix.osm.termite.map.osm;
 
 import intransix.osm.termite.map.model.TermiteNode;
 import intransix.osm.termite.util.MercatorCoordinates;
+import intransix.osm.termite.util.LocalCoordinates;
 import org.xml.sax.Attributes;
 import java.util.ArrayList;
 
@@ -69,11 +70,13 @@ public class OsmNode extends OsmObject {
 		if(name.equalsIgnoreCase("node")) {
 			//parse common stuff
 			parseElementBase(name, attr);
-			//node specific
+			//get local coordinates in meters
 			double lat = OsmParser.getDouble(attr,"lat",INVALID_ANGLE);
 			double lon = OsmParser.getDouble(attr,"lon",INVALID_ANGLE);
-			x = MercatorCoordinates.lonRadToMx(Math.toRadians(lon)) - OsmModel.mxOffset;
-			y = MercatorCoordinates.latRadToMy(Math.toRadians(lat)) - OsmModel.myOffset;
+			double mx = MercatorCoordinates.lonRadToMx(Math.toRadians(lon));
+			double my = MercatorCoordinates.latRadToMy(Math.toRadians(lat));
+			x = LocalCoordinates.mercToLocalX(mx);
+			y = LocalCoordinates.mercToLocalY(my);
 		}
 	}
 	

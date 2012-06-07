@@ -13,6 +13,7 @@ import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.render.structure.StructureLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.tile.TileLayer;
+import intransix.osm.termite.util.LocalCoordinates;
 import intransix.osm.termite.util.MercatorCoordinates;
 
 import org.json.*;
@@ -82,11 +83,13 @@ public class TermiteApp {
 		String featureInfoName = "featureInfo.json";
 		String modelName = "model.json";
 		
+		//set local coordinates
 		double baseLat = 39.627177;
 		double baseLon = -79.997989;
 		
-		OsmModel.mxOffset = MercatorCoordinates.lonRadToMx(Math.toRadians(baseLon));
-		OsmModel.myOffset = MercatorCoordinates.latRadToMy(Math.toRadians(baseLat));
+		double mx = MercatorCoordinates.lonRadToMx(Math.toRadians(baseLon));
+		double my = MercatorCoordinates.latRadToMy(Math.toRadians(baseLat));
+		LocalCoordinates.setLocalAnchor(mx,my);
 		
 		//load the theme
 		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
