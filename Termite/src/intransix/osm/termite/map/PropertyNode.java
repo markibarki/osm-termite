@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.json.*;
 
 /**
- * This is a property mapping object. 
+ * This is the property node in a Property Tree. 
  * 
  * @author sutter
  */

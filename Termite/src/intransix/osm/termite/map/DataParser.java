@@ -1,10 +1,10 @@
 package intransix.osm.termite.map;
 
-import java.util.ArrayList;
 import org.json.JSONObject;
 
 /**
- *
+ * This is a parser interface for the PropertyTree json file.
+ * 
  * @author sutter
  */
 public abstract class DataParser<TK, TV> {
