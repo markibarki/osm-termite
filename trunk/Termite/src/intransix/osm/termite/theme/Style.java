@@ -8,10 +8,14 @@ import java.util.ArrayList;
 import org.json.JSONObject;
 
 /**
- *
+ * This object is a style for rendering an map object.
  * @author sutter
  */
 public class Style {
+	
+	//===============
+	// Properties
+	//===============
 	
 	public final static Color DEFAULT_BODY_COLOR = Color.LIGHT_GRAY;
 	public final static Color DEFAULT_OUTLINE_COLOR = Color.DARK_GRAY;
@@ -26,17 +30,33 @@ public class Style {
 	private float outlineScale = 0;
 	private Stroke stroke = null;
 	
-	private Style() {
-	}
+	//===============
+	// Public Methods
+	//===============
 	
+	/** This is the body color for the object. For an area, this corresponds to 
+	 * the fill. For a line, this corresponds to the stroke used on the line. */
 	public Color getBodyColor() {
 		return bodyColor;
 	}
 	
+	/** This is the outline color for an object. For an area, it should be used for 
+	 * the stroke. For a line, it is not used unless the line includes an outline 
+	 * outside the stroke.
+	 * 
+	 * @return 
+	 */
 	public Color getOutlineColor() {
 		return outlineColor;
 	}
 	
+	/** This method gets a stroke object. It will print the stroke in a fixed pixel
+	 * width.
+	 * 
+	 * @param zoomScale		The magnification that will be down from the drawn object to
+	 *						pixels. This is used so the pixel width comes out correctly.
+	 * @return				A Stroke object
+	 */
 	public Stroke getStroke(double zoomScale) {
 		if((outlineWidth == 0)||(outlineColor == null)) return null;
 		
@@ -84,12 +104,19 @@ public class Style {
 
 		return st;
 	}
+	
+	//=================
+	// Private Methods
+	//=================
+	private Style() {
+	}
 		
 
 }
 	
-/** This is a data parser that keeps track of key and value together and 
-* passes uses the the most recent for default values for the child object.
+/** This is a data parser to parse the styles from a theme property tree.
+ * It keeps track of key and value together and 
+* uses the the most recent for default values for the child object.
 */
 class StyleParser extends DataParser<Style,Style> {
 	

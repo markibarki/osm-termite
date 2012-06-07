@@ -9,8 +9,16 @@ import org.json.*;
  * @author sutter
  */
 public class Theme {
+		
+	//==============
+	//Properties
+	//==============
 	
-	PropertyNode<Style,Style> treeRoot = null;
+	private PropertyNode<Style,Style> treeRoot = null;
+	
+	//==============
+	//Public Methods
+	//==============
 	
 	/** This method parses a property tree for the theme. */
 	public static Theme parse(JSONObject json) throws Exception {
