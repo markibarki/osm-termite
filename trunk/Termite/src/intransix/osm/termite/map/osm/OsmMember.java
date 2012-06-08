@@ -4,5 +4,15 @@ package intransix.osm.termite.map.osm;
 public class OsmMember {
 	public String role;
 	public String type;
-	public OsmObject member;
+	public Long memberId;
+	
+	public OsmMember(Long memberId, String type, String role) {
+		this.memberId = memberId;
+		this.type = type;
+		this.role = role;
+	}
+	
+	public OsmMember createCopy() {
+		return new OsmMember(memberId,type,role);
+	}
 }

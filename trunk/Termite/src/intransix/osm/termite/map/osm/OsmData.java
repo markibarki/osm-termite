@@ -36,7 +36,7 @@ public class OsmData {
 		this.generator = generator;
 	}
 	
-	OsmObject getOsmObject(long id, String type) {
+	public OsmObject getOsmObject(long id, String type) {
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
 			return getOsmNode(id);
 		}
@@ -53,30 +53,15 @@ public class OsmData {
 	}
 
 	public OsmNode getOsmNode(long id) {
-		OsmNode node = nodeMap.get(id);
-		if(node == null) {
-			node = new OsmNode(id);
-			nodeMap.put(id,node);
-		}
-		return node;
+		return nodeMap.get(id);
 	}
 	
 	public OsmWay getOsmWay(long id) {
-		OsmWay way = wayMap.get(id);
-		if(way == null) {
-			way = new OsmWay(id);
-			wayMap.put(id,way);
-		}
-		return way;
+		return wayMap.get(id);
 	}
 	
 	public OsmRelation getOsmRelation(long id) {
-		OsmRelation relation = relationMap.get(id);
-		if(relation == null) {
-			relation = new OsmRelation(id);
-			relationMap.put(id,relation);
-		}
-		return relation;
+		return relationMap.get(id);
 	}
 	
 	public Collection<OsmNode> getOsmNodes() {
@@ -105,6 +90,73 @@ public class OsmData {
 			relation.createCopy(dataCopy);
 		}
 		return dataCopy;
+	}
+	
+	//========================
+	// Package methods
+	//========================
+	
+	/** This method creates an object of the given type with the given id. */
+	OsmObject createOsmObject(long id, String type) {
+		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
+			return createOsmNode(id);
+		}
+		else if(type.equalsIgnoreCase(OsmModel.TYPE_WAY)) {
+			return createOsmWay(id);
+		}
+		else if(type.equalsIgnoreCase(OsmModel.TYPE_RELATION)) {
+			return createOsmRelation(id);
+		}
+		else {
+			//unknown object
+			return null;
+		}
+	}
+	
+	OsmNode createOsmNode(long id) {
+		OsmNode node = new OsmNode(id);
+		nodeMap.put(id,node);
+		return node;
+	}
+	
+	OsmWay createOsmWay(long id) {
+		OsmWay way = new OsmWay(id);
+		wayMap.put(id,way);
+		return way;
+	}
+	
+	OsmRelation createOsmRelation(long id) {
+		OsmRelation relation = new OsmRelation(id);
+		relationMap.put(id,relation);
+		return relation;
+	}
+	
+	/** This method removes the object from the active data. */
+	void removeOsmObject(long id, String type) {
+		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
+			removeOsmNode(id);
+		}
+		else if(type.equalsIgnoreCase(OsmModel.TYPE_WAY)) {
+			removeOsmWay(id);
+		}
+		else if(type.equalsIgnoreCase(OsmModel.TYPE_RELATION)) {
+			removeOsmRelation(id);
+		}
+		else {
+			//unknown object
+		}
+	}
+	
+	void removeOsmNode(long id) {
+		nodeMap.remove(id);
+	}
+	
+	void removeOsmWay(long id) {
+		wayMap.remove(id);
+	}
+	
+	void removeOsmRelation(long id) {
+		relationMap.remove(id);
 	}
 
 }

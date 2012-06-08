@@ -13,7 +13,8 @@ public class OsmWay extends OsmObject {
 	//=======================
 	//
 	//=======================
-	private ArrayList<OsmNode> nodes = new ArrayList<OsmNode>();
+	
+	private ArrayList<Long> nodeIds = new ArrayList<Long>();
 	
 	private TermiteWay termiteWay = null;
 
@@ -27,8 +28,8 @@ public class OsmWay extends OsmObject {
 	}
 	
 	/** This method gets the nodes for this way. */
-	public ArrayList<OsmNode> getNodes() {
-		return nodes;
+	public ArrayList<Long> getNodeIds() {
+		return nodeIds;
 	}
 	
 	/** This method sets the TermiteWay for this OsmWay. */
@@ -54,10 +55,7 @@ public class OsmWay extends OsmObject {
 		}
 		else if(name.equalsIgnoreCase("nd")) {
 			long ref = OsmParser.getLong(attr,"ref",INVALID_ID);
-			OsmNode node = (OsmNode)osmData.getOsmObject(ref,"node");
-			if(node != null) {
-				addNode(node);
-			}
+			nodeIds.add(ref);
 		}
 	}
 	
@@ -68,24 +66,10 @@ public class OsmWay extends OsmObject {
 	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override
 	void createCopy(OsmData destOsmData) {
-		OsmWay newWay = destOsmData.getOsmWay(this.getId());
-		for(OsmNode node:this.nodes) {
-			OsmNode newNode = destOsmData.getOsmNode(node.getId());
-			newWay.addNode(newNode);
+		OsmWay newWay = destOsmData.createOsmWay(this.getId());
+		for(Long nodeId:this.nodeIds) {
+			newWay.nodeIds.add(nodeId);
 		}
 		copyFromBase(newWay);
 	}
-	
-	/** This method adds a node to the way. */
-	private void addNode(OsmNode node) {
-		this.nodes.add(node);
-		node.addWay(this);
-	}
-	
-	/** This method removes a node from the way. */
-	private void removeNode(OsmNode node) {
-		this.nodes.remove(node);
-		node.removeWay(this);
-	}
-	
 }

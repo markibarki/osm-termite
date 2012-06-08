@@ -55,7 +55,7 @@ public class PathFeature {
 			
 			//get the style
 			style = theme.getStyle(osmWay);
-			
+
 			this.localVersion = osmWay.getLocalVersion();
 		}
 		
@@ -122,8 +122,7 @@ public class PathFeature {
 					Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
 					for(TermiteWay tWay:multiPoly.getWays()) {
-						OsmWay osmWay = tWay.getOsmWay();
-						addWayToPathForLevel(level,path,osmWay,isArea);
+						addWayToPathForLevel(level,path,tWay,isArea);
 					}
 
 					//add the path in the order of the level
@@ -152,7 +151,7 @@ public class PathFeature {
 			for(TermiteLevel level:termiteLevels) {
 				Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
-				addWayToPathForLevel(level,path,osmWay,isArea);
+				addWayToPathForLevel(level,path,termiteWay,isArea);
 
 				//add the path in the order of the level
 				paths[index++] = path;
@@ -173,11 +172,11 @@ public class PathFeature {
 		}
 	}
 	
-	static void addWayToPathForLevel(TermiteLevel level, Path2D path, OsmWay way, boolean isArea) {
+	static void addWayToPathForLevel(TermiteLevel level, Path2D path, TermiteWay way, boolean isArea) {
 		boolean started = false;
-		for(OsmNode oNode:way.getNodes()) {
-			TermiteNode tNode = oNode.getTermiteNode();
+		for(TermiteNode tNode:way.getNodes()) {
 			if(tNode.getLevel() == level) {
+				OsmNode oNode = tNode.getOsmNode();
 				double x = oNode.getX();
 				double y = oNode.getY();
 				if(started) {

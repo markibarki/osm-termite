@@ -68,30 +68,36 @@ public class TermiteLevel extends TermiteObject {
 	}
 	
 	/** This method loads the relation from the OsmRelation object. */
-	void loadFromRelation(OsmRelation osmRelation, TermiteData data) {
+	void loadFromRelation(OsmRelation osmRelation, TermiteData termiteData) {
 		this.osmRelation = osmRelation;
+		OsmData osmData = termiteData.getWorkingData();
 		
 		//load members
 		for(OsmMember osmMember:osmRelation.getMembers()) {
-			OsmObject member = osmMember.member;
-			if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_FEATURE)) {
-				//method 1 - features collected by the level relation
-				//load features in level relation
-				if(member instanceof OsmNode) {
-					TermiteNode termiteNode = ((OsmNode)member).getTermiteNode();
-					termiteNode.setLevel(this);
+			OsmObject member =  osmData.getOsmObject(osmMember.memberId, osmMember.type);
+			if(member != null) {
+				if(OsmModel.ROLE_FEATURE.equalsIgnoreCase(osmMember.role)) {
+					//method 1 - features collected by the level relation
+					//load features in level relation
+					if(member instanceof OsmNode) {
+						TermiteNode termiteNode = ((OsmNode)member).getTermiteNode();
+						termiteNode.setLevel(this);
+						this.addNode(termiteNode);
+					}
+					else if(member instanceof OsmWay) {
+						//create a virutal feature for this way
+						TermiteWay termiteWay = ((OsmWay)member).getTermiteWay();
+						termiteWay.addLevel(this);
+						this.addWay(termiteWay);
+					}
 				}
-				else if(member instanceof OsmWay) {
-					//create a virutal feature for this way
-					TermiteWay termiteWay = ((OsmWay)member).getTermiteWay();
-					termiteWay.addLevel(this);
-				}
-			}
-			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_SHELL)) {
-				if(member instanceof OsmWay) {
-					this.shell = (OsmWay)member;
-					TermiteWay termiteWay = shell.getTermiteWay();
-					termiteWay.addLevel(this);
+				else if(OsmModel.ROLE_SHELL.equalsIgnoreCase(osmMember.role)) {
+					if(member instanceof OsmWay) {
+						this.shell = (OsmWay)member;
+						TermiteWay termiteWay = shell.getTermiteWay();
+						termiteWay.addLevel(this);
+						this.addWay(termiteWay);
+					}
 				}
 			}
 		}
@@ -99,11 +105,12 @@ public class TermiteLevel extends TermiteObject {
 	
 	/** This method loads the level from the shell object. It is used when the 
 	 * shell defines the level properties as opposed to a separate relation. */
-	void loadFromShell(OsmWay osmShell, TermiteData data) {
+	void loadFromShell(OsmWay osmShell, OsmData data) {
 		this.osmRelation = null;
 		this.shell = osmShell;
 		TermiteWay termiteWay = shell.getTermiteWay();
 		termiteWay.addLevel(this);
+		this.addWay(termiteWay);
 		
 		this.zlevel = shell.getIntProperty(OsmModel.KEY_ZLEVEL,DEFAULT_ZLEVEL);
 	}

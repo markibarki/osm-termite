@@ -41,11 +41,16 @@ public class TermiteMultiPoly extends TermiteObject {
 	}
 	
 	/** This method loads the object from the osm relation. */
-	public void load(OsmRelation osmRelation) {
+	public void load(OsmRelation osmRelation, TermiteData termiteData) {
 		this.osmRelation = osmRelation;
+		update(termiteData);
+	}
+	
+	void update(TermiteData termiteData) {
+		OsmData osmData = termiteData.getWorkingData();
 		for(OsmMember member:osmRelation.getMembers()) {
-			if(member.member instanceof OsmWay) {
-				OsmWay osmWay = (OsmWay)member.member;
+			if(OsmModel.TYPE_WAY.equalsIgnoreCase(member.type)) {
+				OsmWay osmWay = osmData.getOsmWay(member.memberId);
 				TermiteWay termiteWay = osmWay.getTermiteWay();
 				termiteWay.setMultiPoly(this);
 				ways.add(termiteWay);

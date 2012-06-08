@@ -48,6 +48,9 @@ public class PointFeature {
 			//load geometry
 			updateData();
 			
+//if(osmNode.getId() == 1723440852L) {
+//	System.out.println("here");
+//}
 			//get the style
 			style = theme.getStyle(osmNode);
 			

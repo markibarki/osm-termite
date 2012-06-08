@@ -44,14 +44,8 @@ public class OsmRelation extends OsmObject {
 			String type = attr.getValue("type");
 			long ref = OsmParser.getLong(attr,"ref",INVALID_ID);
 			String role = attr.getValue("role");
-			OsmObject object = osmData.getOsmObject(ref,type);
-			if(object != null) {
-				OsmMember member = new OsmMember();
-				member.role = role;
-				member.type = type;
-				member.member = object;
-				members.add(member);
-			}
+			OsmMember member = new OsmMember(ref,type,role);
+			members.add(member);
 		}
 	}
 	
@@ -62,13 +56,9 @@ public class OsmRelation extends OsmObject {
 	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override
 	void createCopy(OsmData destOsmData) {
-		OsmRelation newRelation = destOsmData.getOsmRelation(this.getId());
+		OsmRelation newRelation = destOsmData.createOsmRelation(this.getId());
 		for(OsmMember member:this.members) {
-			OsmObject newObject = destOsmData.getOsmObject(member.member.getId(),member.type);
-			OsmMember newMember = new OsmMember();
-			newMember.role = member.role;
-			newMember.type = member.type;
-			newMember.member = newObject;
+			OsmMember newMember = member.createCopy();
 			newRelation.members.add(newMember);
 		}
 		copyFromBase(newRelation);

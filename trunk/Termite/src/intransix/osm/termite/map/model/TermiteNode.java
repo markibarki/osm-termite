@@ -37,14 +37,23 @@ public class TermiteNode extends TermiteObject {
 	//====================
 	
 	/** This method sets the OsmNode. */
-	void setOsmNode(OsmNode osmNode) {
+	void load(OsmNode osmNode, TermiteData termiteData) {
 		this.osmNode = osmNode;
+		osmNode.setTermiteNode(this);
+		update(termiteData);
+	}
+	
+	void update(TermiteData termiteData) {
+		//check properties
+		this.classify();
+		
+//check level change!!!
+		
 	}
 	
 	/** This method sets the level. */
 	void setLevel(TermiteLevel level) {
 		this.level = level;
-		level.addNode(this);
 	}
 	
 	/** This method gets the OSM object. */
