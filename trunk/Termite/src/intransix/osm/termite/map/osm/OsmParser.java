@@ -89,7 +89,7 @@ public class OsmParser extends DefaultHandler {
 			if(activeObjectName.equalsIgnoreCase(name)) {
 				//finish parsing
 				activeObject.endElement(name, this);
-				activeObject.setLocalVersion(OsmObject.INITIAL_LOCAL_VERSION);
+				activeObject.initLocalVersion();
 				
 				activeObject = null;
 				activeObjectName = null;

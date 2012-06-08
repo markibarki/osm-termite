@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * 
  * @author sutter
  */
-public class OsmNode extends OsmObject {
+public class OsmNode extends OsmObject implements EditData<OsmNode> {
 	
 	//======================
 	// Properties
@@ -22,7 +22,6 @@ public class OsmNode extends OsmObject {
 	//node
 	private double x;
 	private double y;
-	private ArrayList<OsmWay> ways = new ArrayList<OsmWay>();
 	
 	private TermiteNode termiteNode = null;
 	
@@ -45,9 +44,9 @@ public class OsmNode extends OsmObject {
 		return y;
 	}
 	
-	/** This method gets the ways which include this node. */
-	public ArrayList<OsmWay> getWays() {
-		return ways;
+	public void setPosition(double x, double y) {
+		this.x = x;
+		this.y = y;
 	}
 	
 	/** This method sets the termite node for this OsmN0de. */
@@ -80,32 +79,30 @@ public class OsmNode extends OsmObject {
 		}
 	}
 	
+	//----------------------
+	// Edit Methods
+	//----------------------
+	
+	/** This method is not used for create/delete. */
+	@Override
+	public EditData<OsmNode> readInitialData(OsmNode objectToDelete) throws UnchangedException {
+		return null;
+	}
+		
+	/** This method is only called on create. */
+	@Override
+	public void writeData(OsmNode newObject) throws UnchangedException, Exception {
+		this.copyInto(newObject);
+	}
+	
 	//========================
 	// Package Methods
 	//========================
 	
 	/** This method makes a copy of this data object in the destination OsmData object. */
-	@Override
-	void createCopy(OsmData destOsmData) {
-		OsmNode newNode = destOsmData.createOsmNode(this.getId());
+	void copyInto(OsmNode newNode) {
 		newNode.x = this.x;
 		newNode.y = this.y;
-		copyFromBase(newNode);
+		super.copyInto(newNode);
 	}
-	
-	/** This method adds a way to the node. */
-	void addWay(OsmWay way) {
-		this.ways.add(way);
-	}
-	
-	/** This method removes a way from the node. */
-	void removeWay(OsmWay way) {
-		this.ways.remove(way);
-	}
-	
-	void setPosition(double x, double y) {
-		this.x = x;
-		this.y = y;
-	}
-	
 }

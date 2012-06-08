@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author sutter
  */
-public class UpdateInsertMember extends EditData<OsmRelation> {
+public class UpdateInsertMember implements EditData<OsmRelation> {
 	
 	private OsmMember member;
 	private int index;

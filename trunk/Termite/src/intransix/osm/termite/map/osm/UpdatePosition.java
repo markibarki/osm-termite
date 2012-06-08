@@ -8,7 +8,7 @@ package intransix.osm.termite.map.osm;
  *
  * @author sutter
  */
-public class UpdatePosition extends EditData<OsmNode> {
+public class UpdatePosition implements EditData<OsmNode> {
 	
 	private double x;
 	private double y;
