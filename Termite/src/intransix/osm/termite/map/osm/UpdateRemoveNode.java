@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author sutter
  */
-public class UpdateRemoveNode extends EditData<OsmWay> {
+public class UpdateRemoveNode implements EditData<OsmWay> {
 
 	private int index;
 	

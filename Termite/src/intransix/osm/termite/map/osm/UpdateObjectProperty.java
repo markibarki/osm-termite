@@ -8,7 +8,7 @@ package intransix.osm.termite.map.osm;
  *
  * @author sutter
  */
-public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
+public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 	
 	private String initialKey;
 	private String finalKey;

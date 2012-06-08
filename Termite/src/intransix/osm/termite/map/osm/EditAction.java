@@ -8,11 +8,12 @@ import java.util.*;
  */
 public class EditAction {
 	
+	private OsmData osmData;
 	private String desc;
 	private List<EditInstruction> instructions = new ArrayList<EditInstruction>();
 	
-	
-	public EditAction(String desc) {
+	public EditAction(OsmData osmData, String desc) {
+		this.osmData = osmData;
 		this.desc = desc;
 	}
 	
@@ -35,7 +36,7 @@ public class EditAction {
 		try {
 			for(index = 0; index < cnt; index++) {
 				instr = instructions.get(index);
-				instr.doInstruction();
+				instr.doInstruction(osmData);
 			}
 		}
 		catch(UnchangedException ex) {
@@ -44,12 +45,11 @@ public class EditAction {
 			//starting with the previous
 			for(index--; index >= 0; index--) {
 				instr = instructions.get(index);
-				instr.undoInstruction();
+				instr.undoInstruction(osmData);
 			}
 			return false;
 		}
 		
-		completeAction();
 		return true;
 	}
 	
@@ -60,7 +60,7 @@ public class EditAction {
 		try {
 			for(index = cnt - 1; index >= 0; index--) {
 				instr = instructions.get(index);
-				instr.undoInstruction();
+				instr.undoInstruction(osmData);
 			}
 			
 		}
@@ -70,21 +70,11 @@ public class EditAction {
 			//starting with the previous
 			for(index++; index < cnt; index++) {
 				instr = instructions.get(index);
-				instr.doInstruction();
+				instr.doInstruction(osmData);
 			}
 			return false;
 		}
-		
-		completeAction();
+
 		return true;
-	}
-	
-	private void completeAction() {
-		//osm objects should be completed
-		//update local data on all termite objects
-		//update rmeote data on all termite objects
-		//do a redraw
-				
-throw new RuntimeException("Implement this");
 	}
 }

@@ -6,7 +6,7 @@ import java.util.List;
  *
  * @author sutter
  */
-public class UpdateInsertNode extends EditData<OsmWay> {
+public class UpdateInsertNode implements EditData<OsmWay> {
 	
 	private long nodeId;
 	private int index;

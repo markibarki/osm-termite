@@ -74,11 +74,6 @@ public abstract class OsmObject extends MapObject {
 		return type;
 	}
 	
-	/** This method sets the local version for the object. */
-	public void setLocalVersion(int localVersion) {
-		this.localVersion = localVersion;
-	}
-	
 	/** This method gets the local version for the object. */
 	public int getLocalVersion() {
 		return localVersion;
@@ -114,13 +109,17 @@ public abstract class OsmObject extends MapObject {
 	// Package Methods
 	//==========================
 	
-	/** This method makes a copy of this data object in the destination OsmData object.
-	 * This method should be overridden by the */
-	abstract void createCopy(OsmData destOsmData);
+	public void incrementLocalVersion() {
+		this.localVersion++;
+	}
+	
+	public void initLocalVersion() {
+		this.localVersion = OsmObject.INITIAL_LOCAL_VERSION;
+	}
 	
 	/** This method copies relevent data from the base OsmObject needed for reproducing
 	 * the data set. */
-	void copyFromBase(OsmObject newObject) {
+	void copyInto(OsmObject newObject) {
 		newObject.isLoaded = this.isLoaded;
 		newObject.isVirtual = this.isVirtual;
 		newObject.localVersion = this.localVersion;

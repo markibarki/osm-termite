@@ -81,13 +81,16 @@ public class OsmData {
 	public OsmData createCopy() {
 		OsmData dataCopy = new OsmData();
 		for(OsmNode node:getOsmNodes()) {
-			node.createCopy(dataCopy);
+			OsmNode nodeCopy = dataCopy.createOsmNode(node.getId());
+			node.copyInto(nodeCopy);
 		}
 		for(OsmWay way:getOsmWays()) {
-			way.createCopy(dataCopy);
+			OsmWay wayCopy = dataCopy.createOsmWay(way.getId());
+			way.copyInto(wayCopy);
 		}
 		for(OsmRelation relation:getOsmRelations()) {
-			relation.createCopy(dataCopy);
+			OsmRelation relationCopy = dataCopy.createOsmRelation(relation.getId());
+			relation.copyInto(relationCopy);
 		}
 		return dataCopy;
 	}

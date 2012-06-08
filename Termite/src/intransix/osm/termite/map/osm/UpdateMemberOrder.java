@@ -6,7 +6,7 @@ import java.util.List;
  *
  * @author sutter
  */
-public class UpdateMemberOrder extends EditData<OsmRelation> {
+public class UpdateMemberOrder implements EditData<OsmRelation> {
 	
 	private int index;
 	private boolean moveUp;
