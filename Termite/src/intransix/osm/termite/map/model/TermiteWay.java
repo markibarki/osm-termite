@@ -1,6 +1,6 @@
 package intransix.osm.termite.map.model;
 
-import java.util.ArrayList;
+import java.util.*;
 import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.prop.FeatureInfo;
 
@@ -16,6 +16,7 @@ public class TermiteWay extends TermiteObject {
 	//===============
 	
 	private OsmWay osmWay;
+	private List<TermiteNode> nodes = new ArrayList<TermiteNode>();
 	
 	private boolean isArea = false;
 	
@@ -28,8 +29,13 @@ public class TermiteWay extends TermiteObject {
 	//===============
 	
 	/** This method gets the levels on which this way is located. */
-	public ArrayList<TermiteLevel> getLevels() {
+	public List<TermiteLevel> getLevels() {
 		return levels;
+	}
+	
+	/** This method gets the levels on which this way is located. */
+	public List<TermiteNode> getNodes() {
+		return nodes;
 	}
 	
 	/** This method returns true if the way forms an area and false otherwise. */
@@ -51,10 +57,28 @@ public class TermiteWay extends TermiteObject {
 	// Package Methods
 	//====================
 	
+	void load(OsmWay osmWay, TermiteData termiteData) {
+		this.osmWay = osmWay;
+		osmWay.setTermiteWay(this);
+		
+		//update for the change in the way
+		update(termiteData);
+	}
+	
+	void update(TermiteData termiteData) {
+		classify();
+		
+		//set the nodes
+		nodes.clear();
+		for(Long nodeId:osmWay.getNodeIds()) {
+			TermiteNode node = termiteData.getNode(nodeId,true);
+			nodes.add(node);
+		}
+	}
+	
 	/** This method adds a level to the way. */
 	void addLevel(TermiteLevel level) {
 		if(!levels.contains(level)) levels.add(level);
-		level.addWay(this);
 	}
 	
 	/** This methods sets the OsmWay. */

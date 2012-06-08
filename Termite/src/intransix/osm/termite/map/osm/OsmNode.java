@@ -87,7 +87,7 @@ public class OsmNode extends OsmObject {
 	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override
 	void createCopy(OsmData destOsmData) {
-		OsmNode newNode = destOsmData.getOsmNode(this.getId());
+		OsmNode newNode = destOsmData.createOsmNode(this.getId());
 		newNode.x = this.x;
 		newNode.y = this.y;
 		copyFromBase(newNode);
@@ -101,6 +101,11 @@ public class OsmNode extends OsmObject {
 	/** This method removes a way from the node. */
 	void removeWay(OsmWay way) {
 		this.ways.remove(way);
+	}
+	
+	void setPosition(double x, double y) {
+		this.x = x;
+		this.y = y;
 	}
 	
 }

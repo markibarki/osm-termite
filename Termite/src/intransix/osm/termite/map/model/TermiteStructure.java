@@ -86,25 +86,26 @@ public class TermiteStructure extends TermiteObject {
 	}
 	
 	/** This method loads the TermiteStructure from the OSM structure Relation. */
-	void load(OsmRelation osmRelation, TermiteData data) {
+	void load(OsmRelation osmRelation, TermiteData termiteData) {
 		this.osmRelation = osmRelation;
+		OsmData osmData = termiteData.getWorkingData();
 		
 		//load members
 		for(OsmMember osmMember:osmRelation.getMembers()) {
-			long memberId = osmMember.member.getId();
+			long memberId = osmMember.memberId;
 			//only allow multi ways
-			if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_PARENT)) {
-				if(osmMember.member instanceof OsmWay) {
-					this.parent = (OsmWay)osmMember.member;
+			if(OsmModel.ROLE_PARENT.equalsIgnoreCase(osmMember.role)) {
+				if(OsmModel.TYPE_WAY.equalsIgnoreCase(osmMember.type)) {
+					this.parent = osmData.getOsmWay(memberId);
 				}
 			}
-			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_LEVEL)) {
-				TermiteLevel level = data.getLevel(memberId);
+			else if(OsmModel.ROLE_LEVEL.equalsIgnoreCase(osmMember.role)) {
+				TermiteLevel level = termiteData.getLevel(memberId, true);
 				if(OsmModel.doNodeLevelLabels) {
 					//METHOD 2 - shell geometry
-					if(osmMember.member instanceof OsmWay) {
-						OsmWay osmShell = (OsmWay)osmMember.member;
-						level.loadFromShell(osmShell,data);
+					if(OsmModel.TYPE_WAY.equalsIgnoreCase(osmMember.type)) {
+						OsmWay osmShell = osmData.getOsmWay(memberId);
+						level.loadFromShell(osmShell,osmData);
 					}
 				}
 				else {
@@ -120,8 +121,8 @@ public class TermiteStructure extends TermiteObject {
 				this.addLevel(level);
 			}
 			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_ANCHOR)) {
-				if(osmMember.member instanceof OsmWay) {
-					anchor = (OsmWay)osmMember.member;
+				if(OsmModel.TYPE_WAY.equalsIgnoreCase(osmMember.type)) {
+					this.anchor = osmData.getOsmWay(memberId);
 				}
 			}
 		}

@@ -70,7 +70,7 @@ public class OsmParser extends DefaultHandler {
 			long osmId = getLong(attributes,"id",OsmObject.INVALID_ID);
 			if(osmId != OsmObject.INVALID_ID) {
 				//lookup or create object
-				activeObject = osmData.getOsmObject(osmId,name);
+				activeObject = osmData.createOsmObject(osmId,name);
 				if(activeObject != null) {
 					//we are processing a new object
 					activeObjectName = name;

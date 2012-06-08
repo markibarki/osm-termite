@@ -69,6 +69,11 @@ public abstract class OsmObject extends MapObject {
 		return id;
 	}
 	
+	/** This gets the object type string. */
+	public String getObjectType() {
+		return type;
+	}
+	
 	/** This method sets the local version for the object. */
 	public void setLocalVersion(int localVersion) {
 		this.localVersion = localVersion;

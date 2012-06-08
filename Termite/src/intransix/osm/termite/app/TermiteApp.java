@@ -117,7 +117,7 @@ public class TermiteApp {
 		TermiteData termiteData = new TermiteData();
 		termiteData.loadData(osmData);
 		
-		TermiteStructure structure = termiteData.getStructure(2127658L);
+		TermiteStructure structure = termiteData.getStructure(2127658L,false);
 		TermiteLevel level = structure.lookupLevel(0);
 		
 		StructureLayer structureLayer = new StructureLayer();
