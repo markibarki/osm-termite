@@ -57,33 +57,53 @@ public class TermiteWay extends TermiteObject {
 	// Package Methods
 	//====================
 	
-	void load(OsmWay osmWay, TermiteData termiteData) {
+	void setOsmWay(OsmWay osmWay) {
 		this.osmWay = osmWay;
 		osmWay.setTermiteWay(this);
-		
-		//update for the change in the way
-		update(termiteData);
 	}
 	
-	void update(TermiteData termiteData) {
+	void updateLocalData(TermiteData termiteData) {
 		classify();
 		
-		//set the nodes
+		//clear remote fields
 		nodes.clear();
+		multiPoly = null;
+		levels.clear();
+		
+		//check for setting the area parameter
+		if((osmWay.getProperty("area") == null)&&(featureInfo != null)) {
+			this.isArea = (featureInfo.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
+		}
+		
+		//set the nodes
 		for(Long nodeId:osmWay.getNodeIds()) {
 			TermiteNode node = termiteData.getNode(nodeId,true);
 			nodes.add(node);
 		}
 	}
 	
+	void updateRemoteData(TermiteData termiteData) {
+		
+		for(TermiteNode node:nodes) {
+			node.addWay(this);
+/////////////////////////////////////////////////////////////////////
+			if(OsmModel.doNodeLevelLabels) {
+				TermiteLevel level = node.getLevel();
+				if(!levels.contains(level)) {
+					levels.add(level);
+					level.addWay(this);
+				}
+			}
+			else {
+				//no action
+			}
+////////////////////////////////////////////////////////////////////////
+		}
+	}
+	
 	/** This method adds a level to the way. */
 	void addLevel(TermiteLevel level) {
 		if(!levels.contains(level)) levels.add(level);
-	}
-	
-	/** This methods sets the OsmWay. */
-	void setOsmWay(OsmWay osmWay) {
-		this.osmWay = osmWay;
 	}
 	
 	/** This method sets the multi poly relation for this way. */
@@ -96,26 +116,4 @@ public class TermiteWay extends TermiteObject {
 	OsmObject getOsmObject() {
 		return osmWay;
 	}
-	
-	/** This method overrides the classify method to add the functionality 
-	 * of checking the default area parameter. */
-	@Override
-	void classify() {
-		super.classify();
-		
-		//check for setting the area parameter
-		FeatureInfo featureInfo = this.getFeatureInfo();
-		if(featureInfo != null) {
-			if(osmWay.getProperty("area") == null) {
-				this.isArea = (featureInfo.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
-			}
-		}
-	}
-	
-
-	
-	
-
-	
-	
 }

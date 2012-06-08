@@ -197,7 +197,7 @@ public class PathFeature {
 			}
 		}
 		//close the path if this is an area
-		if(isArea) {
+		if((isArea)&&(started)) {
 			path.closePath();
 		}
 	}

@@ -55,12 +55,6 @@ public class TermiteStructure extends TermiteObject {
 	//====================
 	// Package Methods
 	//====================
-
-	/** This method adds a level to the structure. */
-	void addLevel(TermiteLevel level) {
-		this.levels.add(level);
-		level.setStructure(this);
-	}
 	
 	/** This method calculates the bounds of the object. */
 	void calculateBounds() {
@@ -86,8 +80,23 @@ public class TermiteStructure extends TermiteObject {
 	}
 	
 	/** This method loads the TermiteStructure from the OSM structure Relation. */
-	void load(OsmRelation osmRelation, TermiteData termiteData) {
+	void setOsmRelation(OsmRelation osmRelation) {
 		this.osmRelation = osmRelation;
+	}
+	
+	/** This initializes the outdoor level - bypassing the structure relation. */
+	TermiteLevel initOutdoors(TermiteData termiteData) {
+		TermiteLevel outdoorLevel = termiteData.getLevel(OsmObject.INVALID_ID,true);
+		this.levels.clear();
+		this.levels.add(outdoorLevel);
+		return outdoorLevel;
+	}
+	
+	void updateLocalData(TermiteData termiteData) {
+		if(osmRelation == null) return;
+		
+		levels.clear();
+		
 		OsmData osmData = termiteData.getWorkingData();
 		
 		//load members
@@ -100,31 +109,30 @@ public class TermiteStructure extends TermiteObject {
 				}
 			}
 			else if(OsmModel.ROLE_LEVEL.equalsIgnoreCase(osmMember.role)) {
-				TermiteLevel level = termiteData.getLevel(memberId, true);
+				TermiteLevel level;
 				if(OsmModel.doNodeLevelLabels) {
 					//METHOD 2 - shell geometry
-					if(OsmModel.TYPE_WAY.equalsIgnoreCase(osmMember.type)) {
-						OsmWay osmShell = osmData.getOsmWay(memberId);
-						level.loadFromShell(osmShell,osmData);
-					}
+//no action? 
 				}
 				else {
 					//METHOD 1 - level relation
+					level = termiteData.getLevel(memberId, true);
+					this.levels.add(level);
 					
 				}
-				
-				if(level != null) {
-					this.levels.add(level);
-					level.setStructure(this);
-				}
-				
-				this.addLevel(level);
 			}
 			else if(osmMember.role.equalsIgnoreCase(OsmModel.ROLE_ANCHOR)) {
 				if(OsmModel.TYPE_WAY.equalsIgnoreCase(osmMember.type)) {
 					this.anchor = osmData.getOsmWay(memberId);
 				}
 			}
+		}
+		
+	}
+	
+	void updateRemoteData(TermiteData termiteData) {
+		for(TermiteLevel level:levels) {
+			level.setStructure(this);
 		}
 	}
 	

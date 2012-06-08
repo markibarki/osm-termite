@@ -1,6 +1,7 @@
 package intransix.osm.termite.map.model;
 
 import intransix.osm.termite.map.osm.*;
+import java.util.*;
 
 
 /**
@@ -18,6 +19,8 @@ public class TermiteNode extends TermiteObject {
 	
 	private OsmNode osmNode;
 	
+	private List<TermiteWay> ways = new ArrayList<TermiteWay>();
+	
 	//====================
 	// Public Methods
 	//====================
@@ -32,23 +35,61 @@ public class TermiteNode extends TermiteObject {
 		return level;
 	}
 	
+	public List<TermiteWay> getWays() {
+		return ways;
+	}
+	
 	//====================
 	// Package Methods
 	//====================
 	
 	/** This method sets the OsmNode. */
-	void load(OsmNode osmNode, TermiteData termiteData) {
+	void setOsmNode(OsmNode osmNode) {
 		this.osmNode = osmNode;
 		osmNode.setTermiteNode(this);
-		update(termiteData);
 	}
 	
-	void update(TermiteData termiteData) {
+	void addWay(TermiteWay way) {
+		if(ways.contains(way)) {
+			ways.add(way);
+		}
+	}
+	
+	void updateLocalData(TermiteData termiteData) {
 		//check properties
 		this.classify();
 		
-//check level change!!!
+		level = null;
+		ways.clear();
 		
+/////////////////////////////////////////////////////////////////
+		if(OsmModel.doNodeLevelLabels) {
+			//get the level for this node
+			int zlevel = osmNode.getIntProperty(OsmModel.KEY_ZLEVEL,TermiteLevel.DEFAULT_ZLEVEL);
+			long structureId = osmNode.getLongProperty(OsmModel.KEY_ZCONTEXT,OsmObject.INVALID_ID);
+			if(structureId != OsmObject.INVALID_ID) {
+				level = termiteData.getLevel(structureId, zlevel,true);
+			}
+			else {
+				level = termiteData.getOutdoorLevel();
+			}
+		}
+		else {
+			//no action
+		}
+///////////////////////////////////////////////////////////////////////
+	}
+	
+	void updateRemoteData(TermiteData termiteData) {
+		
+/////////////////////////////////////////////////////////////////////////
+		if(OsmModel.doNodeLevelLabels) {
+			level.addNode(this);
+		}
+		else {
+			//no action
+		}
+///////////////////////////////////////////////////////////////////////////
 	}
 	
 	/** This method sets the level. */
