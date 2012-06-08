@@ -68,51 +68,89 @@ public class TermiteLevel extends TermiteObject {
 	}
 	
 	/** This method loads the relation from the OsmRelation object. */
-	void loadFromRelation(OsmRelation osmRelation, TermiteData termiteData) {
+	void setOsmRelation(OsmRelation osmRelation) {
 		this.osmRelation = osmRelation;
-		OsmData osmData = termiteData.getWorkingData();
+	}
+	
+	/** This method loads the level from the shell object. It is used when the 
+	 * shell defines the level properties as opposed to a separate relation. */
+	void setOsmWayShell(OsmWay osmShell) {
+		this.osmRelation = null;
+		this.shell = osmShell;
+	}
+	
+	//USED ONLY IN METHOD 2 - level labeld on nodes. */
+	void setZlevel(int zlevel) {
+		this.zlevel = zlevel;
+	}
+	
+	void updateLocalData(TermiteData termiteData) {
 		
-		//load members
-		for(OsmMember osmMember:osmRelation.getMembers()) {
-			OsmObject member =  osmData.getOsmObject(osmMember.memberId, osmMember.type);
-			if(member != null) {
-				if(OsmModel.ROLE_FEATURE.equalsIgnoreCase(osmMember.role)) {
-					//method 1 - features collected by the level relation
-					//load features in level relation
-					if(member instanceof OsmNode) {
-						TermiteNode termiteNode = ((OsmNode)member).getTermiteNode();
-						termiteNode.setLevel(this);
-						this.addNode(termiteNode);
+		//clear variables
+		structure = null;
+		nodes.clear();
+		ways.clear();
+		zlevel = DEFAULT_ZLEVEL;
+		
+		if(OsmModel.doNodeLevelLabels) {
+//no action			
+		}
+		else {
+			//handle outdoor case
+			if(osmRelation == null) return;
+			
+			this.zlevel = osmRelation.getIntProperty(OsmModel.KEY_ZLEVEL,DEFAULT_ZLEVEL);
+			
+			OsmData osmData = termiteData.getWorkingData();
+
+			//load members
+			for(OsmMember osmMember:osmRelation.getMembers()) {
+				OsmObject member =  osmData.getOsmObject(osmMember.memberId, osmMember.type);
+				if(member != null) {
+					if(OsmModel.ROLE_FEATURE.equalsIgnoreCase(osmMember.role)) {
+						//method 1 - features collected by the level relation
+						//load features in level relation
+						if(member instanceof OsmNode) {
+							TermiteNode termiteNode = ((OsmNode)member).getTermiteNode();
+							this.addNode(termiteNode);
+						}
+						else if(member instanceof OsmWay) {
+							//create a virutal feature for this way
+							TermiteWay termiteWay = ((OsmWay)member).getTermiteWay();
+							this.addWay(termiteWay);
+						}
 					}
-					else if(member instanceof OsmWay) {
-						//create a virutal feature for this way
-						TermiteWay termiteWay = ((OsmWay)member).getTermiteWay();
-						termiteWay.addLevel(this);
-						this.addWay(termiteWay);
-					}
-				}
-				else if(OsmModel.ROLE_SHELL.equalsIgnoreCase(osmMember.role)) {
-					if(member instanceof OsmWay) {
-						this.shell = (OsmWay)member;
-						TermiteWay termiteWay = shell.getTermiteWay();
-						termiteWay.addLevel(this);
-						this.addWay(termiteWay);
+					else if(OsmModel.ROLE_SHELL.equalsIgnoreCase(osmMember.role)) {
+						if(member instanceof OsmWay) {
+							this.shell = (OsmWay)member;
+							TermiteWay termiteWay = shell.getTermiteWay();
+							this.addWay(termiteWay);
+						}
 					}
 				}
 			}
 		}
 	}
 	
-	/** This method loads the level from the shell object. It is used when the 
-	 * shell defines the level properties as opposed to a separate relation. */
-	void loadFromShell(OsmWay osmShell, OsmData data) {
-		this.osmRelation = null;
-		this.shell = osmShell;
-		TermiteWay termiteWay = shell.getTermiteWay();
-		termiteWay.addLevel(this);
-		this.addWay(termiteWay);
-		
-		this.zlevel = shell.getIntProperty(OsmModel.KEY_ZLEVEL,DEFAULT_ZLEVEL);
+	void updateRemoteData(TermiteData termiteData) {
+				
+		if(OsmModel.doNodeLevelLabels) {
+			//levels set from nodes and ways 
+		}
+		else {			
+			for(TermiteWay way:ways) {
+				way.addLevel(this);
+//this is ugly, but we are assuming each node is only on one level
+//so it is OK if we overwrite
+//we are also requiring the way nodes have already been set!!! 
+				for(TermiteNode node:way.getNodes()) {
+					if(!nodes.contains(node)) nodes.add(node);
+				}
+			}
+			for(TermiteNode node:nodes) {
+				node.setLevel(this);
+			}
+		}
 	}
 	
 	/** This method adds a node to the level. */

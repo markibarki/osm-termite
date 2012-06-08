@@ -27,35 +27,7 @@ public class TermiteMultiPoly extends TermiteObject {
 	}
 	
 	public TermiteWay getMainWay() {
-		if(mainWay == null) {
-			long minId = Long.MAX_VALUE;
-			for(TermiteWay tWay:ways) {
-				OsmWay oWay = tWay.getOsmWay();
-				if(minId > oWay.getId()) {
-					minId = oWay.getId();
-					mainWay = tWay;
-				}
-			}
-		}
 		return mainWay;
-	}
-	
-	/** This method loads the object from the osm relation. */
-	public void load(OsmRelation osmRelation, TermiteData termiteData) {
-		this.osmRelation = osmRelation;
-		update(termiteData);
-	}
-	
-	void update(TermiteData termiteData) {
-		OsmData osmData = termiteData.getWorkingData();
-		for(OsmMember member:osmRelation.getMembers()) {
-			if(OsmModel.TYPE_WAY.equalsIgnoreCase(member.type)) {
-				OsmWay osmWay = osmData.getOsmWay(member.memberId);
-				TermiteWay termiteWay = osmWay.getTermiteWay();
-				termiteWay.setMultiPoly(this);
-				ways.add(termiteWay);
-			}
-		}
 	}
 	
 	/** This method returns the OSM relation for the multipolygon. */
@@ -66,6 +38,39 @@ public class TermiteMultiPoly extends TermiteObject {
 	//=======================
 	// Package Methods
 	//=======================
+	
+		/** This method loads the object from the osm relation. */
+	public void setOsmRelation(OsmRelation osmRelation) {
+		this.osmRelation = osmRelation;
+	}
+	
+	void updateLocalData(TermiteData termiteData) {
+		OsmData osmData = termiteData.getWorkingData();
+		
+		ways.clear();
+		mainWay = null;
+		
+		long minId = Long.MAX_VALUE;
+		for(OsmMember member:osmRelation.getMembers()) {
+			if(OsmModel.TYPE_WAY.equalsIgnoreCase(member.type)) {
+				OsmWay osmWay = osmData.getOsmWay(member.memberId);
+				TermiteWay termiteWay = osmWay.getTermiteWay();
+				ways.add(termiteWay);
+				
+				//load the main way
+				if(minId > osmWay.getId()) {
+					minId = osmWay.getId();
+					mainWay = osmWay.getTermiteWay();
+				}
+			}
+		}
+	}
+	
+	void updateRemoteData(TermiteData termiteData) {
+		for(TermiteWay way:ways) {
+			way.setMultiPoly(this);
+		}
+	}
 	
 	/** This method gets the OSM relation associated with this multipolygon. */
 	@Override

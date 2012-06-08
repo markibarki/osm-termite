@@ -80,7 +80,11 @@ public class EditAction {
 	}
 	
 	private void completeAction() {
-		//do whatever has to be done
-throw new RuntimeException("Implemenet this");
+		//osm objects should be completed
+		//update local data on all termite objects
+		//update rmeote data on all termite objects
+		//do a redraw
+				
+throw new RuntimeException("Implement this");
 	}
 }
