@@ -1,7 +1,5 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.model.EditData;
-import intransix.osm.termite.map.model.UnchangedException;
 import java.util.ArrayList;
 import org.xml.sax.Attributes;
 
@@ -53,10 +51,6 @@ public class OsmRelation extends OsmObject<OsmRelation> {
 			members.add(member);
 		}
 	}
-	
-	//=====================
-	// Package Methods
-	//=====================
 	
 	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override

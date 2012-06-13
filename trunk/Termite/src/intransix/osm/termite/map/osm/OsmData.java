@@ -9,8 +9,9 @@ import java.util.HashMap;
  */
 public class OsmData {
 	
-		private final static long FIRST_ID = -1;
-		/** This method gets the next available termite id, to be used for generating
+	private final static long FIRST_ID = -1;
+	
+	/** This method gets the next available termite id, to be used for generating
 	 * temporary IDs. */
 	public synchronized void applyNextId(OsmObject object) {
 		long id = nextId--;

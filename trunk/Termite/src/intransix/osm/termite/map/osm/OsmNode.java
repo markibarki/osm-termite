@@ -1,12 +1,8 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.model.EditData;
-import intransix.osm.termite.map.model.UnchangedException;
-import intransix.osm.termite.map.model.TermiteNode;
 import intransix.osm.termite.util.MercatorCoordinates;
 import intransix.osm.termite.util.LocalCoordinates;
 import org.xml.sax.Attributes;
-import java.util.ArrayList;
 
 /**
  * This class holds data in an OSM node. 
@@ -72,11 +68,6 @@ public class OsmNode extends OsmObject<OsmNode> {
 			y = LocalCoordinates.mercToLocalY(my);
 		}
 	}
-
-	
-	//========================
-	// Package Methods
-	//========================
 	
 	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override

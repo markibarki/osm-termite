@@ -1,8 +1,5 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.model.EditData;
-import intransix.osm.termite.map.model.UnchangedException;
-import intransix.osm.termite.map.model.TermiteWay;
 import java.util.ArrayList;
 import org.xml.sax.Attributes;
 
@@ -13,13 +10,13 @@ import org.xml.sax.Attributes;
 public class OsmWay extends OsmObject<OsmWay> {
 	
 	//=======================
-	//
+	// Properties
 	//=======================
 	
 	private ArrayList<Long> nodeIds = new ArrayList<Long>();
 
 	//=======================
-	//
+	// Public Methods
 	//=======================
 	
 	/** Constructor. */
@@ -51,10 +48,6 @@ public class OsmWay extends OsmObject<OsmWay> {
 			nodeIds.add(ref);
 		}
 	}
-	
-	//==========================
-	// package methods
-	//==========================
 	
 	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override

@@ -47,13 +47,9 @@ public abstract class OsmObject<T extends OsmObject> extends MapObject {
 		this.id = id;
 	}
 	
-	void setId(long id) {
-		this.id = id;
-	}
-	
-	/** This method sets the isLoaded flag for the object. */
-	void setIsLoaded(boolean isLoaded) {
-		this.isLoaded = isLoaded;
+	/** This method gets the ID for the object. */
+	public long getId() {
+		return id;
 	}
 	
 	/** This method gets the isLoaded flag for the object. */
@@ -69,11 +65,6 @@ public abstract class OsmObject<T extends OsmObject> extends MapObject {
 	/** This method set the virtual flag for the object. */
 	public void setIsVirtual(boolean isVirtual) {
 		this.isVirtual = isVirtual;
-	}
-	
-	/** This method gets the ID for the object. */
-	public long getId() {
-		return id;
 	}
 	
 	/** This gets the object type string. */
@@ -122,10 +113,6 @@ public abstract class OsmObject<T extends OsmObject> extends MapObject {
 		this.setIsLoaded(true);
 	}
 	
-	//==========================
-	// Package Methods
-	//==========================
-	
 	public void incrementLocalVersion() {
 		this.localVersion++;
 	}
@@ -134,11 +121,7 @@ public abstract class OsmObject<T extends OsmObject> extends MapObject {
 		this.localVersion = OsmObject.INITIAL_LOCAL_VERSION;
 	}
 	
-	void setLocalVersion(int localVersion) {
-		this.localVersion = localVersion;
-	}
-	
-	/** This method copies relevent data from the base OsmObject needed for reproducing
+	/** This method copies relevant data from the base OsmObject needed for reproducing
 	 * the data set. */
 	public void copyInto(T newObject) {
 		newObject.setIsLoaded(this.isLoaded);
@@ -146,6 +129,24 @@ public abstract class OsmObject<T extends OsmObject> extends MapObject {
 		newObject.setLocalVersion(this.localVersion);
 
 		newObject.copyProperties(this);
+	}
+	
+		
+	//==========================
+	// Package Methods
+	//==========================
+	
+	void setLocalVersion(int localVersion) {
+		this.localVersion = localVersion;
+	}
+	
+	void setId(long id) {
+		this.id = id;
+	}
+	
+		/** This method sets the isLoaded flag for the object. */
+	void setIsLoaded(boolean isLoaded) {
+		this.isLoaded = isLoaded;
 	}
 
 }
