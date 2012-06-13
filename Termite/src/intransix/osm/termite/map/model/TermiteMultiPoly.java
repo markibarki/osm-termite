@@ -78,6 +78,12 @@ this.incrementTermiteVersion();
 		
 	}
 	
+	void incrementWaysTermiteVersion() {
+		for(TermiteWay way:ways) {
+			way.incrementTermiteVersion();
+		}
+	}
+	
 	/** This method gets the OSM relation associated with this multipolygon. */
 	@Override
 	public OsmRelation getOsmObject() {

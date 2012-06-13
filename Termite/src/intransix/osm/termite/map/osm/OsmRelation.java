@@ -9,7 +9,7 @@ import org.xml.sax.Attributes;
  * This class holds the data for an OSM relation.
  * @author sutter
  */
-public class OsmRelation extends OsmObject implements EditData<OsmRelation> {
+public class OsmRelation extends OsmObject<OsmRelation> {
 	
 	//=======================
 	// Properties
@@ -24,6 +24,9 @@ public class OsmRelation extends OsmObject implements EditData<OsmRelation> {
 	/** Constructor. */
 	public OsmRelation(long id) {
 		super(OsmModel.TYPE_RELATION, id);
+	}
+	public OsmRelation() {
+		super(OsmModel.TYPE_RELATION,OsmObject.INVALID_ID);
 	}
 	
 	/** This method gets the member list for this relation. */
@@ -51,28 +54,13 @@ public class OsmRelation extends OsmObject implements EditData<OsmRelation> {
 		}
 	}
 	
-	//----------------------
-	// Edit Methods
-	//----------------------
-	
-	/** This method is not used on create/delete. */
-	@Override
-	public EditData<OsmRelation> readInitialData(OsmRelation objectToDelete) throws UnchangedException {
-		return null;
-	}
-		
-	/** This method is only called on create. */
-	@Override
-	public void writeData(OsmRelation newRelation) throws UnchangedException, Exception {
-		this.copyInto(newRelation);
-	}
-	
 	//=====================
 	// Package Methods
 	//=====================
 	
 	/** This method makes a copy of this data object in the destination OsmData object. */
-	void copyInto(OsmRelation newRelation) {
+	@Override
+	public void copyInto(OsmRelation newRelation) {
 		for(OsmMember member:this.members) {
 			OsmMember newMember = member.createCopy();
 			newRelation.members.add(newMember);

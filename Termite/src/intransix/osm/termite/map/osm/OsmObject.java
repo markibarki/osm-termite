@@ -10,7 +10,7 @@ import org.xml.sax.Attributes;
  * 
  * @author sutter
  */
-public abstract class OsmObject extends MapObject {
+public abstract class OsmObject<T extends OsmObject> extends MapObject {
 	
 	//=======================
 	// Properties
@@ -35,7 +35,7 @@ public abstract class OsmObject extends MapObject {
 	
 	private int localVersion = 0;
 	
-	private TermiteObject termiteObject;
+	private TermiteObject<T> termiteObject;
 	
 	//=======================
 	// Constructor
@@ -44,6 +44,10 @@ public abstract class OsmObject extends MapObject {
 	/** The argument is the combined type + osmId string. */
 	OsmObject(String type, long id) {
 		this.type = type;
+		this.id = id;
+	}
+	
+	void setId(long id) {
 		this.id = id;
 	}
 	
@@ -83,12 +87,12 @@ public abstract class OsmObject extends MapObject {
 	}
 	
 		/** This method sets the termite node for this OsmN0de. */
-	public void setTermiteObject(TermiteObject termiteObject) {
+	public void setTermiteObject(TermiteObject<T> termiteObject) {
 		this.termiteObject = termiteObject;
 	}
 	
 	/** This method gets the TermiteNode for this OsmNode. */
-	public TermiteObject getTermiteObject() {
+	public TermiteObject<T> getTermiteObject() {
 		return termiteObject;
 	}
 	
@@ -130,12 +134,16 @@ public abstract class OsmObject extends MapObject {
 		this.localVersion = OsmObject.INITIAL_LOCAL_VERSION;
 	}
 	
+	void setLocalVersion(int localVersion) {
+		this.localVersion = localVersion;
+	}
+	
 	/** This method copies relevent data from the base OsmObject needed for reproducing
 	 * the data set. */
-	void copyInto(OsmObject newObject) {
-		newObject.isLoaded = this.isLoaded;
-		newObject.isVirtual = this.isVirtual;
-		newObject.localVersion = this.localVersion;
+	public void copyInto(T newObject) {
+		newObject.setIsLoaded(this.isLoaded);
+		newObject.setIsVirtual(this.isVirtual);
+		newObject.setLocalVersion(this.localVersion);
 
 		newObject.copyProperties(this);
 	}

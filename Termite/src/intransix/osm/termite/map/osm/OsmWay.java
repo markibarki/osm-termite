@@ -10,7 +10,7 @@ import org.xml.sax.Attributes;
  * This object holds the data of an OSM way. 
  * @author sutter
  */
-public class OsmWay extends OsmObject implements EditData<OsmWay> {
+public class OsmWay extends OsmObject<OsmWay> {
 	
 	//=======================
 	//
@@ -25,6 +25,9 @@ public class OsmWay extends OsmObject implements EditData<OsmWay> {
 	/** Constructor. */
 	public OsmWay(long id) {
 		super(OsmModel.TYPE_WAY,id);
+	}
+	public OsmWay() {
+		super(OsmModel.TYPE_WAY,OsmObject.INVALID_ID);
 	}
 	
 	/** This method gets the nodes for this way. */
@@ -49,28 +52,13 @@ public class OsmWay extends OsmObject implements EditData<OsmWay> {
 		}
 	}
 	
-		//----------------------
-	// Edit Methods
-	//----------------------
-	
-	/** This method is not used on create/delete. */
-	@Override
-	public EditData<OsmWay> readInitialData(OsmWay objectToDelete) throws UnchangedException {
-		return null;
-	}
-		
-	/** This method is only called on create. */
-	@Override
-	public void writeData(OsmWay newObject) throws UnchangedException, Exception {
-		this.copyInto(newObject);
-	}
-	
 	//==========================
 	// package methods
 	//==========================
 	
 	/** This method makes a copy of this data object in the destination OsmData object. */
-	void copyInto(OsmWay newWay) {
+	@Override
+	public void copyInto(OsmWay newWay) {
 		for(Long nodeId:this.nodeIds) {
 			newWay.nodeIds.add(nodeId);
 		}

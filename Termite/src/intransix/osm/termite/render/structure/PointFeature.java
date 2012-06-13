@@ -43,18 +43,16 @@ public class PointFeature {
 	
 	public void render(Graphics2D g2, double zoomScale, Theme theme, TermiteLevel level) {
 		
-		if(osmNode.getLocalVersion() != this.localVersion) {
-			
+//		if(osmNode.getLocalVersion() != this.localVersion) {
+if(termiteNode.getTermiteLocalVersion() != this.localVersion) {
 			//load geometry
 			updateData();
-			
-//if(osmNode.getId() == 1723440852L) {
-//	System.out.println("here");
-//}
+
 			//get the style
 			style = theme.getStyle(osmNode);
 			
-			this.localVersion = osmNode.getLocalVersion();
+//			this.localVersion = osmNode.getLocalVersion();
+this.localVersion = termiteNode.getTermiteLocalVersion();
 		}
 		
 		if((marker != null)&&(style != null)&&(termiteLevel == level)) {

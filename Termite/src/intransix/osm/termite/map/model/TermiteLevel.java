@@ -9,7 +9,7 @@ import java.util.*;
  * 
  * @author sutter
  */
-public class TermiteLevel extends TermiteObject<OsmRelation> {
+public class TermiteLevel extends TermiteObject<OsmWay> {
 	
 	//=========================
 	// Properties
@@ -23,8 +23,7 @@ public class TermiteLevel extends TermiteObject<OsmRelation> {
 	private ArrayList<TermiteWay> ways = new ArrayList<TermiteWay>();
 	private int zlevel = DEFAULT_ZLEVEL;
 	
-	//valid only for method 1
-	private OsmRelation osmRelation;
+	//the outline object for the level
 	private OsmWay shell;
 	
 	//=========================
@@ -67,15 +66,9 @@ public class TermiteLevel extends TermiteObject<OsmRelation> {
 		this.structure = structure;
 	}
 	
-	/** This method loads the relation from the OsmRelation object. */
-	void setOsmRelation(OsmRelation osmRelation) {
-		this.osmRelation = osmRelation;
-	}
-	
 	/** This method loads the level from the shell object. It is used when the 
 	 * shell defines the level properties as opposed to a separate relation. */
 	void setOsmWayShell(OsmWay osmShell) {
-		this.osmRelation = null;
 		this.shell = osmShell;
 	}
 	
@@ -91,67 +84,11 @@ public class TermiteLevel extends TermiteObject<OsmRelation> {
 		nodes.clear();
 		ways.clear();
 		zlevel = DEFAULT_ZLEVEL;
-		
-		if(OsmModel.doNodeLevelLabels) {
-//no action			
-		}
-		else {
-			//handle outdoor case
-			if(osmRelation == null) return;
-			
-			this.zlevel = osmRelation.getIntProperty(OsmModel.KEY_ZLEVEL,DEFAULT_ZLEVEL);
-			
-			OsmData osmData = termiteData.getWorkingData();
-
-			//load members
-			for(OsmMember osmMember:osmRelation.getMembers()) {
-				OsmObject member =  osmData.getOsmObject(osmMember.memberId, osmMember.type);
-				if(member != null) {
-					if(OsmModel.ROLE_FEATURE.equalsIgnoreCase(osmMember.role)) {
-						//method 1 - features collected by the level relation
-						//load features in level relation
-						if(member instanceof OsmNode) {
-							TermiteNode termiteNode = (TermiteNode)member.getTermiteObject();
-							this.addNode(termiteNode);
-						}
-						else if(member instanceof OsmWay) {
-							//create a virutal feature for this way
-							TermiteWay termiteWay = (TermiteWay)member.getTermiteObject();
-							this.addWay(termiteWay);
-						}
-					}
-					else if(OsmModel.ROLE_SHELL.equalsIgnoreCase(osmMember.role)) {
-						if(member instanceof OsmWay) {
-							this.shell = (OsmWay)member;
-							TermiteWay termiteWay = (TermiteWay)shell.getTermiteObject();
-							this.addWay(termiteWay);
-						}
-					}
-				}
-			}
-		}
 	}
 	
 	void updateRemoteData(TermiteData termiteData) {
 this.incrementTermiteVersion();
 
-		if(OsmModel.doNodeLevelLabels) {
-			//levels set from nodes and ways 
-		}
-		else {			
-			for(TermiteWay way:ways) {
-				way.addLevel(this);
-//this is ugly, but we are assuming each node is only on one level
-//so it is OK if we overwrite
-//we are also requiring the way nodes have already been set!!! 
-				for(TermiteNode node:way.getNodes()) {
-					if(!nodes.contains(node)) nodes.add(node);
-				}
-			}
-			for(TermiteNode node:nodes) {
-				node.setLevel(this);
-			}
-		}
 	}
 	
 	void objectDeleted(TermiteData termiteData) {
@@ -172,8 +109,8 @@ this.incrementTermiteVersion();
 	
 	/** This method returns the OsmObject associate with the level. */
 	@Override
-	public OsmRelation getOsmObject() {
-		return osmRelation;
+	public OsmWay getOsmObject() {
+		return shell;
 	}
 	
 	/** This comparator sorts features by zorder. */
