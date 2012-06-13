@@ -1,5 +1,6 @@
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
 
+import intransix.osm.termite.map.osm.OsmWay;
 import java.util.List;
 
 /**
@@ -33,5 +34,11 @@ public class UpdateInsertNode implements EditData<OsmWay> {
 		//set the property
 		List<Long> nodeIds = way.getNodeIds();
 		nodeIds.add(index,nodeId);
+		
+		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
+		for(TermiteNode node:termiteWay.getNodes()) {
+			//this will not add repeats
+			node.addWay(termiteWay);
+		}
 	}
 }

@@ -12,8 +12,8 @@ public class OsmData {
 		private final static long FIRST_ID = -1;
 		/** This method gets the next available termite id, to be used for generating
 	 * temporary IDs. */
-	private synchronized long getNextId() {
-		return nextId++;
+	public synchronized long getNextId() {
+		return nextId--;
 	}
 	private long nextId = FIRST_ID;
 	
@@ -95,12 +95,8 @@ public class OsmData {
 		return dataCopy;
 	}
 	
-	//========================
-	// Package methods
-	//========================
-	
 	/** This method creates an object of the given type with the given id. */
-	OsmObject createOsmObject(long id, String type) {
+	public OsmObject createOsmObject(long id, String type) {
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
 			return createOsmNode(id);
 		}
@@ -116,26 +112,8 @@ public class OsmData {
 		}
 	}
 	
-	OsmNode createOsmNode(long id) {
-		OsmNode node = new OsmNode(id);
-		nodeMap.put(id,node);
-		return node;
-	}
-	
-	OsmWay createOsmWay(long id) {
-		OsmWay way = new OsmWay(id);
-		wayMap.put(id,way);
-		return way;
-	}
-	
-	OsmRelation createOsmRelation(long id) {
-		OsmRelation relation = new OsmRelation(id);
-		relationMap.put(id,relation);
-		return relation;
-	}
-	
 	/** This method removes the object from the active data. */
-	void removeOsmObject(long id, String type) {
+	public void removeOsmObject(long id, String type) {
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
 			removeOsmNode(id);
 		}
@@ -150,15 +128,34 @@ public class OsmData {
 		}
 	}
 	
-	void removeOsmNode(long id) {
+	
+	public OsmNode createOsmNode(long id) {
+		OsmNode node = new OsmNode(id);
+		nodeMap.put(id,node);
+		return node;
+	}
+	
+	public OsmWay createOsmWay(long id) {
+		OsmWay way = new OsmWay(id);
+		wayMap.put(id,way);
+		return way;
+	}
+	
+	public OsmRelation createOsmRelation(long id) {
+		OsmRelation relation = new OsmRelation(id);
+		relationMap.put(id,relation);
+		return relation;
+	}
+	
+	public void removeOsmNode(long id) {
 		nodeMap.remove(id);
 	}
 	
-	void removeOsmWay(long id) {
+	public void removeOsmWay(long id) {
 		wayMap.remove(id);
 	}
 	
-	void removeOsmRelation(long id) {
+	public void removeOsmRelation(long id) {
 		relationMap.remove(id);
 	}
 

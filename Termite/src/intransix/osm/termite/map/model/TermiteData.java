@@ -23,6 +23,7 @@ public class TermiteData {
 	private HashMap<Long,TermiteNode> nodeMap = new HashMap<Long,TermiteNode>();
 	private HashMap<Long,TermiteWay> wayMap = new HashMap<Long,TermiteWay>();
 	private HashMap<Long,TermiteMultiPoly> multiPolyMap = new HashMap<Long,TermiteMultiPoly>();
+	
 	private HashMap<Long,TermiteStructure> structureMap = new HashMap<Long,TermiteStructure>();
 	
 	//USED ONLY FOR METHOD 1 - level relation
@@ -55,12 +56,20 @@ public class TermiteData {
 		return getLevel(structureId, zlevel, false);
 	}
 	
+	public TermiteWay getWay(Long objectId) {
+		return getWay(objectId, false);
+	}
+	
+	public TermiteNode getNode(Long structureId) {
+		return getNode(structureId, false);
+	}
+	
 	//----------------------
 	//edit helper methods
 	//----------------------
 	
 	public EditAction createAction(String desc) {
-		return new EditAction(workingData,desc);
+		return new EditAction(this,desc);
 	}
 	
 	public <T extends OsmObject> EditInstruction<T> getCreateInstruction(T copyOfObjectToCreate) {
@@ -87,20 +96,12 @@ public class TermiteData {
 	
 	public boolean doAction(EditAction action) throws Exception {
 		boolean success = action.doAction();
-		if(success) {
-			this.updateLocalData();
-			this.updateRemoteData();
-		}
 		
 		return success;
 	}
 	
 	public boolean undoAction(EditAction action) throws Exception {
 		boolean success = action.undoAction();
-		if(success) {
-			this.updateLocalData();
-			this.updateRemoteData();
-		}
 		
 		return success;
 	}
@@ -112,41 +113,31 @@ public class TermiteData {
 	/** This method loads the osm format data into the data model. */
 	public void loadData(OsmData baseData) {
 		
-long start;
-double durationMsec;
-		
 		this.baseData = baseData;
-start = System.nanoTime();
 		this.workingData = baseData.createCopy();	
-durationMsec = 1e-6*(System.nanoTime() - start);
-System.out.println("data copy time: " + durationMsec);
 
 		//create the outdoor objects
-start = System.nanoTime();
 		outdoorStructure = this.getStructure(OsmObject.INVALID_ID, true);
-		outdoorLevel = outdoorStructure.initOutdoors(this);
-long end = System.nanoTime();
-durationMsec = 1e-6*(end - start);
-System.out.println("create outdoor: " + durationMsec);
-		
-		//---------------------
-		// Create raw termite objects based on OSM objects
-		//---------------------
-		
-start = System.nanoTime();
+		outdoorLevel = this.getLevel(OsmObject.INVALID_ID,0,true);
+
+		//--------------------------------------------------
+		//read the data from the osm object to the termite object
+		//--------------------------------------------------
+
 		//create the termite nodes
 		for(OsmNode osmNode:workingData.getOsmNodes()) {
 			//create the node
 			TermiteNode termiteNode = getNode(osmNode.getId(),true);
 			termiteNode.setOsmNode(osmNode);
+			termiteNode.updateLocalData(this);	
 		}
 		
 		//create the termite ways
-		//WE MUST DO THIS AFTER RELATIONS SINCE WE RELY ON CHECK THAT RELATION EXISTS
 		for(OsmWay osmWay:workingData.getOsmWays()) {
 			//create the node
 			TermiteWay termiteWay = getWay(osmWay.getId(),true);
 			termiteWay.setOsmWay(osmWay);
+			termiteWay.updateLocalData(this);
 		}
 		
 		//create the objects based on relations
@@ -157,36 +148,30 @@ start = System.nanoTime();
 			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relationtype)) {
 				TermiteMultiPoly termiteMultiPoly = this.getMultiPoly(memberId, true);
 				termiteMultiPoly.setOsmRelation(osmRelation);
+				termiteMultiPoly.updateLocalData(this);
 			}
 			else if(OsmModel.TYPE_LEVEL.equalsIgnoreCase(relationtype)) {
 				//METHOD 1 only:
 				TermiteLevel termiteLevel = this.getLevel(memberId, true);
 				termiteLevel.setOsmRelation(osmRelation);
+				termiteLevel.updateLocalData(this);
 			}
 			else if(OsmModel.TYPE_STRUCTURE.equalsIgnoreCase(relationtype)) {
 				TermiteStructure termiteStructure = this.getStructure(memberId, true);
 				termiteStructure.setOsmRelation(osmRelation);
+				termiteStructure.updateLocalData(this);
 			}
 		}
-durationMsec = 1e-6*(System.nanoTime() - start);
-System.out.println("termite load time: " + durationMsec);
-		
-		//--------------------------------------------------
-		//read the data from the osm object to the termite object
-		//--------------------------------------------------
-start = System.nanoTime();
-		updateLocalData();
-durationMsec = 1e-6*(System.nanoTime() - start);
-System.out.println("Local update time: " + durationMsec);
-		
+
 		//-------------------------
 		// update remote data now thatlocal data is updated
 		//-------------------------
 		
-start = System.nanoTime();
 		updateRemoteData();
-durationMsec = 1e-6*(System.nanoTime() - start);
-System.out.println("Remote update time: " + durationMsec);
+		
+//long start = System.nanoTime();
+//double durationMsec = 1e-6*(System.nanoTime() - start);
+//System.out.println("Remote update time: " + durationMsec);
 	}
 	
 	//==========================
@@ -259,6 +244,8 @@ System.out.println("Remote update time: " + durationMsec);
 			if((level == null)&&(createRef)) {
 				level = new TermiteLevel();
 				level.setZlevel(zlevel);
+				level.setStructure(structure);
+				structure.addLevel(level);
 			}
 			return level;
 		}
@@ -304,32 +291,36 @@ System.out.println("Remote update time: " + durationMsec);
 		return multiPoly;
 	}
 	
-	OsmData getWorkingData() {
+public	OsmData getWorkingData() {
 		return workingData;
+	}
+
+	void deleteTermiteObject(TermiteObject termiteObject) {
+		OsmObject osmObject = termiteObject.getOsmObject();
+		Long id = osmObject.getId();
+		
+		termiteObject.objectDeleted(this);
+		
+		if(termiteObject instanceof TermiteNode) {
+			this.nodeMap.remove(id);
+		}
+		else if(termiteObject instanceof TermiteWay) {
+			this.wayMap.remove(id);
+		}
+		else if(termiteObject instanceof TermiteMultiPoly) {
+			this.multiPolyMap.remove(id);
+		}
+//		else if(termiteObject instanceof TermiteStructure) {
+//			this.structureMap.remove(id);
+//		}
+//		else if(termiteObject instanceof TermiteLevel) {
+//			this.levelMap.remove(id);
+//		}
 	}
 	
 	//==========================
 	// Private Methods
 	//==========================
-	
-	private void updateLocalData() {
-		
-		for(TermiteNode node:nodeMap.values()) {
-			node.updateLocalData(this);
-		}
-		for(TermiteWay way:wayMap.values()) {
-			way.updateLocalData(this);
-		}
-		for(TermiteMultiPoly multiPoly:multiPolyMap.values()) {
-			multiPoly.updateLocalData(this);
-		}
-		for(TermiteStructure structure:structureMap.values()) {
-			structure.updateLocalData(this);
-			for(TermiteLevel level:structure.getLevels()) {
-				level.updateLocalData(this);
-			}
-		}
-	}
 	
 	private void updateRemoteData() {
 		

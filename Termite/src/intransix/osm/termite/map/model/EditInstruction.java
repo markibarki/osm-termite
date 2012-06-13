@@ -1,4 +1,8 @@
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
+
+import intransix.osm.termite.map.model.UnchangedException;
+import intransix.osm.termite.map.osm.OsmData;
+import intransix.osm.termite.map.osm.OsmObject;
 
 /**
  *
@@ -33,18 +37,18 @@ public class EditInstruction<T extends OsmObject> {
 		this.finalData = finalData;
 	}
 	
-	public void doInstruction(OsmData osmData) throws UnchangedException, Exception {
-		initialData = execute(osmData,instrType,initialData,finalData);
+	public void doInstruction(TermiteData termiteData) throws UnchangedException, Exception {
+		initialData = execute(termiteData,instrType,initialData,finalData);
 	}
 	
-	public void undoInstruction(OsmData osmData) throws UnchangedException, Exception {
+	public void undoInstruction(TermiteData termiteData) throws UnchangedException, Exception {
 		InstrType effectiveType;
 		if(instrType == InstrType.CREATE) effectiveType = InstrType.DELETE;
 		else if(instrType == InstrType.UPDATE) effectiveType = InstrType.UPDATE;
 		else if(instrType == InstrType.DELETE) effectiveType = InstrType.CREATE;
 		else throw new UnchangedException("Invalid instruction type");
 		
-		finalData = execute(osmData,effectiveType,finalData,initialData);
+		finalData = execute(termiteData,effectiveType,finalData,initialData);
 	}
 	
 	//===============================
@@ -52,8 +56,12 @@ public class EditInstruction<T extends OsmObject> {
 	//===============================
 	
 	/** This method executes the instruction, returning the inferred initial data. */
-	public EditData<T> execute(OsmData osmData, InstrType t, EditData<T> startData, EditData<T> targetData) 
-			throws UnchangedException, Exception {
+	public EditData<T> execute(TermiteData termiteData, 
+			InstrType t, 
+			EditData<T> startData, 
+			EditData<T> targetData) throws UnchangedException, Exception {
+		
+		OsmData osmData = termiteData.getWorkingData();
 		
 		EditData<T> newInitialData;
 				
@@ -94,15 +102,21 @@ public class EditInstruction<T extends OsmObject> {
 //during the first execution
 		
 		//process the update
+		TermiteObject termiteObject = osmObject.getTermiteObject();
+			
 		if(t == InstrType.DELETE) {
 			//if this is a delete, remove the object
 			osmData.removeOsmObject(this.id, this.objectType);
+			
+			termiteData.deleteTermiteObject(termiteObject);
 		}
 		else {
 			//update the object
 			targetData.writeData(osmObject);
 			osmObject.incrementLocalVersion();
 		}
+		
+		
 		
 		return newInitialData;
 	}

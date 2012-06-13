@@ -1,0 +1,21 @@
+{
+	"levelSpec":"nodes",
+	"nameDefs":{
+		"structureType":"building",
+		"parentRole":"parent",
+		"levelRole":"level",
+		"shellRole":"shell",
+		"featureRole":"buildingpart",
+		"anchorRole":"anchor",
+		"levelType":"level",
+		"zlevelKey":"zlevel",
+		"zcontextKey":"zcontext",
+		"refKeyKey":"ref:key",
+		"refKey":"ref",
+		"refScopeGeomKey":"ref:scope:geom",
+		"refScopeRelKey":"ref:scope:rel"
+	},
+	"geometricKeys":[
+		"level","structure","ele"
+	]
+}

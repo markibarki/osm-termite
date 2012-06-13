@@ -26,7 +26,7 @@ public class PointFeature {
 	
 	public PointFeature(TermiteNode termiteNode) {
 		this.termiteNode = termiteNode;
-		this.osmNode = termiteNode.getOsmNode();
+		this.osmNode = termiteNode.getOsmObject();
 	}
 	
 	public TermiteNode getNode() {

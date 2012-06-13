@@ -10,7 +10,7 @@ import java.awt.geom.Rectangle2D;
  * 
  * @author sutter
  */
-public class TermiteStructure extends TermiteObject {
+public class TermiteStructure extends TermiteObject<OsmRelation> {
 	
 	//==============================
 	// Properties
@@ -56,6 +56,10 @@ public class TermiteStructure extends TermiteObject {
 	// Package Methods
 	//====================
 	
+	void addLevel(TermiteLevel level) {
+		this.levels.add(level);
+	}
+	
 	/** This method calculates the bounds of the object. */
 	void calculateBounds() {
 		//calculate bounds
@@ -66,7 +70,7 @@ public class TermiteStructure extends TermiteObject {
 		for(TermiteLevel level:this.levels) {
 			for(TermiteNode termiteNode:level.getNodes()) {
 				
-				OsmNode node = termiteNode.getOsmNode();
+				OsmNode node = termiteNode.getOsmObject();
 
 				double x = node.getX();
 				double y = node.getY();
@@ -82,14 +86,6 @@ public class TermiteStructure extends TermiteObject {
 	/** This method loads the TermiteStructure from the OSM structure Relation. */
 	void setOsmRelation(OsmRelation osmRelation) {
 		this.osmRelation = osmRelation;
-	}
-	
-	/** This initializes the outdoor level - bypassing the structure relation. */
-	TermiteLevel initOutdoors(TermiteData termiteData) {
-		TermiteLevel outdoorLevel = termiteData.getLevel(OsmObject.INVALID_ID,true);
-		this.levels.clear();
-		this.levels.add(outdoorLevel);
-		return outdoorLevel;
 	}
 	
 	void updateLocalData(TermiteData termiteData) {
@@ -131,14 +127,19 @@ public class TermiteStructure extends TermiteObject {
 	}
 	
 	void updateRemoteData(TermiteData termiteData) {
+this.incrementTermiteVersion();
 		for(TermiteLevel level:levels) {
 			level.setStructure(this);
 		}
 	}
 	
+	void objectDeleted(TermiteData termiteData) {
+		
+	}
+	
 	/** This method returns the obm object for the structure. */
 	@Override
-	OsmObject getOsmObject() {
+	public OsmRelation getOsmObject() {
 		return osmRelation;
 	}
 }

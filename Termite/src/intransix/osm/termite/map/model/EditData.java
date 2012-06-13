@@ -1,4 +1,7 @@
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
+
+import intransix.osm.termite.map.model.UnchangedException;
+import intransix.osm.termite.map.osm.OsmObject;
 
 /**
  * This object is used to edit data on OsmObjects.

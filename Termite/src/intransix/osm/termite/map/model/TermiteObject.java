@@ -8,7 +8,7 @@ import intransix.osm.termite.map.prop.FeatureInfo;
  * 
  * @author sutter
  */
-public abstract class TermiteObject {
+public abstract class TermiteObject<T extends OsmObject> {
 	
 	//=========================
 	// Properties
@@ -18,6 +18,14 @@ public abstract class TermiteObject {
 	private Object editData;
 	
 	FeatureInfo featureInfo = null;
+	
+private int termiteLocalVersion = 0;
+public int getTermiteLocalVersion() {
+	return termiteLocalVersion;
+}
+public void incrementTermiteVersion() {
+	termiteLocalVersion++;
+}
 	
 	//=========================
 	// Public Methods
@@ -58,10 +66,16 @@ public abstract class TermiteObject {
 	 * OSM object for the given Termite Object.
 	 * @return 
 	 */
-	abstract OsmObject getOsmObject();
+	public abstract T getOsmObject();
 	
 	/** This method determines the FeatureInfo for the object. */
 	void classify() {
 		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(getOsmObject());
 	}
+	
+	abstract void updateLocalData(TermiteData termiteData);
+	
+	abstract void updateRemoteData(TermiteData termiteData);
+	
+	abstract void objectDeleted(TermiteData termiteData);
 }

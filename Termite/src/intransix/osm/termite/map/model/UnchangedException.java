@@ -1,4 +1,4 @@
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
 
 /**
  * This is an exception thrown by an instruction is the instruction fails
@@ -9,7 +9,7 @@ package intransix.osm.termite.map.osm;
  * 
  * @author sutter
  */
-class UnchangedException extends Exception {
+public class UnchangedException extends Exception {
 	public UnchangedException(String msg) {
 		super(msg);
 	}

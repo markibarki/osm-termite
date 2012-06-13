@@ -74,7 +74,7 @@
 				{
 					"value":"door",
 					"data":{
-						"zorder":2,
+						"zorder":3,
 						"allowedtypes":7,
 						"defaultpath":1,
 						"inputcolor":"#800080"

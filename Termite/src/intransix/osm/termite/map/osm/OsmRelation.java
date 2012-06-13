@@ -1,5 +1,7 @@
 package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.model.EditData;
+import intransix.osm.termite.map.model.UnchangedException;
 import java.util.ArrayList;
 import org.xml.sax.Attributes;
 

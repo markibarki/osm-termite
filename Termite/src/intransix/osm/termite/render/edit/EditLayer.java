@@ -90,7 +90,7 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 		
 		//loook for a point
 		for(TermiteNode tNode:currentLevel.getNodes()) {
-			OsmNode oNode = tNode.getOsmNode();
+			OsmNode oNode = tNode.getOsmObject();
 			double d = point.distance(oNode.getX(),oNode.getY());
 			if(d < RADIUS_METERS) {
 				this.activeNode = oNode;
