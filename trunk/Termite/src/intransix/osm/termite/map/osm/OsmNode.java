@@ -1,5 +1,7 @@
 package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.model.EditData;
+import intransix.osm.termite.map.model.UnchangedException;
 import intransix.osm.termite.map.model.TermiteNode;
 import intransix.osm.termite.util.MercatorCoordinates;
 import intransix.osm.termite.util.LocalCoordinates;
@@ -23,8 +25,6 @@ public class OsmNode extends OsmObject implements EditData<OsmNode> {
 	private double x;
 	private double y;
 	
-	private TermiteNode termiteNode = null;
-	
 	//======================
 	// Public Methods
 	//======================
@@ -47,16 +47,6 @@ public class OsmNode extends OsmObject implements EditData<OsmNode> {
 	public void setPosition(double x, double y) {
 		this.x = x;
 		this.y = y;
-	}
-	
-	/** This method sets the termite node for this OsmN0de. */
-	public void setTermiteNode(TermiteNode termiteNode) {
-		this.termiteNode = termiteNode;
-	}
-	
-	/** This method gets the TermiteNode for this OsmNode. */
-	public TermiteNode getTermiteNode() {
-		return termiteNode;
 	}
 	
 	/** This method is used to parse the OsmNode. */

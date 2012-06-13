@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
 
+import intransix.osm.termite.map.osm.OsmWay;
 import java.util.List;
 
 /**

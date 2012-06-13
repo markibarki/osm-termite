@@ -9,7 +9,7 @@ import intransix.osm.termite.map.prop.FeatureInfo;
  * 
  * @author sutter
  */
-public class TermiteWay extends TermiteObject {
+public class TermiteWay extends TermiteObject<OsmWay> {
 	
 	//===============
 	// Properties
@@ -43,11 +43,6 @@ public class TermiteWay extends TermiteObject {
 		return isArea;
 	}
 	
-	/** This method gets the OSM way associated with this object. */
-	public OsmWay getOsmWay() {
-		return osmWay;
-	}
-	
 	/** This method gets the multi poly relation for this way. */
 	public TermiteMultiPoly getMultiPoly() {
 		return multiPoly;
@@ -59,16 +54,11 @@ public class TermiteWay extends TermiteObject {
 	
 	void setOsmWay(OsmWay osmWay) {
 		this.osmWay = osmWay;
-		osmWay.setTermiteWay(this);
+		osmWay.setTermiteObject(this);
 	}
 	
 	void updateLocalData(TermiteData termiteData) {
 		classify();
-		
-		//clear remote fields
-		nodes.clear();
-		multiPoly = null;
-		levels.clear();
 		
 		//check for setting the area parameter
 		if((osmWay.getProperty("area") == null)&&(featureInfo != null)) {
@@ -80,9 +70,18 @@ public class TermiteWay extends TermiteObject {
 			TermiteNode node = termiteData.getNode(nodeId,true);
 			nodes.add(node);
 		}
+		
+		if(multiPoly != null) {
+			for(TermiteWay siblingWay:multiPoly.getWays()) {
+				siblingWay.incrementTermiteVersion();
+			}
+		}
+		
+		this.incrementTermiteVersion();
 	}
 	
 	void updateRemoteData(TermiteData termiteData) {
+
 		
 		for(TermiteNode node:nodes) {
 			node.addWay(this);
@@ -101,6 +100,10 @@ public class TermiteWay extends TermiteObject {
 		}
 	}
 	
+	void objectDeleted(TermiteData termiteData) {
+		
+	}
+	
 	/** This method adds a level to the way. */
 	void addLevel(TermiteLevel level) {
 		if(!levels.contains(level)) levels.add(level);
@@ -113,7 +116,7 @@ public class TermiteWay extends TermiteObject {
 	
 	/** This method gets the OSM object associated with this object. */
 	@Override
-	OsmObject getOsmObject() {
+	public OsmWay getOsmObject() {
 		return osmWay;
 	}
 }

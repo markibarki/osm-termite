@@ -1,11 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
+
+import intransix.osm.termite.map.osm.OsmObject;
 
 /**
- *
+ * This EditData object is used to create, update and delete a property. To create,
+ * the initial key should be null. To delete, the final key should be null and the final
+ * value is unused. To update a key value without changing the key, the initial and
+ * final keys should be the same. To change the key without changing the value, the final
+ * and initial keys should be different. The final value should still be entered. If the
+ * final value is set to null, this will delete the key.
  * @author sutter
  */
 public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
@@ -24,7 +27,13 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
 	public EditData<T> readInitialData(T osmObject) throws UnchangedException {
-		String initialValue = osmObject.getProperty(initialKey);
+		String initialValue;
+		if(initialKey != null) {
+			initialValue = osmObject.getProperty(initialKey);
+		}
+		else {
+			 initialValue = null;
+		}
 		UpdateObjectProperty<T> undoUpdate = new UpdateObjectProperty<T>(finalKey,initialKey,initialValue);
 		return undoUpdate;
 	}
@@ -36,10 +45,18 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 	@Override
 	public void writeData(T osmObject) throws UnchangedException, Exception {
 		//if the key changes, delete the old property
-		if(!initialKey.equals(finalKey)) {
+		if(((initialKey != null)&&(!initialKey.equals(finalKey)))
+			||(finalValue == null)) {
 			osmObject.removeProperty(initialKey);
 		}
 		//set the property
-		osmObject.setProperty(finalKey, finalValue);
+		if(finalValue != null) {
+			osmObject.setProperty(finalKey, finalValue);
+		}
+		
+		TermiteObject termiteObject = osmObject.getTermiteObject();
+		if(termiteObject != null) {
+//			termiteObject.propertiesUpdated();
+		}
 	}
 }

@@ -1,32 +1,35 @@
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
 
+import intransix.osm.termite.map.osm.OsmMember;
+import intransix.osm.termite.map.osm.OsmRelation;
 import java.util.List;
 
 /**
  *
  * @author sutter
  */
-public class UpdateRole implements EditData<OsmRelation> {
+public class UpdateMemberOrder implements EditData<OsmRelation> {
 	
-	private String role;
 	private int index;
+	private boolean moveUp;
 	
-	public UpdateRole(String role, int index) {
-		this.role = role;
-		this.index = index;
+	public UpdateMemberOrder(int nodeIndex, boolean moveUp) {
+		this.index = nodeIndex;
+		this.moveUp = moveUp;
 	}
 	
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
 	public EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
-		List<OsmMember> members = relation.getMembers();
-		if((index >= members.size())||(index < 0)) {
-			throw new UnchangedException("Invalid index for relation: " + relation.getId());
+		int undoIndex;
+		if(moveUp) {
+			undoIndex = index - 1;
 		}
-		OsmMember member = members.get(index);
-		String initialRole = member.role;
-		UpdateRole undoUpdate = new UpdateRole(initialRole, index);
+		else {
+			undoIndex = index + 1;
+		}
+		UpdateMemberOrder undoUpdate = new UpdateMemberOrder(undoIndex,!moveUp);
 		return undoUpdate;
 	}
 		
@@ -36,11 +39,18 @@ public class UpdateRole implements EditData<OsmRelation> {
 	 application will be forced to close if this happens. */
 	@Override
 	public void writeData(OsmRelation relation) throws UnchangedException, Exception {
+		//set the property
 		List<OsmMember> members = relation.getMembers();
-		if((index >= members.size())||(index < 0)) {
-			throw new UnchangedException("Invalid index for relation: " + relation.getId());
+		int readdIndex;
+		if(moveUp) {
+			if(index > 0) readdIndex = index - 1;
+			else return; //no action since it can't move
 		}
-		OsmMember member = members.get(index);
-		member.role = role;
+		else {
+			if(index > members.size()-2) readdIndex = index + 1;
+			else return; //no action since it can't move
+		}
+		OsmMember member = members.remove(index);
+		members.add(readdIndex,member);
 	}	
 }

@@ -2,7 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
+
+import intransix.osm.termite.map.osm.OsmNode;
 
 /**
  *
@@ -36,5 +38,16 @@ public class UpdatePosition implements EditData<OsmNode> {
 	public void writeData(OsmNode node) throws UnchangedException, Exception {
 		//set the property
 		node.setPosition(x,y);
+		
+		//flag as dirty the node, way and level
+		TermiteNode termiteNode = (TermiteNode)node.getTermiteObject();
+		termiteNode.incrementTermiteVersion();
+		for(TermiteWay termiteWay:termiteNode.getWays()) {
+			termiteWay.incrementTermiteVersion();
+		}
+		TermiteLevel level = termiteNode.getLevel();
+		if(level != null) {
+			level.incrementTermiteVersion();
+		}
 	}
 }

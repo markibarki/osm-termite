@@ -1,5 +1,7 @@
 package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.model.EditData;
+import intransix.osm.termite.map.model.UnchangedException;
 import intransix.osm.termite.map.model.TermiteWay;
 import java.util.ArrayList;
 import org.xml.sax.Attributes;
@@ -15,8 +17,6 @@ public class OsmWay extends OsmObject implements EditData<OsmWay> {
 	//=======================
 	
 	private ArrayList<Long> nodeIds = new ArrayList<Long>();
-	
-	private TermiteWay termiteWay = null;
 
 	//=======================
 	//
@@ -30,16 +30,6 @@ public class OsmWay extends OsmObject implements EditData<OsmWay> {
 	/** This method gets the nodes for this way. */
 	public ArrayList<Long> getNodeIds() {
 		return nodeIds;
-	}
-	
-	/** This method sets the TermiteWay for this OsmWay. */
-	public void setTermiteWay(TermiteWay termiteWay) {
-		this.termiteWay = termiteWay;
-	}
-	
-	/** This method gets the TermiteWay for this OsmWay. */
-	public TermiteWay getTermiteWay() {
-		return termiteWay;
 	}
 	
 	/** This method is used in parsing XML. */

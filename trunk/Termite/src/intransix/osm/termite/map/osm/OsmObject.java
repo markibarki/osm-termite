@@ -1,6 +1,7 @@
 package intransix.osm.termite.map.osm;
 
 import intransix.osm.termite.map.MapObject;
+import intransix.osm.termite.map.model.TermiteObject;
 import org.xml.sax.Attributes;
 
 
@@ -33,6 +34,8 @@ public abstract class OsmObject extends MapObject {
 	private String timestamp;
 	
 	private int localVersion = 0;
+	
+	private TermiteObject termiteObject;
 	
 	//=======================
 	// Constructor
@@ -77,6 +80,16 @@ public abstract class OsmObject extends MapObject {
 	/** This method gets the local version for the object. */
 	public int getLocalVersion() {
 		return localVersion;
+	}
+	
+		/** This method sets the termite node for this OsmN0de. */
+	public void setTermiteObject(TermiteObject termiteObject) {
+		this.termiteObject = termiteObject;
+	}
+	
+	/** This method gets the TermiteNode for this OsmNode. */
+	public TermiteObject getTermiteObject() {
+		return termiteObject;
 	}
 	
 	/** This method is used in XMl parsing. */

@@ -1,5 +1,7 @@
-package intransix.osm.termite.map.osm;
+package intransix.osm.termite.map.model;
 
+import intransix.osm.termite.map.model.UnchangedException;
+import intransix.osm.termite.map.osm.OsmData;
 import java.util.*;
 
 /**
@@ -8,12 +10,14 @@ import java.util.*;
  */
 public class EditAction {
 	
+	private TermiteData termiteData;
 	private OsmData osmData;
 	private String desc;
 	private List<EditInstruction> instructions = new ArrayList<EditInstruction>();
 	
-	public EditAction(OsmData osmData, String desc) {
-		this.osmData = osmData;
+	public EditAction(TermiteData termiteData, String desc) {
+		this.termiteData = termiteData;
+		this.osmData = termiteData.getWorkingData();
 		this.desc = desc;
 	}
 	
@@ -36,7 +40,7 @@ public class EditAction {
 		try {
 			for(index = 0; index < cnt; index++) {
 				instr = instructions.get(index);
-				instr.doInstruction(osmData);
+				instr.doInstruction(termiteData);
 			}
 		}
 		catch(UnchangedException ex) {
@@ -45,7 +49,7 @@ public class EditAction {
 			//starting with the previous
 			for(index--; index >= 0; index--) {
 				instr = instructions.get(index);
-				instr.undoInstruction(osmData);
+				instr.undoInstruction(termiteData);
 			}
 			return false;
 		}
@@ -60,7 +64,7 @@ public class EditAction {
 		try {
 			for(index = cnt - 1; index >= 0; index--) {
 				instr = instructions.get(index);
-				instr.undoInstruction(osmData);
+				instr.undoInstruction(termiteData);
 			}
 			
 		}
@@ -70,7 +74,7 @@ public class EditAction {
 			//starting with the previous
 			for(index++; index < cnt; index++) {
 				instr = instructions.get(index);
-				instr.doInstruction(osmData);
+				instr.doInstruction(termiteData);
 			}
 			return false;
 		}

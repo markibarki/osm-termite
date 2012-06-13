@@ -25,11 +25,6 @@ public class TermiteNode extends TermiteObject {
 	// Public Methods
 	//====================
 	
-	/** This method gets the OSM node. */
-	public OsmNode getOsmNode() {
-		return osmNode;
-	}
-	
 	/** This method gets the level for the node. */
 	public TermiteLevel getLevel() {
 		return level;
@@ -46,11 +41,11 @@ public class TermiteNode extends TermiteObject {
 	/** This method sets the OsmNode. */
 	void setOsmNode(OsmNode osmNode) {
 		this.osmNode = osmNode;
-		osmNode.setTermiteNode(this);
+		osmNode.setTermiteObject(this);
 	}
 	
 	void addWay(TermiteWay way) {
-		if(ways.contains(way)) {
+		if(!ways.contains(way)) {
 			ways.add(way);
 		}
 	}
@@ -58,9 +53,6 @@ public class TermiteNode extends TermiteObject {
 	void updateLocalData(TermiteData termiteData) {
 		//check properties
 		this.classify();
-		
-		level = null;
-		ways.clear();
 		
 /////////////////////////////////////////////////////////////////
 		if(OsmModel.doNodeLevelLabels) {
@@ -78,10 +70,22 @@ public class TermiteNode extends TermiteObject {
 			//no action
 		}
 ///////////////////////////////////////////////////////////////////////
+		
+		//flag updates
+		this.incrementTermiteVersion();	
+		for(TermiteWay way:ways) {
+			way.incrementTermiteVersion();
+			TermiteMultiPoly mp = way.getMultiPoly();
+			if(mp != null) {
+				for(TermiteWay siblingWay:mp.getWays()) {
+					siblingWay.incrementTermiteVersion();
+				}
+			}
+		}
 	}
 	
 	void updateRemoteData(TermiteData termiteData) {
-		
+	
 /////////////////////////////////////////////////////////////////////////
 		if(OsmModel.doNodeLevelLabels) {
 			level.addNode(this);
@@ -92,6 +96,10 @@ public class TermiteNode extends TermiteObject {
 ///////////////////////////////////////////////////////////////////////////
 	}
 	
+	void objectDeleted(TermiteData termiteData) {
+		
+	}
+	
 	/** This method sets the level. */
 	void setLevel(TermiteLevel level) {
 		this.level = level;
@@ -99,7 +107,7 @@ public class TermiteNode extends TermiteObject {
 	
 	/** This method gets the OSM object. */
 	@Override
-	OsmObject getOsmObject() {
+	public OsmNode getOsmObject() {
 		return osmNode;
 	}
 

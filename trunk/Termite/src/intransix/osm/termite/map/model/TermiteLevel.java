@@ -9,7 +9,7 @@ import java.util.*;
  * 
  * @author sutter
  */
-public class TermiteLevel extends TermiteObject {
+public class TermiteLevel extends TermiteObject<OsmRelation> {
 	
 	//=========================
 	// Properties
@@ -111,19 +111,19 @@ public class TermiteLevel extends TermiteObject {
 						//method 1 - features collected by the level relation
 						//load features in level relation
 						if(member instanceof OsmNode) {
-							TermiteNode termiteNode = ((OsmNode)member).getTermiteNode();
+							TermiteNode termiteNode = (TermiteNode)member.getTermiteObject();
 							this.addNode(termiteNode);
 						}
 						else if(member instanceof OsmWay) {
 							//create a virutal feature for this way
-							TermiteWay termiteWay = ((OsmWay)member).getTermiteWay();
+							TermiteWay termiteWay = (TermiteWay)member.getTermiteObject();
 							this.addWay(termiteWay);
 						}
 					}
 					else if(OsmModel.ROLE_SHELL.equalsIgnoreCase(osmMember.role)) {
 						if(member instanceof OsmWay) {
 							this.shell = (OsmWay)member;
-							TermiteWay termiteWay = shell.getTermiteWay();
+							TermiteWay termiteWay = (TermiteWay)shell.getTermiteObject();
 							this.addWay(termiteWay);
 						}
 					}
@@ -133,7 +133,8 @@ public class TermiteLevel extends TermiteObject {
 	}
 	
 	void updateRemoteData(TermiteData termiteData) {
-				
+this.incrementTermiteVersion();
+
 		if(OsmModel.doNodeLevelLabels) {
 			//levels set from nodes and ways 
 		}
@@ -153,6 +154,10 @@ public class TermiteLevel extends TermiteObject {
 		}
 	}
 	
+	void objectDeleted(TermiteData termiteData) {
+		
+	}
+	
 	/** This method adds a node to the level. */
 	void addNode(TermiteNode node) {
 		if(nodes.contains(node)) return;
@@ -167,7 +172,7 @@ public class TermiteLevel extends TermiteObject {
 	
 	/** This method returns the OsmObject associate with the level. */
 	@Override
-	OsmObject getOsmObject() {
+	public OsmRelation getOsmObject() {
 		return osmRelation;
 	}
 	

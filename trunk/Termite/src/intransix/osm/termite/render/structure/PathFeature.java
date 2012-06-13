@@ -31,7 +31,7 @@ public class PathFeature {
 	
 	public PathFeature(TermiteWay termiteWay) {
 		this.termiteWay = termiteWay;
-		this.osmWay = termiteWay.getOsmWay();
+		this.osmWay = termiteWay.getOsmObject();
 	}
 	
 	public TermiteWay getWay() {
@@ -48,15 +48,16 @@ public class PathFeature {
 	
 	public void render(Graphics2D g2, double zoomScale, Theme theme, TermiteLevel level) {
 		
-		if(osmWay.getLocalVersion() != this.localVersion) {
-			
+//		if(osmWay.getLocalVersion() != this.localVersion) {
+if(termiteWay.getTermiteLocalVersion() != this.localVersion) {			
 			//load geometry
 			updateData();
 			
 			//get the style
 			style = theme.getStyle(osmWay);
-
-			this.localVersion = osmWay.getLocalVersion();
+			
+this.localVersion = termiteWay.getTermiteLocalVersion();
+//			this.localVersion = osmWay.getLocalVersion();
 		}
 		
 		Shape shape = this.getLevelShape(level);
@@ -176,7 +177,7 @@ public class PathFeature {
 		boolean started = false;
 		for(TermiteNode tNode:way.getNodes()) {
 			if(tNode.getLevel() == level) {
-				OsmNode oNode = tNode.getOsmNode();
+				OsmNode oNode = tNode.getOsmObject();
 				double x = oNode.getX();
 				double y = oNode.getY();
 				if(started) {

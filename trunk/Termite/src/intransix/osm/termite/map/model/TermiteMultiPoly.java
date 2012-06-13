@@ -8,7 +8,7 @@ import intransix.osm.termite.map.osm.*;
  * This class encapsulates a mutlipolygon. 
  * @author sutter
  */
-public class TermiteMultiPoly extends TermiteObject {
+public class TermiteMultiPoly extends TermiteObject<OsmRelation> {
 	
 	//===============
 	// Properties
@@ -54,27 +54,33 @@ public class TermiteMultiPoly extends TermiteObject {
 		for(OsmMember member:osmRelation.getMembers()) {
 			if(OsmModel.TYPE_WAY.equalsIgnoreCase(member.type)) {
 				OsmWay osmWay = osmData.getOsmWay(member.memberId);
-				TermiteWay termiteWay = osmWay.getTermiteWay();
+				TermiteWay termiteWay = (TermiteWay)osmWay.getTermiteObject();
 				ways.add(termiteWay);
 				
 				//load the main way
-				if(minId > osmWay.getId()) {
+//				if(minId > osmWay.getId()) {
+if((minId > osmWay.getId())&&(osmWay.getId() > 0)) {
 					minId = osmWay.getId();
-					mainWay = osmWay.getTermiteWay();
+					mainWay = (TermiteWay)osmWay.getTermiteObject();
 				}
 			}
 		}
 	}
 	
 	void updateRemoteData(TermiteData termiteData) {
+this.incrementTermiteVersion();
 		for(TermiteWay way:ways) {
 			way.setMultiPoly(this);
 		}
 	}
 	
+	void objectDeleted(TermiteData termiteData) {
+		
+	}
+	
 	/** This method gets the OSM relation associated with this multipolygon. */
 	@Override
-	OsmObject getOsmObject() {
+	public OsmRelation getOsmObject() {
 		return osmRelation;
 	}
 }
