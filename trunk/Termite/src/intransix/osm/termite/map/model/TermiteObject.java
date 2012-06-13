@@ -78,4 +78,8 @@ public void incrementTermiteVersion() {
 	abstract void updateRemoteData(TermiteData termiteData);
 	
 	abstract void objectDeleted(TermiteData termiteData);
+	
+	void propertiesUpdated(TermiteData termiteData) {
+		
+	}
 }

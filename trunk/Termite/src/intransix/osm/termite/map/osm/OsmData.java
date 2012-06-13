@@ -12,8 +12,9 @@ public class OsmData {
 		private final static long FIRST_ID = -1;
 		/** This method gets the next available termite id, to be used for generating
 	 * temporary IDs. */
-	public synchronized long getNextId() {
-		return nextId--;
+	public synchronized void applyNextId(OsmObject object) {
+		long id = nextId--;
+		object.setId(id);
 	}
 	private long nextId = FIRST_ID;
 	

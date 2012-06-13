@@ -85,23 +85,38 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 		
 		for(TermiteNode node:nodes) {
 			node.addWay(this);
-/////////////////////////////////////////////////////////////////////
-			if(OsmModel.doNodeLevelLabels) {
-				TermiteLevel level = node.getLevel();
-				if(!levels.contains(level)) {
-					levels.add(level);
-					level.addWay(this);
-				}
+			TermiteLevel level = node.getLevel();
+			if(!levels.contains(level)) {
+				levels.add(level);
+				level.addWay(this);
 			}
-			else {
-				//no action
-			}
-////////////////////////////////////////////////////////////////////////
 		}
 	}
 	
 	void objectDeleted(TermiteData termiteData) {
 		
+	}
+	
+	@Override
+	void propertiesUpdated(TermiteData termiteData) {
+		
+		//check properties
+		FeatureInfo oldInfo = this.getFeatureInfo();
+		classify();
+		
+		//check for setting the area parameter
+		if((osmWay.getProperty("area") == null)&&(featureInfo != null)) {
+			this.isArea = (featureInfo.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
+		}
+		
+		//mark any ways in a multipolygon as changed
+		//mark any ways in a multipolygon as changed
+		if(this.multiPoly != null) {
+			this.multiPoly.incrementWaysTermiteVersion();
+		}
+		
+		//flag this object as changed if relevent info changed
+		this.incrementTermiteVersion();
 	}
 	
 	/** This method adds a level to the way. */

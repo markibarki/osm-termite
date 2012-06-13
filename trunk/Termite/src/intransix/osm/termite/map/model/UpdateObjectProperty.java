@@ -16,8 +16,10 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 	private String initialKey;
 	private String finalKey;
 	private String finalValue;
+	private TermiteData termiteData;
 	
-	public UpdateObjectProperty(String initialKey, String finalKey, String finalValue) {
+	public UpdateObjectProperty(TermiteData data, String initialKey, String finalKey, String finalValue) {
+		this.termiteData = data;
 		this.initialKey = initialKey;
 		this.finalKey = finalKey;
 		this.finalValue = finalValue;
@@ -34,7 +36,7 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 		else {
 			 initialValue = null;
 		}
-		UpdateObjectProperty<T> undoUpdate = new UpdateObjectProperty<T>(finalKey,initialKey,initialValue);
+		UpdateObjectProperty<T> undoUpdate = new UpdateObjectProperty<T>(termiteData,finalKey,initialKey,initialValue);
 		return undoUpdate;
 	}
 		
@@ -56,7 +58,7 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 		
 		TermiteObject termiteObject = osmObject.getTermiteObject();
 		if(termiteObject != null) {
-//			termiteObject.propertiesUpdated();
+			termiteObject.propertiesUpdated(termiteData);
 		}
 	}
 }

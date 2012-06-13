@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * 
  * @author sutter
  */
-public class OsmNode extends OsmObject implements EditData<OsmNode> {
+public class OsmNode extends OsmObject<OsmNode> {
 	
 	//======================
 	// Properties
@@ -32,6 +32,10 @@ public class OsmNode extends OsmObject implements EditData<OsmNode> {
 	/** Constructor. */
 	public OsmNode(long id) {
 		super(OsmModel.TYPE_NODE,id);
+	}
+	
+	public OsmNode() {
+		super(OsmModel.TYPE_NODE,OsmObject.INVALID_ID);
 	}
 	
 	/** This method gets the X coordinate of the node, in local mercator units. */
@@ -68,29 +72,15 @@ public class OsmNode extends OsmObject implements EditData<OsmNode> {
 			y = LocalCoordinates.mercToLocalY(my);
 		}
 	}
-	
-	//----------------------
-	// Edit Methods
-	//----------------------
-	
-	/** This method is not used for create/delete. */
-	@Override
-	public EditData<OsmNode> readInitialData(OsmNode objectToDelete) throws UnchangedException {
-		return null;
-	}
-		
-	/** This method is only called on create. */
-	@Override
-	public void writeData(OsmNode newObject) throws UnchangedException, Exception {
-		this.copyInto(newObject);
-	}
+
 	
 	//========================
 	// Package Methods
 	//========================
 	
 	/** This method makes a copy of this data object in the destination OsmData object. */
-	void copyInto(OsmNode newNode) {
+	@Override
+	public void copyInto(OsmNode newNode) {
 		newNode.x = this.x;
 		newNode.y = this.y;
 		super.copyInto(newNode);

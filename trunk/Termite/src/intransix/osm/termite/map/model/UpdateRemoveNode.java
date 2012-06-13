@@ -43,6 +43,28 @@ public class UpdateRemoveNode implements EditData<OsmWay> {
 		if(nodeIds.size() <= index) {
 			throw new UnchangedException("Invalid node index for way: " + way.getId());
 		}
-		nodeIds.remove(index);
+		
+		Long idRemoved = nodeIds.remove(index);
+		
+		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
+		//check to make sure that node is still not there, at another index
+		if(!nodeIds.contains(idRemoved)) {
+			
+			for(TermiteNode node:termiteWay.getNodes()) {
+				//this will not add repeats
+				if(node.getOsmObject().getId() == idRemoved.longValue()) {
+					node.addWay(termiteWay);
+					node.incrementTermiteVersion();
+				}
+			}
+		}
+		
+		//mark any ways in a multipolygon as changed
+		if(termiteWay.getMultiPoly() != null) {
+			termiteWay.getMultiPoly().incrementWaysTermiteVersion();
+		}
+		
+		//flag as updated
+		termiteWay.incrementTermiteVersion();
 	}
 }

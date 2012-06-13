@@ -38,7 +38,18 @@ public class UpdateInsertNode implements EditData<OsmWay> {
 		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
 		for(TermiteNode node:termiteWay.getNodes()) {
 			//this will not add repeats
-			node.addWay(termiteWay);
+			if(node.getOsmObject().getId() == nodeId) {
+				node.addWay(termiteWay);
+				node.incrementTermiteVersion();
+			}
 		}
+		
+		//mark any ways in a multipolygon as changed
+		if(termiteWay.getMultiPoly() != null) {
+			termiteWay.getMultiPoly().incrementWaysTermiteVersion();
+		}
+		
+		//increment this object
+		termiteWay.incrementTermiteVersion();
 	}
 }

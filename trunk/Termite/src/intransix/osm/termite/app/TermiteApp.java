@@ -91,17 +91,19 @@ public class TermiteApp {
 		String featureInfoName = "featureInfo.json";
 		
 		//method 1
-		String modelFileName = "model1.json";
-		String mapDataFileName = "morgantownMall.xml";
-		long structureId = 2127658L;
-		double baseLat = 39.627177;
-		double baseLon = -79.997989;
+//		String modelFileName = "model1.json";
+//		String mapDataFileName = "morgantownMall.xml";
+//		final long structureId = 2127658L;
+//		double baseLat = 39.627177;
+//		double baseLon = -79.997989;
+//		final long nodeId = 1710315717L;
 		
-//		String modelFileName = "model2.json";
-//		String mapDataFileName = "nodeTestBuilding.xml";
-//		long structureId = 167142181L;
-//		double baseLat = 40.376;
-//		double baseLon = -117.116;
+		String modelFileName = "model2.json";
+		String mapDataFileName = "nodeTestBuilding.xml";
+		final long structureId = 167142181L;
+		double baseLat = 40.376;
+		double baseLon = -117.116;
+		final long nodeId = 1785444150L;
 		
 		//set local coordinates
 		double mx = MercatorCoordinates.lonRadToMx(Math.toRadians(baseLon));
@@ -153,7 +155,7 @@ public class TermiteApp {
 				
 		//add to the map panel
 		MapPanel mapDisplay = gui.getMap();
-		mapDisplay.addLayer(tileLayer);
+//		mapDisplay.addLayer(tileLayer);
 		mapDisplay.addLayer(structureLayer);
 		mapDisplay.addLayer(editLayer);
 		
@@ -165,78 +167,78 @@ public class TermiteApp {
 		
 		mapDisplay.repaint();
 		
-//		Timer timer = new Timer();
-//		TimerTask timerTask = new TimerTask() {
-//			public void run() {
-//				doTestAction();
-//			}
-//		};
-//		timer.schedule(timerTask,3000);
+		Timer timer = new Timer();
+		TimerTask timerTask = new TimerTask() {
+			public void run() {
+				doTestAction(structureId,nodeId);
+			}
+		};
+		timer.schedule(timerTask,3000);
 		
 	}
 	
-	private void doTestAction() {
-		EditAction action = termiteData.createAction("Test Action");
+	private void doTestAction(long structureId, long nodeId) {
+		EditAction action = new EditAction(termiteData,"Test Action");
 		EditInstruction instr;
 		
-		TermiteNode testNode = termiteData.getNode(1710315717L);
+		String zlevel = "0";
+		String zcontext = String.valueOf(structureId);
+		
+		TermiteNode testNode = termiteData.getNode(nodeId);
 		OsmNode osmNode = testNode.getOsmObject();
 		double x = osmNode.getX();
 		double y = osmNode.getY();
-		UpdatePosition targetData = new UpdatePosition(x + 10,y+5);
-		instr = termiteData.getUpdateInstruction(osmNode,targetData);
+		UpdatePosition targetData = new UpdatePosition(x + 100,y+50);
+		instr = new UpdateInstruction(osmNode,targetData);
 		action.addInstruction(instr);
 		
-//		OsmData osmData = termiteData.getWorkingData();
-//		Long id1 = osmData.getNextId();
-//		OsmNode oNode1 = new OsmNode(id1);
-//		oNode1.setPosition(x, y-10);
-//		instr = termiteData.getCreateInstruction(oNode1);
-//		action.addInstruction(instr);
-//		
-//		Long id2 = osmData.getNextId();
-//		OsmNode oNode2 = new OsmNode(id2);
-//		oNode2.setPosition(x-1, y-11);
-//		instr = termiteData.getCreateInstruction(oNode2);
-//		action.addInstruction(instr);
-//		
-//		Long id3 = osmData.getNextId();
-//		OsmNode oNode3 = new OsmNode(id3);
-//		oNode3.setPosition(x+1, y-11);
-//		instr = termiteData.getCreateInstruction(oNode3);
-//		action.addInstruction(instr);
-//		
-//		Long id4 = osmData.getNextId();
-//		OsmWay way = new OsmWay(id4);
-//		List<Long> wayNodes = way.getNodeIds();
-//		wayNodes.add(id1);
-//		wayNodes.add(id2);
-//		wayNodes.add(id3);
-//		wayNodes.add(id1);
-//		instr = termiteData.getCreateInstruction(way);
-//		action.addInstruction(instr);
-//		
-//		TermiteLevel level = termiteData.getLevel(2127658L,0);
-//		OsmRelation osmLevel = (OsmRelation)level.getOsmObject();
-//		int index = osmLevel.getMembers().size();
-//		OsmMember newMember = new OsmMember(id4,"way","buildingpart");
-//		UpdateInsertMember uim = new UpdateInsertMember(newMember,index);
-//		instr = termiteData.getUpdateInstruction(osmLevel,uim);
-//		action.addInstruction(instr);
-//		
-//		Long id5 = osmData.getNextId();
-//		OsmRelation relation = new OsmRelation(id5);
+		OsmNode oNode1 = new OsmNode();
+		oNode1.setPosition(x, y-50);
+		oNode1.setProperty(OsmModel.KEY_ZLEVEL,zlevel);
+		oNode1.setProperty(OsmModel.KEY_ZCONTEXT,zcontext);
+		instr = new CreateInstruction(oNode1,termiteData);
+		long id1 = oNode1.getId();
+		action.addInstruction(instr);
+		
+		OsmNode oNode2 = new OsmNode();
+		oNode2.setPosition(x-20, y-10);
+		oNode2.setProperty(OsmModel.KEY_ZLEVEL,zlevel);
+		oNode2.setProperty(OsmModel.KEY_ZCONTEXT,zcontext);
+		instr = new CreateInstruction(oNode2,termiteData);
+		long id2 = oNode2.getId();
+		action.addInstruction(instr);
+		
+		OsmNode oNode3 = new OsmNode();
+		oNode3.setPosition(x+20, y-10);
+		oNode3.setProperty(OsmModel.KEY_ZLEVEL,zlevel);
+		oNode3.setProperty(OsmModel.KEY_ZCONTEXT,zcontext);
+		instr = new CreateInstruction(oNode3,termiteData);
+		long id3 = oNode3.getId();
+		action.addInstruction(instr);
+		
+		OsmWay way = new OsmWay();
+		List<Long> wayNodes = way.getNodeIds();
+		wayNodes.add(id1);
+		wayNodes.add(id2);
+		wayNodes.add(id3);
+		wayNodes.add(id1);
+		way.setProperty("buildingpart","wall");
+		instr = new CreateInstruction(way,termiteData);
+		long id4 = way.getId();
+		action.addInstruction(instr);
+		
+//		OsmRelation relation = new OsmRelation();
 //		List<OsmMember> members = relation.getMembers();
 //		OsmMember member = new OsmMember(158933100L,"way","outer");
 //		members.add(member);
 //		member = new OsmMember(id4,"way","inner");
 //		members.add(member);
 //		relation.setProperty("type","multipolygon");
-//		instr = termiteData.getCreateInstruction(relation);
+//		instr = new CreateInstruction(relation,termiteData);
 //		action.addInstruction(instr);
 		
 		try {
-			termiteData.doAction(action);
+			action.doAction();
 			gui.getMap().repaint();
 		}
 		catch(Exception ex) {

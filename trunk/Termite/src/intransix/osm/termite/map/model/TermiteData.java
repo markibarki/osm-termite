@@ -26,9 +26,6 @@ public class TermiteData {
 	
 	private HashMap<Long,TermiteStructure> structureMap = new HashMap<Long,TermiteStructure>();
 	
-	//USED ONLY FOR METHOD 1 - level relation
-	private HashMap<Long,TermiteLevel> levelMap = new HashMap<Long,TermiteLevel>();
-	
 	private TermiteStructure outdoorStructure;
 	private TermiteLevel outdoorLevel;
 	
@@ -64,48 +61,6 @@ public class TermiteData {
 		return getNode(structureId, false);
 	}
 	
-	//----------------------
-	//edit helper methods
-	//----------------------
-	
-	public EditAction createAction(String desc) {
-		return new EditAction(this,desc);
-	}
-	
-	public <T extends OsmObject> EditInstruction<T> getCreateInstruction(T copyOfObjectToCreate) {
-		EditInstruction<T> createInstruction = new EditInstruction<T>
-				(copyOfObjectToCreate,EditInstruction.InstrType.CREATE);
-		createInstruction.setData((EditData<T>)copyOfObjectToCreate);
-		return createInstruction;
-	}
-	
-	public <T extends OsmObject> EditInstruction<T> getUpdateInstruction(T objectToUpdate, 
-			EditData<T> targetData) {
-		EditInstruction<T> updateInstruction = new EditInstruction<T>
-				(objectToUpdate,EditInstruction.InstrType.UPDATE);
-		updateInstruction.setData(targetData);
-		return updateInstruction;
-	}
-	
-	public <T extends OsmObject> EditInstruction<T> getDeleteInstruction(T objectToDelete) {
-		EditInstruction<T> deleteInstruction = new EditInstruction<T>
-				(objectToDelete,EditInstruction.InstrType.DELETE);
-		//no target data on delete
-		return deleteInstruction;
-	}
-	
-	public boolean doAction(EditAction action) throws Exception {
-		boolean success = action.doAction();
-		
-		return success;
-	}
-	
-	public boolean undoAction(EditAction action) throws Exception {
-		boolean success = action.undoAction();
-		
-		return success;
-	}
-	
 	//-----------------------
 	// Load Data
 	//-----------------------
@@ -138,6 +93,8 @@ public class TermiteData {
 			TermiteWay termiteWay = getWay(osmWay.getId(),true);
 			termiteWay.setOsmWay(osmWay);
 			termiteWay.updateLocalData(this);
+			
+//need to add the shell and parent objects
 		}
 		
 		//create the objects based on relations
@@ -150,17 +107,6 @@ public class TermiteData {
 				termiteMultiPoly.setOsmRelation(osmRelation);
 				termiteMultiPoly.updateLocalData(this);
 			}
-			else if(OsmModel.TYPE_LEVEL.equalsIgnoreCase(relationtype)) {
-				//METHOD 1 only:
-				TermiteLevel termiteLevel = this.getLevel(memberId, true);
-				termiteLevel.setOsmRelation(osmRelation);
-				termiteLevel.updateLocalData(this);
-			}
-			else if(OsmModel.TYPE_STRUCTURE.equalsIgnoreCase(relationtype)) {
-				TermiteStructure termiteStructure = this.getStructure(memberId, true);
-				termiteStructure.setOsmRelation(osmRelation);
-				termiteStructure.updateLocalData(this);
-			}
 		}
 
 		//-------------------------
@@ -172,6 +118,10 @@ public class TermiteData {
 //long start = System.nanoTime();
 //double durationMsec = 1e-6*(System.nanoTime() - start);
 //System.out.println("Remote update time: " + durationMsec);
+	}
+	
+	public OsmData getWorkingData() {
+		return workingData;
 	}
 	
 	//==========================
@@ -213,29 +163,6 @@ public class TermiteData {
 		return way;
 	}
 	
-//////////////////////////////////////////////////////////////////////
-// LEVEL LOOKUP
-// In method 1 - level relation, lokup is by id
-// In method 2 - node labeling, lookup is by structure + zlevel
-// THE TWO LOOKUP METHODS CAN NOT BE MIXED!!!
-
-	/** This method looks up the TermiteLevel associated with the id. If the object
-	 * is not found and createRef is true, a new object is created and inserted into the map.
-	 * If createRef is false, null is returned. 
-	 * 
-	 * @param id		The OSM ID for the object
-	 * @createRef		If a new reference should be created this should be set to true.
-	 * @return			The object
-	 */
-	TermiteLevel getLevel(Long id, boolean createRef) {
-		TermiteLevel level = this.levelMap.get(id);
-		if((level == null)&&(createRef)) {
-			level = new TermiteLevel();
-			levelMap.put(id, level);
-		}
-		return level;
-	}
-	
 	/** This method looks up a level for the given structure id and zlevel value. */
 	TermiteLevel getLevel(Long structureId, int zlevel, boolean createRef) {
 		TermiteStructure structure = getStructure(structureId,createRef);
@@ -253,9 +180,6 @@ public class TermiteData {
 			return null;
 		}
 	}
-	
-// end level lookup section
-//////////////////////////////////////////////////////////////////////////////////////////////
 	
 	/** This method looks up the TermiteStructure associated with the id. If the object
 	 * is not found and createRef is true, a new object is created and inserted into the map.
@@ -290,11 +214,8 @@ public class TermiteData {
 		}
 		return multiPoly;
 	}
-	
-public	OsmData getWorkingData() {
-		return workingData;
-	}
 
+	/** This method is called from a delete instruction to remove the termite object. */
 	void deleteTermiteObject(TermiteObject termiteObject) {
 		OsmObject osmObject = termiteObject.getOsmObject();
 		Long id = osmObject.getId();
@@ -310,12 +231,7 @@ public	OsmData getWorkingData() {
 		else if(termiteObject instanceof TermiteMultiPoly) {
 			this.multiPolyMap.remove(id);
 		}
-//		else if(termiteObject instanceof TermiteStructure) {
-//			this.structureMap.remove(id);
-//		}
-//		else if(termiteObject instanceof TermiteLevel) {
-//			this.levelMap.remove(id);
-//		}
+//how about level and structure? These need to be deleted too
 	}
 	
 	//==========================
