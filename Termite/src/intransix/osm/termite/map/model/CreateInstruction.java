@@ -9,20 +9,20 @@ import intransix.osm.termite.map.osm.OsmObject;
  */
 public class CreateInstruction<T extends OsmObject> extends EditInstruction {
 	
-	private T osmObject;
+	private T copyOfObjectToCreate;
 	
 	public CreateInstruction(T copyOfObjectToCreate, TermiteData termiteData) {
-		this.osmObject = copyOfObjectToCreate;
+		this.copyOfObjectToCreate = copyOfObjectToCreate;
 		OsmData osmData = termiteData.getWorkingData();
-		osmData.applyNextId(osmObject);
+		osmData.applyNextId(copyOfObjectToCreate);
 	}
 	
 	public void doInstruction(TermiteData termiteData) throws UnchangedException, Exception {
-		executeCreate(termiteData,osmObject);
+		executeCreate(termiteData,copyOfObjectToCreate);
 	}
 	
 	public void undoInstruction(TermiteData termiteData) throws UnchangedException, Exception {
-		executeDelete(termiteData,osmObject);
+		executeDelete(termiteData,copyOfObjectToCreate);
 	}
 
 }

@@ -253,6 +253,17 @@ public class TermiteApp {
 		catch(Exception ex) {
 			ex.printStackTrace();
 		}
+		
+		
+		
+		try {
+			Thread.sleep(3000);
+			action.undoAction();
+			gui.getMap().repaint();
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 }

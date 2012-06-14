@@ -58,9 +58,9 @@ public class TermiteMultiPoly extends TermiteObject<OsmRelation> {
 		}
 	}
 	
-	void init(TermiteData termiteData, OsmRelation osmRelation) {
-		
+	void init(TermiteData termiteData, OsmRelation osmRelation) {	
 		this.osmRelation = osmRelation;
+		osmRelation.setTermiteObject(this);
 		OsmData osmData = termiteData.getWorkingData();
 		
 		for(OsmMember member:osmRelation.getMembers()) {
