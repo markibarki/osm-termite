@@ -1,4 +1,4 @@
-package intransix.osm.termite.map;
+package intransix.osm.termite.map.proptree;
 
 import intransix.osm.termite.map.proptree.PropertyNode;
 import intransix.osm.termite.map.proptree.KeyNode;
