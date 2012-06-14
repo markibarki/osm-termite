@@ -1,6 +1,7 @@
 package intransix.osm.termite.theme;
 
-import intransix.osm.termite.map.*;
+import intransix.osm.termite.map.proptree.PropertyNode;
+import intransix.osm.termite.map.osm.OsmObject;
 import org.json.*;
 
 /**
@@ -31,7 +32,7 @@ public class Theme {
 	}
 	
 	/** This method sets the style for a feature. */
-	public Style getStyle(MapObject mapObject) {
+	public Style getStyle(OsmObject mapObject) {
 		return treeRoot.getPropertyData(mapObject);
 	}
 	

@@ -1,7 +1,7 @@
 package intransix.osm.termite.map.model;
 
 import intransix.osm.termite.map.osm.*;
-import intransix.osm.termite.map.prop.FeatureInfo;
+import intransix.osm.termite.map.feature.FeatureInfo;
 
 /**
  * This is a base class for the TermiteObject.

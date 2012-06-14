@@ -1,4 +1,4 @@
-package intransix.osm.termite.map;
+package intransix.osm.termite.map.proptree;
 
 import org.json.JSONObject;
 

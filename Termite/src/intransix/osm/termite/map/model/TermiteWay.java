@@ -2,7 +2,7 @@ package intransix.osm.termite.map.model;
 
 import java.util.*;
 import intransix.osm.termite.map.osm.*;
-import intransix.osm.termite.map.prop.FeatureInfo;
+import intransix.osm.termite.map.feature.FeatureInfo;
 
 /**
  * This method encapsulates a way in the structure model.

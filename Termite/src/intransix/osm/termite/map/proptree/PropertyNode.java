@@ -1,5 +1,6 @@
-package intransix.osm.termite.map;
+package intransix.osm.termite.map.proptree;
 
+import intransix.osm.termite.map.osm.OsmObject;
 import java.util.ArrayList;
 
 import org.json.*;
@@ -72,7 +73,7 @@ public class PropertyNode<TK, TV> {
 	
 	/** This method traverses the property tree and finds the matching property
 	 * node for the given map object. */
-	public PropertyNode<TK,TV> getClassifyingProperty(MapObject mapObject) {
+	public PropertyNode<TK,TV> getClassifyingProperty(OsmObject mapObject) {
 		String value;
 		for(KeyNode<TK,TV> key:keys) {
 			//see if the map object has a matching key
@@ -93,7 +94,7 @@ public class PropertyNode<TK, TV> {
 	
 	/** This method is the same as getClassifyingProperty except is returns the
 	 * data associated with that property object. */
-	public TV getPropertyData(MapObject mapObject) {
+	public TV getPropertyData(OsmObject mapObject) {
 		PropertyNode<TK,TV> prop = this.getClassifyingProperty(mapObject);
 		if(prop != null) return prop.data;
 		else return null;
@@ -101,7 +102,7 @@ public class PropertyNode<TK, TV> {
 	
 	/** This method returns the key node for the given key name on the
 	 * given map object. If null is returned that no key was found. */
-	public KeyNode<TK,TV> getKey(MapObject mapObject, String keyName) {
+	public KeyNode<TK,TV> getKey(OsmObject mapObject, String keyName) {
 		for(KeyNode key:keys) {
 			//check if key is defined here
 			if(keyName.equalsIgnoreCase(key.getName())) return key;
@@ -118,7 +119,7 @@ public class PropertyNode<TK, TV> {
 	 * given map object. If null is returned that no match was found. This will return
 	 * the property even if a different value for this key already exists on the map 
 	 * object. */
-	public PropertyNode<TK,TV> getKeyValue(MapObject mapObject, String keyName, String keyValue) {
+	public PropertyNode<TK,TV> getKeyValue(OsmObject mapObject, String keyName, String keyValue) {
 		KeyNode<TK,TV> key = this.getKey(mapObject, keyName);
 		if(key != null) {
 			//check value on key

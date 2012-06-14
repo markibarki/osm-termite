@@ -1,6 +1,6 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.prop.FeatureInfoMap;
+import intransix.osm.termite.map.feature.FeatureInfoMap;
 import org.json.*;
 import java.util.HashSet;
 

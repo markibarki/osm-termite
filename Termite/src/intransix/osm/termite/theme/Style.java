@@ -1,8 +1,8 @@
 package intransix.osm.termite.theme;
 
-import intransix.osm.termite.map.DataParser;
-import intransix.osm.termite.map.KeyNode;
-import intransix.osm.termite.map.PropertyNode;
+import intransix.osm.termite.map.proptree.DataParser;
+import intransix.osm.termite.map.proptree.KeyNode;
+import intransix.osm.termite.map.proptree.PropertyNode;
 import java.awt.*;
 import java.util.ArrayList;
 import org.json.JSONObject;

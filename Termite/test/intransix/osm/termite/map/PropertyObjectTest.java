@@ -1,5 +1,10 @@
 package intransix.osm.termite.map;
 
+import intransix.osm.termite.map.proptree.PropertyNode;
+import intransix.osm.termite.map.proptree.KeyNode;
+import intransix.osm.termite.map.proptree.DataParser;
+import intransix.osm.termite.map.osm.OsmObject;
+import intransix.osm.termite.map.osm.OsmNode;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.json.JSONObject;
@@ -115,10 +120,11 @@ public class PropertyObjectTest {
 			assertTrue(po.getName().equalsIgnoreCase("theme"));
 			assertTrue(pond.getName().equalsIgnoreCase("theme"));
 			
-			MapObject mapObject;
+			OsmObject mapObject;
 			PropertyNode out;
 			
-			mapObject = new MapObject();
+			//use a node as the generic map object
+			mapObject = new OsmNode();
 			
 			StyleData st;
 			KeyNode<StyleData,StyleData> key;
