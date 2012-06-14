@@ -3,7 +3,6 @@ package intransix.osm.termite.map.model;
 import java.util.*;
 import java.awt.geom.*;
 import intransix.osm.termite.map.osm.*;
-import intransix.osm.termite.util.MercatorCoordinates;
 
 /**
  * This class holds the active session data.
@@ -83,16 +82,15 @@ public class TermiteData {
 		for(OsmNode osmNode:workingData.getOsmNodes()) {
 			//create the node
 			TermiteNode termiteNode = getNode(osmNode.getId(),true);
-			termiteNode.setOsmNode(osmNode);
-			termiteNode.updateLocalData(this);	
+			termiteNode.init(this,osmNode);	
 		}
 		
 		//create the termite ways
+//MUST DO WAYS AFTER NODES FOR NOW
 		for(OsmWay osmWay:workingData.getOsmWays()) {
 			//create the node
 			TermiteWay termiteWay = getWay(osmWay.getId(),true);
-			termiteWay.setOsmWay(osmWay);
-			termiteWay.updateLocalData(this);
+			termiteWay.init(this,osmWay);
 			
 //need to add the shell and parent objects
 		}
@@ -104,16 +102,9 @@ public class TermiteData {
 			//create the node
 			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relationtype)) {
 				TermiteMultiPoly termiteMultiPoly = this.getMultiPoly(memberId, true);
-				termiteMultiPoly.setOsmRelation(osmRelation);
-				termiteMultiPoly.updateLocalData(this);
+				termiteMultiPoly.init(this,osmRelation);
 			}
 		}
-
-		//-------------------------
-		// update remote data now thatlocal data is updated
-		//-------------------------
-		
-		updateRemoteData();
 		
 //long start = System.nanoTime();
 //double durationMsec = 1e-6*(System.nanoTime() - start);
@@ -170,8 +161,7 @@ public class TermiteData {
 			TermiteLevel level = structure.lookupLevel(zlevel);
 			if((level == null)&&(createRef)) {
 				level = new TermiteLevel();
-				level.setZlevel(zlevel);
-				level.setStructure(structure);
+				level.setStructure(structure,zlevel);
 				structure.addLevel(level);
 			}
 			return level;
@@ -237,27 +227,6 @@ public class TermiteData {
 	//==========================
 	// Private Methods
 	//==========================
-	
-	private void updateRemoteData() {
-		
-		for(TermiteNode node:nodeMap.values()) {
-			node.updateRemoteData(this);
-		}
-		for(TermiteWay way:wayMap.values()) {
-			way.updateRemoteData(this);
-		}
-		for(TermiteMultiPoly multiPoly:multiPolyMap.values()) {
-			multiPoly.updateRemoteData(this);
-		}
-		for(TermiteStructure structure:structureMap.values()) {
-			structure.updateRemoteData(this);
-			for(TermiteLevel level:structure.getLevels()) {
-				level.updateRemoteData(this);
-				level.orderFeatures();
-			}
-			structure.calculateBounds();
-		}
-	}
 	
 	
 	// <editor-fold defaultstate="collapsed" desc="sample code fold">

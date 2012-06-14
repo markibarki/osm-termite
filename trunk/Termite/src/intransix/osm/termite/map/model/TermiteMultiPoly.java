@@ -35,58 +35,81 @@ public class TermiteMultiPoly extends TermiteObject<OsmRelation> {
 		return osmRelation;
 	}
 	
-	//=======================
-	// Package Methods
-	//=======================
+	/** This method gets the OSM relation associated with this multipolygon. */
+	@Override
+	public OsmRelation getOsmObject() {
+		return osmRelation;
+	}
 	
-		/** This method loads the object from the osm relation. */
+	/** This method loads the object from the osm relation. */
 	public void setOsmRelation(OsmRelation osmRelation) {
 		this.osmRelation = osmRelation;
 	}
 	
-	void updateLocalData(TermiteData termiteData) {
+	//=======================
+	// Package Methods
+	//=======================
+	
+	@Override
+	void incrementTermiteVersion() {
+		super.incrementTermiteVersion();
+		for(TermiteWay way:ways) {
+			way.incrementTermiteVersion();
+		}
+	}
+	
+	void init(TermiteData termiteData, OsmRelation osmRelation) {
+		
+		this.osmRelation = osmRelation;
 		OsmData osmData = termiteData.getWorkingData();
 		
-		ways.clear();
-		mainWay = null;
-		
-		long minId = Long.MAX_VALUE;
 		for(OsmMember member:osmRelation.getMembers()) {
 			if(OsmModel.TYPE_WAY.equalsIgnoreCase(member.type)) {
 				OsmWay osmWay = osmData.getOsmWay(member.memberId);
 				TermiteWay termiteWay = (TermiteWay)osmWay.getTermiteObject();
 				ways.add(termiteWay);
 				
-				//load the main way
-//				if(minId > osmWay.getId()) {
-if((minId > osmWay.getId())&&(osmWay.getId() > 0)) {
-					minId = osmWay.getId();
-					mainWay = (TermiteWay)osmWay.getTermiteObject();
+				termiteWay.setMultiPoly(this);
+				
+				//load the main way - use first for now
+				if(mainWay == null) {
+					mainWay = termiteWay;
 				}
 			}
 		}
 	}
 	
-	void updateRemoteData(TermiteData termiteData) {
-this.incrementTermiteVersion();
-		for(TermiteWay way:ways) {
-			way.setMultiPoly(this);
-		}
-	}
-	
 	void objectDeleted(TermiteData termiteData) {
-		
-	}
-	
-	void incrementWaysTermiteVersion() {
 		for(TermiteWay way:ways) {
-			way.incrementTermiteVersion();
+			way.setMultiPoly(null);
 		}
+		this.ways.clear();
+		this.mainWay = null;
+		this.osmRelation = null;
 	}
 	
-	/** This method gets the OSM relation associated with this multipolygon. */
-	@Override
-	public OsmRelation getOsmObject() {
-		return osmRelation;
+	void removeMemberObject(TermiteWay termiteWay) {
+		ways.remove(termiteWay);
+		if(mainWay == termiteWay) {
+			if(!ways.isEmpty()) {
+				mainWay = ways.get(0);
+			}
+			else {
+				mainWay = null;
+			}
+		}
+		incrementTermiteVersion();
 	}
+	
+	void propertiesUpdated(TermiteData termiteData) {
+		//we just need to check that the tyep was not updated
+		if(osmRelation != null) {
+			String relationType = osmRelation.getProperty(OsmModel.TAG_TYPE);
+			if(!OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relationType)) {
+				throw new RuntimeException("Changing the relation type for a Multipolygong not currently supported!");
+			}
+		} 
+	}
+	
+
 }

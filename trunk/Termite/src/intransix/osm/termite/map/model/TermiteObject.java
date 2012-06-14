@@ -14,6 +14,8 @@ public abstract class TermiteObject<T extends OsmObject> {
 	// Properties
 	//=========================
 	
+	public final static int INVALID_TERMITE_VERSION = -1;
+	
 	private Object renderData;
 	private Object editData;
 	
@@ -23,7 +25,7 @@ private int termiteLocalVersion = 0;
 public int getTermiteLocalVersion() {
 	return termiteLocalVersion;
 }
-public void incrementTermiteVersion() {
+void incrementTermiteVersion() {
 	termiteLocalVersion++;
 }
 	
@@ -73,9 +75,7 @@ public void incrementTermiteVersion() {
 		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(getOsmObject());
 	}
 	
-	abstract void updateLocalData(TermiteData termiteData);
-	
-	abstract void updateRemoteData(TermiteData termiteData);
+	abstract void init(TermiteData termiteData, T osmObject);
 	
 	abstract void objectDeleted(TermiteData termiteData);
 	

@@ -40,13 +40,12 @@ public class UpdateInsertNode implements EditData<OsmWay> {
 			//this will not add repeats
 			if(node.getOsmObject().getId() == nodeId) {
 				node.addWay(termiteWay);
-				node.incrementTermiteVersion();
 			}
 		}
 		
 		//mark any ways in a multipolygon as changed
 		if(termiteWay.getMultiPoly() != null) {
-			termiteWay.getMultiPoly().incrementWaysTermiteVersion();
+			termiteWay.getMultiPoly().incrementTermiteVersion();
 		}
 		
 		//increment this object

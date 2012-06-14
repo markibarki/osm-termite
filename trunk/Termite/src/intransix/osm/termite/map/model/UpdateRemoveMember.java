@@ -14,9 +14,11 @@ import java.util.List;
  */
 public class UpdateRemoveMember implements EditData<OsmRelation> {
 
+	private TermiteData termiteData;
 	private int index;
 	
-	public UpdateRemoveMember(int index) {
+	public UpdateRemoveMember(TermiteData termiteData, int index) {
+		this.termiteData = termiteData;
 		this.index = index;
 	}
 	
@@ -30,7 +32,7 @@ public class UpdateRemoveMember implements EditData<OsmRelation> {
 		}
 		OsmMember member = members.get(index);
 		OsmMember memberCopy = member.createCopy();
-		UpdateInsertMember undoUpdate = new UpdateInsertMember(memberCopy, index);
+		UpdateInsertMember undoUpdate = new UpdateInsertMember(termiteData, memberCopy, index);
 		return undoUpdate;
 	}
 		
@@ -46,5 +48,15 @@ public class UpdateRemoveMember implements EditData<OsmRelation> {
 			throw new UnchangedException("Invalid node index for relation: " + relation.getId());
 		}
 		members.remove(index);
+		
+		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
+		if(termiteObject != null) {
+			if(termiteObject instanceof TermiteMultiPoly) {
+				List<TermiteWay> ways = ((TermiteMultiPoly)termiteObject).getWays();
+				TermiteWay way = ways.remove(index);
+				way.setMultiPoly(null);
+			}			
+			termiteObject.incrementTermiteVersion();
+		}
 	}	
 }

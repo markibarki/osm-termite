@@ -52,5 +52,16 @@ public class UpdateMemberOrder implements EditData<OsmRelation> {
 		}
 		OsmMember member = members.remove(index);
 		members.add(readdIndex,member);
+		
+		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
+		if(termiteObject != null) {
+			if(termiteObject instanceof TermiteMultiPoly) {
+				//update the way list
+				List<TermiteWay> ways = ((TermiteMultiPoly)termiteObject).getWays();
+				TermiteWay way = ways.remove(index);
+				ways.add(readdIndex,way);
+			}			
+			termiteObject.incrementTermiteVersion();
+		}
 	}	
 }

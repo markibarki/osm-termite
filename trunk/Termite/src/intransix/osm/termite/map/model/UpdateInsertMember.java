@@ -14,10 +14,12 @@ import java.util.List;
  */
 public class UpdateInsertMember implements EditData<OsmRelation> {
 	
+	private TermiteData termiteData;
 	private OsmMember member;
 	private int index;
 	
-	public UpdateInsertMember(OsmMember member, int nodeIndex) {
+	public UpdateInsertMember(TermiteData termiteData, OsmMember member, int nodeIndex) {
+		this.termiteData = termiteData;
 		this.member = member;
 		this.index = nodeIndex;
 	}
@@ -26,7 +28,7 @@ public class UpdateInsertMember implements EditData<OsmRelation> {
 	 * This method can throw a UnchangedException, which means no data was changed. */
 	@Override
 	public EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
-		UpdateRemoveMember undoUpdate = new UpdateRemoveMember(index);
+		UpdateRemoveMember undoUpdate = new UpdateRemoveMember(termiteData,index);
 		return undoUpdate;
 	}
 		
@@ -36,9 +38,30 @@ public class UpdateInsertMember implements EditData<OsmRelation> {
 	 application will be forced to close if this happens. */
 	@Override
 	public void writeData(OsmRelation relation) throws UnchangedException, Exception {
+		
+		//do this first since it might throw an exception - we don't want to update the data before then
+		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
+		if(termiteObject != null) {
+			if(termiteObject instanceof TermiteMultiPoly) {
+				
+				//add the way to the multipolygon
+				TermiteWay way = termiteData.getWay(member.memberId);
+				if(way != null) {
+					List<TermiteWay> ways = ((TermiteMultiPoly)termiteObject).getWays();
+					ways.add(index,way);
+					way.setMultiPoly((TermiteMultiPoly)termiteObject);
+				}
+				else {
+					throw new UnchangedException("Way not found!");
+				}
+			}			
+			termiteObject.incrementTermiteVersion();
+		}
+		
 		//set the property
 		List<OsmMember> members = relation.getMembers();
 		OsmMember memberCopy = member.createCopy();
 		members.add(index,memberCopy);
+			
 	}
 }

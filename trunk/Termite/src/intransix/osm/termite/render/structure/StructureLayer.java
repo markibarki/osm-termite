@@ -3,6 +3,7 @@ package intransix.osm.termite.render.structure;
 import intransix.osm.termite.map.model.TermiteWay;
 import intransix.osm.termite.map.model.TermiteLevel;
 import intransix.osm.termite.map.model.TermiteNode;
+import intransix.osm.termite.map.model.TermiteObject;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.theme.Theme;
@@ -47,6 +48,9 @@ public class StructureLayer implements MapLayer {
 		double zoomScale = mapPanel.getZoomScale();
 		
 		if((localLevel == null)||(localTheme == null)) return;
+		
+		//make sure the level is sorted
+		localLevel.checkFeatureSort();
 		
 		g2.transform(mapToPixels);		
 			
