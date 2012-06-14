@@ -77,12 +77,22 @@ public abstract class EditInstruction<T extends OsmObject> {
 		OsmData osmData = termiteData.getWorkingData();
 		
 		//process the update
-		TermiteObject termiteObject = osmObject.getTermiteObject();
+		OsmObject liveOsmObject = osmData.createOsmObject(osmObject.getId(), osmObject.getObjectType());
+		TermiteObject termiteObject;
+		if(liveOsmObject != null) {
+			termiteObject = liveOsmObject.getTermiteObject();
+		}
+		else {
+			//this shouldn't happen
+			termiteObject = null;
+		}
 			
 		//if this is a delete, remove the object
 		osmData.removeOsmObject(osmObject.getId(), osmObject.getObjectType());
 
-		termiteData.deleteTermiteObject(termiteObject);
+		if(termiteObject != null) {
+			termiteData.deleteTermiteObject(termiteObject);
+		}
 
 	}
 }
