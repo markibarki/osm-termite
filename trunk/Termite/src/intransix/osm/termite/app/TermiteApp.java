@@ -1,5 +1,6 @@
 package intransix.osm.termite.app;
 
+import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.map.model.EditAction;
 import intransix.osm.termite.map.model.EditInstruction;
 import intransix.osm.termite.map.model.UpdatePosition;
@@ -9,7 +10,6 @@ import intransix.osm.termite.map.feature.FeatureInfoMap;
 import intransix.osm.termite.app.gui.TermiteGui;
 import intransix.osm.termite.render.MapPanel;
 
-import intransix.osm.termite.theme.*;
 import intransix.osm.termite.util.JsonIO;
 
 import intransix.osm.termite.map.osm.*;

@@ -2,8 +2,8 @@ package intransix.osm.termite.render.structure;
 
 import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.map.osm.*;
-import intransix.osm.termite.theme.Style;
-import intransix.osm.termite.theme.Theme;
+import intransix.osm.termite.map.theme.Style;
+import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
 
 import java.awt.Graphics2D;

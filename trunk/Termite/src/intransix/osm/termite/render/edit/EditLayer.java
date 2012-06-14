@@ -7,7 +7,7 @@ import intransix.osm.termite.map.model.TermiteWay;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.structure.PathFeature;
 import intransix.osm.termite.render.structure.PointFeature;
-import intransix.osm.termite.theme.Theme;
+import intransix.osm.termite.map.theme.Theme;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;

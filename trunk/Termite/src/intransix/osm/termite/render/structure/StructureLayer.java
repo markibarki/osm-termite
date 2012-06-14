@@ -6,7 +6,7 @@ import intransix.osm.termite.map.model.TermiteNode;
 import intransix.osm.termite.map.model.TermiteObject;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.MapPanel;
-import intransix.osm.termite.theme.Theme;
+import intransix.osm.termite.map.theme.Theme;
 import java.awt.*;
 import java.awt.geom.*;
 
