@@ -1,5 +1,6 @@
-package intransix.osm.termite.map;
+package intransix.osm.termite.map.proptree;
 
+import intransix.osm.termite.map.osm.OsmObject;
 import java.util.*;
 import org.json.*;
 
@@ -92,7 +93,7 @@ public class KeyNode<TK, TV> {
 	
 	/** This method finds a matching property node for this map object, checking
 	 * the child node corresponding to the matching child value for this key.  */
-	public PropertyNode<TK,TV> getClassifyingProperty(MapObject mapObject) {
+	public PropertyNode<TK,TV> getClassifyingProperty(OsmObject mapObject) {
 		String keyValue = mapObject.getProperty(name);
 		if(keyValue != null) {
 			PropertyNode<TK,TV> matchingProp = this.getKeyValue(keyValue);
@@ -111,7 +112,7 @@ public class KeyNode<TK, TV> {
 	/** This method attempts to find a matching key object for this map object
 	 * and key name. It checks if the local key is a match and, if not, it checks
 	 * if the child property that matches the map object has a matching key. */
-	public KeyNode<TK,TV> getKey(MapObject mapObject, String keyName) {
+	public KeyNode<TK,TV> getKey(OsmObject mapObject, String keyName) {
 		//check if this key is a match
 		//map object does not need to have this key already
 		if(keyName.equalsIgnoreCase(name)) return this;

@@ -4,7 +4,7 @@ import java.io.IOException;
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
-import intransix.osm.termite.map.prop.FeatureInfoMap;
+import intransix.osm.termite.map.feature.FeatureInfoMap;
 import java.awt.geom.*;
 import java.awt.*;
 import java.io.PrintStream;

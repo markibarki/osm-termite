@@ -1,7 +1,7 @@
 package intransix.osm.termite.map.model;
 
 import intransix.osm.termite.map.osm.*;
-import intransix.osm.termite.map.prop.FeatureInfo;
+import intransix.osm.termite.map.feature.FeatureInfo;
 import java.util.*;
 
 /**
