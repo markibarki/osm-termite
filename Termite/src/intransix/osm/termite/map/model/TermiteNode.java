@@ -118,7 +118,7 @@ public class TermiteNode extends TermiteObject<OsmNode> {
 			
 			//explicitly update objects that hold a reference to this
 			for(TermiteWay way:ways) {
-				way.incrementTermiteVersion();
+				way.nodeLevelChange();
 			}
 		}
 		else if(newZorder != oldZorder) {

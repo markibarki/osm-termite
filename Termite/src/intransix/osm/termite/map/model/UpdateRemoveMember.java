@@ -48,6 +48,8 @@ public class UpdateRemoveMember implements EditData<OsmRelation> {
 			throw new UnchangedException("Invalid node index for relation: " + relation.getId());
 		}
 		members.remove(index);
+		//explicitly increment version since edit was external
+		relation.incrementLocalVersion();
 		
 		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
 		if(termiteObject != null) {

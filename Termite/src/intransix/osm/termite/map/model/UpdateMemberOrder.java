@@ -52,6 +52,8 @@ public class UpdateMemberOrder implements EditData<OsmRelation> {
 		}
 		OsmMember member = members.remove(index);
 		members.add(readdIndex,member);
+		//explicitly increment version since edit was external
+		relation.incrementLocalVersion();
 		
 		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
 		if(termiteObject != null) {

@@ -62,6 +62,8 @@ public class UpdateInsertMember implements EditData<OsmRelation> {
 		List<OsmMember> members = relation.getMembers();
 		OsmMember memberCopy = member.createCopy();
 		members.add(index,memberCopy);
+		//explicitly increment version since edit was external
+		relation.incrementLocalVersion();
 			
 	}
 }

@@ -34,6 +34,8 @@ public class UpdateInsertNode implements EditData<OsmWay> {
 		//set the property
 		List<Long> nodeIds = way.getNodeIds();
 		nodeIds.add(index,nodeId);
+		//explicitly increment version since edit was external
+		way.incrementLocalVersion();
 		
 		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
 		for(TermiteNode node:termiteWay.getNodes()) {

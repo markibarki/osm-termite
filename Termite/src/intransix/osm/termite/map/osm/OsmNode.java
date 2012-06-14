@@ -47,6 +47,7 @@ public class OsmNode extends OsmObject<OsmNode> {
 	public void setPosition(double x, double y) {
 		this.x = x;
 		this.y = y;
+		incrementLocalVersion();
 	}
 	
 	/** This method is used to parse the OsmNode. */

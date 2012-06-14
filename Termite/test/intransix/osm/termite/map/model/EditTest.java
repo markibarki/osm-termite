@@ -310,13 +310,13 @@ public class EditTest {
 		//create a multipoly relation
 		//---------------------
 		
+		action = new EditAction(termiteData,"Create a multipoly relation");
+		
 		OsmRelation relation = new OsmRelation();
 		List<OsmMember> members = relation.getMembers();
-		OsmMember member = new OsmMember(idw1,"way","outer");
-		members.add(member);
-		member = new OsmMember(idw2,"way","inner");
-		members.add(member);
-		relation.setProperty("type","multipolygon");
+		members.add(new OsmMember(idw1,"way","outer"));
+		members.add(new OsmMember(idw2,"way","inner"));
+		relation.setProperty(OsmModel.TAG_TYPE,"multipolygon");
 		instr = new CreateInstruction(relation,termiteData);
 		long idr1 = relation.getId();
 		action.addInstruction(instr);
@@ -375,17 +375,119 @@ public class EditTest {
 		// Create a generic relation
 		//------------------
 		
+		action = new EditAction(termiteData,"Create a generic relation");
+		
+		OsmRelation relation2 = new OsmRelation();
+		List<OsmMember> members2 = relation2.getMembers();
+		members2.add(new OsmMember(idw1,"way","aaa"));
+		members2.add(new OsmMember(idr1,"relation","bbb"));
+		members2.add(new OsmMember(idn1,"node","ccc"));
+		relation2.setProperty(OsmModel.TAG_TYPE,"generic");
+		instr = new CreateInstruction(relation2,termiteData);
+		long idr2 = relation2.getId();
+		action.addInstruction(instr);
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		List<OsmMember> r2Members = new ArrayList<OsmMember>();
+		r2Members.add(new OsmMember(idw1,"way","aaa"));
+		r2Members.add(new OsmMember(idr1,"relation","bbb"));
+		r2Members.add(new OsmMember(idn1,"node","ccc"));
+		HashMap<String,String> r2Props = new HashMap<String,String>();
+		r2Props.put(OsmModel.TAG_TYPE,"generic");
+		
+		validateRelation(idr2,r2Props,r2Members,0,0);
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+				
+		validateRelationDeleted(idr2,false,null);
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		validateRelation(idr2,r2Props,r2Members,0,0);
 		
 		//////////////////////////////////////////////////////////////
 		// Edit Properties
 		//////////////////////////////////////////////////////////////
 		
 		//=====================
-		//edit node properties
+		//change node level
 		//=====================
+				
+		action = new EditAction(termiteData,"Test Edit Node Properties");
+		
+		TermiteNode testNode = termiteData.getNode(idn1);
+		OsmNode osmNode = testNode.getOsmObject();
+		TermiteWay testWay = termiteData.getWay(idw1);
+		OsmWay osmWay = testWay.getOsmObject();
+		
+		
+		String initialKey = "zlevel";
+		String initialValue = "0";
+		String finalValue = "1";
+		UpdateObjectProperty targetData = new UpdateObjectProperty(termiteData,initialKey,initialKey,finalValue);
+		instr = new UpdateInstruction(osmNode,targetData);
+		action.addInstruction(instr);
+		
+		int n1MinOsmVersion = osmNode.getLocalVersion() + 1;
+		int n1MinTermiteversion = testNode.getTermiteLocalVersion() + 1;
+		
+		int w1MinOsmVersion = osmWay.getLocalVersion(); //the osm way didn't change
+		int w1MinTermiteversion = testWay.getTermiteLocalVersion() + 1;
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		n1Props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel2));
+		w1Levels.add(zlevel2);
+		
+		validateNode(idn1,x1,y1,structureId,zlevel2,n1WayIds,n1Props,n1FeatureInfoName,n1MinOsmVersion,n1MinTermiteversion);
+		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,w1MinOsmVersion,w1MinTermiteversion);
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		n1Props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel1));
+		w1Levels.remove(zlevel2);
+		
+		validateNode(idn1,x1,y1,structureId,zlevel1,n1WayIds,n1Props,n1FeatureInfoName,0,0);
+		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,0,0);
 		
 		//=====================
-		//edit way properties
+		//edit way type
 		//=====================
 		
 		//=====================
