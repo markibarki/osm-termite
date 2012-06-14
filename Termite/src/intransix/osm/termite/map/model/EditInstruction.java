@@ -49,20 +49,24 @@ public abstract class EditInstruction<T extends OsmObject> {
 		osmObject = (T)osmData.createOsmObject(id,objectType);
 		objectToCopy.copyInto(osmObject);
 		
-		//process the update
-		if(objectType == "node") {
+		//process the update - for specific type
+		//we can probably cleean this up with generics and a new method on termite data
+		//think about this
+		if(objectType.equalsIgnoreCase("node")) {
 			TermiteNode tn = termiteData.getNode(id, true);
-			tn.setOsmNode((OsmNode)osmObject);
-			tn.updateLocalData(termiteData);
-			tn.updateRemoteData(termiteData);
+			tn.init(termiteData,(OsmNode)osmObject);
 		}
-		else if(objectType == "way") {
+		else if(objectType.equalsIgnoreCase("way")) {
 			TermiteWay tw = termiteData.getWay(id, true);
-			tw.setOsmWay((OsmWay)osmObject);
-			tw.updateLocalData(termiteData);
-			tw.updateRemoteData(termiteData);
+			tw.init(termiteData,(OsmWay)osmObject);
 		}
-//need to account for multipoly!
+		else if(objectType.equalsIgnoreCase("relation")) {
+			String relationType = ((OsmRelation)osmObject).getProperty(OsmModel.TAG_TYPE);
+			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relationType)) {
+				TermiteMultiPoly tmp = termiteData.getMultiPoly(id, true);
+				tmp.init(termiteData,(OsmRelation)osmObject);
+			}
+		}
 	}
 	
 	
@@ -79,8 +83,6 @@ public abstract class EditInstruction<T extends OsmObject> {
 		osmData.removeOsmObject(osmObject.getId(), osmObject.getObjectType());
 
 		termiteData.deleteTermiteObject(termiteObject);
-//		need stuff here!!!
-
 
 	}
 }

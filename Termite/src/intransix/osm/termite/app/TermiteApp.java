@@ -96,6 +96,7 @@ public class TermiteApp {
 //		final long structureId = 2127658L;
 //		double baseLat = 39.627177;
 //		double baseLon = -79.997989;
+//		final long wayId = 158933100L;
 //		final long nodeId = 1710315717L;
 		
 		String modelFileName = "model2.json";
@@ -103,6 +104,7 @@ public class TermiteApp {
 		final long structureId = 167142181L;
 		double baseLat = 40.376;
 		double baseLon = -117.116;
+		final long wayId = 167142563L;
 		final long nodeId = 1785444150L;
 		
 		//set local coordinates
@@ -162,6 +164,7 @@ public class TermiteApp {
 		mapDisplay.addMapListener(tileLayer);
 		
 		if(structure != null) {
+			structure.calculateBounds();
 			mapDisplay.setBounds(structure.getBounds());
 		}
 		
@@ -170,14 +173,14 @@ public class TermiteApp {
 		Timer timer = new Timer();
 		TimerTask timerTask = new TimerTask() {
 			public void run() {
-				doTestAction(structureId,nodeId);
+				doTestAction(structureId,wayId,nodeId);
 			}
 		};
 		timer.schedule(timerTask,3000);
 		
 	}
 	
-	private void doTestAction(long structureId, long nodeId) {
+	private void doTestAction(long structureId, long wayId, long nodeId) {
 		EditAction action = new EditAction(termiteData,"Test Action");
 		EditInstruction instr;
 		
@@ -216,6 +219,12 @@ public class TermiteApp {
 		long id3 = oNode3.getId();
 		action.addInstruction(instr);
 		
+		TermiteWay testWay = termiteData.getWay(wayId);
+		OsmWay osmWay = testWay.getOsmObject();
+		UpdateObjectProperty targetData2 = new UpdateObjectProperty(termiteData,"buildingpart","buildingpart","room");
+		instr = new UpdateInstruction(osmWay,targetData2);
+		action.addInstruction(instr);
+		
 		OsmWay way = new OsmWay();
 		List<Long> wayNodes = way.getNodeIds();
 		wayNodes.add(id1);
@@ -227,15 +236,15 @@ public class TermiteApp {
 		long id4 = way.getId();
 		action.addInstruction(instr);
 		
-//		OsmRelation relation = new OsmRelation();
-//		List<OsmMember> members = relation.getMembers();
-//		OsmMember member = new OsmMember(158933100L,"way","outer");
-//		members.add(member);
-//		member = new OsmMember(id4,"way","inner");
-//		members.add(member);
-//		relation.setProperty("type","multipolygon");
-//		instr = new CreateInstruction(relation,termiteData);
-//		action.addInstruction(instr);
+		OsmRelation relation = new OsmRelation();
+		List<OsmMember> members = relation.getMembers();
+		OsmMember member = new OsmMember(wayId,"way","outer");
+		members.add(member);
+		member = new OsmMember(id4,"way","inner");
+		members.add(member);
+		relation.setProperty("type","multipolygon");
+		instr = new CreateInstruction(relation,termiteData);
+		action.addInstruction(instr);
 		
 		try {
 			action.doAction();

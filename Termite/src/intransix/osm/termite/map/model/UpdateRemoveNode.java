@@ -53,15 +53,14 @@ public class UpdateRemoveNode implements EditData<OsmWay> {
 			for(TermiteNode node:termiteWay.getNodes()) {
 				//this will not add repeats
 				if(node.getOsmObject().getId() == idRemoved.longValue()) {
-					node.addWay(termiteWay);
-					node.incrementTermiteVersion();
+					node.removeWay(termiteWay);
 				}
 			}
 		}
 		
 		//mark any ways in a multipolygon as changed
 		if(termiteWay.getMultiPoly() != null) {
-			termiteWay.getMultiPoly().incrementWaysTermiteVersion();
+			termiteWay.getMultiPoly().incrementTermiteVersion();
 		}
 		
 		//flag as updated

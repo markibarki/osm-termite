@@ -10,7 +10,7 @@ import intransix.osm.termite.map.prop.FeatureInfo;
  * 
  * @author sutter
  */
-public class TermiteNode extends TermiteObject {
+public class TermiteNode extends TermiteObject<OsmNode> {
 	
 	//====================
 	// Properties
@@ -41,25 +41,28 @@ public class TermiteNode extends TermiteObject {
 	// Package Methods
 	//====================
 	
-	/** This method sets the OsmNode. */
-	void setOsmNode(OsmNode osmNode) {
-		this.osmNode = osmNode;
-		osmNode.setTermiteObject(this);
-	}
-	
 	void addWay(TermiteWay way) {
 		if(!ways.contains(way)) {
 			ways.add(way);
+			incrementTermiteVersion();
 		}
 	}
 	
-	void updateLocalData(TermiteData termiteData) {
+	void removeWay(TermiteWay way) {
+		ways.remove(way);
+		incrementTermiteVersion();
+	}
+	
+	void init(TermiteData termiteData, OsmNode osmNode) {
+		this.osmNode = osmNode;
+		osmNode.setTermiteObject(this);
+		
 		//check properties
 		this.classify();
 		
 		//get the level for this node
-		int zlevel = osmNode.getIntProperty(OsmModel.KEY_ZLEVEL,TermiteLevel.DEFAULT_ZLEVEL);
-		long structureId = osmNode.getLongProperty(OsmModel.KEY_ZCONTEXT,OsmObject.INVALID_ID);
+		zlevel = osmNode.getIntProperty(OsmModel.KEY_ZLEVEL,TermiteLevel.DEFAULT_ZLEVEL);
+		structureId = osmNode.getLongProperty(OsmModel.KEY_ZCONTEXT,OsmObject.INVALID_ID);
 		if(structureId != OsmObject.INVALID_ID) {
 			level = termiteData.getLevel(structureId, zlevel,true);
 		}
@@ -67,25 +70,22 @@ public class TermiteNode extends TermiteObject {
 			level = termiteData.getOutdoorLevel();
 		}
 		
-		//flag updates
-		this.incrementTermiteVersion();	
-		for(TermiteWay way:ways) {
-			way.incrementTermiteVersion();
-			TermiteMultiPoly mp = way.getMultiPoly();
-			if(mp != null) {
-				for(TermiteWay siblingWay:mp.getWays()) {
-					siblingWay.incrementTermiteVersion();
-				}
-			}
-		}
-	}
-	
-	void updateRemoteData(TermiteData termiteData) {
+		//update objects that hold a reference to this
 		level.addNode(this);
 	}
 	
 	void objectDeleted(TermiteData termiteData) {
+		if(level != null) {
+			level.removeNode(this);
+		}
+		level = null;
 		
+		for(TermiteWay way:ways) {
+			way.removeNode(this);
+		}	
+		ways.clear();
+		
+		osmNode = null;
 	}
 	
 	@Override
@@ -94,6 +94,10 @@ public class TermiteNode extends TermiteObject {
 		//check properties
 		FeatureInfo oldInfo = this.getFeatureInfo();
 		this.classify();
+		
+		//check for a change of ordering
+		int oldZorder = oldInfo.getZorder();
+		int newZorder = this.getFeatureInfo().getZorder();
 		
 		//get the level for this node
 		zlevel = osmNode.getIntProperty(OsmModel.KEY_ZLEVEL,TermiteLevel.DEFAULT_ZLEVEL);
@@ -107,13 +111,19 @@ public class TermiteNode extends TermiteObject {
 		}
 		
 		if(level != oldLevel) {
-			
 			//mark the level and ways as updated
-			oldLevel.incrementTermiteVersion();
-			level.incrementTermiteVersion();
+			oldLevel.removeNode(this);
+			
+			level.addNode(this);
+			
+			//explicitly update objects that hold a reference to this
 			for(TermiteWay way:ways) {
 				way.incrementTermiteVersion();
 			}
+		}
+		else if(newZorder != oldZorder) {
+			//explicitly flag this level as updated
+			level.incrementTermiteVersion();
 		}
 		
 		//flag this object as changed if relevent info changed

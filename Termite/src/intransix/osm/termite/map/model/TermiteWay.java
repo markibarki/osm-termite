@@ -47,18 +47,27 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 	public TermiteMultiPoly getMultiPoly() {
 		return multiPoly;
 	}
+	
+	/** This method gets the OSM object associated with this object. */
+	@Override
+	public OsmWay getOsmObject() {
+		return osmWay;
+	}
 
 	//====================
 	// Package Methods
 	//====================
 	
-	void setOsmWay(OsmWay osmWay) {
+	void init(TermiteData termiteData, OsmWay osmWay) {
 		this.osmWay = osmWay;
 		osmWay.setTermiteObject(this);
-	}
-	
-	void updateLocalData(TermiteData termiteData) {
+		
+//		FeatureInfo oldInfo = this.getFeatureInfo();
 		classify();
+		
+		//check for a change of ordering
+//		int oldZorder = oldInfo.getZorder();
+//		int newZorder = this.getFeatureInfo().getZorder();
 		
 		//check for setting the area parameter
 		if((osmWay.getProperty("area") == null)&&(featureInfo != null)) {
@@ -69,22 +78,11 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 		for(Long nodeId:osmWay.getNodeIds()) {
 			TermiteNode node = termiteData.getNode(nodeId,true);
 			nodes.add(node);
-		}
-		
-		if(multiPoly != null) {
-			for(TermiteWay siblingWay:multiPoly.getWays()) {
-				siblingWay.incrementTermiteVersion();
-			}
-		}
-		
-		this.incrementTermiteVersion();
-	}
-	
-	void updateRemoteData(TermiteData termiteData) {
-
-		
-		for(TermiteNode node:nodes) {
+			
+			//set this way for this node (repeats handled OK)
 			node.addWay(this);
+			
+			//set level from nodes - depends on nodes being loaded already!
 			TermiteLevel level = node.getLevel();
 			if(!levels.contains(level)) {
 				levels.add(level);
@@ -94,7 +92,21 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 	}
 	
 	void objectDeleted(TermiteData termiteData) {
+		for(TermiteNode node:nodes) {
+			node.removeWay(this);
+		}
+		nodes.clear();
 		
+		for(TermiteLevel level:levels) {
+			level.removeWay(this);
+		}
+		levels.clear();
+		
+		if(multiPoly != null) {
+			multiPoly.removeMemberObject(this);
+		}
+		
+		this.osmWay = null;
 	}
 	
 	@Override
@@ -109,10 +121,9 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 			this.isArea = (featureInfo.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
 		}
 		
-		//mark any ways in a multipolygon as changed
-		//mark any ways in a multipolygon as changed
+		//explicitly mark any ways in a multipolygon as changed
 		if(this.multiPoly != null) {
-			this.multiPoly.incrementWaysTermiteVersion();
+			this.multiPoly.incrementTermiteVersion();
 		}
 		
 		//flag this object as changed if relevent info changed
@@ -127,11 +138,12 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 	/** This method sets the multi poly relation for this way. */
 	void setMultiPoly(TermiteMultiPoly multiPoly) {
 		this.multiPoly = multiPoly;
+		incrementTermiteVersion();
 	}
 	
-	/** This method gets the OSM object associated with this object. */
-	@Override
-	public OsmWay getOsmObject() {
-		return osmWay;
+	void removeNode(TermiteNode node) {
+		nodes.remove(node);
+		incrementTermiteVersion();
 	}
+
 }

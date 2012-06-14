@@ -44,5 +44,7 @@ public class UpdateRole implements EditData<OsmRelation> {
 		}
 		OsmMember member = members.get(index);
 		member.role = role;
+		
+		//no action here for multipolygon for now. I think we are ignoring the role.
 	}	
 }

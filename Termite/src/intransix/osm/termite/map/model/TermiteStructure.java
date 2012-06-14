@@ -30,29 +30,8 @@ public class TermiteStructure extends TermiteObject<OsmWay> {
 		return bounds;
 	}
 	
-	/** This method looks up the level in this structure with the given zlevel value. */
-	public TermiteLevel lookupLevel(int zlevel) {
-		for(TermiteLevel level:levels) {
-			if(level.getZlevel() == zlevel) return level;
-		}
-		return null;
-	}
-	
-	/** This method returns the list of levels in the structure. */
-	public ArrayList<TermiteLevel> getLevels() {
-		return levels;
-	}
-	
-	//====================
-	// Package Methods
-	//====================
-	
-	void addLevel(TermiteLevel level) {
-		this.levels.add(level);
-	}
-	
 	/** This method calculates the bounds of the object. */
-	void calculateBounds() {
+	public void calculateBounds() {
 		//calculate bounds
 		double minX = MercatorCoordinates.MAX_SIZE;
 		double minY = MercatorCoordinates.MAX_SIZE;
@@ -74,19 +53,33 @@ public class TermiteStructure extends TermiteObject<OsmWay> {
 		bounds = new Rectangle2D.Double(minX,minY,maxX - minX, maxY - minY);
 	}
 	
-	void updateLocalData(TermiteData termiteData) {
-
+	/** This method looks up the level in this structure with the given zlevel value. */
+	public TermiteLevel lookupLevel(int zlevel) {
+		for(TermiteLevel level:levels) {
+			if(level.getZlevel() == zlevel) return level;
+		}
+		return null;
 	}
 	
-	void updateRemoteData(TermiteData termiteData) {
-this.incrementTermiteVersion();
-		for(TermiteLevel level:levels) {
-			level.setStructure(this);
-		}
+	/** This method returns the list of levels in the structure. */
+	public ArrayList<TermiteLevel> getLevels() {
+		return levels;
+	}
+	
+	//====================
+	// Package Methods
+	//====================
+	
+	void addLevel(TermiteLevel level) {
+		this.levels.add(level);
+	}
+	
+	void init(TermiteData termiteData, OsmWay parent) {
+		this.parent = parent;
 	}
 	
 	void objectDeleted(TermiteData termiteData) {
-		
+//do something here once I figure out how a structure is deleted		
 	}
 	
 	/** This method returns the obm object for the structure. */
