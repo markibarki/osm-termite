@@ -15,16 +15,22 @@ public class FeatureInfoParser extends DataParser<Object,FeatureInfo> {
 	public FeatureInfo parseValueData(JSONObject json, KeyNode<Object,FeatureInfo> parentKey) {
 		try {
 			FeatureInfo parentData = null;
+			String keyName;
 			PropertyNode<Object,FeatureInfo> parentProp;
 			if(parentKey != null) {
 				parentProp = parentKey.getParentValue();
 				if(parentProp != null) {
 					parentData = parentProp.getData();
 				}
+				keyName = parentKey.getName();
+			}
+			else {
+				keyName = null;
 			}
 			
+			String valueName = json.optString("value","");
 			JSONObject dataJson = json.getJSONObject("data");
-			return FeatureInfo.parse(dataJson, parentData);
+			return FeatureInfo.parse(keyName,valueName,dataJson,parentData);
 		}
 		catch(Exception ex) {
 			return null;

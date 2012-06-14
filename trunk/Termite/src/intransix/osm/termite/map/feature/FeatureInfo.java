@@ -31,12 +31,18 @@ public class FeatureInfo {
 	//this is used for draw order
 	private int zorder = DEFAULT_ZORDER;
 	
+	private String name;
+	
 	//this is used for import/export geometry
 	private String inputColor;
 	
 	//this is rules for the geometry
 	private int allowedTypes;
 	private int defaultPathType;
+	
+	public String getName() {
+		return name;
+	}
 	
 	public int getZorder() {
 		return zorder;
@@ -50,9 +56,27 @@ public class FeatureInfo {
 		return defaultPathType;
 	}
 	
-	public static FeatureInfo parse(JSONObject json, FeatureInfo parent) {
+	public static FeatureInfo parse(String parentKey, String name, JSONObject json, FeatureInfo parent) {
 		FeatureInfo fp = new FeatureInfo();
 		if(json != null) {
+			//create the name
+			String tempName = null;
+			if(parent != null) {
+				tempName = parent.name;
+				if((tempName == null)||(tempName.length() == 0)) {
+					tempName = "[unnamed]";
+				}
+				tempName += "|";
+			}
+			else {
+				tempName = "";
+			}
+			
+			if(parentKey != null) tempName += parentKey + ":";
+			if((name == null)||(name.length() == 0)) name = "[unnamed]";
+			tempName += name;
+			fp.name = tempName;
+			
 			//read these or use parent value as default
 			fp.zorder = json.optInt("zorder",(parent != null) ? parent.zorder : DEFAULT_ZORDER);
 			fp.allowedTypes = json.optInt("allowedtypes",(parent != null) ? parent.allowedTypes : DEFAULT_ALLOWED_TYPES);

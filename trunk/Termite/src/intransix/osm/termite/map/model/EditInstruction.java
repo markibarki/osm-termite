@@ -77,7 +77,7 @@ public abstract class EditInstruction<T extends OsmObject> {
 		OsmData osmData = termiteData.getWorkingData();
 		
 		//process the update
-		OsmObject liveOsmObject = osmData.createOsmObject(osmObject.getId(), osmObject.getObjectType());
+		OsmObject liveOsmObject = osmData.getOsmObject(osmObject.getId(), osmObject.getObjectType());
 		TermiteObject termiteObject;
 		if(liveOsmObject != null) {
 			termiteObject = liveOsmObject.getTermiteObject();
