@@ -157,7 +157,7 @@ public class TermiteApp {
 				
 		//add to the map panel
 		MapPanel mapDisplay = gui.getMap();
-//		mapDisplay.addLayer(tileLayer);
+		mapDisplay.addLayer(tileLayer);
 		mapDisplay.addLayer(structureLayer);
 		mapDisplay.addLayer(editLayer);
 		
