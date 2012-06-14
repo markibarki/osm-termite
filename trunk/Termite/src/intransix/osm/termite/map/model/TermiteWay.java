@@ -135,6 +135,15 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 		if(!levels.contains(level)) levels.add(level);
 	}
 	
+	/** This should be called when a node has its level changed. */
+	void nodeLevelChange() {
+		levels.clear();
+		for(TermiteNode node:nodes) {
+			this.addLevel(node.getLevel());
+		}
+		this.incrementTermiteVersion();
+	}
+	
 	/** This method sets the multi poly relation for this way. */
 	void setMultiPoly(TermiteMultiPoly multiPoly) {
 		this.multiPoly = multiPoly;

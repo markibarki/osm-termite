@@ -45,6 +45,8 @@ public class UpdateRemoveNode implements EditData<OsmWay> {
 		}
 		
 		Long idRemoved = nodeIds.remove(index);
+		//explicitly increment version since edit was external
+		way.incrementLocalVersion();
 		
 		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
 		//check to make sure that node is still not there, at another index

@@ -27,7 +27,7 @@ public abstract class OsmObject<T extends OsmObject> {
 	
 	public final static long INVALID_ID = 0;
 	public final static int INVALID_LOCAL_VERSION = -1;
-	public final static int INITIAL_LOCAL_VERSION = 1;
+	public final static int INITIAL_LOCAL_VERSION = 0;
 	
 	//=======================
 	// Properties
@@ -45,7 +45,7 @@ public abstract class OsmObject<T extends OsmObject> {
 	private String changeset;
 	private String timestamp;
 	
-	private int localVersion = 0;
+	private int localVersion = INITIAL_LOCAL_VERSION;
 	
 	private TermiteObject<T> termiteObject;
 	
@@ -131,10 +131,6 @@ public abstract class OsmObject<T extends OsmObject> {
 		this.localVersion++;
 	}
 	
-	public void initLocalVersion() {
-		this.localVersion = OsmObject.INITIAL_LOCAL_VERSION;
-	}
-	
 	/** This method copies relevant data from the base OsmObject needed for reproducing
 	 * the data set. */
 	public void copyInto(T newObject) {
@@ -159,10 +155,12 @@ public abstract class OsmObject<T extends OsmObject> {
 	
 	public void setProperty(String tag, String propertyValue) {
 		this.tags.put(tag,propertyValue);
+		incrementLocalVersion();
 	}
 	
 	public void removeProperty(String tag) {
 		this.tags.remove(tag);
+		incrementLocalVersion();
 	}
 	
 	/** This method returns the given string property. If it is not found 
