@@ -53,6 +53,9 @@ public class EditTest {
 		termiteData = new TermiteData();
 		termiteData.loadData(baseOsmData);
 		osmData = termiteData.getWorkingData();
+		
+		ObjectTestData.osmData = osmData;
+		ObjectTestData.termiteData = termiteData;
 	}
 	
 	@After
@@ -74,11 +77,22 @@ public class EditTest {
 		int zlevel2 = 1;
 		long structureId = 1111;
 		
+		OsmNode osmNode;
+		OsmWay osmWay;
+		OsmRelation osmRelation;
+		
+		TermiteNode termiteNode;
+		TermiteWay termiteWay;
+		TermiteMultiPoly termiteMultiPoly;
+		
+		
 		//////////////////////////////////////////////////////////////
 		// Create Node
 		//////////////////////////////////////////////////////////////
 		
 		action = new EditAction(termiteData,"Test Create Node");
+		
+		NodeTestData n1Data = new NodeTestData();
 		
 		OsmNode oNode1 = new OsmNode();
 		double x1 = 0;
@@ -88,8 +102,11 @@ public class EditTest {
 		oNode1.setProperty(OsmModel.KEY_ZCONTEXT,String.valueOf(structureId));
 		oNode1.setProperty("buildingpart","stairs");
 		instr = new CreateInstruction(oNode1,termiteData);
-		long idn1 = oNode1.getId();
 		action.addInstruction(instr);
+		
+		n1Data.id = oNode1.getId();
+		n1Data.x = x1;
+		n1Data.y = y1;
 		
 		try {
 			boolean success = action.doAction();
@@ -100,16 +117,16 @@ public class EditTest {
 			assert(false);
 		}
 		
-		//test node
-		List<Long> n1WayIds = new ArrayList<Long>();
-		HashMap<String,String> n1Props = new HashMap<String,String>();
-		n1Props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel1));
-		n1Props.put(OsmModel.KEY_ZCONTEXT,String.valueOf(structureId));
-		n1Props.put("buildingpart","stairs");
+		//test the node
+		n1Data.props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel1));
+		n1Data.props.put(OsmModel.KEY_ZCONTEXT,String.valueOf(structureId));
+		n1Data.props.put("buildingpart","stairs");
 		
-		String n1FeatureInfoName = "buildingpart:stairs";
-		
-		validateNode(idn1,x1,y1,structureId,zlevel1,n1WayIds,n1Props,n1FeatureInfoName,0,0); 
+		n1Data.featureInfoName = "buildingpart:stairs";
+		n1Data.zlevel = zlevel1;
+		n1Data.structureId = structureId;
+				
+		n1Data.validateNode(); 
 		
 		try {
 			boolean success = action.undoAction();
@@ -120,7 +137,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		validateNodeDelete(idn1,structureId,zlevel1,n1WayIds);
+		n1Data.validateNodeDelete();
 		
 		try {
 			boolean success = action.doAction();
@@ -131,7 +148,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		validateNode(idn1,x1,y1,structureId,zlevel1,n1WayIds,n1Props,n1FeatureInfoName,0,0); 
+		n1Data.validateNode(); 
 		
 		//------------------------
 		// Create Some more test nodes
@@ -174,36 +191,39 @@ public class EditTest {
 		
 		action = new EditAction(termiteData,"Test Create Way");
 		
-		TermiteNode tNode1 = termiteData.getNode(idn1);
-		int minN1TermiteVersion = tNode1.getTermiteLocalVersion() + 1;
+		WayTestData w1Data = new WayTestData();
+		
+		termiteNode = termiteData.getNode(n1Data.id);
+		n1Data.minTermiteVersion = termiteNode.getTermiteLocalVersion() + 1;
 		
 		OsmWay oWay1 = new OsmWay();
 		List<Long> wayNodes = oWay1.getNodeIds();
-		wayNodes.add(idn1);
+		wayNodes.add(n1Data.id);
 		wayNodes.add(idn2);
 		wayNodes.add(idn3);
-		wayNodes.add(idn1);
+		wayNodes.add(n1Data.id);
 		oWay1.setProperty("buildingpart","wall");
 		instr = new CreateInstruction(oWay1,termiteData);
-		long idw1 = oWay1.getId();
+		w1Data.id = oWay1.getId();
 		action.addInstruction(instr);
 		
-		n1WayIds.add(idw1);
+		n1Data.wayIds.add(w1Data.id);
 		
-		List<Long> w1NodeIds = new ArrayList<Long>();
-		w1NodeIds.add(idn1);
-		w1NodeIds.add(idn2);
-		w1NodeIds.add(idn3);
-		w1NodeIds.add(idn1);
-		HashMap<String,String> w1Props = new HashMap<String,String>();
-		w1Props.put("buildingpart","wall");
+		w1Data.nodeIds.add(n1Data.id);
+		w1Data.nodeIds.add(idn2);
+		w1Data.nodeIds.add(idn3);
+		w1Data.nodeIds.add(n1Data.id);
 		
-		String w1FeatureInfoName = "buildingpart:wall";
+		w1Data.props.put("buildingpart","wall");
 		
-		List<Integer> w1Levels = new ArrayList<Integer>();
-		w1Levels.add(zlevel1);
+		w1Data.featureInfoName = "buildingpart:wall";
+		w1Data.structureId = structureId;
+		w1Data.levelIds.add(zlevel1);
 		
-		long w1MultiPolyId = OsmObject.INVALID_ID;
+		w1Data.minOsmVersion = 0;
+		w1Data.minTermiteVersion = 0;
+				
+		w1Data.multiPolyId = OsmObject.INVALID_ID;
 		
 		try {
 			boolean success = action.doAction();
@@ -214,8 +234,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		validateNode(idn1,x1,y1,structureId,zlevel1,n1WayIds,n1Props,n1FeatureInfoName,0,minN1TermiteVersion);
-		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,0,0);
+		n1Data.validateNode();
+		w1Data.validateWay();
 		
 		try {
 			boolean success = action.undoAction();
@@ -226,10 +246,10 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1WayIds.remove(idw1);
+		n1Data.wayIds.remove(w1Data.id);
 		
-		validateNode(idn1,x1,y1,structureId,zlevel1,n1WayIds,n1Props,n1FeatureInfoName,0,minN1TermiteVersion);
-		validateWayDeleted(idw1,w1NodeIds,structureId,w1Levels,w1MultiPolyId);
+		n1Data.validateNode();
+		w1Data.validateWayDeleted();
 		
 		
 		try {
@@ -241,10 +261,10 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1WayIds.add(idw1);
+		n1Data.wayIds.add(w1Data.id);
 		
-		validateNode(idn1,x1,y1,structureId,zlevel1,n1WayIds,n1Props,n1FeatureInfoName,0,minN1TermiteVersion);
-		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,0,0);
+		n1Data.validateNode();
+		w1Data.validateWay();
 		
 		//------------------------
 		// Create another way
@@ -312,17 +332,19 @@ public class EditTest {
 		
 		action = new EditAction(termiteData,"Create a multipoly relation");
 		
+		RelationTestData r1Data = new RelationTestData();
+		
 		OsmRelation relation = new OsmRelation();
 		List<OsmMember> members = relation.getMembers();
-		members.add(new OsmMember(idw1,"way","outer"));
+		members.add(new OsmMember(w1Data.id,"way","outer"));
 		members.add(new OsmMember(idw2,"way","inner"));
 		relation.setProperty(OsmModel.TAG_TYPE,"multipolygon");
 		instr = new CreateInstruction(relation,termiteData);
-		long idr1 = relation.getId();
+		r1Data.id = relation.getId();
 		action.addInstruction(instr);
 		
-		TermiteWay tWay1 = termiteData.getWay(idw1);
-		int minW1TermiteVersion = tWay1.getTermiteLocalVersion() + 1;
+		termiteWay = termiteData.getWay(w1Data.id);
+		w1Data.minTermiteVersion = termiteWay.getTermiteLocalVersion() + 1;
 		
 		try {
 			boolean success = action.doAction();
@@ -333,15 +355,17 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1MultiPolyId = idr1;
-		List<OsmMember> r1Members = new ArrayList<OsmMember>();
-		r1Members.add(new OsmMember(idw1,"way","outer"));
-		r1Members.add(new OsmMember(idw2,"way","inner"));
-		HashMap<String,String> r1Props = new HashMap<String,String>();
-		r1Props.put(OsmModel.TAG_TYPE,OsmModel.TYPE_MULTIPOLYGON);
+		w1Data.multiPolyId = r1Data.id;
 		
-		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,0,minW1TermiteVersion);
-		validateRelation(idr1,r1Props,r1Members,0,0);
+		r1Data.members.add(new OsmMember(w1Data.id,"way","outer"));
+		r1Data.members.add(new OsmMember(idw2,"way","inner"));
+		
+		r1Data.props.put(OsmModel.TAG_TYPE,OsmModel.TYPE_MULTIPOLYGON);
+		
+		r1Data.isMultiPoly = true;
+		
+		w1Data.validateWay();
+		r1Data.validateRelation();
 		
 		try {
 			boolean success = action.undoAction();
@@ -352,10 +376,10 @@ public class EditTest {
 			assert(false);
 		}
 				
-		w1MultiPolyId = OsmObject.INVALID_ID;		
+		w1Data.multiPolyId = OsmObject.INVALID_ID;		
 				
-		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,0,minW1TermiteVersion);
-		validateRelationDeleted(idr1,true,r1Members);
+		w1Data.validateWay();
+		r1Data.validateRelationDeleted();
 		
 		try {
 			boolean success = action.doAction();
@@ -366,10 +390,10 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1MultiPolyId = idr1;
+		w1Data.multiPolyId = r1Data.id;
 		
-		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,0,minW1TermiteVersion);
-		validateRelation(idr1,r1Props,r1Members,0,0);
+		w1Data.validateWay();
+		r1Data.validateRelation();
 		
 		//------------------
 		// Create a generic relation
@@ -377,14 +401,17 @@ public class EditTest {
 		
 		action = new EditAction(termiteData,"Create a generic relation");
 		
+		RelationTestData r2Data = new RelationTestData();
+		
 		OsmRelation relation2 = new OsmRelation();
 		List<OsmMember> members2 = relation2.getMembers();
-		members2.add(new OsmMember(idw1,"way","aaa"));
-		members2.add(new OsmMember(idr1,"relation","bbb"));
-		members2.add(new OsmMember(idn1,"node","ccc"));
+		members2.add(new OsmMember(w1Data.id,"way","aaa"));
+		members2.add(new OsmMember(r1Data.id,"relation","bbb"));
+		members2.add(new OsmMember(n1Data.id,"node","ccc"));
 		relation2.setProperty(OsmModel.TAG_TYPE,"generic");
+		relation2.setProperty("key","value");
 		instr = new CreateInstruction(relation2,termiteData);
-		long idr2 = relation2.getId();
+		r2Data.id = relation2.getId();
 		action.addInstruction(instr);
 		
 		try {
@@ -396,14 +423,16 @@ public class EditTest {
 			assert(false);
 		}
 		
-		List<OsmMember> r2Members = new ArrayList<OsmMember>();
-		r2Members.add(new OsmMember(idw1,"way","aaa"));
-		r2Members.add(new OsmMember(idr1,"relation","bbb"));
-		r2Members.add(new OsmMember(idn1,"node","ccc"));
-		HashMap<String,String> r2Props = new HashMap<String,String>();
-		r2Props.put(OsmModel.TAG_TYPE,"generic");
+		r2Data.members.add(new OsmMember(w1Data.id,"way","aaa"));
+		r2Data.members.add(new OsmMember(r1Data.id,"relation","bbb"));
+		r2Data.members.add(new OsmMember(n1Data.id,"node","ccc"));
 		
-		validateRelation(idr2,r2Props,r2Members,0,0);
+		r2Data.props.put(OsmModel.TAG_TYPE,"generic");
+		r2Data.props.put("key","value");
+		
+		r2Data.isMultiPoly = false;
+		
+		r2Data.validateRelation();
 		
 		try {
 			boolean success = action.undoAction();
@@ -414,7 +443,7 @@ public class EditTest {
 			assert(false);
 		}
 				
-		validateRelationDeleted(idr2,false,null);
+		r2Data.validateRelationDeleted();
 		
 		try {
 			boolean success = action.doAction();
@@ -425,11 +454,17 @@ public class EditTest {
 			assert(false);
 		}
 		
-		validateRelation(idr2,r2Props,r2Members,0,0);
+		r2Data.validateRelation();
 		
 		//////////////////////////////////////////////////////////////
 		// Edit Properties
 		//////////////////////////////////////////////////////////////
+		
+		String initialKey;
+		String finalKey;
+		String initialValue;
+		String finalValue;
+		UpdateObjectProperty targetData;
 		
 		//=====================
 		//change node level
@@ -437,24 +472,23 @@ public class EditTest {
 				
 		action = new EditAction(termiteData,"Test Edit Node Properties");
 		
-		TermiteNode testNode = termiteData.getNode(idn1);
-		OsmNode osmNode = testNode.getOsmObject();
-		TermiteWay testWay = termiteData.getWay(idw1);
-		OsmWay osmWay = testWay.getOsmObject();
+		termiteNode = termiteData.getNode(n1Data.id);
+		osmNode = termiteNode.getOsmObject();
+		termiteWay = termiteData.getWay(w1Data.id);
+		osmWay = termiteWay.getOsmObject();
 		
-		
-		String initialKey = "zlevel";
-		String initialValue = "0";
-		String finalValue = "1";
-		UpdateObjectProperty targetData = new UpdateObjectProperty(termiteData,initialKey,initialKey,finalValue);
+		initialKey = "zlevel";
+		initialValue = "0";
+		finalValue = "1";
+		targetData = new UpdateObjectProperty(termiteData,initialKey,initialKey,finalValue);
 		instr = new UpdateInstruction(osmNode,targetData);
 		action.addInstruction(instr);
 		
-		int n1MinOsmVersion = osmNode.getLocalVersion() + 1;
-		int n1MinTermiteversion = testNode.getTermiteLocalVersion() + 1;
-		
-		int w1MinOsmVersion = osmWay.getLocalVersion(); //the osm way didn't change
-		int w1MinTermiteversion = testWay.getTermiteLocalVersion() + 1;
+		n1Data.minOsmVersion = osmNode.getLocalVersion() + 1;
+		n1Data.minTermiteVersion = termiteNode.getTermiteLocalVersion() + 1;
+	
+		w1Data.minOsmVersion = osmWay.getLocalVersion(); //the osm way didn't change
+		w1Data.minTermiteVersion = termiteWay.getTermiteLocalVersion() + 1;
 		
 		try {
 			boolean success = action.doAction();
@@ -465,11 +499,12 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel2));
-		w1Levels.add(zlevel2);
+		n1Data.props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel2));
+		n1Data.zlevel = zlevel2;
+		w1Data.levelIds.add(zlevel2);
 		
-		validateNode(idn1,x1,y1,structureId,zlevel2,n1WayIds,n1Props,n1FeatureInfoName,n1MinOsmVersion,n1MinTermiteversion);
-		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,w1MinOsmVersion,w1MinTermiteversion);
+		n1Data.validateNode();
+		w1Data.validateWay();
 		
 		try {
 			boolean success = action.undoAction();
@@ -480,19 +515,117 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel1));
-		w1Levels.remove(zlevel2);
+		n1Data.props.put(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel1));
+		n1Data.zlevel = zlevel1;
+		w1Data.levelIds.remove(zlevel2);
 		
-		validateNode(idn1,x1,y1,structureId,zlevel1,n1WayIds,n1Props,n1FeatureInfoName,0,0);
-		validateWay(idw1,w1NodeIds,w1Levels,w1Props,w1MultiPolyId,w1FeatureInfoName,0,0);
+		n1Data.validateNode();
+		w1Data.validateWay();
 		
 		//=====================
 		//edit way type
 		//=====================
 		
+		action = new EditAction(termiteData,"Test Edit Way Properties");
+		
+		osmWay = osmData.getOsmWay(w1Data.id);
+		termiteWay = (TermiteWay)osmWay.getTermiteObject();
+		osmRelation = osmData.getOsmRelation(r1Data.id);
+		termiteMultiPoly = termiteData.getMultiPoly(r1Data.id, true);
+		
+		initialKey = "buildingpart";
+		initialValue = "wall";
+		finalValue = "unit";
+		targetData = new UpdateObjectProperty(termiteData,initialKey,initialKey,finalValue);
+		instr = new UpdateInstruction(osmWay,targetData);
+		action.addInstruction(instr);
+		
+		w1Data.minOsmVersion = osmWay.getLocalVersion() + 1;
+		w1Data.minTermiteVersion = termiteWay.getTermiteLocalVersion() + 1;
+	
+		r1Data.minOsmVersion = osmRelation.getLocalVersion(); //the osm way didn't change
+		r1Data.minTermiteVersion = termiteMultiPoly.getTermiteLocalVersion() + 1;
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		w1Data.featureInfoName = "buildingpart:unit";
+		w1Data.props.put(initialKey,finalValue);
+		
+		w1Data.validateWay();
+		r1Data.validateRelation();
+		
+		w1Data.minOsmVersion = 0;
+		w1Data.minTermiteVersion = 0;
+	
+		r1Data.minOsmVersion = 0; //the osm way didn't change
+		r1Data.minTermiteVersion = 0;
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		w1Data.featureInfoName = "buildingpart:wall";
+		w1Data.props.put(initialKey,initialValue);
+		
+		w1Data.validateWay();
+		r1Data.validateRelation();
+		
 		//=====================
-		//edit generic multipoly properties
+		//edit generic multipoly properties, update key
 		//=====================
+		
+		action = new EditAction(termiteData,"Test Edit Relation Properties");
+		
+		osmRelation = osmData.getOsmRelation(r2Data.id);
+		
+		initialKey = "key";
+		finalKey = "keyPrime";
+		initialValue = "value";
+		targetData = new UpdateObjectProperty(termiteData,initialKey,finalKey,initialValue);
+		instr = new UpdateInstruction(osmRelation,targetData);
+		action.addInstruction(instr);
+	
+		r2Data.minOsmVersion = osmRelation.getLocalVersion() + 1; //the osm way didn't change
+		r2Data.props.remove(initialKey);
+		r2Data.props.put(finalKey,initialValue);
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+	
+		r2Data.validateRelation();
+	
+		r2Data.props.remove(finalKey);
+		r2Data.props.put(initialKey,initialValue);
+		r2Data.minOsmVersion = 0;
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		r2Data.validateRelation();
 		
 		
 		//////////////////////////////////////////////////////////////
@@ -638,277 +771,5 @@ public class EditTest {
 		
 	}
 	
-	/** This method validates the content of a node. */
-	private void validateNode(long id, 
-			double x, double y, 
-			long structureId, int zlevel,
-			List<Long> wayIds,
-			HashMap<String,String> props,
-			String featureInfoName,
-			int minOsmVersion,
-			int minTermiteVersion) {
-		
-		//check existence
-		OsmNode oNode = osmData.getOsmNode(id);
-		TermiteNode tNode = termiteData.getNode(id);
-		assert(oNode == tNode.getOsmObject());
-		assert(tNode == oNode.getTermiteObject());
-		
-		//check location
-		assert(oNode.getId() == id);
-		assert(oNode.getX() == x);
-		assert(oNode.getY() == y);
-		
-		//check level
-		TermiteLevel level = termiteData.getLevel(structureId,zlevel);
-		assert(tNode.getLevel() == level);
-		
-		//check ways
-		List<TermiteWay> ways = tNode.getWays();
-		assert(ways.size() == wayIds.size());
-		for(TermiteWay tWay:ways) {
-			OsmWay oWay = tWay.getOsmObject();
-			Long wid = oWay.getId();
-			assert(wayIds.contains(wid));
-		}
-		
-		//check properties - both directions to make sure they are the same
-		checkProperties(oNode,props);
-		
-		FeatureInfo fi = tNode.getFeatureInfo();
-		if(fi == null) assert(featureInfoName == null);
-		else assert(featureInfoName.equals(fi.getName()));
-		
-		assert(oNode.getLocalVersion() >= minOsmVersion);
-		assert(tNode.getTermiteLocalVersion() >= minTermiteVersion);
-	}
 	
-	/** This method validates a node was deleted. */
-	void validateNodeDelete(long id, long structureId, int zlevel, List<Long> wayIds) {
-		
-		//check it is not in the data
-		assert(osmData.getOsmNode(id) == null);
-		assert(termiteData.getNode(id) == null);
-		
-		//check no on level
-		TermiteLevel level = termiteData.getLevel(structureId,zlevel);
-		for(TermiteNode tn: level.getNodes()) {
-			OsmNode on = tn.getOsmObject();
-			long nid = on.getId();
-			assert(nid != id);
-		}
-		
-		//check not in ways
-		Long nid = (Long)id;
-		for(Long wid:wayIds) {
-			TermiteWay tWay = termiteData.getWay(wid);
-			OsmWay oWay = tWay.getOsmObject();
-			List<Long> onids = oWay.getNodeIds();
-			assert(!onids.contains(nid));
-			for(TermiteNode tNode:tWay.getNodes()) {
-				OsmNode oNode = tNode.getOsmObject();
-				long tnid = oNode.getId();
-				assert(tnid != id);
-			}
-		}
-	}
-	
-	private void validateWay(long id,
-			List<Long> nodeIds,
-			List<Integer> levelIds,
-			HashMap<String,String> props,
-			long multiPolyId,
-			String featureInfoName,
-			int minOsmVersion,
-			int minTermiteVersion) {
-		
-		
-		//check existence
-		OsmWay oWay = osmData.getOsmWay(id);
-		TermiteWay tWay = termiteData.getWay(id);
-		assert(oWay == tWay.getOsmObject());
-		assert(tWay == oWay.getTermiteObject());
-		
-		//check location
-		assert(oWay.getId() == id);
-		
-		//check levels
-		List<TermiteLevel> levels = tWay.getLevels();
-		assert(levels.size() == levelIds.size());
-		for(TermiteLevel level:levels) {
-			Integer zlevel = level.getZlevel();
-			assert(levelIds.contains(zlevel));
-		}
-		
-		//check nodes
-		List<Long> oNodeIds = oWay.getNodeIds();
-		assert(oNodeIds.size() == nodeIds.size());
-		for(Long nid:nodeIds) {
-			assert(oNodeIds.contains(nid));
-		}
-		List<TermiteNode> nodes = tWay.getNodes();
-		assert(nodes.size() == nodeIds.size());
-		for(TermiteNode tNode:nodes) {
-			OsmNode oNode = tNode.getOsmObject();
-			Long nid = oNode.getId();
-			assert(nodeIds.contains(nid));
-		}
-		
-		//check properties - both directions to make sure they are the same
-		checkProperties(oWay,props);
-		
-		//check multipoly
-		if(multiPolyId != OsmObject.INVALID_ID) {
-			TermiteMultiPoly tmp = termiteData.getMultiPoly(id,false);
-			if(tmp != null) {
-				assert(tmp.getWays().contains(tWay));
-			}
-		}
-		
-		FeatureInfo fi = tWay.getFeatureInfo();
-		if(fi == null) assert(featureInfoName == null);
-		else assert(featureInfoName.equals(fi.getName()));
-		
-		assert(oWay.getLocalVersion() >= minOsmVersion);
-		assert(tWay.getTermiteLocalVersion() >= minTermiteVersion);
-		
-	}
-	
-	void validateWayDeleted(long id,
-			List<Long> nodeIds,
-			long structureId,
-			List<Integer> levelIds,
-			long multiPolyId) {
-		
-		//check it is not in the data
-		assert(osmData.getOsmWay(id) == null);
-		assert(termiteData.getWay(id) == null);
-		
-		//check levels
-		for(int lid:levelIds) {
-			TermiteLevel level = termiteData.getLevel(structureId, lid);
-			for(TermiteWay tw:level.getWays()) {
-				OsmWay ow = tw.getOsmObject();
-				long owid = ow.getId();
-				assert(owid != id);
-			}
-		}
-		
-		//check nodes
-		for(long nid:nodeIds) {
-			TermiteNode node = termiteData.getNode(nid);
-			for(TermiteWay tw:node.getWays()) {
-				OsmWay ow = tw.getOsmObject();
-				long owid = ow.getId();
-				assert(owid != id);
-			}
-		}
-		
-		if(multiPolyId != OsmObject.INVALID_ID) {
-			TermiteMultiPoly tmp = termiteData.getMultiPoly(id,false);
-			if(tmp != null) {
-				for(TermiteWay tw:tmp.getWays()) {
-					OsmWay ow = tw.getOsmObject();
-					long owid = ow.getId();
-					assert(owid != id);
-				}
-			}
-		}
-	}
-		
-	private void validateRelation(long id,
-			HashMap<String,String> props,
-			List<OsmMember> members,
-			int minOsmVersion,
-			int minTermiteVersion) {
-		
-		//check existence
-		OsmRelation oRelation = osmData.getOsmRelation(id);
-		assert(oRelation != null);
-		
-		//check ways
-		List<OsmMember> oMembers = oRelation.getMembers();
-		assert(oMembers.size() == members.size());
-		int cnt = members.size();
-		OsmMember m1;
-		OsmMember m2;
-		for(int i = 0; i < cnt; i++) {
-			m1 = members.get(i);
-			m2 = oMembers.get(i);
-			assert(m1.memberId == m2.memberId);
-			assert(m1.type.equals(m2.type));
-			if(m1.role != null) {
-				assert m1.role.equals(m2.role);
-			}
-			else {
-				assert(m2.role == null);
-			}
-		}
-		
-		//check properties - both directions to make sure they are the same
-		checkProperties(oRelation,props);
-		
-		assert(oRelation.getLocalVersion() >= minOsmVersion);
-		
-		//Multipoly case
-		String type = oRelation.getProperty(OsmModel.TAG_TYPE);
-		if((type != null)&&(type.equals(OsmModel.TYPE_MULTIPOLYGON))) {
-			
-			TermiteMultiPoly mp = termiteData.getMultiPoly(id,false);
-			assert(mp.getOsmObject() == oRelation);
-			assert(oRelation.getTermiteObject() == mp);
-			
-			List<TermiteWay> ways = mp.getWays();
-			assert(ways.size() == members.size());
-			cnt = members.size();
-			OsmMember m;
-			TermiteWay w;
-			for(int i = 0; i < cnt; i++) {
-				m = members.get(i);
-				w = ways.get(i);
-				long id1 = m.memberId;
-				long id2 = w.getOsmObject().getId(); 
-				assert(id1 == id2);
-			}
-			//I should select the proper value...
-			assert(mp.getMainWay() != null);
-			
-			assert(mp.getTermiteLocalVersion() >= minTermiteVersion);
-		}
-		
-	}
-	
-	void validateRelationDeleted(long id,
-			boolean isMultiPoly,
-			List<OsmMember> membersForMultiPolyCase) {
-		
-		//check it is not in the data
-		assert(osmData.getOsmRelation(id) == null);
-		
-		if(isMultiPoly) {
-			assert(termiteData.getMultiPoly(id,false) == null);
-			
-			for(OsmMember member:membersForMultiPolyCase) {
-				if(member.type.equals("way")) {
-					TermiteWay way = termiteData.getWay(member.memberId);
-					assert(way.getMultiPoly() == null);
-				}
-			}
-		}
-	}
-	
-	private void checkProperties(OsmObject o, HashMap<String,String> p) {
-		//check properties - both directions to make sure they are the same
-		for(String key:p.keySet()) {
-			String refValue = p.get(key);
-			String actValue = o.getProperty(key);
-			assert(refValue.equals(actValue));
-		}
-		Collection<String> actProps = o.getPropertyKeys();
-		for(String key:actProps) {
-			String refValue = p.get(key);
-			String actValue = o.getProperty(key);
-			assert(actValue.equals(refValue));
-		}
-	}
 }
