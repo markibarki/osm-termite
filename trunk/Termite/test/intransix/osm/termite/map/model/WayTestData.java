@@ -9,7 +9,13 @@ import intransix.osm.termite.map.osm.*;
 import java.util.*;
 
 /**
- *
+ * This is a class for unit testing way editing. It holds the reference way data which
+ * the developer should manually set. It can then be used to compare with the result of the edit 
+ * operations being tested. A test method is included.
+ * 
+ * This class allows the developer to track the state of the way over many operations,
+ * simplifying writing the tests.
+ * 
  * @author sutter
  */
 public class WayTestData extends ObjectTestData {
@@ -19,7 +25,8 @@ public class WayTestData extends ObjectTestData {
 	public List<Integer> levelIds = new ArrayList<Integer>();
 	public long multiPolyId;
 
-	public void validateWay() {
+	@Override
+	public void validate() {
 			
 		//check existence
 		OsmWay oWay = osmData.getOsmWay(id);
@@ -72,7 +79,8 @@ public class WayTestData extends ObjectTestData {
 		
 	}
 	
-	void validateWayDeleted() {
+	@Override
+	public void validateDeleted() {
 		
 		//check it is not in the data
 		assert(osmData.getOsmWay(id) == null);

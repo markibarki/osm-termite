@@ -11,7 +11,11 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 /**
- *
+ * This class holds several unit tests for editing nodes, ways and relations. The
+ * tests are daisy chained because the same objects are used several times to 
+ * test different edit operations, starting with creating the objects and ending 
+ * with deleting them.
+ * 
  * @author sutter
  */
 public class EditTest {
@@ -126,7 +130,7 @@ public class EditTest {
 		n1Data.zlevel = zlevel1;
 		n1Data.structureId = structureId;
 				
-		n1Data.validateNode(); 
+		n1Data.validate(); 
 		
 		try {
 			boolean success = action.undoAction();
@@ -137,7 +141,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.validateNodeDelete();
+		n1Data.validateDeleted();
 		
 		try {
 			boolean success = action.doAction();
@@ -148,7 +152,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.validateNode(); 
+		n1Data.validate(); 
 		
 		//------------------------
 		// Create Some more test nodes
@@ -234,8 +238,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.validateNode();
-		w1Data.validateWay();
+		n1Data.validate();
+		w1Data.validate();
 		
 		try {
 			boolean success = action.undoAction();
@@ -248,8 +252,8 @@ public class EditTest {
 		
 		n1Data.wayIds.remove(w1Data.id);
 		
-		n1Data.validateNode();
-		w1Data.validateWayDeleted();
+		n1Data.validate();
+		w1Data.validateDeleted();
 		
 		
 		try {
@@ -263,8 +267,8 @@ public class EditTest {
 		
 		n1Data.wayIds.add(w1Data.id);
 		
-		n1Data.validateNode();
-		w1Data.validateWay();
+		n1Data.validate();
+		w1Data.validate();
 		
 		//------------------------
 		// Create another way
@@ -364,8 +368,8 @@ public class EditTest {
 		
 		r1Data.isMultiPoly = true;
 		
-		w1Data.validateWay();
-		r1Data.validateRelation();
+		w1Data.validate();
+		r1Data.validate();
 		
 		try {
 			boolean success = action.undoAction();
@@ -378,8 +382,8 @@ public class EditTest {
 				
 		w1Data.multiPolyId = OsmObject.INVALID_ID;		
 				
-		w1Data.validateWay();
-		r1Data.validateRelationDeleted();
+		w1Data.validate();
+		r1Data.validateDeleted();
 		
 		try {
 			boolean success = action.doAction();
@@ -392,8 +396,8 @@ public class EditTest {
 		
 		w1Data.multiPolyId = r1Data.id;
 		
-		w1Data.validateWay();
-		r1Data.validateRelation();
+		w1Data.validate();
+		r1Data.validate();
 		
 		//------------------
 		// Create a generic relation
@@ -432,7 +436,7 @@ public class EditTest {
 		
 		r2Data.isMultiPoly = false;
 		
-		r2Data.validateRelation();
+		r2Data.validate();
 		
 		try {
 			boolean success = action.undoAction();
@@ -443,7 +447,7 @@ public class EditTest {
 			assert(false);
 		}
 				
-		r2Data.validateRelationDeleted();
+		r2Data.validateDeleted();
 		
 		try {
 			boolean success = action.doAction();
@@ -454,7 +458,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.validateRelation();
+		r2Data.validate();
 		
 		//////////////////////////////////////////////////////////////
 		// Edit Properties
@@ -503,8 +507,8 @@ public class EditTest {
 		n1Data.zlevel = zlevel2;
 		w1Data.levelIds.add(zlevel2);
 		
-		n1Data.validateNode();
-		w1Data.validateWay();
+		n1Data.validate();
+		w1Data.validate();
 		
 		try {
 			boolean success = action.undoAction();
@@ -519,8 +523,8 @@ public class EditTest {
 		n1Data.zlevel = zlevel1;
 		w1Data.levelIds.remove(zlevel2);
 		
-		n1Data.validateNode();
-		w1Data.validateWay();
+		n1Data.validate();
+		w1Data.validate();
 		
 		//=====================
 		//edit way type
@@ -558,8 +562,8 @@ public class EditTest {
 		w1Data.featureInfoName = "buildingpart:unit";
 		w1Data.props.put(initialKey,finalValue);
 		
-		w1Data.validateWay();
-		r1Data.validateRelation();
+		w1Data.validate();
+		r1Data.validate();
 		
 		w1Data.minOsmVersion = 0;
 		w1Data.minTermiteVersion = 0;
@@ -579,8 +583,8 @@ public class EditTest {
 		w1Data.featureInfoName = "buildingpart:wall";
 		w1Data.props.put(initialKey,initialValue);
 		
-		w1Data.validateWay();
-		r1Data.validateRelation();
+		w1Data.validate();
+		r1Data.validate();
 		
 		//=====================
 		//edit generic multipoly properties, update key
@@ -610,7 +614,7 @@ public class EditTest {
 			assert(false);
 		}
 	
-		r2Data.validateRelation();
+		r2Data.validate();
 	
 		r2Data.props.remove(finalKey);
 		r2Data.props.put(initialKey,initialValue);
@@ -625,7 +629,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.validateRelation();
+		r2Data.validate();
 		
 		
 		//////////////////////////////////////////////////////////////
@@ -686,89 +690,92 @@ public class EditTest {
 		// Generic Relation
 		//=====================
 		
-//		
-//		OsmNode oNode2 = new OsmNode();
-//		double x2 = 0;
-//		double y2 = 0;
-//		oNode2.setPosition(x2,y2);
-//		oNode2.setProperty(OsmModel.KEY_ZLEVEL,zlevel1);
-//		oNode2.setProperty(OsmModel.KEY_ZCONTEXT,zcontext);
-//		instr = new CreateInstruction(oNode2,termiteData);
-//		long idn2 = oNode2.getId();
-//		action.addInstruction(instr);
-//		
-//		OsmNode oNode3 = new OsmNode();
-//		double x3 = 0;
-//		double y3 = 0;
-//		oNode3.setPosition(x3,y3);
-//		oNode3.setProperty(OsmModel.KEY_ZLEVEL,zlevel1);
-//		oNode3.setProperty(OsmModel.KEY_ZCONTEXT,zcontext);
-//		instr = new CreateInstruction(oNode3,termiteData);
-//		long idn3 = oNode3.getId();
-//		action.addInstruction(instr);
-//		
-//		OsmNode oNode4 = new OsmNode();
-//		double x4 = 0;
-//		double y4 = 0;
-//		oNode4.setPosition(x4,y4);
-//		oNode4.setProperty(OsmModel.KEY_ZLEVEL,zlevel1);
-//		oNode4.setProperty(OsmModel.KEY_ZCONTEXT,zcontext);
-//		oNode4.setProperty("buildingpart","stairs");
-//		instr = new CreateInstruction(oNode3,termiteData);
-//		long idn4 = oNode3.getId();
-//		action.addInstruction(instr);
-//		
-//		//outdoor node
-//		OsmNode oNode0 = new OsmNode();
-//		double x0 = 0;
-//		double y0 = 0;
-//		oNode3.setPosition(x0,y0);
-//		instr = new CreateInstruction(oNode3,termiteData);
-//		long idn0 = oNode0.getId();
-//		action.addInstruction(instr);
-//		
-//		OsmWay oWay1 = new OsmWay();
-//		List<Long> wayNodes = oWay1.getNodeIds();
-//		wayNodes.add(idn1);
-//		wayNodes.add(idn2);
-//		wayNodes.add(idn3);
-//		wayNodes.add(idn1);
-//		oWay1.setProperty("buildingpart","wall");
-//		instr = new CreateInstruction(oWay1,termiteData);
-//		long idw1 = oWay1.getId();
-//		action.addInstruction(instr);
+		//////////////////////////////////////////////////////////////
+		// Delete Objects
+		//////////////////////////////////////////////////////////////
 		
-//		OsmRelation oRel1 = new OsmRelation();
-//		List<OsmMember> members = oRel1.getMembers();
-//		OsmMember member = new OsmMember(idw1,"way","outer");
-//		members.add(member);
-//		member = new OsmMember(idw1,"way","inner");
-//		members.add(member);
-//		oRel1.setProperty("type","multipolygon");
-//		instr = new CreateInstruction(oRel1,termiteData);
-//		action.addInstruction(instr);
+		//=====================
+		// Generic Relation
+		//=====================
 		
-//		TermiteWay testWay = termiteData.getWay(wayId);
-//		OsmWay osmWay = testWay.getOsmObject();
-//		UpdateObjectProperty targetData2 = new UpdateObjectProperty(termiteData,"buildingpart","buildingpart","room");
-//		instr = new UpdateInstruction(osmWay,targetData2);
-//		action.addInstruction(instr);
-//		
-//				TermiteNode testNode = termiteData.getNode(nodeId);
-//		OsmNode osmNode = testNode.getOsmObject();
-//		double x = osmNode.getX();
-//		double y = osmNode.getY();
-//		UpdatePosition targetData = new UpdatePosition(x + 100,y+50);
-//		instr = new UpdateInstruction(osmNode,targetData);
-//		action.addInstruction(instr);
+		action = new EditAction(termiteData,"Delete a generic relation");
 		
-//		try {
-//			action.doAction();
-//		}
-//		catch(Exception ex) {
-//			ex.printStackTrace();
-//		}
+		osmRelation = osmData.getOsmRelation(r2Data.id);
+	
+		instr = new DeleteInstruction(osmRelation);
+		action.addInstruction(instr);
 		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		r2Data.validateDeleted();
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+				
+		r2Data.validate();
+		
+		//=====================
+		// Multipoly
+		//=====================
+		
+		
+		action = new EditAction(termiteData,"Delete a multipoly relation");
+		
+		osmRelation = osmData.getOsmRelation(r1Data.id);
+	
+		instr = new DeleteInstruction(osmRelation);
+		action.addInstruction(instr);
+		
+		w1Data.multiPolyId = OsmObject.INVALID_ID;
+		w1Data.minTermiteVersion = termiteData.getWay(w1Data.id).getTermiteLocalVersion() + 1;
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		r1Data.validateDeleted();
+		w1Data.validate();
+		
+		w1Data.multiPolyId = r1Data.id;
+		w1Data.minTermiteVersion = termiteData.getWay(w1Data.id).getTermiteLocalVersion() + 1;
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+				
+		r1Data.validate();
+		w1Data.validate();
+		
+		//=====================
+		// Way
+		//=====================
+		
+		//=====================
+		// Node
+		//=====================
 	}
 	
 	
