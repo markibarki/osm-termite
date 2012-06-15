@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.map.model;
 
 import intransix.osm.termite.map.osm.OsmObject;
@@ -10,10 +6,12 @@ import java.util.Collection;
 import java.util.HashMap;
 
 /**
- *
+ * This is the base object for holding reference data for nodes, ways and relations
+ * to facilitate testing.
+ * 
  * @author sutter
  */
-public class ObjectTestData {
+public abstract class ObjectTestData {
 	
 	public static TermiteData termiteData;
 	public static OsmData osmData;
@@ -23,6 +21,13 @@ public class ObjectTestData {
 	public String featureInfoName;
 	public int minOsmVersion;
 	public int minTermiteVersion;
+	
+	/** This method validates the given object, comapring the reference data
+	 * to the actual data. */
+	public abstract void validate();
+
+	/** This method validates that the given object was deleted. */
+	public abstract void validateDeleted();
 	
 	protected void checkProperties(OsmObject o, HashMap<String,String> p) {
 		//check properties - both directions to make sure they are the same

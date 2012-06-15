@@ -8,6 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * This is a class for unit testing node editing. It holds the reference node
+ * data which the developer should manually set. It can then be used to compare
+ * with the result of the edit operations being tested. A test method is
+ * included.
+ *
+ * This class allows the developer to track the state of the node over many
+ * operations, simplifying writing the tests.
  *
  * @author sutter
  */
@@ -21,7 +28,8 @@ public class NodeTestData extends ObjectTestData {
 
 	
 	/** This method validates the content of a node. */
-	public void validateNode() {
+	@Override
+	public void validate() {
 		
 		//check existence
 		OsmNode oNode = osmData.getOsmNode(id);
@@ -59,7 +67,8 @@ public class NodeTestData extends ObjectTestData {
 	}
 	
 	/** This method validates a node was deleted. */
-	void validateNodeDelete() {
+	@Override
+	public void validateDeleted() {
 		
 		//check it is not in the data
 		assert(osmData.getOsmNode(id) == null);

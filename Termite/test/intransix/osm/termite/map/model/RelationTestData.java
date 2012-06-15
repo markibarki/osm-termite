@@ -10,7 +10,13 @@ import intransix.osm.termite.map.osm.OsmRelation;
 import java.util.*;
 
 /**
- *
+ * This is a class for unit testing relation editing. It holds the reference relation data which
+ * the developer should manually set. It can then be used to compare with the result of the edit 
+ * operations being tested. A test method is included.
+ * 
+ * This class allows the developer to track the state of the relation over many operations,
+ * simplifying writing the tests.
+ * 
  * @author sutter
  */
 public class RelationTestData extends ObjectTestData {
@@ -18,7 +24,8 @@ public class RelationTestData extends ObjectTestData {
 	public List<OsmMember> members = new ArrayList<OsmMember>();
 	public boolean isMultiPoly;
 	
-	public void validateRelation() {
+	@Override
+	public void validate() {
 		
 		//check existence
 		OsmRelation oRelation = osmData.getOsmRelation(id);
@@ -76,7 +83,8 @@ public class RelationTestData extends ObjectTestData {
 		
 	}
 	
-	void validateRelationDeleted() {
+	@Override
+	public void validateDeleted() {
 		
 		//check it is not in the data
 		assert(osmData.getOsmRelation(id) == null);
