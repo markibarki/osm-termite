@@ -23,7 +23,6 @@ public class WayTestData extends ObjectTestData {
 	public List<Long> nodeIds = new ArrayList<Long>();
 	public long structureId;
 	public List<Integer> levelIds = new ArrayList<Integer>();
-	public long multiPolyId;
 
 	@Override
 	public void validate() {
@@ -60,22 +59,7 @@ public class WayTestData extends ObjectTestData {
 		}
 		
 		//check properties - both directions to make sure they are the same
-		checkProperties(oWay,props);
-		
-		//check multipoly
-		if(multiPolyId != OsmObject.INVALID_ID) {
-			TermiteMultiPoly tmp = termiteData.getMultiPoly(id,false);
-			if(tmp != null) {
-				assert(tmp.getWays().contains(tWay));
-			}
-		}
-		
-		FeatureInfo fi = tWay.getFeatureInfo();
-		if(fi == null) assert(featureInfoName == null);
-		else assert(featureInfoName.equals(fi.getName()));
-		
-		assert(oWay.getLocalVersion() >= minOsmVersion);
-		assert(tWay.getTermiteLocalVersion() >= minTermiteVersion);
+		baseValidate(tWay,oWay);
 		
 	}
 	
@@ -105,19 +89,5 @@ public class WayTestData extends ObjectTestData {
 				assert(owid != id);
 			}
 		}
-		
-		if(multiPolyId != OsmObject.INVALID_ID) {
-			TermiteMultiPoly tmp = termiteData.getMultiPoly(id,false);
-			if(tmp != null) {
-				for(TermiteWay tw:tmp.getWays()) {
-					OsmWay ow = tw.getOsmObject();
-					long owid = ow.getId();
-					assert(owid != id);
-				}
-			}
-		}
 	}
-		
-	
-	
 }

@@ -39,31 +39,18 @@ public class UpdateInsertMember implements EditData<OsmRelation> {
 	@Override
 	public void writeData(OsmRelation relation) throws UnchangedException, Exception {
 		
-		//do this first since it might throw an exception - we don't want to update the data before then
-		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
-		if(termiteObject != null) {
-			if(termiteObject instanceof TermiteMultiPoly) {
-				
-				//add the way to the multipolygon
-				TermiteWay way = termiteData.getWay(member.memberId);
-				if(way != null) {
-					List<TermiteWay> ways = ((TermiteMultiPoly)termiteObject).getWays();
-					ways.add(index,way);
-					way.setMultiPoly((TermiteMultiPoly)termiteObject);
-				}
-				else {
-					throw new UnchangedException("Way not found!");
-				}
-			}			
-			termiteObject.incrementTermiteVersion();
-		}
-		
 		//set the property
-		List<OsmMember> members = relation.getMembers();
+		List<OsmMember> osmMembers = relation.getMembers();
 		OsmMember memberCopy = member.createCopy();
-		members.add(index,memberCopy);
-		//explicitly increment version since edit was external
-		relation.incrementLocalVersion();
-			
+		osmMembers.add(index,memberCopy);
+		
+		TermiteRelation termiteRelation = (TermiteRelation)relation.getTermiteObject();
+		List<TermiteMember> termiteMembers = termiteRelation.getMembers();
+		TermiteMember termiteMember = TermiteMember.createTermiteMember(termiteData,member);
+		termiteMembers.add(index,termiteMember);
+		
+		termiteMember.termiteObject.addRelation(termiteRelation);
+		
+		termiteRelation.incrementDataVersion();
 	}
 }

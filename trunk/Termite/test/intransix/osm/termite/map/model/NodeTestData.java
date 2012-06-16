@@ -55,15 +55,7 @@ public class NodeTestData extends ObjectTestData {
 			assert(wayIds.contains(wid));
 		}
 		
-		//check properties - both directions to make sure they are the same
-		checkProperties(oNode,props);
-		
-		FeatureInfo fi = tNode.getFeatureInfo();
-		if(fi == null) assert(featureInfoName == null);
-		else assert(featureInfoName.equals(fi.getName()));
-		
-		assert(oNode.getLocalVersion() >= minOsmVersion);
-		assert(tNode.getTermiteLocalVersion() >= minTermiteVersion);
+		baseValidate(tNode,oNode);
 	}
 	
 	/** This method validates a node was deleted. */

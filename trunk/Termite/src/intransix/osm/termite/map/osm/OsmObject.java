@@ -45,8 +45,6 @@ public abstract class OsmObject<T extends OsmObject> {
 	private String changeset;
 	private String timestamp;
 	
-	private int localVersion = INITIAL_LOCAL_VERSION;
-	
 	private TermiteObject<T> termiteObject;
 	
 	private HashMap<String,String> tags = new HashMap<String,String>();
@@ -86,12 +84,7 @@ public abstract class OsmObject<T extends OsmObject> {
 		return type;
 	}
 	
-	/** This method gets the local version for the object. */
-	public int getLocalVersion() {
-		return localVersion;
-	}
-	
-		/** This method sets the termite node for this OsmN0de. */
+	/** This method sets the termite node for this OsmN0de. */
 	public void setTermiteObject(TermiteObject<T> termiteObject) {
 		this.termiteObject = termiteObject;
 	}
@@ -127,16 +120,11 @@ public abstract class OsmObject<T extends OsmObject> {
 		this.setIsLoaded(true);
 	}
 	
-	public void incrementLocalVersion() {
-		this.localVersion++;
-	}
-	
 	/** This method copies relevant data from the base OsmObject needed for reproducing
 	 * the data set. */
 	public void copyInto(T newObject) {
 		newObject.setIsLoaded(this.isLoaded);
 		newObject.setIsVirtual(this.isVirtual);
-		newObject.setLocalVersion(this.localVersion);
 
 		this.copyPropertiesInto(newObject);
 	}
@@ -155,12 +143,10 @@ public abstract class OsmObject<T extends OsmObject> {
 	
 	public void setProperty(String tag, String propertyValue) {
 		this.tags.put(tag,propertyValue);
-		incrementLocalVersion();
 	}
 	
 	public void removeProperty(String tag) {
 		this.tags.remove(tag);
-		incrementLocalVersion();
 	}
 	
 	/** This method returns the given string property. If it is not found 
@@ -255,10 +241,6 @@ public abstract class OsmObject<T extends OsmObject> {
 	//==========================
 	// Package Methods
 	//==========================
-	
-	void setLocalVersion(int localVersion) {
-		this.localVersion = localVersion;
-	}
 	
 	void setId(long id) {
 		this.id = id;

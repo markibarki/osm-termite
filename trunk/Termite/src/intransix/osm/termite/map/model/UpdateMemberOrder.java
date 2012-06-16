@@ -41,6 +41,8 @@ public class UpdateMemberOrder implements EditData<OsmRelation> {
 	public void writeData(OsmRelation relation) throws UnchangedException, Exception {
 		//set the property
 		List<OsmMember> members = relation.getMembers();
+		TermiteRelation tRelation = (TermiteRelation)relation.getTermiteObject();
+		List<TermiteMember> tMembers = tRelation.getMembers();
 		int readdIndex;
 		if(moveUp) {
 			if(index > 0) readdIndex = index - 1;
@@ -52,18 +54,9 @@ public class UpdateMemberOrder implements EditData<OsmRelation> {
 		}
 		OsmMember member = members.remove(index);
 		members.add(readdIndex,member);
-		//explicitly increment version since edit was external
-		relation.incrementLocalVersion();
+		TermiteMember tMember = tMembers.remove(index);
+		tMembers.add(tMember);
 		
-		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
-		if(termiteObject != null) {
-			if(termiteObject instanceof TermiteMultiPoly) {
-				//update the way list
-				List<TermiteWay> ways = ((TermiteMultiPoly)termiteObject).getWays();
-				TermiteWay way = ways.remove(index);
-				ways.add(readdIndex,way);
-			}			
-			termiteObject.incrementTermiteVersion();
-		}
+		tRelation.incrementDataVersion();
 	}	
 }

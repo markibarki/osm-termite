@@ -42,23 +42,33 @@ public class UpdateRemoveMember implements EditData<OsmRelation> {
 	 application will be forced to close if this happens. */
 	@Override
 	public void writeData(OsmRelation relation) throws UnchangedException, Exception {
-		//set the property
-		List<OsmMember> members = relation.getMembers();
-		if(members.size() <= index) {
+		//remove from osm relation
+		List<OsmMember> oMembers = relation.getMembers();
+		if(oMembers.size() <= index) {
 			throw new UnchangedException("Invalid node index for relation: " + relation.getId());
 		}
-		members.remove(index);
-		//explicitly increment version since edit was external
-		relation.incrementLocalVersion();
+		oMembers.remove(index);
 		
-		TermiteObject<OsmRelation> termiteObject = relation.getTermiteObject();
-		if(termiteObject != null) {
-			if(termiteObject instanceof TermiteMultiPoly) {
-				List<TermiteWay> ways = ((TermiteMultiPoly)termiteObject).getWays();
-				TermiteWay way = ways.remove(index);
-				way.setMultiPoly(null);
-			}			
-			termiteObject.incrementTermiteVersion();
+		//remove from termite relation
+		TermiteRelation termiteRelation = (TermiteRelation)relation.getTermiteObject();
+		List<TermiteMember> tMembers = termiteRelation.getMembers();
+		TermiteMember rMember = tMembers.remove(index);
+		
+		//update remote object
+		if(rMember.termiteObject != null) {
+			boolean repeatFound = false;
+			for(TermiteMember tMember:tMembers) {
+				if(tMember.termiteObject == rMember.termiteObject) {
+					repeatFound = true;
+					break;
+				}
+			}
+			if(!repeatFound) {
+				List<TermiteRelation> rels = rMember.termiteObject.getRelations();
+				rels.remove(this);
+			}
 		}
+		
+		termiteRelation.incrementDataVersion();
 	}	
 }

@@ -10,7 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Path2D;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  *
@@ -49,14 +49,14 @@ public class PathFeature {
 	public void render(Graphics2D g2, double zoomScale, Theme theme, TermiteLevel level) {
 		
 //		if(osmWay.getLocalVersion() != this.localVersion) {
-if(termiteWay.getTermiteLocalVersion() != this.localVersion) {			
+if(termiteWay.getDataVersion() != this.localVersion) {			
 			//load geometry
 			updateData();
 			
 			//get the style
 			style = theme.getStyle(osmWay);
 			
-this.localVersion = termiteWay.getTermiteLocalVersion();
+this.localVersion = termiteWay.getDataVersion();
 //			this.localVersion = osmWay.getLocalVersion();
 		}
 		
@@ -95,22 +95,26 @@ this.localVersion = termiteWay.getTermiteLocalVersion();
 	
 	void updateData() {
 
-		TermiteMultiPoly multiPoly = termiteWay.getMultiPoly();
+		//check if this is the member in a multipolygon
+		TermiteRelation multipoly = termiteWay.getMultipolygon();
 		
-		if(multiPoly != null) {
+		if(multipoly != null) {
 			//-----------------
 			// Multipoly Case
 			//-----------------
-			//only create multipoly paths if this is the main way 
-			if(multiPoly.getMainWay() == termiteWay) {
+			List<TermiteMember> members = multipoly.getMembers();
+			
+			if(members.get(0).termiteObject == termiteWay) {
 				//main way
 				
 				termiteLevels.clear();
-				for(TermiteWay way:multiPoly.getWays()) {
+				for(TermiteMember member:members) {
 					//load all the levels
-					for(TermiteLevel level:way.getLevels()) {
-						if(!termiteLevels.contains(level)) {
-							termiteLevels.add(level);
+					if(member.termiteObject instanceof TermiteWay) {
+						for(TermiteLevel level:((TermiteWay)member.termiteObject).getLevels()) {
+							if(!termiteLevels.contains(level)) {
+								termiteLevels.add(level);
+							}
 						}
 					}
 				}
@@ -122,8 +126,10 @@ this.localVersion = termiteWay.getTermiteLocalVersion();
 				for(TermiteLevel level:termiteLevels) {
 					Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
-					for(TermiteWay tWay:multiPoly.getWays()) {
-						addWayToPathForLevel(level,path,tWay,isArea);
+					for(TermiteMember member:members) {
+						if(member.termiteObject instanceof TermiteWay) {
+							addWayToPathForLevel(level,path,(TermiteWay)member.termiteObject,isArea);
+						}
 					}
 
 					//add the path in the order of the level

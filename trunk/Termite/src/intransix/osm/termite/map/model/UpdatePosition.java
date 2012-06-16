@@ -41,15 +41,15 @@ public class UpdatePosition implements EditData<OsmNode> {
 		
 		//flag as dirty the node, way and level
 		TermiteNode termiteNode = (TermiteNode)node.getTermiteObject();
-		termiteNode.incrementTermiteVersion();
+		termiteNode.incrementDataVersion();
 		//explicitly marks ways as changed
 		for(TermiteWay termiteWay:termiteNode.getWays()) {
-			termiteWay.incrementTermiteVersion();
+			termiteWay.incrementDataVersion();
 		}
 		//explicitly mark level as changed
 		TermiteLevel level = termiteNode.getLevel();
 		if(level != null) {
-			level.incrementTermiteVersion();
+			level.incrementDataVersion();
 		}
 	}
 }

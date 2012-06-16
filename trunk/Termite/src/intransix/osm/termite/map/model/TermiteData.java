@@ -21,7 +21,7 @@ public class TermiteData {
 	
 	private HashMap<Long,TermiteNode> nodeMap = new HashMap<Long,TermiteNode>();
 	private HashMap<Long,TermiteWay> wayMap = new HashMap<Long,TermiteWay>();
-	private HashMap<Long,TermiteMultiPoly> multiPolyMap = new HashMap<Long,TermiteMultiPoly>();
+	private HashMap<Long,TermiteRelation> relationMap = new HashMap<Long,TermiteRelation>();
 	
 	private HashMap<Long,TermiteStructure> structureMap = new HashMap<Long,TermiteStructure>();
 	
@@ -60,6 +60,10 @@ public class TermiteData {
 		return getNode(structureId, false);
 	}
 	
+	public TermiteRelation getRelation(Long relationId) {
+		return getRelation(relationId, false);
+	}
+	
 	//-----------------------
 	// Load Data
 	//-----------------------
@@ -88,7 +92,7 @@ public class TermiteData {
 		//create the termite ways
 //MUST DO WAYS AFTER NODES FOR NOW
 		for(OsmWay osmWay:workingData.getOsmWays()) {
-			//create the node
+			//create the way
 			TermiteWay termiteWay = getWay(osmWay.getId(),true);
 			termiteWay.init(this,osmWay);
 			
@@ -97,13 +101,10 @@ public class TermiteData {
 		
 		//create the objects based on relations
 		for(OsmRelation osmRelation:workingData.getOsmRelations()) {
-			String relationtype = osmRelation.getProperty(OsmModel.TAG_TYPE);
 			Long memberId = osmRelation.getId();
-			//create the node
-			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relationtype)) {
-				TermiteMultiPoly termiteMultiPoly = this.getMultiPoly(memberId, true);
-				termiteMultiPoly.init(this,osmRelation);
-			}
+			//create the relation
+			TermiteRelation termiteRelation = this.getRelation(memberId, true);
+			termiteRelation.init(this,osmRelation);
 		}
 		
 //long start = System.nanoTime();
@@ -154,6 +155,23 @@ public class TermiteData {
 		return way;
 	}
 	
+	/** This method looks up the TermiteRelation associated with the id. If the object
+	 * is not found and createRef is true, a new object is created and inserted into the map.
+	 * If createRef is false, null is returned. 
+	 * 
+	 * @param id		The OSM ID for the object
+	 * @createRef		If a new reference should be created this should be set to true.
+	 * @return			The object
+	 */
+	TermiteRelation getRelation(Long id, boolean createRef) {
+		TermiteRelation relation = this.relationMap.get(id);
+		if((relation == null)&&(createRef)) {
+			relation = new TermiteRelation();
+			relationMap.put(id, relation);
+		}
+		return relation;
+	}
+	
 	/** This method looks up a level for the given structure id and zlevel value. */
 	TermiteLevel getLevel(Long structureId, int zlevel, boolean createRef) {
 		TermiteStructure structure = getStructure(structureId,createRef);
@@ -187,23 +205,7 @@ public class TermiteData {
 		}
 		return structure;
 	}
-	
-	/** This method looks up the TermiteMultiPoly associated with the id. If the object
-	 * is not found and createRef is true, a new object is created and inserted into the map.
-	 * If createRef is false, null is returned. 
-	 * 
-	 * @param id		The OSM ID for the object
-	 * @createRef		If a new reference should be created this should be set to true.
-	 * @return			The object
-	 */
-	TermiteMultiPoly getMultiPoly(Long id, boolean createRef) {
-		TermiteMultiPoly multiPoly = this.multiPolyMap.get(id);
-		if((multiPoly == null)&&(createRef)) {
-			multiPoly = new TermiteMultiPoly();
-			multiPolyMap.put(id, multiPoly);
-		}
-		return multiPoly;
-	}
+
 
 	/** This method is called from a delete instruction to remove the termite object. */
 	void deleteTermiteObject(TermiteObject termiteObject) {
@@ -218,8 +220,8 @@ public class TermiteData {
 		else if(termiteObject instanceof TermiteWay) {
 			this.wayMap.remove(id);
 		}
-		else if(termiteObject instanceof TermiteMultiPoly) {
-			this.multiPolyMap.remove(id);
+		else if(termiteObject instanceof TermiteRelation) {
+			this.relationMap.remove(id);
 		}
 //how about level and structure? These need to be deleted too
 	}
