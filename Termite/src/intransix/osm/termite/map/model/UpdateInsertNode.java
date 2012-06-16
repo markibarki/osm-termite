@@ -9,10 +9,12 @@ import java.util.List;
  */
 public class UpdateInsertNode implements EditData<OsmWay> {
 	
+	private TermiteData termiteData;
 	private long nodeId;
 	private int index;
 	
-	public UpdateInsertNode(long nodeId, int nodeIndex) {
+	public UpdateInsertNode(TermiteData termiteData, long nodeId, int nodeIndex) {
+		this.termiteData = termiteData;
 		this.nodeId = nodeId;
 		this.index = nodeIndex;
 	}
@@ -21,7 +23,7 @@ public class UpdateInsertNode implements EditData<OsmWay> {
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
 	public EditData<OsmWay> readInitialData(OsmWay way) throws UnchangedException {
-		UpdateRemoveNode undoUpdate = new UpdateRemoveNode(index);
+		UpdateRemoveNode undoUpdate = new UpdateRemoveNode(termiteData,index);
 		return undoUpdate;
 	}
 		
@@ -34,23 +36,14 @@ public class UpdateInsertNode implements EditData<OsmWay> {
 		//set the property
 		List<Long> nodeIds = way.getNodeIds();
 		nodeIds.add(index,nodeId);
-		//explicitly increment version since edit was external
-		way.incrementLocalVersion();
 		
 		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
-		for(TermiteNode node:termiteWay.getNodes()) {
-			//this will not add repeats
-			if(node.getOsmObject().getId() == nodeId) {
-				node.addWay(termiteWay);
-			}
-		}
-		
-		//mark any ways in a multipolygon as changed
-		if(termiteWay.getMultiPoly() != null) {
-			termiteWay.getMultiPoly().incrementTermiteVersion();
-		}
+		List<TermiteNode> tNodes = termiteWay.getNodes();
+		TermiteNode tNode = termiteData.getNode(nodeId);
+		tNodes.add(index,tNode);
+		tNode.addWay(termiteWay);
 		
 		//increment this object
-		termiteWay.incrementTermiteVersion();
+		termiteWay.incrementDataVersion();
 	}
 }

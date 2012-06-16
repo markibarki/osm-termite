@@ -61,4 +61,16 @@ public class OsmRelation extends OsmObject<OsmRelation> {
 		}
 		super.copyInto(newRelation);
 	}
+	
+	/** This removes all references to this object from the member list. */
+	public void removeMemberObject(Long oid, String type) {
+		int cnt = members.size();
+		OsmMember member;
+		for(int i = cnt-1; i >= 0; i--) {
+			member = members.get(i);
+			if((member.memberId.equals(oid))&&(member.type.equals(type))) {
+				members.remove(i);
+			}
+		}
+	}
 }

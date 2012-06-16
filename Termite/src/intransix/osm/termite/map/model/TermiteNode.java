@@ -44,13 +44,13 @@ public class TermiteNode extends TermiteObject<OsmNode> {
 	void addWay(TermiteWay way) {
 		if(!ways.contains(way)) {
 			ways.add(way);
-			incrementTermiteVersion();
+			incrementDataVersion();
 		}
 	}
 	
 	void removeWay(TermiteWay way) {
 		ways.remove(way);
-		incrementTermiteVersion();
+		incrementDataVersion();
 	}
 	
 	void init(TermiteData termiteData, OsmNode osmNode) {
@@ -74,16 +74,18 @@ public class TermiteNode extends TermiteObject<OsmNode> {
 		level.addNode(this);
 	}
 	
+	@Override
 	void objectDeleted(TermiteData termiteData) {
+		super.objectDeleted(termiteData);
+		
 		if(level != null) {
 			level.removeNode(this);
 		}
 		level = null;
 		
-		for(TermiteWay way:ways) {
-			way.removeNode(this);
-		}	
-		ways.clear();
+		//ways should be empty
+		//we must check for this earlier so this exception is not thrown
+		if(!ways.isEmpty()) throw new RuntimeException("A way referenced the deleted node");
 		
 		osmNode = null;
 	}
@@ -123,11 +125,11 @@ public class TermiteNode extends TermiteObject<OsmNode> {
 		}
 		else if(newZorder != oldZorder) {
 			//explicitly flag this level as updated
-			level.incrementTermiteVersion();
+			level.incrementDataVersion();
 		}
 		
 		//flag this object as changed if relevent info changed
-		this.incrementTermiteVersion();
+		this.incrementDataVersion();
 	}
 	
 	/** This method sets the level. */

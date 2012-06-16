@@ -7,6 +7,9 @@ import intransix.osm.termite.map.osm.*;
  * @author sutter
  */
 public abstract class EditInstruction<T extends OsmObject> {
+	
+	//used only to undo a delete or redo a create, to maintain the data versioning
+	private int recreateVersion = 0;
 
 	
 	public EditInstruction() {
@@ -50,23 +53,22 @@ public abstract class EditInstruction<T extends OsmObject> {
 		objectToCopy.copyInto(osmObject);
 		
 		//process the update - for specific type
-		//we can probably cleean this up with generics and a new method on termite data
-		//think about this
+		TermiteObject termiteObject = null;
 		if(objectType.equalsIgnoreCase("node")) {
-			TermiteNode tn = termiteData.getNode(id, true);
-			tn.init(termiteData,(OsmNode)osmObject);
+			termiteObject = termiteData.getNode(id, true);
 		}
 		else if(objectType.equalsIgnoreCase("way")) {
-			TermiteWay tw = termiteData.getWay(id, true);
-			tw.init(termiteData,(OsmWay)osmObject);
+			termiteObject = termiteData.getWay(id, true);
 		}
 		else if(objectType.equalsIgnoreCase("relation")) {
-			String relationType = ((OsmRelation)osmObject).getProperty(OsmModel.TAG_TYPE);
-			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relationType)) {
-				TermiteMultiPoly tmp = termiteData.getMultiPoly(id, true);
-				tmp.init(termiteData,(OsmRelation)osmObject);
-			}
+			termiteObject = termiteData.getRelation(id,true);
 		}
+		
+		if(termiteObject != null) {
+			termiteObject.init(termiteData,osmObject);
+			termiteObject.setLocalDataVersion(recreateVersion);
+		}
+		
 	}
 	
 	
@@ -88,9 +90,12 @@ public abstract class EditInstruction<T extends OsmObject> {
 		}
 			
 		//if this is a delete, remove the object
-		osmData.removeOsmObject(osmObject.getId(), osmObject.getObjectType());
+		osmData.deleteOsmObject(osmObject.getId(), osmObject.getObjectType());
 
 		if(termiteObject != null) {
+			//save this for recreating the object
+			this.recreateVersion = termiteObject.getDataVersion();
+			//delete data
 			termiteData.deleteTermiteObject(termiteObject);
 		}
 

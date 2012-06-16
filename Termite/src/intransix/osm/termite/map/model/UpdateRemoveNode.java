@@ -13,9 +13,11 @@ import java.util.List;
  */
 public class UpdateRemoveNode implements EditData<OsmWay> {
 
+	private TermiteData termiteData;
 	private int index;
 	
-	public UpdateRemoveNode(int nodeIndex) {
+	public UpdateRemoveNode(TermiteData termiteData, int nodeIndex) {
+		this.termiteData = termiteData;
 		this.index = nodeIndex;
 	}
 	
@@ -28,7 +30,7 @@ public class UpdateRemoveNode implements EditData<OsmWay> {
 			throw new UnchangedException("Invalid node index for way: " + way.getId());
 		}
 		long nodeId = nodeIds.get(index);
-		UpdateInsertNode undoUpdate = new UpdateInsertNode(nodeId, index);
+		UpdateInsertNode undoUpdate = new UpdateInsertNode(termiteData,nodeId,index);
 		return undoUpdate;
 	}
 		
@@ -38,34 +40,27 @@ public class UpdateRemoveNode implements EditData<OsmWay> {
 	 application will be forced to close if this happens. */
 	@Override
 	public void writeData(OsmWay way) throws UnchangedException, Exception {
-		//set the property
+		//remove node from osm way
 		List<Long> nodeIds = way.getNodeIds();
 		if(nodeIds.size() <= index) {
 			throw new UnchangedException("Invalid node index for way: " + way.getId());
 		}
-		
 		Long idRemoved = nodeIds.remove(index);
-		//explicitly increment version since edit was external
-		way.incrementLocalVersion();
 		
+		//remove node from termite way
 		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
+		List<TermiteNode> nodes = termiteWay.getNodes();
+		nodes.remove(index);
+		
 		//check to make sure that node is still not there, at another index
-		if(!nodeIds.contains(idRemoved)) {
-			
-			for(TermiteNode node:termiteWay.getNodes()) {
-				//this will not add repeats
-				if(node.getOsmObject().getId() == idRemoved.longValue()) {
-					node.removeWay(termiteWay);
-				}
+		if(!nodeIds.contains(idRemoved)) {			
+			TermiteNode node = termiteData.getNode(idRemoved);
+			if(node != null) {
+				node.removeWay(termiteWay);
 			}
 		}
 		
-		//mark any ways in a multipolygon as changed
-		if(termiteWay.getMultiPoly() != null) {
-			termiteWay.getMultiPoly().incrementTermiteVersion();
-		}
-		
 		//flag as updated
-		termiteWay.incrementTermiteVersion();
+		termiteWay.incrementDataVersion();
 	}
 }

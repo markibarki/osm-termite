@@ -87,7 +87,7 @@ public class EditTest {
 		
 		TermiteNode termiteNode;
 		TermiteWay termiteWay;
-		TermiteMultiPoly termiteMultiPoly;
+		TermiteRelation termiteRelation;
 		
 		
 		//////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ public class EditTest {
 		WayTestData w1Data = new WayTestData();
 		
 		termiteNode = termiteData.getNode(n1Data.id);
-		n1Data.minTermiteVersion = termiteNode.getTermiteLocalVersion() + 1;
+		n1Data.minDataVersion = termiteNode.getDataVersion() + 1;
 		
 		OsmWay oWay1 = new OsmWay();
 		List<Long> wayNodes = oWay1.getNodeIds();
@@ -224,10 +224,7 @@ public class EditTest {
 		w1Data.structureId = structureId;
 		w1Data.levelIds.add(zlevel1);
 		
-		w1Data.minOsmVersion = 0;
-		w1Data.minTermiteVersion = 0;
-				
-		w1Data.multiPolyId = OsmObject.INVALID_ID;
+		w1Data.minDataVersion = 0;
 		
 		try {
 			boolean success = action.doAction();
@@ -348,7 +345,7 @@ public class EditTest {
 		action.addInstruction(instr);
 		
 		termiteWay = termiteData.getWay(w1Data.id);
-		w1Data.minTermiteVersion = termiteWay.getTermiteLocalVersion() + 1;
+		w1Data.minDataVersion = termiteWay.getDataVersion() + 1;
 		
 		try {
 			boolean success = action.doAction();
@@ -359,14 +356,12 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.multiPolyId = r1Data.id;
-		
 		r1Data.members.add(new OsmMember(w1Data.id,"way","outer"));
 		r1Data.members.add(new OsmMember(idw2,"way","inner"));
 		
 		r1Data.props.put(OsmModel.TAG_TYPE,OsmModel.TYPE_MULTIPOLYGON);
 		
-		r1Data.isMultiPoly = true;
+		w1Data.rels.add(r1Data.id);
 		
 		w1Data.validate();
 		r1Data.validate();
@@ -378,9 +373,9 @@ public class EditTest {
 		catch(Exception ex) {
 			ex.printStackTrace();
 			assert(false);
-		}
-				
-		w1Data.multiPolyId = OsmObject.INVALID_ID;		
+		}	
+		
+		w1Data.rels.remove(r1Data.id);
 				
 		w1Data.validate();
 		r1Data.validateDeleted();
@@ -394,7 +389,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.multiPolyId = r1Data.id;
+		w1Data.rels.add(r1Data.id);
 		
 		w1Data.validate();
 		r1Data.validate();
@@ -407,15 +402,15 @@ public class EditTest {
 		
 		RelationTestData r2Data = new RelationTestData();
 		
-		OsmRelation relation2 = new OsmRelation();
-		List<OsmMember> members2 = relation2.getMembers();
+		osmRelation = new OsmRelation();
+		List<OsmMember> members2 = osmRelation.getMembers();
 		members2.add(new OsmMember(w1Data.id,"way","aaa"));
 		members2.add(new OsmMember(r1Data.id,"relation","bbb"));
 		members2.add(new OsmMember(n1Data.id,"node","ccc"));
-		relation2.setProperty(OsmModel.TAG_TYPE,"generic");
-		relation2.setProperty("key","value");
-		instr = new CreateInstruction(relation2,termiteData);
-		r2Data.id = relation2.getId();
+		osmRelation.setProperty(OsmModel.TAG_TYPE,"generic");
+		osmRelation.setProperty("key","value");
+		instr = new CreateInstruction(osmRelation,termiteData);
+		r2Data.id = osmRelation.getId();
 		action.addInstruction(instr);
 		
 		try {
@@ -434,9 +429,14 @@ public class EditTest {
 		r2Data.props.put(OsmModel.TAG_TYPE,"generic");
 		r2Data.props.put("key","value");
 		
-		r2Data.isMultiPoly = false;
+		n1Data.rels.add(r2Data.id);
+		w1Data.rels.add(r2Data.id);
+		r1Data.rels.add(r2Data.id);
 		
 		r2Data.validate();
+		n1Data.validate();
+		r1Data.validate();
+		w1Data.validate();
 		
 		try {
 			boolean success = action.undoAction();
@@ -446,8 +446,15 @@ public class EditTest {
 			ex.printStackTrace();
 			assert(false);
 		}
+		
+		n1Data.rels.remove(r2Data.id);
+		w1Data.rels.remove(r2Data.id);
+		r1Data.rels.remove(r2Data.id);
 				
 		r2Data.validateDeleted();
+		n1Data.validate();
+		r1Data.validate();
+		w1Data.validate();
 		
 		try {
 			boolean success = action.doAction();
@@ -458,7 +465,14 @@ public class EditTest {
 			assert(false);
 		}
 		
+		n1Data.rels.add(r2Data.id);
+		w1Data.rels.add(r2Data.id);
+		r1Data.rels.add(r2Data.id);
+		
 		r2Data.validate();
+		n1Data.validate();
+		r1Data.validate();
+		w1Data.validate();
 		
 		//////////////////////////////////////////////////////////////
 		// Edit Properties
@@ -488,11 +502,9 @@ public class EditTest {
 		instr = new UpdateInstruction(osmNode,targetData);
 		action.addInstruction(instr);
 		
-		n1Data.minOsmVersion = osmNode.getLocalVersion() + 1;
-		n1Data.minTermiteVersion = termiteNode.getTermiteLocalVersion() + 1;
+		n1Data.minDataVersion = termiteNode.getDataVersion() + 1;
 	
-		w1Data.minOsmVersion = osmWay.getLocalVersion(); //the osm way didn't change
-		w1Data.minTermiteVersion = termiteWay.getTermiteLocalVersion() + 1;
+		w1Data.minDataVersion = termiteWay.getDataVersion() + 1;
 		
 		try {
 			boolean success = action.doAction();
@@ -535,7 +547,7 @@ public class EditTest {
 		osmWay = osmData.getOsmWay(w1Data.id);
 		termiteWay = (TermiteWay)osmWay.getTermiteObject();
 		osmRelation = osmData.getOsmRelation(r1Data.id);
-		termiteMultiPoly = termiteData.getMultiPoly(r1Data.id, true);
+		termiteRelation = termiteData.getRelation(r1Data.id);
 		
 		initialKey = "buildingpart";
 		initialValue = "wall";
@@ -544,11 +556,7 @@ public class EditTest {
 		instr = new UpdateInstruction(osmWay,targetData);
 		action.addInstruction(instr);
 		
-		w1Data.minOsmVersion = osmWay.getLocalVersion() + 1;
-		w1Data.minTermiteVersion = termiteWay.getTermiteLocalVersion() + 1;
-	
-		r1Data.minOsmVersion = osmRelation.getLocalVersion(); //the osm way didn't change
-		r1Data.minTermiteVersion = termiteMultiPoly.getTermiteLocalVersion() + 1;
+		w1Data.minDataVersion = termiteWay.getDataVersion() + 1;
 		
 		try {
 			boolean success = action.doAction();
@@ -563,13 +571,8 @@ public class EditTest {
 		w1Data.props.put(initialKey,finalValue);
 		
 		w1Data.validate();
-		r1Data.validate();
 		
-		w1Data.minOsmVersion = 0;
-		w1Data.minTermiteVersion = 0;
-	
-		r1Data.minOsmVersion = 0; //the osm way didn't change
-		r1Data.minTermiteVersion = 0;
+		w1Data.minDataVersion = 0;
 		
 		try {
 			boolean success = action.undoAction();
@@ -584,7 +587,6 @@ public class EditTest {
 		w1Data.props.put(initialKey,initialValue);
 		
 		w1Data.validate();
-		r1Data.validate();
 		
 		//=====================
 		//edit generic multipoly properties, update key
@@ -601,7 +603,6 @@ public class EditTest {
 		instr = new UpdateInstruction(osmRelation,targetData);
 		action.addInstruction(instr);
 	
-		r2Data.minOsmVersion = osmRelation.getLocalVersion() + 1; //the osm way didn't change
 		r2Data.props.remove(initialKey);
 		r2Data.props.put(finalKey,initialValue);
 		
@@ -618,7 +619,6 @@ public class EditTest {
 	
 		r2Data.props.remove(finalKey);
 		r2Data.props.put(initialKey,initialValue);
-		r2Data.minOsmVersion = 0;
 		
 		try {
 			boolean success = action.undoAction();
@@ -636,39 +636,113 @@ public class EditTest {
 		// Edit Node Location
 		//////////////////////////////////////////////////////////////
 		
+		action = new EditAction(termiteData,"Mobe a node");
 		
-		//////////////////////////////////////////////////////////////
-		// Indert Node into Way
-		//////////////////////////////////////////////////////////////
+		osmNode = osmData.getOsmNode(n1Data.id);
+		termiteNode = termiteData.getNode(n1Data.id);
+		termiteWay = termiteData.getWay(w1Data.id);
+	
+		double x1b = n1Data.x + 1;
+		double y1b = n1Data.y + 1;
+		UpdatePosition up = new UpdatePosition(x1b,y1b);
+		instr = new UpdateInstruction(osmNode,up);
+		action.addInstruction(instr);
 		
+		n1Data.x = x1b;
+		n1Data.y = y1b;
+		n1Data.minDataVersion = termiteNode.getDataVersion() + 1;
+		w1Data.minDataVersion = termiteWay.getDataVersion() + 1;
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		n1Data.validate();
+		w1Data.validate();
+		
+		//undo
+		n1Data.x = x1;
+		n1Data.y = y1;
+		n1Data.minDataVersion = termiteNode.getDataVersion() + 1;
+		w1Data.minDataVersion = termiteWay.getDataVersion() + 1;
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+				
+		n1Data.validate();
+		w1Data.validate();
 		
 		//////////////////////////////////////////////////////////////
 		// Remove Node from Way
 		//////////////////////////////////////////////////////////////
 		
-		//////////////////////////////////////////////////////////////
-		// Insert Member into Relation
-		//////////////////////////////////////////////////////////////
+		action = new EditAction(termiteData,"Remove a node");
 		
-		//=====================
-		// Multipoly
-		//=====================
+		osmWay = osmData.getOsmWay(w1Data.id);
+		osmNode = osmData.getOsmNode(n1Data.id);
+		termiteNode = termiteData.getNode(n1Data.id);
+		termiteWay = termiteData.getWay(w1Data.id);
+	
+		UpdateRemoveNode urn = new UpdateRemoveNode(termiteData,0);
+		instr = new UpdateInstruction(osmWay,urn);
+		action.addInstruction(instr);
 		
-		//=====================
-		// Generic Relation
-		//=====================
+		w1Data.nodeIds.remove(0);
+		//way is still on this node since it appeared twice
+		n1Data.minDataVersion = termiteNode.getDataVersion();
+		w1Data.minDataVersion = termiteWay.getDataVersion() + 1;
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		n1Data.validate();
+		w1Data.validate();
+		
+		//undo
+		w1Data.nodeIds.add(0,n1Data.id);
+		n1Data.minDataVersion = termiteNode.getDataVersion();
+		w1Data.minDataVersion = termiteWay.getDataVersion() + 1;
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+				
+		n1Data.validate();
+		w1Data.validate();
+		
+		//////////////////////////////////////////////////////////////
+		// Indert Node into Way
+		//////////////////////////////////////////////////////////////
 		
 		//////////////////////////////////////////////////////////////
 		// Remove Member from Relation
 		//////////////////////////////////////////////////////////////
 		
-		//=====================
-		// Multipoly
-		//=====================
-		
-		//=====================
-		// Generic Relation
-		//=====================
+		//////////////////////////////////////////////////////////////
+		// Insert Member into Relation
+		//////////////////////////////////////////////////////////////
 		
 		//////////////////////////////////////////////////////////////
 		// Move Members in Relation
@@ -730,7 +804,8 @@ public class EditTest {
 		//=====================
 		// Multipoly
 		//=====================
-		
+
+//MUST REMOVE RELATION THAT WE ADDED THIS TO!!!!
 		
 		action = new EditAction(termiteData,"Delete a multipoly relation");
 		
@@ -739,8 +814,7 @@ public class EditTest {
 		instr = new DeleteInstruction(osmRelation);
 		action.addInstruction(instr);
 		
-		w1Data.multiPolyId = OsmObject.INVALID_ID;
-		w1Data.minTermiteVersion = termiteData.getWay(w1Data.id).getTermiteLocalVersion() + 1;
+		w1Data.minDataVersion = termiteData.getWay(w1Data.id).getDataVersion() + 1;
 		
 		try {
 			boolean success = action.doAction();
@@ -754,8 +828,7 @@ public class EditTest {
 		r1Data.validateDeleted();
 		w1Data.validate();
 		
-		w1Data.multiPolyId = r1Data.id;
-		w1Data.minTermiteVersion = termiteData.getWay(w1Data.id).getTermiteLocalVersion() + 1;
+		w1Data.minDataVersion = termiteData.getWay(w1Data.id).getDataVersion() + 1;
 		
 		try {
 			boolean success = action.undoAction();
@@ -773,9 +846,78 @@ public class EditTest {
 		// Way
 		//=====================
 		
+		action = new EditAction(termiteData,"Delete a way");
+		
+		osmWay = osmData.getOsmWay(w1Data.id);
+	
+		instr = new DeleteInstruction(osmWay);
+		action.addInstruction(instr);
+		
+		n1Data.wayIds.remove(w1Data.id);
+		r1Data.members.remove(0);
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		w1Data.validateDeleted();
+		n1Data.validate();
+		r1Data.validate();
+		
+		//undo 
+		n1Data.wayIds.add(w1Data.id);
+		r1Data.members.add(0,new OsmMember(w1Data.id,"way","outer"));
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+				
+		w1Data.validate();
+		n1Data.validate();
+		r1Data.validate();
+		
 		//=====================
 		// Node
 		//=====================
+		
+		action = new EditAction(termiteData,"Delete a node");
+		
+		osmNode = osmData.getOsmNode(n1Data.id);
+	
+		instr = new DeleteInstruction(osmNode);
+		action.addInstruction(instr);
+		
+		try {
+			boolean success = action.doAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+		
+		n1Data.validateDeleted();
+		
+		try {
+			boolean success = action.undoAction();
+			assert(success);
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			assert(false);
+		}
+				
+		n1Data.validate();
 	}
 	
 	

@@ -22,7 +22,7 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 	
 	private ArrayList<TermiteLevel> levels = new ArrayList<TermiteLevel>();
 	
-	private TermiteMultiPoly multiPoly;
+	private TermiteRelation multipolygon;
 	
 	//===============
 	// Public Methods
@@ -44,8 +44,8 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 	}
 	
 	/** This method gets the multi poly relation for this way. */
-	public TermiteMultiPoly getMultiPoly() {
-		return multiPoly;
+	public TermiteRelation getMultipolygon() {
+		return multipolygon;
 	}
 	
 	/** This method gets the OSM object associated with this object. */
@@ -91,7 +91,10 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 		}
 	}
 	
+	@Override
 	void objectDeleted(TermiteData termiteData) {
+		super.objectDeleted(termiteData);
+		
 		for(TermiteNode node:nodes) {
 			node.removeWay(this);
 		}
@@ -101,10 +104,6 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 			level.removeWay(this);
 		}
 		levels.clear();
-		
-		if(multiPoly != null) {
-			multiPoly.removeMemberObject(this);
-		}
 		
 		this.osmWay = null;
 	}
@@ -121,13 +120,8 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 			this.isArea = (featureInfo.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
 		}
 		
-		//explicitly mark any ways in a multipolygon as changed
-		if(this.multiPoly != null) {
-			this.multiPoly.incrementTermiteVersion();
-		}
-		
 		//flag this object as changed if relevent info changed
-		this.incrementTermiteVersion();
+		this.incrementDataVersion();
 	}
 	
 	/** This method adds a level to the way. */
@@ -141,18 +135,12 @@ public class TermiteWay extends TermiteObject<OsmWay> {
 		for(TermiteNode node:nodes) {
 			this.addLevel(node.getLevel());
 		}
-		this.incrementTermiteVersion();
-	}
-	
-	/** This method sets the multi poly relation for this way. */
-	void setMultiPoly(TermiteMultiPoly multiPoly) {
-		this.multiPoly = multiPoly;
-		incrementTermiteVersion();
+		this.incrementDataVersion();
 	}
 	
 	void removeNode(TermiteNode node) {
-		nodes.remove(node);
-		incrementTermiteVersion();
+		removeAllCopies(nodes,node);
+		incrementDataVersion();
 	}
 
 }

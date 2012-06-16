@@ -115,15 +115,15 @@ public class OsmData {
 	}
 	
 	/** This method removes the object from the active data. */
-	public void removeOsmObject(long id, String type) {
+	public void deleteOsmObject(long id, String type) {
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
-			removeOsmNode(id);
+			nodeMap.remove(id);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_WAY)) {
-			removeOsmWay(id);
+			wayMap.remove(id);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_RELATION)) {
-			removeOsmRelation(id);
+			relationMap.remove(id);
 		}
 		else {
 			//unknown object
@@ -147,18 +147,6 @@ public class OsmData {
 		OsmRelation relation = new OsmRelation(id);
 		relationMap.put(id,relation);
 		return relation;
-	}
-	
-	public void removeOsmNode(long id) {
-		nodeMap.remove(id);
-	}
-	
-	public void removeOsmWay(long id) {
-		wayMap.remove(id);
-	}
-	
-	public void removeOsmRelation(long id) {
-		relationMap.remove(id);
 	}
 
 }

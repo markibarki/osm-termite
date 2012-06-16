@@ -2,6 +2,7 @@ package intransix.osm.termite.map.model;
 
 import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.feature.FeatureInfo;
+import java.util.*;
 
 /**
  * This is a base class for the TermiteObject.
@@ -19,14 +20,20 @@ public abstract class TermiteObject<T extends OsmObject> {
 	private Object renderData;
 	private Object editData;
 	
+	private List<TermiteRelation> relations = new ArrayList<TermiteRelation>();
+	
 	FeatureInfo featureInfo = null;
 	
-private int termiteLocalVersion = 0;
-public int getTermiteLocalVersion() {
-	return termiteLocalVersion;
+private int dataVersion = 0;
+public int getDataVersion() {
+	return dataVersion;
 }
-void incrementTermiteVersion() {
-	termiteLocalVersion++;
+void incrementDataVersion() {
+	dataVersion++;
+}
+
+void setLocalDataVersion(int version) {
+	this.dataVersion = version;
 }
 	
 	//=========================
@@ -60,9 +67,26 @@ void incrementTermiteVersion() {
 		this.editData = editData;
 	}
 	
+	/** This gets the list of relations of which this object is a member. */
+	public List<TermiteRelation> getRelations() {
+		return relations;
+	}
+	
 	//=======================
 	// Package Methods
 	//=======================
+	
+	void addRelation(TermiteRelation relation) {
+		if(!relations.contains(relation)) {
+			relations.add(relation);
+			incrementDataVersion();
+		}
+	}
+	
+	void removeRelation(TermiteRelation relation) {
+		relations.remove(relation);
+		incrementDataVersion();
+	}
 	
 	/** This method should be filled in by extending objects to return the 
 	 * OSM object for the given Termite Object.
@@ -77,9 +101,23 @@ void incrementTermiteVersion() {
 	
 	abstract void init(TermiteData termiteData, T osmObject);
 	
-	abstract void objectDeleted(TermiteData termiteData);
+	void objectDeleted(TermiteData termiteData) {
+		
+		//this should be cleared before we delete
+		//we must check for this earlier
+		if(!relations.isEmpty()) {
+			throw new RuntimeException("A relation referenced the deleted object");
+		}
+	}
 	
 	void propertiesUpdated(TermiteData termiteData) {
 		
+	}
+	
+	static <T> void removeAllCopies(List<T> list, T obj) {
+		boolean objectRemoved;
+		do {
+			objectRemoved = list.remove(obj);
+		} while(objectRemoved);
 	}
 }

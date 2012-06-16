@@ -44,7 +44,7 @@ public class TermiteLevel extends TermiteObject<OsmWay> {
 	
 	/** This method sorts the features by draw order. */
 	public void checkFeatureSort() {
-		if(versionOfLatestSort != this.getTermiteLocalVersion()) {
+		if(versionOfLatestSort != this.getDataVersion()) {
 			//sort the ways
 			Collections.sort(ways,new TermiteComparator());
 			//don't bother sorting the nodes
@@ -95,24 +95,24 @@ public class TermiteLevel extends TermiteObject<OsmWay> {
 	void addNode(TermiteNode node) {
 		if(nodes.contains(node)) return;
 		nodes.add(node);
-		incrementTermiteVersion();
+		incrementDataVersion();
 	}
 	
 	void removeNode(TermiteNode node) {
 		nodes.remove(node);
-		incrementTermiteVersion();
+		incrementDataVersion();
 	}
 	
 	/** This method adds a way to the level. */
 	void addWay(TermiteWay way) {
 		if(ways.contains(way)) return;
 		ways.add(way);
-		incrementTermiteVersion();
+		incrementDataVersion();
 	}
 	
 	void removeWay(TermiteWay way) {
 		ways.remove(way);
-		incrementTermiteVersion();
+		incrementDataVersion();
 	}
 	
 	/** This comparator sorts features by zorder. */
