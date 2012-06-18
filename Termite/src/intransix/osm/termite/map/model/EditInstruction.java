@@ -88,6 +88,10 @@ public abstract class EditInstruction<T extends OsmObject> {
 			//this shouldn't happen
 			termiteObject = null;
 		}
+		
+		//verify a delete is OK - this will throw an unchanged exception if this delete
+		//is not OK
+		termiteObject.verifyDelete();
 			
 		//if this is a delete, remove the object
 		osmData.deleteOsmObject(osmObject.getId(), osmObject.getObjectType());

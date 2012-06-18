@@ -65,7 +65,7 @@ public class UpdateRemoveMember implements EditData<OsmRelation> {
 			}
 			if(!repeatFound) {
 				List<TermiteRelation> rels = rMember.termiteObject.getRelations();
-				rels.remove(this);
+				rels.remove(termiteRelation);
 			}
 		}
 		

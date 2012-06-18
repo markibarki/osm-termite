@@ -49,13 +49,13 @@ public class UpdateMemberOrder implements EditData<OsmRelation> {
 			else return; //no action since it can't move
 		}
 		else {
-			if(index > members.size()-2) readdIndex = index + 1;
+			if(index < members.size()-1) readdIndex = index + 1;
 			else return; //no action since it can't move
 		}
 		OsmMember member = members.remove(index);
 		members.add(readdIndex,member);
 		TermiteMember tMember = tMembers.remove(index);
-		tMembers.add(tMember);
+		tMembers.add(readdIndex,tMember);
 		
 		tRelation.incrementDataVersion();
 	}	

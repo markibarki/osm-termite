@@ -74,6 +74,18 @@ public class TermiteNode extends TermiteObject<OsmNode> {
 		level.addNode(this);
 	}
 	
+	/** This method verifies an object can be deleted. There can be no external
+	 * objects referring to this one.
+	 * 
+	 * @throws UnchangedException	Thrown if this object can not be deleted 
+	 */
+	@Override
+	void verifyDelete() throws UnchangedException {
+		if(!ways.isEmpty()) {
+			throw new UnchangedException("A node cannot be deleted is a way contains it.");
+		}
+	}
+	
 	@Override
 	void objectDeleted(TermiteData termiteData) {
 		super.objectDeleted(termiteData);
