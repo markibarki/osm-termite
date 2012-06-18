@@ -43,6 +43,14 @@ public class UpdateInsertNode implements EditData<OsmWay> {
 		tNodes.add(index,tNode);
 		tNode.addWay(termiteWay);
 		
+		//update levels if needed
+		List<TermiteLevel> levels = termiteWay.getLevels();
+		TermiteLevel newLevel = tNode.getLevel();
+		if(!levels.contains(newLevel)) {
+			levels.add(newLevel);
+			newLevel.addWay(termiteWay);
+		}
+		
 		//increment this object
 		termiteWay.incrementDataVersion();
 	}

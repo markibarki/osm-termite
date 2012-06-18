@@ -50,14 +50,25 @@ public class UpdateRemoveNode implements EditData<OsmWay> {
 		//remove node from termite way
 		TermiteWay termiteWay = (TermiteWay)way.getTermiteObject();
 		List<TermiteNode> nodes = termiteWay.getNodes();
-		nodes.remove(index);
-		
+		TermiteNode removedNode = nodes.remove(index);
+		 
 		//check to make sure that node is still not there, at another index
 		if(!nodeIds.contains(idRemoved)) {			
 			TermiteNode node = termiteData.getNode(idRemoved);
 			if(node != null) {
 				node.removeWay(termiteWay);
 			}
+		}
+		
+		//check levels
+		TermiteLevel removedNodeLevel = removedNode.getLevel();
+		boolean removeLevel = true;
+		for(TermiteNode node:termiteWay.getNodes()) {
+			if(node.getLevel() == removedNodeLevel)removeLevel = false;
+		}
+		if(removeLevel) {
+			termiteWay.getLevels().remove(removedNodeLevel);
+			removedNodeLevel.removeWay(termiteWay);
 		}
 		
 		//flag as updated

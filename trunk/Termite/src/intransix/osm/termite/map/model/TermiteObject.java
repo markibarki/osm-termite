@@ -101,6 +101,17 @@ void setLocalDataVersion(int version) {
 	
 	abstract void init(TermiteData termiteData, T osmObject);
 	
+	/** This method verifies an object can be deleted. There can be no external
+	 * objects referring to this one.
+	 * 
+	 * @throws UnchangedException	Thrown if this object can not be deleted 
+	 */
+	void verifyDelete() throws UnchangedException {
+		if(!relations.isEmpty()) {
+			throw new UnchangedException("An object cannot be deleted is a relation contains it.");
+		}
+	}
+	
 	void objectDeleted(TermiteData termiteData) {
 		
 		//this should be cleared before we delete

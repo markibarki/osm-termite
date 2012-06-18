@@ -47,15 +47,17 @@ public class WayTestData extends ObjectTestData {
 		//check nodes
 		List<Long> oNodeIds = oWay.getNodeIds();
 		assert(oNodeIds.size() == nodeIds.size());
+		int index = 0;
 		for(Long nid:nodeIds) {
-			assert(oNodeIds.contains(nid));
+			assert(nid.equals(oNodeIds.get(index++)));
 		}
 		List<TermiteNode> nodes = tWay.getNodes();
 		assert(nodes.size() == nodeIds.size());
+		index = 0;
 		for(TermiteNode tNode:nodes) {
 			OsmNode oNode = tNode.getOsmObject();
 			Long nid = oNode.getId();
-			assert(nodeIds.contains(nid));
+			assert(nodeIds.get(index++).equals(nid));
 		}
 		
 		//check properties - both directions to make sure they are the same
