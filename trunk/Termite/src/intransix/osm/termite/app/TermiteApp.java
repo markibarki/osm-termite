@@ -7,7 +7,7 @@ import intransix.osm.termite.map.model.UpdatePosition;
 import intransix.osm.termite.map.model.UpdateInsertMember;
 import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.map.feature.FeatureInfoMap;
-import intransix.osm.termite.app.gui.TermiteGui;
+import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.render.MapPanel;
 
 import intransix.osm.termite.util.JsonIO;
