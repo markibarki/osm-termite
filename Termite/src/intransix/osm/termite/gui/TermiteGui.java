@@ -12,6 +12,12 @@ import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.util.LocalCoordinates;
 import intransix.osm.termite.util.MercatorCoordinates;
 
+import intransix.osm.termite.map.model.*;
+import intransix.osm.termite.render.edit.EditLayer;
+import intransix.osm.termite.render.structure.StructureLayer;
+
+import intransix.osm.termite.map.theme.Theme;
+
 /**
  *
  * @author sutter
@@ -32,10 +38,12 @@ public class TermiteGui extends javax.swing.JFrame {
 	private boolean dataPresent = false;
 	private EditorMode activeMode = null;
 	
-	TileLayer baseMapLayer;
+	private TileLayer baseMapLayer;
+	private StructureLayer renderLayer;
+	private EditLayer editLayer;
 	
-//	private TermiteData termiteData;
-//	private Theme theme;
+	private TermiteData termiteData;
+	
 //	private FeatureInfoMap featureMap;
 //	private List<DataTab> dataTabs;
 	
@@ -54,6 +62,18 @@ public class TermiteGui extends javax.swing.JFrame {
 	public MapPanel getMap() {
 		return mapPanel;
 	}
+	
+	public TileLayer getBaseMapLayer() {
+		return baseMapLayer;
+	}
+	
+	public StructureLayer getRenderLayer() {
+		return renderLayer;
+	}
+	
+	public EditLayer getEditLayer() {
+		return editLayer;
+	}
 
 	public void initialize() {
 		//no data present at startup
@@ -67,6 +87,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		
 		//MAP
 		initializeBaseMap();
+		initialzeMapEditLayers();
 		initializeView();
 		
 		//DATA PANEL
@@ -102,6 +123,20 @@ public class TermiteGui extends javax.swing.JFrame {
 		//add the map layer and relation panel to the data panel (clear others)
 		
 		
+	}
+	
+	public void setEditData(TermiteData termiteData) {
+		this.termiteData = termiteData;
+		
+final long structureId = 167142181L;
+TermiteStructure structure = termiteData.getStructure(structureId);
+TermiteLevel level = structure.lookupLevel(0);
+//TermiteLevel level = termiteData.getOutdoorLevel();
+		
+		renderLayer.setLevel(level);
+		editLayer.setLevel(level);
+		
+		setToEditState();
 	}
 	
 	private void setToSearchState() {
@@ -158,12 +193,16 @@ public class TermiteGui extends javax.swing.JFrame {
 			this.activeMode = null;
 		}
 		
+		activeMode = editorMode;
+		
 		//prepare the new mode
 		editorMode.turnOn();
 		toolBar = editorMode.getSubmodeToolbar();
 		if(toolBar != null) {
 			toolBarPanel.add(toolBar);
 		}
+		
+		mapPanel.repaint();
 	}
 	
 	private void setEditModesEnable(boolean enabled) {
@@ -180,7 +219,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		double maxLon = Math.toRadians(latLonBounds.getMaxX());
 		double mercX0 = MercatorCoordinates.lonRadToMx((minLon + maxLon) / 2);
 		double mercY0 = MercatorCoordinates.latRadToMy((minLat + maxLat) / 2);
-		LocalCoordinates.setLocalAnchor(mercX0,mercY0);
+//		LocalCoordinates.setLocalAnchor(mercX0,mercY0);
 		
 		double minLocX = LocalCoordinates.mercToLocalX(MercatorCoordinates.lonRadToMx(minLon)); 
 		double minLocY = LocalCoordinates.mercToLocalY(MercatorCoordinates.latRadToMy(maxLat)); 
@@ -200,6 +239,14 @@ public class TermiteGui extends javax.swing.JFrame {
 	
 		mapPanel.addLayer(baseMapLayer);
 		mapPanel.addMapListener(baseMapLayer);
+	}
+	
+	private void initialzeMapEditLayers() {
+		renderLayer = new StructureLayer();
+		Theme theme = app.getTheme();
+		renderLayer.setTheme(theme);
+		
+		editLayer = new EditLayer();
 	}
 	
 

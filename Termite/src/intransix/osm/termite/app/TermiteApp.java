@@ -75,7 +75,10 @@ public class TermiteApp {
 	}
 	
 	public Rectangle2D getInitialLatLonBounds() {
-		return new Rectangle2D.Double(-140,-40,280,100);
+//LocalCoordinates.setLocalAnchor(MercatorCoordinates.lonRadToMx(-117.116),MercatorCoordinates.latRadToMy(40.376));
+return new Rectangle2D.Double(-117.116,40.376,.01,.01);
+
+//		return new Rectangle2D.Double(-140,-40,280,100);
 	}
 	
 	public void startup() {
@@ -141,8 +144,8 @@ public class TermiteApp {
 		OsmModel.parse(modelJson);
 		OsmModel.featureInfoMap = featureInfoMap;
 		
-		//set the local anchor to 0,0
-		LocalCoordinates.setLocalAnchor(0,0);
+		//set the local anchor to the center
+		LocalCoordinates.setLocalAnchor(.5,.5);
 		
 		//create the gui
 		gui = new TermiteGui(this);
@@ -216,7 +219,7 @@ public class TermiteApp {
 //		
 //		TileLayer tileLayer = new TileLayer(mapQuestUrlTemplate,mapQuestMaxZoom,mapQuestTileSize);
 //				
-//		//add to the map panel
+		//add to the map panel
 //		MapPanel mapDisplay = gui.getMap();
 //		mapDisplay.addLayer(tileLayer);
 //		mapDisplay.addLayer(structureLayer);

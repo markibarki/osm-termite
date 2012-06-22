@@ -25,9 +25,6 @@ public class LocalCoordinates {
 	//===============
 	// Public Methods
 	//===============
-	public static double getMetersPerMerc() {
-		return mercToMetersScale;
-	}
 	
 	public static double mercToLocalX(double mx) {
 		return mercToMetersScale * (mx - mxOffset);
@@ -49,5 +46,17 @@ public class LocalCoordinates {
 		mxOffset = mx; 
 		myOffset = my;
 		mercToMetersScale = MercatorCoordinates.metersPerMerc(my);
+	}
+	
+	public static double getAnchorX() {
+		return mxOffset;
+	}
+	
+	public static double getAnchorY() {
+		return myOffset;
+	}
+	
+	public static double getMetersPerMerc() {
+		return mercToMetersScale;
 	}
 }
