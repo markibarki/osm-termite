@@ -2,11 +2,14 @@ package intransix.osm.termite.util;
 
 /**
  * This is a local Mercator coordinate system with a scale of meters. To use
- * this, set the anchor point, which transform to (x,y)=(0,0). Once the anchor point is
+ * this, set the anchor point, which transform to (lcoal x, local y)=(0,0). Once the anchor point is
  * set, it should not be altered unless all data using the former coordinates is deleted.
  * In these coordinates, a change in one unit in the x or y direction will be one meter 
  * in distance, for areas near the anchor point. Further away, the points will scale
- * like Mercator Coordinates. However, over a distance of miles this is negligible.
+ * like Mercator Coordinates. However, over a distance on the order of miles this is negligible.
+ * 
+ * Local coordinates are helpful because of numerical problems dealing with very large offsets
+ * from global coordinates.
  * 
  * @author sutter
  */

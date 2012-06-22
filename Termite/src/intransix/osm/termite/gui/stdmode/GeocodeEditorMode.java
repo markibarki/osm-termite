@@ -4,6 +4,7 @@
  */
 package intransix.osm.termite.gui.stdmode;
 
+import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
 import javax.swing.JToolBar;
 
@@ -11,7 +12,7 @@ import javax.swing.JToolBar;
  *
  * @author sutter
  */
-public class GeocodeEditorMode {
+public class GeocodeEditorMode implements EditorMode {
 	//====================
 	// Properties
 	//====================

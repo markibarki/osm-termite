@@ -26,11 +26,11 @@ public class Tile {
 	}
 	
 	public void render(Graphics2D g2) {
-		int tileToMerc = 1 << (MercatorCoordinates.MERCATOR_ZOOM - zoom);
-		int lx1 = (int)LocalCoordinates.mercToLocalX(tileToMerc * x);
-		int ly1 = (int)LocalCoordinates.mercToLocalY(tileToMerc * y);
-		int lx2 = (int)LocalCoordinates.mercToLocalX(tileToMerc * (x+1));
-		int ly2 = (int)LocalCoordinates.mercToLocalY(tileToMerc * (y+1));
+		double mercPerTile = 1.0 / (1 << zoom);
+		int lx1 = (int)LocalCoordinates.mercToLocalX(mercPerTile * x);
+		int ly1 = (int)LocalCoordinates.mercToLocalY(mercPerTile * y);
+		int lx2 = (int)LocalCoordinates.mercToLocalX(mercPerTile * (x+1));
+		int ly2 = (int)LocalCoordinates.mercToLocalY(mercPerTile * (y+1));
 		
 		g2.drawImage(image,lx1,ly1,lx2-lx1,ly2-ly1,null);
 	}

@@ -44,8 +44,8 @@ public class StructureLayer implements MapLayer {
 		TermiteLevel localLevel = currentLevel;
 		Theme localTheme = theme;
 		
-		AffineTransform mapToPixels = mapPanel.getMapToPixels();
-		double zoomScale = mapPanel.getZoomScale();
+		AffineTransform mapToPixels = mapPanel.getLocalToPixels();
+		double zoomScale = mapPanel.getZoomScalePixelsPerMeter();
 		
 		if((localLevel == null)||(localTheme == null)) return;
 		

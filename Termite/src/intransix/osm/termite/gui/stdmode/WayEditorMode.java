@@ -4,6 +4,7 @@
  */
 package intransix.osm.termite.gui.stdmode;
 
+import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
 import javax.swing.JToolBar;
 
@@ -11,12 +12,12 @@ import javax.swing.JToolBar;
  *
  * @author sutter
  */
-public class WayEditorMode {
+public class WayEditorMode implements EditorMode {
 	//====================
 	// Properties
 	//====================
 	private final static String MODE_NAME = "Way Tool";
-	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/selectMode.png";
+	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/wayMode.png";
 	
 	private TermiteGui termiteGui;
 	
