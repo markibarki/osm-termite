@@ -1,5 +1,6 @@
 package intransix.osm.termite.gui.stdmode;
 
+import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
 import javax.swing.JToolBar;
 
@@ -7,12 +8,12 @@ import javax.swing.JToolBar;
  *
  * @author sutter
  */
-public class SelectEditorMode {
+public class SelectEditorMode implements EditorMode {
 	//====================
 	// Properties
 	//====================
 	private final static String MODE_NAME = "Select Tool";
-	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/nodeMode.png";
+	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/selectMode.png";
 	
 	private TermiteGui termiteGui;
 	

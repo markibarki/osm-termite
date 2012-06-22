@@ -4,20 +4,22 @@
  */
 package intransix.osm.termite.gui.stdmode;
 
+import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
-import javax.swing.JToolBar;
+import javax.swing.*;
 
 /**
  *
  * @author sutter
  */
-public class SearchEditorMode {
+public class SearchEditorMode implements EditorMode {
 	//====================
 	// Properties
 	//====================
 	private final static String MODE_NAME = "Search Mode";
 
 	private TermiteGui termiteGui;
+	private JToolBar toolBar = null;
 	
 	//====================
 	// Public Methods
@@ -50,7 +52,10 @@ public class SearchEditorMode {
 	 * @return		The submode toolbar 
 	 */
 	public JToolBar getSubmodeToolbar() {
-		return null;
+		if(toolBar == null) {
+			createToolBar();
+		}
+		return toolBar;
 	}
 	
 	/** This method is called when the editor mode is turned on. 
@@ -64,4 +69,17 @@ public class SearchEditorMode {
 	public void turnOff() {
 		
 	}	
+	
+	
+	private void createToolBar() {
+		toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.add(new JLabel("Enter a location: "));
+		JTextField textField = new JTextField();
+		textField.setColumns(25);
+		textField.setMaximumSize(textField.getPreferredSize());
+		toolBar.add(textField);
+		toolBar.add(new JButton("Search"));
+		toolBar.add(new JButton("Download Data"));
+	}
 }

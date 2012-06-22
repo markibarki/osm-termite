@@ -51,7 +51,7 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 	@Override
 	public void render(Graphics2D g2) {
 		
-		AffineTransform mapToPixels = mapPanel.getMapToPixels();
+		AffineTransform mapToPixels = mapPanel.getLocalToPixels();
 		g2.transform(mapToPixels);		
 		
 		OsmNode localNode = activeNode;
@@ -85,7 +85,7 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 		double pixX = e.getX();
 		double pixY = e.getY();
 		Point2D point = new Point2D.Double(pixX,pixY);
-		AffineTransform pixelsToMap = mapPanel.getPixelsToMap();
+		AffineTransform pixelsToMap = mapPanel.getPixelsToLocal();
 		pixelsToMap.transform(point, point);
 		
 		//loook for a point

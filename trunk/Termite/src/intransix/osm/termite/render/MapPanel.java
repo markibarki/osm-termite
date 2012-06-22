@@ -14,11 +14,11 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 	
 	private final static double ROTATION_SCALE_FACTOR = 1.1;
 	
-	private AffineTransform mapToPixels = new AffineTransform();
-	private AffineTransform pixelsToMap = new AffineTransform();
+	private AffineTransform localToPixels = new AffineTransform();
+	private AffineTransform pixelsToLocal = new AffineTransform();
 	private ArrayList<MapLayer> layers = new ArrayList<MapLayer>();
 	private ArrayList<MapListener> mapListeners = new ArrayList<MapListener>();
-	private double zoomScale = 1.0;
+	private double zoomScalePixelsPerMeter = 1.0;
 	
 	private boolean panOn = false;
 	private double lastX;
@@ -31,16 +31,16 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		this.addMouseWheelListener(this);
     }
 	
-	public final AffineTransform getMapToPixels() {
-		return mapToPixels;
+	public final AffineTransform getLocalToPixels() {
+		return localToPixels;
 	}
 	
-	public final AffineTransform getPixelsToMap() {
-		return pixelsToMap;
+	public final AffineTransform getPixelsToLocal() {
+		return pixelsToLocal;
 	}
 	
-	public final double getZoomScale() {
-		 return zoomScale;
+	public final double getZoomScalePixelsPerMeter() {
+		 return zoomScalePixelsPerMeter;
 	}
 	
 	public void addLayer(MapLayer layer) {
@@ -60,16 +60,25 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		this.mapListeners.remove(listener);
 	}
 	
-	public void setBounds(Rectangle2D bounds) {
-		Dimension dim = this.getPreferredSize();
-		double xScale = dim.width / bounds.getWidth();
-		double yScale = dim.height / bounds.getHeight();
+	public void setViewBounds(Rectangle2D bounds) {
+		Rectangle pixelRect = this.getVisibleRect();
+		
+		//X and Y will allow different magnifications - take the smaller of the two
+		double xScale = pixelRect.width / bounds.getWidth();
+		double yScale = pixelRect.height / bounds.getHeight();
 		double scale = (xScale > yScale) ? yScale : xScale;
-
-		double xOffset = bounds.getMinX();
-		double yOffset = bounds.getMinY();
-		mapToPixels.scale(scale, scale);
-		mapToPixels.translate(-xOffset,-yOffset);
+		//calculate the offest so the center is the same
+		double xOffset = bounds.getCenterX() - (xScale/scale) * bounds.getWidth()/2;
+		double yOffset = bounds.getCenterY() - (yScale/scale) * bounds.getHeight()/2;
+		localToPixels.scale(scale, scale);
+		localToPixels.translate(-xOffset,-yOffset);
+		
+		
+		Point2D pMin = new Point2D.Double(bounds.getMinX(),bounds.getMinY());
+		Point2D pMax = new Point2D.Double(bounds.getMaxX(),bounds.getMaxY());
+		localToPixels.transform(pMin, pMin);
+		localToPixels.transform(pMax, pMax);
+		
 		updateTransforms();
 	}
 	
@@ -161,11 +170,11 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		AffineTransform zt = new AffineTransform();
 		zt.translate((1-zoomFactor)*x, (1-zoomFactor)*y);
 		zt.scale(zoomFactor, zoomFactor);
-		mapToPixels.preConcatenate(zt);
-System.out.println("ZoomScale=" + zoomScale);
+		localToPixels.preConcatenate(zt);
+System.out.println("ZoomScale=" + zoomScalePixelsPerMeter);
 		updateTransforms();
 		for(MapListener mapListener:mapListeners) {
-			mapListener.onZoom(zoomScale);
+			mapListener.onZoom(zoomScalePixelsPerMeter);
 		}
 		this.repaint();
 	}
@@ -195,7 +204,7 @@ System.out.println("ZoomScale=" + zoomScale);
 	public void translate(double dx, double dy) {
 		AffineTransform zt = new AffineTransform();
 		zt.translate(dx,dy);
-		mapToPixels.preConcatenate(zt);
+		localToPixels.preConcatenate(zt);
 		updateTransforms();
 		this.repaint();
 	}
@@ -205,9 +214,9 @@ System.out.println("ZoomScale=" + zoomScale);
 	//=================================
 	
 	private void updateTransforms() {
-		zoomScale = Math.sqrt(mapToPixels.getDeterminant());
+		zoomScalePixelsPerMeter = Math.sqrt(localToPixels.getDeterminant());
 		try {
-			pixelsToMap = mapToPixels.createInverse();
+			pixelsToLocal = localToPixels.createInverse();
 		}
 		catch(Exception ex) {
 			//should not fail
