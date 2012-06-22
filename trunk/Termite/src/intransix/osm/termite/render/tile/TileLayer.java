@@ -56,6 +56,10 @@ public class TileLayer implements MapLayer, ImageObserver, MapListener {
 		this.mapPanel = mapPanel;
 	}
 	
+	public void reset() {
+		zoom = INVALID_ZOOM;
+	}
+	
 	@Override
 	public void render(Graphics2D g2) {
 		

@@ -1,5 +1,6 @@
 package intransix.osm.termite.render;
 
+import intransix.osm.termite.util.LocalCoordinates;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.awt.*;
@@ -79,6 +80,21 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		localToPixels.transform(pMin, pMin);
 		localToPixels.transform(pMax, pMax);
 		
+		updateTransforms();
+	}
+	
+	public void resetLocalAnchor(double mx, double my) {
+		double newAnchorXInOldLocal = LocalCoordinates.mercToLocalX(mx);
+		double newAnchorYInOldLocal = LocalCoordinates.mercToLocalY(my);
+		double oldScale = LocalCoordinates.getMetersPerMerc();
+		
+		LocalCoordinates.setLocalAnchor(mx, my);
+		
+		double newScale = LocalCoordinates.getMetersPerMerc();
+		double zoomChange = oldScale/newScale;
+		
+		localToPixels.translate(newAnchorXInOldLocal,newAnchorYInOldLocal);
+		localToPixels.scale(zoomChange, zoomChange);
 		updateTransforms();
 	}
 	

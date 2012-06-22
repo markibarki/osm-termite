@@ -2,6 +2,12 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.map.model.TermiteLevel;
+import intransix.osm.termite.map.model.TermiteStructure;
+import intransix.osm.termite.render.MapPanel;
+import intransix.osm.termite.render.edit.EditLayer;
+import intransix.osm.termite.render.structure.StructureLayer;
+import intransix.osm.termite.map.theme.Theme;
 import javax.swing.JToolBar;
 
 /**
@@ -54,12 +60,16 @@ public class SelectEditorMode implements EditorMode {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
-		
+		MapPanel mapPanel = termiteGui.getMap();
+		mapPanel.addLayer(termiteGui.getRenderLayer());
+		mapPanel.addLayer(termiteGui.getEditLayer());
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
-		
-	}	
+		MapPanel mapPanel = termiteGui.getMap();
+		mapPanel.removeLayer(termiteGui.getRenderLayer());
+		mapPanel.removeLayer(termiteGui.getEditLayer());
+	}
 }
