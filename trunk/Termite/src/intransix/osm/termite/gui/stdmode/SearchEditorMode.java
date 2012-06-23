@@ -11,6 +11,7 @@ import java.awt.geom.Rectangle2D;
 import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.util.*;
+import intransix.osm.termite.gui.task.MapDataRequestTask;
 
 /**
  *
@@ -71,7 +72,7 @@ public class SearchEditorMode implements EditorMode, ActionListener {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
-		MapPanel mapPanel = termiteGui.getMap();
+		MapPanel mapPanel = termiteGui.getMapPanel();
 		searchLayer = new SearchLayer();
 		mapPanel.addLayer(searchLayer);
 	}
@@ -79,7 +80,7 @@ public class SearchEditorMode implements EditorMode, ActionListener {
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
-		MapPanel mapPanel = termiteGui.getMap();
+		MapPanel mapPanel = termiteGui.getMapPanel();
 		mapPanel.removeLayer(searchLayer);
 		mapPanel.removeMouseListener(searchLayer);
 		mapPanel.removeMouseMotionListener(searchLayer);
@@ -102,20 +103,22 @@ public class SearchEditorMode implements EditorMode, ActionListener {
 			return;
 		}
 		
+		//get the bounding box
+		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(LocalCoordinates.localToMercY(selection.getMaxY())));
+		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercY(selection.getMinX())));
+		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(LocalCoordinates.localToMercY(selection.getMinY())));
+		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercY(selection.getMaxX())));
+		
 		//set local coordinates
 		double mx = LocalCoordinates.localToMercX(selection.getCenterX());
 		double my = LocalCoordinates.localToMercY(selection.getCenterY());
-		MapPanel mapPanel = termiteGui.getMap();
+		MapPanel mapPanel = termiteGui.getMapPanel();
 		mapPanel.resetLocalAnchor(mx, my);
 		
-		
-		String mapDataFileName = "nodeTestBuilding.xml";
-		OsmParser osmParser = new OsmParser();
-		OsmData osmData = osmParser.parse(mapDataFileName);
-		TermiteData termiteData = new TermiteData();
-		termiteData.loadData(osmData);
-		
-		termiteGui.setEditData(termiteData);
+		//run the load data task
+		MapDataRequestTask mdrt = new MapDataRequestTask(termiteGui,minLat,minLon,maxLat,maxLon);
+		mdrt.execute();
+		mdrt.blockUI();
 	}
 	
 	private void doSearch() {

@@ -65,15 +65,17 @@ public class SearchLayer implements MapLayer, MouseListener, MouseMotionListener
 	public void mouseClicked(MouseEvent e) {
 	}
 	
-	public void mouseDragged(MouseEvent e) {
-		Point2D point = getLocalPoint(e.getX(),e.getY());
-		if(selection == null) {
-			selection = new Rectangle2D.Double(point.getX(),point.getY(),0,0);
+	public void mouseDragged(MouseEvent e) {	
+		if((e.getModifiers() & (MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON1_DOWN_MASK)) != 0) {
+			Point2D point = getLocalPoint(e.getX(),e.getY());
+			if(selection == null) {
+				selection = new Rectangle2D.Double(point.getX(),point.getY(),0,0);
+			} 
+			else {
+				selection.add(point);
+			}
+			mapPanel.repaint();
 		}
-		else {
-			selection.add(point);
-		}
-		mapPanel.repaint();
 	}
 	
 	public void mouseEntered(MouseEvent e) {
