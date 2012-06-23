@@ -59,7 +59,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		initComponents();
 	}
 	
-	public MapPanel getMap() {
+	public MapPanel getMapPanel() {
 		return mapPanel;
 	}
 	
@@ -128,10 +128,8 @@ public class TermiteGui extends javax.swing.JFrame {
 	public void setEditData(TermiteData termiteData) {
 		this.termiteData = termiteData;
 		
-final long structureId = 167142181L;
-TermiteStructure structure = termiteData.getStructure(structureId);
-TermiteLevel level = structure.lookupLevel(0);
-//TermiteLevel level = termiteData.getOutdoorLevel();
+//we need to set the active level properly
+		TermiteLevel level = termiteData.getOutdoorLevel();
 		
 		renderLayer.setLevel(level);
 		editLayer.setLevel(level);
@@ -202,6 +200,7 @@ TermiteLevel level = structure.lookupLevel(0);
 			toolBarPanel.add(toolBar);
 		}
 		
+		toolBarPanel.repaint();
 		mapPanel.repaint();
 	}
 	
@@ -217,9 +216,6 @@ TermiteLevel level = structure.lookupLevel(0);
 		double minLon = Math.toRadians(latLonBounds.getMinX());
 		double maxLat = Math.toRadians(latLonBounds.getMaxY());
 		double maxLon = Math.toRadians(latLonBounds.getMaxX());
-		double mercX0 = MercatorCoordinates.lonRadToMx((minLon + maxLon) / 2);
-		double mercY0 = MercatorCoordinates.latRadToMy((minLat + maxLat) / 2);
-//		LocalCoordinates.setLocalAnchor(mercX0,mercY0);
 		
 		double minLocX = LocalCoordinates.mercToLocalX(MercatorCoordinates.lonRadToMx(minLon)); 
 		double minLocY = LocalCoordinates.mercToLocalY(MercatorCoordinates.latRadToMy(maxLat)); 

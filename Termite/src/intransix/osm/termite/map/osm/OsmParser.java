@@ -31,7 +31,7 @@ public class OsmParser extends DefaultHandler {
 	 * @param fileName	The file to parse
 	 * @return			An OsmData object holding the data in the request
 	 */
-	public OsmData parse(String fileName) {
+	public OsmData parse(String uri) {
 
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -39,7 +39,7 @@ public class OsmParser extends DefaultHandler {
 
 			osmData = new OsmData();
 			
-			saxParser.parse(fileName, this);
+			saxParser.parse(uri, this);
 
 			return osmData;
 

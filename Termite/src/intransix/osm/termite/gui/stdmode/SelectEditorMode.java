@@ -60,7 +60,7 @@ public class SelectEditorMode implements EditorMode {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
-		MapPanel mapPanel = termiteGui.getMap();
+		MapPanel mapPanel = termiteGui.getMapPanel();
 		mapPanel.addLayer(termiteGui.getRenderLayer());
 		mapPanel.addLayer(termiteGui.getEditLayer());
 	}
@@ -68,7 +68,7 @@ public class SelectEditorMode implements EditorMode {
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
-		MapPanel mapPanel = termiteGui.getMap();
+		MapPanel mapPanel = termiteGui.getMapPanel();
 		mapPanel.removeLayer(termiteGui.getRenderLayer());
 		mapPanel.removeLayer(termiteGui.getEditLayer());
 	}

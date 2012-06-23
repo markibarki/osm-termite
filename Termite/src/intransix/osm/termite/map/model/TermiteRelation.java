@@ -53,10 +53,12 @@ public class TermiteRelation extends TermiteObject<OsmRelation> {
 		
 		for(OsmMember oMember:osmRelation.getMembers()) {
 			OsmObject osmObject = osmData.getOsmObject(oMember.memberId,oMember.type);
+if(osmObject != null) {
 			TermiteObject termiteObject = osmObject.getTermiteObject();
 			members.add(new TermiteMember(termiteObject,oMember.role));
 
 			termiteObject.addRelation(this);
+}
 		}
 	}
 	

@@ -41,6 +41,24 @@ public class OsmModel {
 	
 	public static HashSet<String> GEOMETRIC_KEYS = new HashSet<String>();
 	
+	//data request
+	public final static String SERVER = "http://api.openstreetmap.org";
+	public final static String PATH = "/api/0.6/map?bbox=";
+	
+	public static String getBBoxRequestUrl(double minLat, double minLon, double maxLat, double maxLon) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(SERVER);
+		sb.append(PATH);
+		sb.append(minLon);
+		sb.append(',');
+		sb.append(minLat);
+		sb.append(',');
+		sb.append(maxLon);
+		sb.append(',');
+		sb.append(maxLat);
+		return sb.toString();
+	}
+	
 	/** This method parses a json file that holds model parameters. */
 	public static void parse(JSONObject json) throws Exception {
 		JSONObject nameDefs = json.optJSONObject("nameDefs");
