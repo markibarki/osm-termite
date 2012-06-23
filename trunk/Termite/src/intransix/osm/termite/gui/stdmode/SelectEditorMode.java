@@ -8,13 +8,15 @@ import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.structure.StructureLayer;
 import intransix.osm.termite.map.theme.Theme;
-import javax.swing.JToolBar;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
 
 /**
  *
  * @author sutter
  */
-public class SelectEditorMode implements EditorMode {
+public class SelectEditorMode implements EditorMode, ActionListener {
 	//====================
 	// Properties
 	//====================
@@ -22,6 +24,8 @@ public class SelectEditorMode implements EditorMode {
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/selectMode.png";
 	
 	private TermiteGui termiteGui;
+	
+	private JToolBar toolBar = null;
 	
 	//====================
 	// Public Methods
@@ -54,7 +58,10 @@ public class SelectEditorMode implements EditorMode {
 	 * @return		The submode toolbar 
 	 */
 	public JToolBar getSubmodeToolbar() {
-		return null;
+		if(toolBar == null) {
+			createToolBar();
+		}
+		return toolBar;
 	}
 	
 	/** This method is called when the editor mode is turned on. 
@@ -71,5 +78,23 @@ public class SelectEditorMode implements EditorMode {
 		MapPanel mapPanel = termiteGui.getMapPanel();
 		mapPanel.removeLayer(termiteGui.getRenderLayer());
 		mapPanel.removeLayer(termiteGui.getEditLayer());
+		mapPanel.removeMouseListener(termiteGui.getEditLayer());
+		mapPanel.removeMouseMotionListener(termiteGui.getEditLayer());
+	}
+	
+//TEST FUNCTION!!!
+	public void actionPerformed(ActionEvent ae) {
+		termiteGui.clearEditData();
+	}
+	
+	private void createToolBar() {	
+		toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		JButton testButton = new JButton("Discard Data");
+		toolBar.add(testButton);
+		
+		//add action listeners
+		testButton.setActionCommand("xxx");
+		testButton.addActionListener(this);
 	}
 }
