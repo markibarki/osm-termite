@@ -137,6 +137,16 @@ public class TermiteGui extends javax.swing.JFrame {
 		setToEditState();
 	}
 	
+	public void clearEditData() {
+		this.termiteData = null;
+		
+		//clean up the places we left data
+		renderLayer.setLevel(null);
+		editLayer.setLevel(null);
+		
+		setToSearchState();
+	}
+	
 	private void setToSearchState() {
 		this.setEditModesEnable(false);
 		this.setEditorMode(searchMode);
@@ -191,8 +201,7 @@ public class TermiteGui extends javax.swing.JFrame {
 			this.activeMode = null;
 		}
 		
-		activeMode = editorMode;
-		
+		activeMode = editorMode;	
 		//prepare the new mode
 		editorMode.turnOn();
 		toolBar = editorMode.getSubmodeToolbar();
@@ -200,7 +209,10 @@ public class TermiteGui extends javax.swing.JFrame {
 			toolBarPanel.add(toolBar);
 		}
 		
-		toolBarPanel.repaint();
+		//update the layout because of the toolbars
+		pack();
+		
+		//repaint map
 		mapPanel.repaint();
 	}
 	

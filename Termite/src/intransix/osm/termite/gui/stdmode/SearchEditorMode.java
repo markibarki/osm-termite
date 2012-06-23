@@ -105,9 +105,9 @@ public class SearchEditorMode implements EditorMode, ActionListener {
 		
 		//get the bounding box
 		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(LocalCoordinates.localToMercY(selection.getMaxY())));
-		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercY(selection.getMinX())));
+		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercX(selection.getMinX())));
 		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(LocalCoordinates.localToMercY(selection.getMinY())));
-		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercY(selection.getMaxX())));
+		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercX(selection.getMaxX())));
 		
 		//set local coordinates
 		double mx = LocalCoordinates.localToMercX(selection.getCenterX());
