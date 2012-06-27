@@ -20,7 +20,6 @@ public class PointFeature {
 	private int localVersion = OsmObject.INVALID_LOCAL_VERSION;
 	private TermiteNode termiteNode;
 	private OsmNode osmNode;
-	private TermiteLevel termiteLevel;
 	private Style style;
 	private Ellipse2D marker;
 	
@@ -41,7 +40,7 @@ public class PointFeature {
 		return style;
 	}
 	
-	public void render(Graphics2D g2, double zoomScale, Theme theme, TermiteLevel level) {
+	public void render(Graphics2D g2, double zoomScale, Theme theme) {
 		
 //		if(osmNode.getLocalVersion() != this.localVersion) {
 if(termiteNode.getDataVersion() != this.localVersion) {
@@ -55,7 +54,7 @@ if(termiteNode.getDataVersion() != this.localVersion) {
 this.localVersion = termiteNode.getDataVersion();
 		}
 		
-		if((marker != null)&&(style != null)&&(termiteLevel == level)) {
+		if((marker != null)&&(style != null)) {
 			
 			//load style params
 			Color fillColor = style.getBodyColor();
@@ -71,7 +70,6 @@ this.localVersion = termiteNode.getDataVersion();
 	
 	void updateData() {
 		//update this object
-		this.termiteLevel = termiteNode.getLevel();
 		marker = new Ellipse2D.Double(osmNode.getX()-RADIUS_METERS,
 				osmNode.getY()-RADIUS_METERS,2*RADIUS_METERS,2*RADIUS_METERS);
 	}	

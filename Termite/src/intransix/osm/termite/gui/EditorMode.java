@@ -21,13 +21,6 @@ public interface EditorMode {
 	 */
 	public String getIconImageName();
 	
-	/** This method returns the submode toolbar that will be active when this mode is
-	 * active.
-	 * 
-	 * @return		The submode toolbar 
-	 */
-	public JToolBar getSubmodeToolbar();
-	
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn();

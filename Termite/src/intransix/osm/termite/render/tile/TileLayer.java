@@ -15,7 +15,7 @@ import java.awt.image.ImageObserver;
  * 
  * @author sutter
  */
-public class TileLayer implements MapLayer, ImageObserver, MapListener {
+public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	//=========================
 	// Properties
@@ -28,7 +28,6 @@ public class TileLayer implements MapLayer, ImageObserver, MapListener {
 	
 	private int zoom = INVALID_ZOOM;
 	private HashMap<String,Tile> tileCache = new HashMap<String,Tile>();
-	private MapPanel mapPanel;
 	private String urlTemplate;
 	private int minZoom;
 	private int maxZoom;
@@ -51,11 +50,6 @@ public class TileLayer implements MapLayer, ImageObserver, MapListener {
 	// Layer Interface
 	//--------------------------
 	
-	@Override
-	public void setMapPanel(MapPanel mapPanel) {
-		this.mapPanel = mapPanel;
-	}
-	
 	public void reset() {
 		zoom = INVALID_ZOOM;
 	}
@@ -65,6 +59,7 @@ public class TileLayer implements MapLayer, ImageObserver, MapListener {
 		
 		if(zoomTooHigh) return;
 		
+		MapPanel mapPanel = getMapPanel();
 		AffineTransform localToPixels = mapPanel.getLocalToPixels();
 		AffineTransform pixelsToLocal = mapPanel.getPixelsToLocal();
 		Rectangle visibleRect = mapPanel.getVisibleRect();
@@ -117,7 +112,7 @@ public class TileLayer implements MapLayer, ImageObserver, MapListener {
 	public boolean imageUpdate(Image image, int infoflags, int x, int y, int width, int height) {
 		if((infoflags & ImageObserver.ALLBITS) != 0) {
 			//just do a repaint
-			mapPanel.repaint();
+			getMapPanel().repaint();
 			return false;
 		}
 		else {

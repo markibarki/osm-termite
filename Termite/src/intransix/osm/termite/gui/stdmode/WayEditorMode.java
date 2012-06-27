@@ -6,13 +6,17 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.render.MapLayer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
 import javax.swing.JToolBar;
 
 /**
  *
  * @author sutter
  */
-public class WayEditorMode implements EditorMode {
+public class WayEditorMode implements EditorMode, ActionListener {
 	//====================
 	// Properties
 	//====================
@@ -20,6 +24,7 @@ public class WayEditorMode implements EditorMode {
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/wayMode.png";
 	
 	private TermiteGui termiteGui;
+	private JToolBar toolBar = null;
 	
 	//====================
 	// Public Methods
@@ -46,24 +51,57 @@ public class WayEditorMode implements EditorMode {
 		return ICON_NAME;
 	}
 	
-	/** This method returns the submode toolbar that will be active when this mode is
-	 * active.
-	 * 
-	 * @return		The submode toolbar 
-	 */
-	public JToolBar getSubmodeToolbar() {
-		return null;
-	}
 	
 	/** This method is called when the editor mode is turned on. 
 	 */
+	@Override
 	public void turnOn() {
+		MapLayer renderLayer = termiteGui.getRenderLayer();
+		if(renderLayer != null) {
+			renderLayer.setActiveState(true);
+		}
+		MapLayer editLayer = termiteGui.getEditLayer();
+		if(editLayer != null) {
+			editLayer.setActiveState(true);
+		}
 		
+		if(toolBar == null) {
+			createToolBar();
+		}
+		termiteGui.addToolBar(toolBar);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
+	@Override
 	public void turnOff() {
+		MapLayer renderLayer = termiteGui.getRenderLayer();
+		if(renderLayer != null) {
+			renderLayer.setActiveState(false);
+		}
+		MapLayer editLayer = termiteGui.getEditLayer();
+		if(editLayer != null) {
+			editLayer.setActiveState(false);
+		}
 		
-	}	
+		if(toolBar != null) {
+			termiteGui.removeToolBar(toolBar);
+		}
+	}
+	
+//TEST FUNCTION!!!
+	public void actionPerformed(ActionEvent ae) {
+		termiteGui.setMapData(null);
+	}
+	
+	private void createToolBar() {	
+		toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		JButton testButton = new JButton("Discard Data");
+		toolBar.add(testButton);
+		
+		//add action listeners
+		testButton.setActionCommand("zzz");
+		testButton.addActionListener(this);
+	}
 }

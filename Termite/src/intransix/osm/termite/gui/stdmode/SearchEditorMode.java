@@ -57,24 +57,17 @@ public class SearchEditorMode implements EditorMode, ActionListener {
 		return null;
 	}
 	
-	/** This method returns the submode toolbar that will be active when this mode is
-	 * active.
-	 * 
-	 * @return		The submode toolbar 
-	 */
-	public JToolBar getSubmodeToolbar() {
-		if(toolBar == null) {
-			createToolBar();
-		}
-		return toolBar;
-	}
-	
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
 		MapPanel mapPanel = termiteGui.getMapPanel();
 		searchLayer = new SearchLayer();
 		mapPanel.addLayer(searchLayer);
+		
+		if(toolBar == null) {
+			createToolBar();
+		}
+		termiteGui.addToolBar(toolBar);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
@@ -84,6 +77,9 @@ public class SearchEditorMode implements EditorMode, ActionListener {
 		mapPanel.removeLayer(searchLayer);
 		mapPanel.removeMouseListener(searchLayer);
 		mapPanel.removeMouseMotionListener(searchLayer);
+		
+		termiteGui.removeToolBar(toolBar);
+		
 		searchLayer = null;	
 	}	
 	

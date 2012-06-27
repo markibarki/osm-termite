@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 
-import intransix.osm.termite.render.MapPanel;
+import intransix.osm.termite.render.*;
 import intransix.osm.termite.app.TermiteApp;
 import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.util.LocalCoordinates;
@@ -14,8 +14,10 @@ import intransix.osm.termite.util.MercatorCoordinates;
 
 import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.structure.StructureLayer;
+import intransix.osm.termite.render.structure.RenderLayer;
 
+import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.map.theme.Theme;
 
 /**
@@ -24,28 +26,69 @@ import intransix.osm.termite.map.theme.Theme;
  */
 public class TermiteGui extends javax.swing.JFrame {
 	
-	private final static String SUBMODE_TOOLBAR_NAME = "submode";
-	
 	//=====================
 	// Private Properties
 	//=====================
 	
+	// <editor-fold defaultstate="collapsed" desc="Properties">
+	
 	private TermiteApp app;
-	
-	private EditorMode searchMode; //not an edit mode - has no button
-	private EditorMode defaultEditMode;
-	private java.util.List<EditorMode> editModes;
-	private boolean dataPresent = false;
-	private EditorMode activeMode = null;
-	
-	private TileLayer baseMapLayer;
-	private StructureLayer renderLayer;
-	private EditLayer editLayer;
-	
+
+	//map data
 	private TermiteData termiteData;
 	
-//	private FeatureInfoMap featureMap;
-//	private List<DataTab> dataTabs;
+	//editor modes
+	private EditorMode searchMode; //not an edit editor mode - has no button for mode toolbar
+	private EditorMode defaultEditMode; //the default edit editor mode
+	private java.util.List<EditorMode> editModes; //the list of possible edit editor modes
+	private EditorMode activeMode = null; //the active editor mode
+	
+	//standard map layers
+	private TileLayer baseMapLayer;
+	private RenderLayer renderLayer;
+	private EditLayer editLayer;
+	
+	//feature layer info
+	private FeatureInfoMap featureMap;
+	private FeatureInfo activeFeatureLayer;
+	
+	//selected level and feature
+	private OsmObject selectedFeature;
+	private OsmWay activeStructure;
+	private OsmRelation activeLevel;
+	
+	//listeners
+	private java.util.List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
+	private java.util.List<FeatureSelectedListener> featureSelectedListeners = new ArrayList<FeatureSelectedListener>();
+	private java.util.List<LevelSelectedListener> levelSelectedListeners = new ArrayList<LevelSelectedListener>();
+	private java.util.List<FeatureLayerListener> featureTypeListeners = new ArrayList<FeatureLayerListener>();
+	
+	//UI components
+	private javax.swing.JMenuBar menuBar;
+	private javax.swing.JMenu fileMenu;
+	private javax.swing.JMenuItem quitItem;
+	
+	private javax.swing.JPanel toolBarPanel;
+	private javax.swing.JToolBar modeToolBar;
+	
+	private javax.swing.JSplitPane jSplitPane1;
+	private javax.swing.JSplitPane jSplitPane2;
+    private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JSplitPane jSplitPane4;
+    
+	
+    private javax.swing.JScrollPane jScrollPane1;
+    private intransix.osm.termite.gui.contenttree.ContentTree contentTree;
+	private javax.swing.JScrollPane jScrollPane2;
+    private intransix.osm.termite.gui.featuretree.FeatureTree featureTree;
+	private intransix.osm.termite.gui.property.PropertyTabPane propertyTabPane; 
+    
+    private intransix.osm.termite.render.MapPanel mapPanel;
+	private javax.swing.JTabbedPane supplementalTabPane;
+	
+	private intransix.osm.termite.gui.maplayer.MapLayerManagerPane mapLayerTab;
+	
+	// </editor-fold>
 	
 	//=====================
 	// Public Methods
@@ -59,31 +102,182 @@ public class TermiteGui extends javax.swing.JFrame {
 		initComponents();
 	}
 	
+	// <editor-fold defaultstate="collapsed" desc="Map Data Methods and Events">
+	
+	/** This method returns the map data object. */
+	public TermiteData getMapData() {
+		return termiteData;
+	}
+	
+	/** This adds a map data listener. */
+	public void addMapDataListener(MapDataListener listener) {
+		mapDataListeners.add(listener);
+	}
+	
+	/** This removes a map data listener. */
+	public void removeMapDataListener(MapDataListener listener) {
+		mapDataListeners.remove(listener);
+	}
+	
+	/** This method will dispatch a map data event. It should be called
+	 * when a map data is set to notify all interested objects. */
+	public void setMapData(TermiteData mapData) {
+		this.termiteData = mapData;
+		
+		for(MapDataListener listener:mapDataListeners) {
+			listener.onMapData(mapData);
+		}
+		
+		//control state based on presence of data
+		if(termiteData != null) {
+			//put the app in the edit state
+			setToEditState();
+			//set the level to null (outdoor level)
+			this.setSelectedLevel(null, null);
+		}
+		else {
+			//put the app in the search state
+			setToSearchState();
+		}
+	}
+	
+	/** This method returns the selected feature. */
+	public OsmObject getSelectedFeature() {
+		return null;
+	}
+	
+	/** This adds a feature selected listener. */
+	public void addFeatureSelectedListener(FeatureSelectedListener listener) {
+		featureSelectedListeners.add(listener);
+	}
+	
+	/** This removes a feature selected listener. */
+	public void removeFeatureSelectedListener(FeatureSelectedListener listener) {
+		featureSelectedListeners.remove(listener);
+	}
+	
+	/** This method will dispatch a feature selected event. It should be called
+	 * when a feature is selected to notify all interested objects. */
+	public void setSelectedFeature(OsmObject feature) {
+		this.selectedFeature = feature;
+		
+		for(FeatureSelectedListener listener:featureSelectedListeners) {
+			listener.onFeatureSelected(feature);
+		}
+	}
+	
+	/** This method returns the active structure. */
+	public OsmWay getActiveStructure() {
+		return activeStructure;
+	}
+	
+	/** This method returns the active level. */
+	public OsmRelation getActiveLevel() {
+		return activeLevel;
+	}
+	
+	/** This adds a level selected listener. */
+	public void addLevelSelectedListener(LevelSelectedListener listener) {
+		levelSelectedListeners.add(listener);
+	}
+	
+	/** This removes a level selected listener. */
+	public void removeLevelSelectedListener(LevelSelectedListener listener) {
+		levelSelectedListeners.remove(listener);
+	}
+	
+	/** This method will dispatch a level selected event. It should be called
+	 * when a level is selected to notify all interested objects. */
+	public void setSelectedLevel(OsmWay structure, OsmRelation level) {
+		this.activeStructure = structure;
+		this.activeLevel = level;
+		
+		for(LevelSelectedListener listener:levelSelectedListeners) {
+			listener.onLevelSelected(structure,level);
+		}
+	}
+	
+	/** This method returns the active feature type. */
+	public FeatureInfo getActiveFeatureLayer() {
+		return activeFeatureLayer;
+	}
+	
+	/** This adds a feature type listener. */
+	public void addFeatureLayerListener(FeatureLayerListener listener) {
+		featureTypeListeners.add(listener);
+	}
+	
+	public void removeFeatureLayerListener(FeatureLayerListener listener) {
+		featureTypeListeners.remove(listener);
+	}
+	
+	/** This method will dispatch a feature layer selected event. It should be called
+	 * when a feature layer is selected to notify all interested objects. */
+	public void setSelectedFeatureLayer(FeatureInfo featureInfo) {
+		activeFeatureLayer = featureInfo;
+		
+		for(FeatureLayerListener listener:featureTypeListeners) {
+			listener.onFeatureLayerSelected(featureInfo);
+		}
+	}
+	
+	// </editor-fold>
+	
+	// <editor-fold defaultstate="collapsed" desc="UI Component Methods">
+	
+	public void addToolBar(JToolBar toolBar) {
+		toolBarPanel.add(toolBar);
+		pack();
+	}
+	
+	public void removeToolBar(JToolBar toolBar) {
+		toolBarPanel.remove(toolBar);
+		pack();
+	}
+	
+	public void addSupplementalTab(String title, Component component) {
+		supplementalTabPane.addTab(title, component);
+	}
+	
+	public void removeSupplementalTab(Component component) {
+		int index = supplementalTabPane.indexOfTabComponent(component);
+		if(index >= 0) {
+			supplementalTabPane.remove(index);
+		}
+	}
+	
 	public MapPanel getMapPanel() {
 		return mapPanel;
+	}
+
+	public void addMapLayer(MapLayer mapLayer) {
+		mapPanel.addLayer(mapLayer);
+	}
+	
+	public void removeMapLayer(MapLayer mapLayer) {
+		mapPanel.removeLayer(mapLayer);
 	}
 	
 	public TileLayer getBaseMapLayer() {
 		return baseMapLayer;
 	}
 	
-	public StructureLayer getRenderLayer() {
+	public RenderLayer getRenderLayer() {
 		return renderLayer;
 	}
 	
 	public EditLayer getEditLayer() {
 		return editLayer;
 	}
+	
+	// </editor-fold>
 
 	public void initialize() {
-		//no data present at startup
-		dataPresent = false;
 		
 		//MODES
 		searchMode = app.getSearchMode();
 		editModes = app.getEditModes();
 		loadEditModes();
-		
 		
 		//MAP
 		initializeBaseMap();
@@ -91,62 +285,15 @@ public class TermiteGui extends javax.swing.JFrame {
 		initializeView();
 		
 		//DATA PANEL
-		//create the map layer panel
-		//create the relation panel
-		//create ano other panels
-		
-		//set state to "search"
-		
-		setToSearchState();
-		
-		//SEARCH MODE////////////////////////
-		
-		//disable all buttons on the toolbar
-		//sets the active editor mode to search, loading the search submode toolbar
-		
-		//disables the meta data panels (content, feature layer, property)
-		
-		//add the base layer and search layer to the map (clear others)
-		
-		//add the map layer panel to the data panel
-		
-		//EDIT MODE//////////////////////////////
-		
-		//enable the buttons on the edit mode tool bar
-		//set the mode to select
-		
-		//enable the meta data panels
-		//enable source upload (where ever this is done)
-		
-		//add the base layer, render layer, edit layer to the map (clear others)
-		
-		//add the map layer and relation panel to the data panel (clear others)
-		
-		
-	}
-	
-	public void setEditData(TermiteData termiteData) {
-		this.termiteData = termiteData;
-		
-//we need to set the active level properly
-		TermiteLevel level = termiteData.getOutdoorLevel();
-		
-		renderLayer.setLevel(level);
-		editLayer.setLevel(level);
-		
-		setToEditState();
-	}
-	
-	public void clearEditData() {
-		this.termiteData = null;
-		
-		//clean up the places we left data
-		renderLayer.setLevel(null);
-		editLayer.setLevel(null);
-		
 		setToSearchState();
 	}
 	
+	//================================
+	// Private Methods
+	//================================
+	
+	// <editor-fold defaultstate="collapsed" desc="Edit Mode and State methods">
+ 	
 	private void setToSearchState() {
 		this.setEditModesEnable(false);
 		this.setEditorMode(searchMode);
@@ -189,28 +336,15 @@ public class TermiteGui extends javax.swing.JFrame {
 	
 	private void setEditorMode(EditorMode editorMode) {
 		//get rid of old mode
-		JToolBar toolBar;
 		if(activeMode != null) {
 			//turn off mode
 			this.activeMode.turnOff();
-			//remove submode toolbar
-			toolBar = activeMode.getSubmodeToolbar();
-			if(toolBar != null) {
-				toolBarPanel.remove(toolBar);
-			}
 			this.activeMode = null;
 		}
 		
 		activeMode = editorMode;	
 		//prepare the new mode
 		editorMode.turnOn();
-		toolBar = editorMode.getSubmodeToolbar();
-		if(toolBar != null) {
-			toolBarPanel.add(toolBar);
-		}
-		
-		//update the layout because of the toolbars
-		pack();
 		
 		//repaint map
 		mapPanel.repaint();
@@ -221,6 +355,10 @@ public class TermiteGui extends javax.swing.JFrame {
 			c.setEnabled(enabled);
 		}
 	}
+	
+	// </editor-fold>
+	
+	// <editor-fold defaultstate="collapsed" desc="Initialization Methods">
 	
 	private void initializeView() {
 		Rectangle2D latLonBounds = app.getInitialLatLonBounds();
@@ -250,16 +388,22 @@ public class TermiteGui extends javax.swing.JFrame {
 	}
 	
 	private void initialzeMapEditLayers() {
-		renderLayer = new StructureLayer();
+		renderLayer = new RenderLayer();
 		Theme theme = app.getTheme();
 		renderLayer.setTheme(theme);
+		renderLayer.setActiveState(false);
+		this.addMapDataListener(renderLayer);
 		
 		editLayer = new EditLayer();
+		editLayer.setActiveState(false);
+//		this.addMapDataListener(editLayer);
+		
+		mapPanel.addLayer(renderLayer);
+		mapPanel.addLayer(editLayer);
 	}
 	
 
 	@SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 		
 		Container contentPane = this.getContentPane();
@@ -297,7 +441,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		
 		toolBarPanel.add(modeToolBar);
 
-		//create content panels
+		//create meta data panels
         jSplitPane1 = new javax.swing.JSplitPane();
 		jSplitPane1.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
@@ -305,21 +449,32 @@ public class TermiteGui extends javax.swing.JFrame {
 		jSplitPane3 = new javax.swing.JSplitPane();
         jSplitPane4 = new javax.swing.JSplitPane();
     
+		//content tree
 		jScrollPane1 = new javax.swing.JScrollPane();
         contentTree = new intransix.osm.termite.gui.contenttree.ContentTree();
+		this.addMapDataListener(contentTree);
+		this.addLevelSelectedListener(contentTree);
 		jScrollPane1.setViewportView(contentTree);
 		
+		//feature tree
         jScrollPane2 = new javax.swing.JScrollPane();
         featureTree = new intransix.osm.termite.gui.featuretree.FeatureTree();
+		this.addFeatureLayerListener(featureTree);
+		featureTree.setFeatureInfoMap(app.getFeatureInfoMap());
 		jScrollPane2.setViewportView(featureTree);
 		
-		propertyTabPane = new javax.swing.JTabbedPane();
+		//property tabbed pane
+		propertyTabPane = new intransix.osm.termite.gui.property.PropertyTabPane();
+		this.addFeatureSelectedListener(propertyTabPane);
+		this.addLevelSelectedListener(propertyTabPane);
         
+		//map panel
         mapPanel = new intransix.osm.termite.render.MapPanel();
 		mapPanel.setMinimumSize(new java.awt.Dimension(200, 200));
         mapPanel.setPreferredSize(new java.awt.Dimension(600, 600));
 		
-        DataTabPane = new javax.swing.JTabbedPane();
+		//supplemental tabbed pane
+        supplementalTabPane = new javax.swing.JTabbedPane();
 
 		//layout the content panes
 		jSplitPane1.setOrientation(javax.swing.JSplitPane.HORIZONTAL_SPLIT);
@@ -344,44 +499,28 @@ public class TermiteGui extends javax.swing.JFrame {
 		jSplitPane4.setBottomComponent(propertyTabPane);
 		
 		jSplitPane3.setTopComponent(mapPanel);
-        jSplitPane3.setBottomComponent(DataTabPane);
+        jSplitPane3.setBottomComponent(supplementalTabPane);
 		
-//		 setJMenuBar(menuBar);
+		//create standard supplemental tabs
+		
+		//map layer manager
+		mapLayerTab = new intransix.osm.termite.gui.maplayer.MapLayerManagerPane();
+		mapPanel.setMapLayerManager(mapLayerTab);
+		mapLayerTab.setMapPanel(mapPanel);
+		this.addSupplementalTab("Map Layers", mapLayerTab);
+		
 		this.add(menuBar);
 		this.add(toolBarPanel);
 		this.add(jSplitPane1);
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
+	
+	// </editor-fold>
 
 	private void quitItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitItemActionPerformed
 		app.exit();
-	}//GEN-LAST:event_quitItemActionPerformed
-
-	
-
-	
-	private javax.swing.JMenuBar menuBar;
-	private javax.swing.JMenu fileMenu;
-	private javax.swing.JMenuItem quitItem;
-	
-	private javax.swing.JPanel toolBarPanel;
-	private javax.swing.JToolBar modeToolBar;
-	
-	private javax.swing.JSplitPane jSplitPane1;
-	private javax.swing.JSplitPane jSplitPane2;
-    private javax.swing.JSplitPane jSplitPane3;
-    private javax.swing.JSplitPane jSplitPane4;
-    
-	
-    private javax.swing.JScrollPane jScrollPane1;
-    private intransix.osm.termite.gui.contenttree.ContentTree contentTree;
-	private javax.swing.JScrollPane jScrollPane2;
-    private intransix.osm.termite.gui.featuretree.FeatureTree featureTree;
-	private javax.swing.JTabbedPane propertyTabPane; 
-    
-    private intransix.osm.termite.render.MapPanel mapPanel;
-	private javax.swing.JTabbedPane DataTabPane;
+	}
 	
 	/** This is a listener for the mode buttons. */
 	private class ModeButtonListener implements ActionListener {
@@ -392,6 +531,7 @@ public class TermiteGui extends javax.swing.JFrame {
 			this.mode = mode;
 		}
 		
+		@Override
 		public void actionPerformed(ActionEvent ae) {
 			setEditorMode(mode);
 		}

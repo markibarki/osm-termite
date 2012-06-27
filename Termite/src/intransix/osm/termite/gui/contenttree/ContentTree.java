@@ -1,18 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.gui.contenttree;
 
+import intransix.osm.termite.gui.*;
 import intransix.osm.termite.map.model.TermiteData;
+import intransix.osm.termite.map.osm.OsmRelation;
+import intransix.osm.termite.map.osm.OsmWay;
 
 /**
  *
  * @author sutter
  */
-public class ContentTree extends javax.swing.JPanel {
+public class ContentTree extends javax.swing.JPanel implements LevelSelectedListener, MapDataListener {
 	
-	private TermiteData termiteData;
+	private TermiteData mapData;
 
 	/**
 	 * Creates new form ContentTree
@@ -21,8 +20,23 @@ public class ContentTree extends javax.swing.JPanel {
 		initComponents();
 	}
 	
-	public void setTermiteData(TermiteData termiteData) {
-		this.termiteData = termiteData;
+	/** This method is called when the map data is set of cleared. It will be called 
+	 * with the value null when the data is cleared. 
+	 * 
+	 * @param feature	The selected map feature
+	 */
+	public void onMapData(TermiteData mapData) {
+		this.mapData = mapData;
+	}
+	
+	/** This method is called when a map level is selected. It may be called 
+	 * with the value null for the level or the level and the structure. 
+	 * 
+	 * @param structure		The footprint in the outdoor map for the selected level
+	 * @param level			The selected level
+	 */
+	public void onLevelSelected(OsmWay structure, OsmRelation level) {
+//implement this
 	}
 
 	/**

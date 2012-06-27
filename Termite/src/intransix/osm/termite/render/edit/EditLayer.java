@@ -24,7 +24,7 @@ import java.awt.geom.*;
  *
  * @author sutter
  */
-public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
+public class EditLayer extends MapLayer implements MouseListener, MouseMotionListener {
 	
 	private final static double RADIUS_METERS = .5; 
 	
@@ -33,7 +33,6 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 	private final static Color BACKGROUND_HIGHLIGHT_COLOR = Color.PINK;
 	
 	private TermiteLevel currentLevel;
-	private MapPanel mapPanel;
 	
 	private OsmNode activeNode = null;
 	
@@ -41,17 +40,10 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 		this.currentLevel = level;
 	}
 	
-	@Override 
-	public void setMapPanel(MapPanel mapPanel) {
-		this.mapPanel = mapPanel;
-		mapPanel.addMouseListener(this);
-		mapPanel.addMouseMotionListener(this);
-	}
-	
 	@Override
 	public void render(Graphics2D g2) {
 		
-		AffineTransform mapToPixels = mapPanel.getLocalToPixels();
+		AffineTransform mapToPixels = getMapPanel().getLocalToPixels();
 		g2.transform(mapToPixels);		
 		
 		OsmNode localNode = activeNode;
@@ -82,6 +74,7 @@ public class EditLayer implements MapLayer, MouseListener, MouseMotionListener {
 	
 	public void mouseMoved(MouseEvent e) {
 		//read mouse location
+		MapPanel mapPanel = getMapPanel();
 		double pixX = e.getX();
 		double pixY = e.getY();
 		Point2D point = new Point2D.Double(pixX,pixY);
