@@ -5,8 +5,9 @@ import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.map.model.TermiteLevel;
 import intransix.osm.termite.map.model.TermiteStructure;
 import intransix.osm.termite.render.MapPanel;
+import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.structure.StructureLayer;
+import intransix.osm.termite.render.structure.RenderLayer;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,6 +40,7 @@ public class SelectEditorMode implements EditorMode, ActionListener {
 	 * 
 	 * @return		The name of the editor mode 
 	 */
+	@Override
 	public String getName() {
 		return MODE_NAME;
 	}
@@ -48,43 +50,51 @@ public class SelectEditorMode implements EditorMode, ActionListener {
 	 * 
 	 * @return		The name of the icon image for this mode. 
 	 */
+	@Override
 	public String getIconImageName() {
 		return ICON_NAME;
 	}
 	
-	/** This method returns the submode toolbar that will be active when this mode is
-	 * active.
-	 * 
-	 * @return		The submode toolbar 
+	/** This method is called when the editor mode is turned on. 
 	 */
-	public JToolBar getSubmodeToolbar() {
+	@Override
+	public void turnOn() {
+		MapLayer renderLayer = termiteGui.getRenderLayer();
+		if(renderLayer != null) {
+			renderLayer.setActiveState(true);
+		}
+		MapLayer editLayer = termiteGui.getEditLayer();
+		if(editLayer != null) {
+			editLayer.setActiveState(true);
+		}
+		
 		if(toolBar == null) {
 			createToolBar();
 		}
-		return toolBar;
-	}
-	
-	/** This method is called when the editor mode is turned on. 
-	 */
-	public void turnOn() {
-		MapPanel mapPanel = termiteGui.getMapPanel();
-		mapPanel.addLayer(termiteGui.getRenderLayer());
-		mapPanel.addLayer(termiteGui.getEditLayer());
+		termiteGui.addToolBar(toolBar);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
+	@Override
 	public void turnOff() {
-		MapPanel mapPanel = termiteGui.getMapPanel();
-		mapPanel.removeLayer(termiteGui.getRenderLayer());
-		mapPanel.removeLayer(termiteGui.getEditLayer());
-		mapPanel.removeMouseListener(termiteGui.getEditLayer());
-		mapPanel.removeMouseMotionListener(termiteGui.getEditLayer());
+		MapLayer renderLayer = termiteGui.getRenderLayer();
+		if(renderLayer != null) {
+			renderLayer.setActiveState(false);
+		}
+		MapLayer editLayer = termiteGui.getEditLayer();
+		if(editLayer != null) {
+			editLayer.setActiveState(false);
+		}
+		
+		if(toolBar != null) {
+			termiteGui.removeToolBar(toolBar);
+		}
 	}
 	
 //TEST FUNCTION!!!
 	public void actionPerformed(ActionEvent ae) {
-		termiteGui.clearEditData();
+		termiteGui.setMapData(null);
 	}
 	
 	private void createToolBar() {	

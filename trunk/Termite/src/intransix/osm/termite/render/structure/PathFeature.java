@@ -24,8 +24,7 @@ public class PathFeature {
 	private int localVersion = OsmObject.INVALID_LOCAL_VERSION;
 	private TermiteWay termiteWay;
 	private OsmWay osmWay;
-	private ArrayList<TermiteLevel> termiteLevels = new ArrayList<TermiteLevel>();
-	private Path2D[] paths;
+	private Shape shape;
 	private Style style;
 	boolean isArea;
 	
@@ -46,7 +45,7 @@ public class PathFeature {
 		return style;
 	}
 	
-	public void render(Graphics2D g2, double zoomScale, Theme theme, TermiteLevel level) {
+	public void render(Graphics2D g2, double zoomScale, Theme theme) {
 		
 //		if(osmWay.getLocalVersion() != this.localVersion) {
 if(termiteWay.getDataVersion() != this.localVersion) {			
@@ -59,8 +58,6 @@ if(termiteWay.getDataVersion() != this.localVersion) {
 this.localVersion = termiteWay.getDataVersion();
 //			this.localVersion = osmWay.getLocalVersion();
 		}
-		
-		Shape shape = this.getLevelShape(level);
 		
 		if((shape != null)&&(style != null)) {
 			
@@ -107,40 +104,20 @@ this.localVersion = termiteWay.getDataVersion();
 			if(members.get(0).termiteObject == termiteWay) {
 				//main way
 				
-				termiteLevels.clear();
-				for(TermiteMember member:members) {
-					//load all the levels
-					if(member.termiteObject instanceof TermiteWay) {
-						for(TermiteLevel level:((TermiteWay)member.termiteObject).getLevels()) {
-							if(!termiteLevels.contains(level)) {
-								termiteLevels.add(level);
-							}
-						}
-					}
-				}
-				this.paths = new Path2D[termiteLevels.size()];
 				this.isArea = termiteWay.getIsArea();
-				
-				//create the paths, using all ways in relation
-				int index = 0;
-				for(TermiteLevel level:termiteLevels) {
-					Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
+				Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
-					for(TermiteMember member:members) {
-						if(member.termiteObject instanceof TermiteWay) {
-							addWayToPathForLevel(level,path,(TermiteWay)member.termiteObject,isArea);
-						}
+				for(TermiteMember member:members) {
+					if(member.termiteObject instanceof TermiteWay) {
+						addWayToPath(path,(TermiteWay)member.termiteObject,isArea);
 					}
-
-					//add the path in the order of the level
-					paths[index++] = path;
 				}
+				
+				this.shape = path;
 			
 			}
 			else {
-				//non-main way
-				termiteLevels.clear();
-				paths = new Path2D[0];
+				this.shape = null;
 			}
 		}
 		else {
@@ -149,40 +126,21 @@ this.localVersion = termiteWay.getDataVersion();
 			//-----------------
 			
 			//update this object
-			this.termiteLevels.addAll(termiteWay.getLevels());
-			this.paths = new Path2D[termiteLevels.size()];
 			this.isArea = termiteWay.getIsArea();
 		
 			//create the paths
-			int index = 0;
-			for(TermiteLevel level:termiteLevels) {
-				Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
+			Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
-				addWayToPathForLevel(level,path,termiteWay,isArea);
-
-				//add the path in the order of the level
-				paths[index++] = path;
-			}
+			addWayToPath(path,termiteWay,isArea);
+			
+			this.shape = path;
 		}
 	}
 	
-	Shape getLevelShape(TermiteLevel level) {	
-		int index = termiteLevels.indexOf(level);
-		if(index < 0) return null;
-		
-		//the order should match, make sure the length is enough
-		if(paths.length > index) {
-			return paths[index];
-		}
-		else {
-			return null;
-		}
-	}
-	
-	static void addWayToPathForLevel(TermiteLevel level, Path2D path, TermiteWay way, boolean isArea) {
+	static void addWayToPath(Path2D path, TermiteWay way, boolean isArea) {
 		boolean started = false;
 		for(TermiteNode tNode:way.getNodes()) {
-			if(tNode.getLevel() == level) {
+			if(true /* check if node is visible here */) {
 				OsmNode oNode = tNode.getOsmObject();
 				double x = oNode.getX();
 				double y = oNode.getY();

@@ -3,6 +3,7 @@ package intransix.osm.termite.map.model;
 import java.util.*;
 import java.awt.geom.*;
 import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.feature.FeatureInfo;
 
 /**
  * This class holds the active session data.
@@ -27,6 +28,8 @@ public class TermiteData {
 	
 	private TermiteStructure outdoorStructure;
 	private TermiteLevel outdoorLevel;
+	
+	private GraduatedList<TermiteObject> orderedMapObjects = new GraduatedList<TermiteObject>();
 	
 	//=====================
 	// Public Methods
@@ -64,6 +67,10 @@ public class TermiteData {
 		return getRelation(relationId, false);
 	}
 	
+	public GraduatedList<TermiteObject> getOrderedList() {
+		return orderedMapObjects;
+	}
+	
 	//-----------------------
 	// Load Data
 	//-----------------------
@@ -87,6 +94,11 @@ public class TermiteData {
 			//create the node
 			TermiteNode termiteNode = getNode(osmNode.getId(),true);
 			termiteNode.init(this,osmNode);	
+			
+			//add to ordered list
+			FeatureInfo featureInfo = termiteNode.getFeatureInfo();
+			int zorder = (featureInfo != null) ? featureInfo.getZorder() : FeatureInfo.DEFAULT_ZORDER;
+			orderedMapObjects.add(termiteNode, zorder);
 		}
 		
 		//create the termite ways
@@ -95,6 +107,11 @@ public class TermiteData {
 			//create the way
 			TermiteWay termiteWay = getWay(osmWay.getId(),true);
 			termiteWay.init(this,osmWay);
+			
+			//add to ordered list
+			FeatureInfo featureInfo = termiteWay.getFeatureInfo();
+			int zorder = (featureInfo != null) ? featureInfo.getZorder() : FeatureInfo.DEFAULT_ZORDER;
+			orderedMapObjects.add(termiteWay, zorder);
 			
 //need to add the shell and parent objects
 		}

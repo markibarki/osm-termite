@@ -13,7 +13,7 @@ import intransix.osm.termite.util.JsonIO;
 
 import intransix.osm.termite.map.osm.*;
 
-import intransix.osm.termite.render.structure.StructureLayer;
+import intransix.osm.termite.render.structure.RenderLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.util.LocalCoordinates;

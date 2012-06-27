@@ -62,7 +62,7 @@ public class MapDataRequestTask extends SwingWorker<TermiteData,Object> {
 		}
 		
 		if(success) {
-			gui.setEditData(termiteData);
+			gui.setMapData(termiteData);
 		}
 		else {
 			JOptionPane.showMessageDialog(null,"There was an error: " + errorMsg);

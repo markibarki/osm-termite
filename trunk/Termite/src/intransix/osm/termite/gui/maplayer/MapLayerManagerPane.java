@@ -1,35 +1,30 @@
-package intransix.osm.termite.gui.featuretree;
+package intransix.osm.termite.gui.maplayer;
 
-import intransix.osm.termite.map.feature.FeatureInfoMap;
-import intransix.osm.termite.map.feature.FeatureInfo;
-import intransix.osm.termite.gui.FeatureLayerListener;
+import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.MapPanel;
 
 /**
  *
  * @author sutter
  */
-public class FeatureTree extends javax.swing.JPanel implements FeatureLayerListener {
-
-	private FeatureInfoMap featureInfoMap;
+public class MapLayerManagerPane extends javax.swing.JPanel {
 	
+	private MapPanel mapPanel;
+	private java.util.List<MapLayer> layers;
+
 	/**
-	 * Creates new form FeatureTree
+	 * Creates new form MapLayerManagerPane
 	 */
-	public FeatureTree() {
+	public MapLayerManagerPane() {
 		initComponents();
 	}
 	
-	public void setFeatureInfoMap(FeatureInfoMap featureInfoMap) {
-		this.featureInfoMap = featureInfoMap;
+	public void setMapPanel(MapPanel mapPanel) {
+		 this.mapPanel = mapPanel;
 	}
 	
-	/** This method is called when a map feature is selected. It may be called 
-	 * with the value null if a selection is cleared an no new selection is made. 
-	 * 
-	 * @param feature	The selected map feature
-	 */
-	public void onFeatureLayerSelected(FeatureInfo featureInfo) {
-//implement this		
+	public void setMapLayers(java.util.List<MapLayer> layers) {
+		this.layers = layers;
 	}
 
 	/**
@@ -43,23 +38,23 @@ public class FeatureTree extends javax.swing.JPanel implements FeatureLayerListe
 
         jLabel1 = new javax.swing.JLabel();
 
-        jLabel1.setText("This is the feature tree");
+        jLabel1.setText("Map Layer Manager");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(166, 166, 166)
                 .addComponent(jLabel1)
-                .addContainerGap(280, Short.MAX_VALUE))
+                .addContainerGap(139, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(35, 35, 35)
+                .addGap(38, 38, 38)
                 .addComponent(jLabel1)
-                .addContainerGap(251, Short.MAX_VALUE))
+                .addContainerGap(248, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

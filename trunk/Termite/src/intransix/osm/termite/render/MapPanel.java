@@ -1,7 +1,8 @@
 package intransix.osm.termite.render;
 
 import intransix.osm.termite.util.LocalCoordinates;
-import java.util.ArrayList;
+import intransix.osm.termite.gui.maplayer.MapLayerManagerPane;
+import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -17,13 +18,16 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 	
 	private AffineTransform localToPixels = new AffineTransform();
 	private AffineTransform pixelsToLocal = new AffineTransform();
-	private ArrayList<MapLayer> layers = new ArrayList<MapLayer>();
-	private ArrayList<MapListener> mapListeners = new ArrayList<MapListener>();
+	private java.util.List<MapLayer> layers = new ArrayList<MapLayer>();
+	private java.util.List<MapListener> mapListeners = new ArrayList<MapListener>();
 	private double zoomScalePixelsPerMeter = 1.0;
 	
 	private boolean panOn = false;
 	private double lastX;
 	private double lastY;
+	
+	
+	private MapLayerManagerPane mapLayerManager;
 	
 	public MapPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
@@ -31,6 +35,14 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		this.addMouseMotionListener(this);
 		this.addMouseWheelListener(this);
     }
+	
+	public void setMapLayerManager(MapLayerManagerPane mapLayerTab) {
+		mapLayerManager = mapLayerTab;
+	}
+	
+	public java.util.List<MapLayer> getMapLayers() {
+		return layers;
+	}
 	
 	public final AffineTransform getLocalToPixels() {
 		return localToPixels;
@@ -44,6 +56,8 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		 return zoomScalePixelsPerMeter;
 	}
 	
+	//map layers///////////////////////////
+	
 	public void addLayer(MapLayer layer) {
 		this.layers.add(layer);
 		layer.setMapPanel(this);
@@ -52,6 +66,12 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 	public void removeLayer(MapLayer layer) {
 		this.layers.remove(layer);
 	}
+	
+	public java.util.List<MapLayer> getLayers() {
+		return this.layers;
+	}
+	
+	//end map layers/////////////////////////////
 	
 	public void addMapListener(MapListener listener) {
 		this.mapListeners.add(listener);
