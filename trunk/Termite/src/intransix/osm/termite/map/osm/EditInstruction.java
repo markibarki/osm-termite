@@ -1,24 +1,42 @@
 package intransix.osm.termite.map.osm;
 
 /**
+ * <p>This is the base class for an edit instruction. It is used to edit the data. 
+ * The instruction should be placed into an action where it can be executed.</p>
+ * 
+ * <p>Instructions can throw two types of Exceptions, a UnchangedException and a
+ * other Exception. If the instruction throws an UnchangedException, then the instruction
+ * did not change the state of the data. The containing action will catch this exception
+ * and undo any other instructions that have already been done. The action will then
+ * report a failure. This is a recoverable failure. If a other exception is thrown, then
+ * the state of the data is indeterminate. In this case, the program should not
+ * continue because the data may be corrupted and the behavior wil be unknown for
+ * the application and for any data submitted.
  *
  * @author sutter
  */
 public abstract class EditInstruction<T extends OsmObject> {
 	
+	//========================
+	// Public Methods
+	//========================
+	
+	/** Constructor */
 	public EditInstruction() {
 	}
 	
-	public abstract void doInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception;
+	//========================
+	// Package Methods
+	//========================
 	
-	public abstract void undoInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception;
+	/** This method executes the instruction. */
+	abstract void doInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception;
 	
-	//===============================
-	// Private Methods
-	//===============================
+	/** This method undoes the intruction. */
+	abstract void undoInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception;
 	
-	/** This method executes the instruction, returning the inferred initial data. */
-	public EditData<T> executeUpdate(OsmData osmData, T osmObject, EditData<T> targetData, int editNumber) 
+	/** This method executes am update instruction. */
+	EditData<T> executeUpdate(OsmData osmData, T osmObject, EditData<T> targetData, int editNumber) 
 			throws UnchangedException, Exception {
 		
 		EditData<T> newInitialData = targetData.readInitialData(osmObject);
@@ -28,8 +46,8 @@ public abstract class EditInstruction<T extends OsmObject> {
 	}
 	
 	
-	/** This method executes the instruction, returning the inferred initial data. */
-	public void executeCreate(OsmData osmData, OsmSrcData<T> srcData, int editNumber) 
+	/** This method executes a create instruction. */
+	void executeCreate(OsmData osmData, OsmSrcData<T> srcData, int editNumber) 
 			throws UnchangedException, Exception {
 		
 		//lookup object
@@ -50,8 +68,8 @@ public abstract class EditInstruction<T extends OsmObject> {
 	}
 	
 	
-	/** This method executes the instruction, returning the inferred initial data. */
-	public void executeDelete(OsmData osmData, OsmSrcData<T> srcData, int editNumber) 
+	/** This method executes a delete instruction. */
+	void executeDelete(OsmData osmData, OsmSrcData<T> srcData, int editNumber) 
 			throws UnchangedException, Exception {
 		
 		//process the update

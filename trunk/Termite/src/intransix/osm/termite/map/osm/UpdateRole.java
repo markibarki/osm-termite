@@ -6,7 +6,7 @@ import java.util.List;
  *
  * @author sutter
  */
-public class UpdateRole implements EditData<OsmRelation> {
+public class UpdateRole extends EditData<OsmRelation> {
 	
 	private String role;
 	private int index;
