@@ -41,6 +41,16 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		return type;
 	}
 	
+	/** This method adds a property to the src data. */
+	public void addProperty(String key, String value) {
+		properties.add(new PropertyPair(key,value));
+	}
+	
+	/** This method returns the properties. */
+	public List<PropertyPair> getProperties() {
+		return properties;
+	}
+	
 	//-----------------------
 	// Parsing Methods
 	//-----------------------
@@ -115,7 +125,7 @@ public abstract class OsmSrcData<T extends OsmObject> {
 	// Internal Classes
 	//=========================
 	
-	private class PropertyPair {
+	public static class PropertyPair {
 		
 		public PropertyPair(String key, String value) {
 			this.key = key;

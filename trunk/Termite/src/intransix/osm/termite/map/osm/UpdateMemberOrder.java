@@ -56,7 +56,7 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 		if((finalIndex >= members.size())||(finalIndex < 0)) {
 			throw new UnchangedException("Invalid index for relation: " + relation.getId());
 		}
-		TermiteMember member = members.get(initialIndex);
+		TermiteMember member = members.remove(initialIndex);
 		members.add(finalIndex,member);
 		
 		relation.setDataVersion(editNumber);

@@ -1,10 +1,8 @@
 package intransix.osm.termite.map.model;
 
-import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.map.osm.OsmNode;
 import intransix.osm.termite.map.osm.OsmWay;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -22,8 +20,6 @@ public class NodeTestData extends ObjectTestData {
 
 	public double x;
 	public double y; 
-	public long structureId;
-	public int zlevel;
 	public List<Long> wayIds = new ArrayList<Long>();
 
 	
@@ -32,30 +28,22 @@ public class NodeTestData extends ObjectTestData {
 	public void validate() {
 		
 		//check existence
-		OsmNode oNode = osmData.getOsmNode(id);
-		TermiteNode tNode = termiteData.getNode(id);
-		assert(oNode == tNode.getOsmObject());
-		assert(tNode == oNode.getTermiteObject());
+		OsmNode node = osmData.getOsmNode(id);
 		
 		//check location
-		assert(oNode.getId() == id);
-		assert(oNode.getX() == x);
-		assert(oNode.getY() == y);
-		
-		//check level
-		TermiteLevel level = termiteData.getLevel(structureId,zlevel);
-		assert(tNode.getLevel() == level);
+		assert(node.getId() == id);
+		assert(node.getPoint().getX() == x);
+		assert(node.getPoint().getY() == y);
 		
 		//check ways
-		List<TermiteWay> ways = tNode.getWays();
+		List<OsmWay> ways = node.getWays();
 		assert(ways.size() == wayIds.size());
-		for(TermiteWay tWay:ways) {
-			OsmWay oWay = tWay.getOsmObject();
-			Long wid = oWay.getId();
+		for(OsmWay way:ways) {
+			Long wid = way.getId();
 			assert(wayIds.contains(wid));
 		}
 		
-		baseValidate(tNode,oNode);
+		baseValidate(node);
 	}
 	
 	/** This method validates a node was deleted. */
@@ -64,27 +52,13 @@ public class NodeTestData extends ObjectTestData {
 		
 		//check it is not in the data
 		assert(osmData.getOsmNode(id) == null);
-		assert(termiteData.getNode(id) == null);
-		
-		//check no on level
-		TermiteLevel level = termiteData.getLevel(structureId,zlevel);
-		for(TermiteNode tn: level.getNodes()) {
-			OsmNode on = tn.getOsmObject();
-			long nid = on.getId();
-			assert(nid != id);
-		}
 		
 		//check not in ways
-		Long nid = (Long)id;
 		for(Long wid:wayIds) {
-			TermiteWay tWay = termiteData.getWay(wid);
-			OsmWay oWay = tWay.getOsmObject();
-			List<Long> onids = oWay.getNodeIds();
-			assert(!onids.contains(nid));
-			for(TermiteNode tNode:tWay.getNodes()) {
-				OsmNode oNode = tNode.getOsmObject();
-				long tnid = oNode.getId();
-				assert(tnid != id);
+			OsmWay way = osmData.getOsmWay(wid);
+			for(OsmNode node:way.getNodes()) {
+				long nid = node.getId();
+				assert(nid != id);
 			}
 		}
 	}

@@ -123,6 +123,11 @@ public class OsmData {
 		return relationMap.values();
 	}
 	
+	/** This is a test method to load the latest edit number used. */
+	public int test_getLatestEditNumber() {
+		return nextEditNumber - 1;
+	}
+	
 	//=============================
 	// Package Methods
 	//=============================

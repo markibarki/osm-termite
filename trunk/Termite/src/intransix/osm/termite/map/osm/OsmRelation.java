@@ -45,6 +45,15 @@ public class OsmRelation extends OsmObject {
 		super(OsmModel.TYPE_RELATION,OsmData.INVALID_ID);
 	}
 	
+	/** This overrides the base method to add functionality. */
+	@Override
+	void objectCreated(OsmData osmData) {
+		super.objectCreated(osmData);
+		
+		//read the relation type
+		relationType = this.getProperty(OsmModel.TAG_TYPE);
+	}
+	
 	/** This method should be called when the properties are updated. */
 	@Override
 	void propertiesUpdated(OsmData osmData) {

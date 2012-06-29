@@ -104,111 +104,111 @@ public class PropertyObjectTest {
 				+ "}";
 		try {
 			
-			//no data, single level keys
-			JSONObject json = new JSONObject(jsonString);
-			
-			//parse with no data
-			PropertyNode<Object,Object> pond = new PropertyNode<Object,Object>();
-			pond.parse(json, null, null);
-			
-			//parse with data
-			PropertyNode<StyleData,StyleData> po = new PropertyNode<StyleData,StyleData>();
-			po.parse(json, null, new TestDataParser());
-			
-			// TEST 0.1
-			//name should be theme
-			assertTrue(po.getName().equalsIgnoreCase("theme"));
-			assertTrue(pond.getName().equalsIgnoreCase("theme"));
-			
-			OsmObject mapObject;
-			PropertyNode out;
-			
-			//use a node as the generic map object
-			mapObject = new OsmNode();
-			
-			StyleData st;
-			KeyNode<StyleData,StyleData> key;
-			PropertyNode<StyleData,StyleData> prop;
-			
-			//no properties in map object, should return the root object
-			
-			//TEST 1.3) classify an object that does not match any keys (in root)
-			st = po.getPropertyData(mapObject);
-			assertTrue(st.matches("dark gray","dark black"));
-			//TEST 2.1) lookup key that exists in root
-			key = po.getKey(mapObject,"buildingpart");
-			assertTrue(keyMatches(key,"buildingpart"));
-			//TEST 2.3) lookup a key that exists outside of root but map object 
-			//does not have a matching property
-			key = po.getKey(mapObject,"gender");
-			assertTrue(keyMatches(key,null));
-			//TEST 3.1) lookup key that exists in root with valid value
-			prop = po.getKeyValue(mapObject,"buildingpart","room");
-			assertTrue(propertyMatches(prop,"room"));
-			//TEST 3.3) lookup a key that exists outside of root but map object 
-			//does not have a matching property, with valid value
-			prop = po.getKeyValue(mapObject,"gender","male");
-			assertTrue(propertyMatches(prop,null));
-			//TEST 3.4) lookup key that exists in root with invalid value
-			prop = po.getKeyValue(mapObject,"buildingpart","duck");
-			assertTrue(propertyMatches(prop,null));
-			//TEST 3.6) lookup a key that exists outside of root but map object 
-			//does not have a matching property, with invalid value
-			prop = po.getKeyValue(mapObject,"gender","android");
-			assertTrue(propertyMatches(prop,null));
-			
-			//add a property to the map object that doesn't exist
-			mapObject.setProperty("buildingpart","elbow");
-			
-			//TEST 1.2) classify object that matches a key (in root) but not a value on key
-			st = po.getPropertyData(mapObject);
-			assertTrue(st.matches("dark gray","dark black"));
-
-			//add a valid property
-			mapObject.setProperty("buildingpart","room");
-			
-			//TEST 1.1) classify object that matches a key (in root) and a value on the key
-			st = po.getPropertyData(mapObject);
-			assertTrue(st.matches("red","white"));
-			//TEST 2.2) lookup key that exists outside of root.
-			key = po.getKey(mapObject,"bathroom");
-			assertTrue(keyMatches(key,"bathroom"));
-			//TEST 3.2) lookup a key that exists outside of root with a valid value 
-			prop = po.getKeyValue(mapObject,"bathroom","yes");
-			assertTrue(propertyMatches(prop,"yes"));
-			//TEST 3.5) lookup key that exists in root with an invalid value
-			prop = po.getKeyValue(mapObject,"bathroom","maybe");
-			assertTrue(propertyMatches(prop,null));
-			
-			//additional tests
-			mapObject.setProperty("bathroom","yes");
-			mapObject.setProperty("gender","male");
-			
-			//returns male data - but this is the same as room - not much of a test
-			prop = po.getClassifyingProperty(mapObject);
-			assertTrue(propertyMatches(prop,"male"));
-			
-			//lookup gender - should work
-			key = po.getKey(mapObject,"gender");
-			assertTrue(keyMatches(key,"gender"));
-			
-			//lookup gender male - should work
-			prop = po.getKeyValue(mapObject,"gender","male");
-			assertTrue(propertyMatches(prop,"male"));
-			
-			//lookup gender female - should work because we don't exclude 
-			//values for which we have a different value
-			//(but we might want to not allow it if a different value exists already)
-			prop = po.getKeyValue(mapObject,"gender","female");
-			assertTrue(propertyMatches(prop,"female"));
-			
-			//lookup furnishing - should work because we allow multiple keys
-			//(but this is a key we might want to make exclusive with "buildingpart")
-			key = po.getKey(mapObject,"furnishing");
-			assertTrue(keyMatches(key,"furnishing"));
-			
-			System.out.println("test done");
-			
+//			//no data, single level keys
+//			JSONObject json = new JSONObject(jsonString);
+//			
+//			//parse with no data
+//			PropertyNode<Object,Object> pond = new PropertyNode<Object,Object>();
+//			pond.parse(json, null, null);
+//			
+//			//parse with data
+//			PropertyNode<StyleData,StyleData> po = new PropertyNode<StyleData,StyleData>();
+//			po.parse(json, null, new TestDataParser());
+//			
+//			// TEST 0.1
+//			//name should be theme
+//			assertTrue(po.getName().equalsIgnoreCase("theme"));
+//			assertTrue(pond.getName().equalsIgnoreCase("theme"));
+//			
+//			OsmObject mapObject;
+//			PropertyNode out;
+//			
+//			//use a node as the generic map object
+//			mapObject = new OsmNode();
+//			
+//			StyleData st;
+//			KeyNode<StyleData,StyleData> key;
+//			PropertyNode<StyleData,StyleData> prop;
+//			
+//			//no properties in map object, should return the root object
+//			
+//			//TEST 1.3) classify an object that does not match any keys (in root)
+//			st = po.getPropertyData(mapObject);
+//			assertTrue(st.matches("dark gray","dark black"));
+//			//TEST 2.1) lookup key that exists in root
+//			key = po.getKey(mapObject,"buildingpart");
+//			assertTrue(keyMatches(key,"buildingpart"));
+//			//TEST 2.3) lookup a key that exists outside of root but map object 
+//			//does not have a matching property
+//			key = po.getKey(mapObject,"gender");
+//			assertTrue(keyMatches(key,null));
+//			//TEST 3.1) lookup key that exists in root with valid value
+//			prop = po.getKeyValue(mapObject,"buildingpart","room");
+//			assertTrue(propertyMatches(prop,"room"));
+//			//TEST 3.3) lookup a key that exists outside of root but map object 
+//			//does not have a matching property, with valid value
+//			prop = po.getKeyValue(mapObject,"gender","male");
+//			assertTrue(propertyMatches(prop,null));
+//			//TEST 3.4) lookup key that exists in root with invalid value
+//			prop = po.getKeyValue(mapObject,"buildingpart","duck");
+//			assertTrue(propertyMatches(prop,null));
+//			//TEST 3.6) lookup a key that exists outside of root but map object 
+//			//does not have a matching property, with invalid value
+//			prop = po.getKeyValue(mapObject,"gender","android");
+//			assertTrue(propertyMatches(prop,null));
+//			
+//			//add a property to the map object that doesn't exist
+//			mapObject.setProperty("buildingpart","elbow");
+//			
+//			//TEST 1.2) classify object that matches a key (in root) but not a value on key
+//			st = po.getPropertyData(mapObject);
+//			assertTrue(st.matches("dark gray","dark black"));
+//
+//			//add a valid property
+//			mapObject.setProperty("buildingpart","room");
+//			
+//			//TEST 1.1) classify object that matches a key (in root) and a value on the key
+//			st = po.getPropertyData(mapObject);
+//			assertTrue(st.matches("red","white"));
+//			//TEST 2.2) lookup key that exists outside of root.
+//			key = po.getKey(mapObject,"bathroom");
+//			assertTrue(keyMatches(key,"bathroom"));
+//			//TEST 3.2) lookup a key that exists outside of root with a valid value 
+//			prop = po.getKeyValue(mapObject,"bathroom","yes");
+//			assertTrue(propertyMatches(prop,"yes"));
+//			//TEST 3.5) lookup key that exists in root with an invalid value
+//			prop = po.getKeyValue(mapObject,"bathroom","maybe");
+//			assertTrue(propertyMatches(prop,null));
+//			
+//			//additional tests
+//			mapObject.setProperty("bathroom","yes");
+//			mapObject.setProperty("gender","male");
+//			
+//			//returns male data - but this is the same as room - not much of a test
+//			prop = po.getClassifyingProperty(mapObject);
+//			assertTrue(propertyMatches(prop,"male"));
+//			
+//			//lookup gender - should work
+//			key = po.getKey(mapObject,"gender");
+//			assertTrue(keyMatches(key,"gender"));
+//			
+//			//lookup gender male - should work
+//			prop = po.getKeyValue(mapObject,"gender","male");
+//			assertTrue(propertyMatches(prop,"male"));
+//			
+//			//lookup gender female - should work because we don't exclude 
+//			//values for which we have a different value
+//			//(but we might want to not allow it if a different value exists already)
+//			prop = po.getKeyValue(mapObject,"gender","female");
+//			assertTrue(propertyMatches(prop,"female"));
+//			
+//			//lookup furnishing - should work because we allow multiple keys
+//			//(but this is a key we might want to make exclusive with "buildingpart")
+//			key = po.getKey(mapObject,"furnishing");
+//			assertTrue(keyMatches(key,"furnishing"));
+//			
+//			System.out.println("test done");
+//			
 			
 		}
 		catch(Exception ex) {

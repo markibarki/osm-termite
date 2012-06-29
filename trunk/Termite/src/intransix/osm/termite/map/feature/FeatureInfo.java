@@ -32,6 +32,7 @@ public class FeatureInfo {
 	private int zorder = DEFAULT_ZORDER;
 	
 	private String name;
+	private boolean isRoot = false;
 	
 	//this is used for import/export geometry
 	private String inputColor;
@@ -60,8 +61,9 @@ public class FeatureInfo {
 		FeatureInfo fp = new FeatureInfo();
 		if(json != null) {
 			//create the name
+			//use the parent as a base, unless the parent is the root
 			String tempName = null;
-			if(parent != null) {
+			if((parent != null)&&(!parent.isRoot)) {
 				tempName = parent.name;
 				if((tempName == null)||(tempName.length() == 0)) {
 					tempName = "[unnamed]";
@@ -72,7 +74,13 @@ public class FeatureInfo {
 				tempName = "";
 			}
 			
-			if(parentKey != null) tempName += parentKey + ":";
+			if(parentKey != null) {
+				fp.isRoot = false;
+				tempName += parentKey + ":";
+			}
+			else {
+				fp.isRoot = true;
+			}
 			if((name == null)||(name.length() == 0)) name = "[unnamed]";
 			tempName += name;
 			fp.name = tempName;
