@@ -19,7 +19,7 @@ public class OsmParser extends DefaultHandler {
 	
 	OsmData osmData;
 	
-	OsmObject activeObject = null;
+	OsmSrcData activeObject = null;
 	String activeObjectName = null;
 	
 	//==========================
@@ -67,10 +67,10 @@ public class OsmParser extends DefaultHandler {
 			osmData.setGenerator(generator);
 		}
 		else {
-			long osmId = getLong(attributes,"id",OsmObject.INVALID_ID);
-			if(osmId != OsmObject.INVALID_ID) {
+			long osmId = getLong(attributes,"id",OsmData.INVALID_ID);
+			if(osmId != OsmData.INVALID_ID) {
 				//lookup or create object
-				activeObject = osmData.createOsmObject(osmId,name);
+				activeObject = osmData.createOsmSrcObject(osmId,name);
 				if(activeObject != null) {
 					//we are processing a new object
 					activeObjectName = name;
@@ -87,9 +87,9 @@ public class OsmParser extends DefaultHandler {
 
 		if(activeObjectName != null) {
 			if(activeObjectName.equalsIgnoreCase(name)) {
-				//finish parsing
-				activeObject.endElement(name, this);
-				
+				if(activeObject != null) {
+					activeObject.endElement(osmData);
+				}
 				activeObject = null;
 				activeObjectName = null;
 			}

@@ -1,7 +1,6 @@
 package intransix.osm.termite.map.osm;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  *
@@ -9,19 +8,15 @@ import java.util.HashMap;
  */
 public class OsmData {
 	
-	private final static long FIRST_ID = -1;
-	
-	/** This method gets the next available termite id, to be used for generating
-	 * temporary IDs. */
-	public synchronized void applyNextId(OsmObject object) {
-		long id = nextId--;
-		object.setId(id);
-	}
-	private long nextId = FIRST_ID;
-	
 	//==========================
 	// Private Fields
 	//==========================
+	
+	public final static long INVALID_ID = 0;
+	
+	private final static long FIRST_ID = -1;
+	
+	private long nextId = FIRST_ID;
 	
 	private String version;
 	private String generator;
@@ -29,6 +24,16 @@ public class OsmData {
 	private HashMap<Long,OsmNode> nodeMap = new HashMap<Long,OsmNode>();
 	private HashMap<Long,OsmWay> wayMap = new HashMap<Long,OsmWay>();
 	private HashMap<Long,OsmRelation> relationMap = new HashMap<Long,OsmRelation>();
+	
+	//This list holds the object according to there presentation order as determined
+	//by the feature info map
+	private GraduatedList<OsmObject> orderedMapObjects = new GraduatedList<OsmObject>();
+	
+	private List<OsmNodeSrc> srcNodes = new ArrayList<OsmNodeSrc>();
+	private List<OsmWaySrc> srcWays = new ArrayList<OsmWaySrc>();
+	private List<OsmRelationSrc> srcRelations = new ArrayList<OsmRelationSrc>();
+	
+	private List<EditAction> actions = new ArrayList<EditAction>();
 	
 	public void setVersion(String version) {
 		this.version = version;
@@ -38,15 +43,19 @@ public class OsmData {
 		this.generator = generator;
 	}
 	
+	public GraduatedList<OsmObject> getOrderedList() {
+		return orderedMapObjects;
+	}
+	
 	public OsmObject getOsmObject(long id, String type) {
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
-			return getOsmNode(id);
+			return getOsmNode(id,false);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_WAY)) {
-			return getOsmWay(id);
+			return getOsmWay(id,false);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_RELATION)) {
-			return getOsmRelation(id);
+			return getOsmRelation(id,false);
 		}
 		else {
 			//unknown object
@@ -55,15 +64,15 @@ public class OsmData {
 	}
 
 	public OsmNode getOsmNode(long id) {
-		return nodeMap.get(id);
+		return getOsmNode(id,false);
 	}
 	
 	public OsmWay getOsmWay(long id) {
-		return wayMap.get(id);
+		return getOsmWay(id,false);
 	}
 	
 	public OsmRelation getOsmRelation(long id) {
-		return relationMap.get(id);
+		return getOsmRelation(id,false);
 	}
 	
 	public Collection<OsmNode> getOsmNodes() {
@@ -78,35 +87,47 @@ public class OsmData {
 		return relationMap.values();
 	}
 	
-	/** This method makes a copy of the OsmData object, with new instances of
-	 * each internal object. */
-	public OsmData createCopy() {
-		OsmData dataCopy = new OsmData();
-		for(OsmNode node:getOsmNodes()) {
-			OsmNode nodeCopy = dataCopy.createOsmNode(node.getId());
-			node.copyInto(nodeCopy);
-		}
-		for(OsmWay way:getOsmWays()) {
-			OsmWay wayCopy = dataCopy.createOsmWay(way.getId());
-			way.copyInto(wayCopy);
-		}
-		for(OsmRelation relation:getOsmRelations()) {
-			OsmRelation relationCopy = dataCopy.createOsmRelation(relation.getId());
-			relation.copyInto(relationCopy);
-		}
-		return dataCopy;
+	//=============================
+	// Package Methods
+	//=============================
+	
+	/** This method gets the next available termite id, to be used for generating
+	 * temporary IDs. */
+	synchronized long getNextId() {
+		return nextId--;
 	}
 	
-	/** This method creates an object of the given type with the given id. */
-	public OsmObject createOsmObject(long id, String type) {
+	OsmObject getOsmObject(long id, String type, boolean createReference) {
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
-			return createOsmNode(id);
+			return getOsmNode(id,createReference);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_WAY)) {
-			return createOsmWay(id);
+			return getOsmWay(id,createReference);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_RELATION)) {
-			return createOsmRelation(id);
+			return getOsmRelation(id,createReference);
+		}
+		else {
+			//unknown object
+			return null;
+		}
+	}
+	
+	OsmSrcData createOsmSrcObject(long id, String type) {
+		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
+			OsmNodeSrc src = new OsmNodeSrc(id);
+			this.srcNodes.add(src);
+			return src;
+		}
+		else if(type.equalsIgnoreCase(OsmModel.TYPE_WAY)) {
+			OsmWaySrc src = new OsmWaySrc(id);
+			this.srcWays.add(src);
+			return src;
+		}
+		else if(type.equalsIgnoreCase(OsmModel.TYPE_RELATION)) {
+			OsmRelationSrc src = new OsmRelationSrc(id);
+			this.srcRelations.add(src);
+			return src;
 		}
 		else {
 			//unknown object
@@ -115,37 +136,47 @@ public class OsmData {
 	}
 	
 	/** This method removes the object from the active data. */
-	public void deleteOsmObject(long id, String type) {
+	void removeOsmObject(long id, String type) {
+		OsmObject osmObject = null;
 		if(type.equalsIgnoreCase(OsmModel.TYPE_NODE)) {
-			nodeMap.remove(id);
+			osmObject = nodeMap.remove(id);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_WAY)) {
-			wayMap.remove(id);
+			osmObject = wayMap.remove(id);
 		}
 		else if(type.equalsIgnoreCase(OsmModel.TYPE_RELATION)) {
-			relationMap.remove(id);
+			osmObject = relationMap.remove(id);
 		}
 		else {
 			//unknown object
 		}
 	}
 	
-	
-	public OsmNode createOsmNode(long id) {
-		OsmNode node = new OsmNode(id);
-		nodeMap.put(id,node);
+
+	OsmNode getOsmNode(long id, boolean createReference) {
+		OsmNode node = nodeMap.get(id);
+		if((node == null)&&(createReference)) {
+			node = new OsmNode(id);
+			nodeMap.put(id,node);
+		}
 		return node;
 	}
 	
-	public OsmWay createOsmWay(long id) {
-		OsmWay way = new OsmWay(id);
-		wayMap.put(id,way);
+	OsmWay getOsmWay(long id, boolean createReference) {
+		OsmWay way = wayMap.get(id);
+		if((way == null)&&(createReference)) {
+			way = new OsmWay(id);
+			wayMap.put(id,way);
+		}
 		return way;
 	}
 	
-	public OsmRelation createOsmRelation(long id) {
-		OsmRelation relation = new OsmRelation(id);
-		relationMap.put(id,relation);
+	OsmRelation getOsmRelation(long id, boolean createReference) {
+		OsmRelation relation =  relationMap.get(id);
+		if((relation == null)&&(createReference)) {
+			relation = new OsmRelation(id);
+			relationMap.put(id,relation);
+		}
 		return relation;
 	}
 

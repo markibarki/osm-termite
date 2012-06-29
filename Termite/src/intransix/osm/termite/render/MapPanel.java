@@ -1,6 +1,5 @@
 package intransix.osm.termite.render;
 
-import intransix.osm.termite.util.LocalCoordinates;
 import intransix.osm.termite.gui.maplayer.MapLayerManagerPane;
 import java.util.*;
 import javax.swing.*;
@@ -14,13 +13,29 @@ import java.awt.event.*;
  */
 public class MapPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener  {
 	
+	//zoom factor for a mouse wheel click
 	private final static double ROTATION_SCALE_FACTOR = 1.1;
 	
+	//max zoom before redefining local coordinates
+	private final static double LOCAL_COORD_RESET_ZOOM = 2;
+	
+	//transforms
 	private AffineTransform localToPixels = new AffineTransform();
 	private AffineTransform pixelsToLocal = new AffineTransform();
+	private AffineTransform mercatorToLocal = new AffineTransform();
+	private AffineTransform localToMercator = new AffineTransform();
+	private AffineTransform mercatorToPixels = new AffineTransform();
+	private AffineTransform pixelsToMercator = new AffineTransform();
+	
+	private double zoomScalePixelsPerMerc = 1.0;
+	private double zoomScalePixelsPerLocal = 1.0;
+	private double zoomScaleLocalPerMerc = 1.0;
+	
 	private java.util.List<MapLayer> layers = new ArrayList<MapLayer>();
+	
 	private java.util.List<MapListener> mapListeners = new ArrayList<MapListener>();
-	private double zoomScalePixelsPerMeter = 1.0;
+	private java.util.List<LocalCoordinateListener> localCoordinateListeners = new ArrayList<LocalCoordinateListener>();
+	
 	
 	private boolean panOn = false;
 	private double lastX;
@@ -44,6 +59,8 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		return layers;
 	}
 	
+	// <editor-fold defaultstate="collapsed" desc="Transform Methods">
+	
 	public final AffineTransform getLocalToPixels() {
 		return localToPixels;
 	}
@@ -52,9 +69,78 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		return pixelsToLocal;
 	}
 	
-	public final double getZoomScalePixelsPerMeter() {
-		 return zoomScalePixelsPerMeter;
+	public final AffineTransform getLocalToMercator() {
+		return localToMercator;
 	}
+	
+	public final AffineTransform getMercatorToLocal() {
+		return mercatorToLocal;
+	}
+	
+	public final AffineTransform getPixelsToMercator() {
+		return pixelsToMercator;
+	}
+	
+	public final AffineTransform getMercatorToPixels() {
+		return mercatorToPixels;
+	}
+	
+	public final double getZoomScalePixelsPerMerc() {
+		 return this.zoomScalePixelsPerMerc;
+	}
+	
+	public final double getZoomScalePixelsPerLocal() {
+		 return this.zoomScalePixelsPerLocal;
+	}
+	
+	public final double getZoomScaleLocalPerMeerc() {
+		 return this.zoomScaleLocalPerMerc;
+	}
+	
+	/** This method updates the local coordinates to match the current pixel coordinates. */
+	public void resetLocalCoordinates() {
+		AffineTransform oldLocalToNewLocal = new AffineTransform(localToMercator);
+		
+		mercatorToLocal = new AffineTransform(mercatorToPixels);
+		this.updateTransforms();
+		
+		oldLocalToNewLocal.preConcatenate(mercatorToLocal);
+		dispatchLocalCoordinateChangeEvent(oldLocalToNewLocal);
+	}
+	
+	public void setViewBounds(Rectangle2D bounds) {
+		AffineTransform oldLocalToNewLocal = new AffineTransform(localToMercator);
+		
+		
+		Rectangle pixelRect = this.getVisibleRect();
+		
+		//X and Y will allow different magnifications - take the smaller of the two
+		double xScale = pixelRect.width / bounds.getWidth();
+		double yScale = pixelRect.height / bounds.getHeight();
+		double scale = (xScale > yScale) ? yScale : xScale;
+		//calculate the offest so the center is the same
+		double xOffset = bounds.getCenterX() - (xScale/scale) * bounds.getWidth()/2;
+		double yOffset = bounds.getCenterY() - (yScale/scale) * bounds.getHeight()/2;
+		mercatorToPixels.scale(scale, scale);
+		mercatorToPixels.translate(-xOffset,-yOffset);
+		
+		
+		Point2D pMin = new Point2D.Double(bounds.getMinX(),bounds.getMinY());
+		Point2D pMax = new Point2D.Double(bounds.getMaxX(),bounds.getMaxY());
+		mercatorToPixels.transform(pMin, pMin);
+		mercatorToPixels.transform(pMax, pMax);
+		
+		//define the local coordinate system to match the pizel coordinates for starters
+		mercatorToLocal = new AffineTransform(mercatorToPixels);
+		
+		updateTransforms();
+		
+		//notify local coordinate change event
+		oldLocalToNewLocal.preConcatenate(mercatorToLocal);
+		dispatchLocalCoordinateChangeEvent(oldLocalToNewLocal);
+	}
+	
+	// </editor-fold>
 	
 	//map layers///////////////////////////
 	
@@ -73,6 +159,8 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 	
 	//end map layers/////////////////////////////
 	
+	// <editor-fold defaultstate="collapsed" desc="Listeners">
+	
 	public void addMapListener(MapListener listener) {
 		this.mapListeners.add(listener);
 	}
@@ -81,42 +169,30 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		this.mapListeners.remove(listener);
 	}
 	
-	public void setViewBounds(Rectangle2D bounds) {
-		Rectangle pixelRect = this.getVisibleRect();
-		
-		//X and Y will allow different magnifications - take the smaller of the two
-		double xScale = pixelRect.width / bounds.getWidth();
-		double yScale = pixelRect.height / bounds.getHeight();
-		double scale = (xScale > yScale) ? yScale : xScale;
-		//calculate the offest so the center is the same
-		double xOffset = bounds.getCenterX() - (xScale/scale) * bounds.getWidth()/2;
-		double yOffset = bounds.getCenterY() - (yScale/scale) * bounds.getHeight()/2;
-		localToPixels.scale(scale, scale);
-		localToPixels.translate(-xOffset,-yOffset);
-		
-		
-		Point2D pMin = new Point2D.Double(bounds.getMinX(),bounds.getMinY());
-		Point2D pMax = new Point2D.Double(bounds.getMaxX(),bounds.getMaxY());
-		localToPixels.transform(pMin, pMin);
-		localToPixels.transform(pMax, pMax);
-		
-		updateTransforms();
+	public void addLocalCoordinateListener(LocalCoordinateListener listener) {
+		this.localCoordinateListeners.add(listener);
 	}
 	
-	public void resetLocalAnchor(double mx, double my) {
-		double newAnchorXInOldLocal = LocalCoordinates.mercToLocalX(mx);
-		double newAnchorYInOldLocal = LocalCoordinates.mercToLocalY(my);
-		double oldScale = LocalCoordinates.getMetersPerMerc();
-		
-		LocalCoordinates.setLocalAnchor(mx, my);
-		
-		double newScale = LocalCoordinates.getMetersPerMerc();
-		double zoomChange = oldScale/newScale;
-		
-		localToPixels.translate(newAnchorXInOldLocal,newAnchorYInOldLocal);
-		localToPixels.scale(zoomChange, zoomChange);
-		updateTransforms();
+	public void removeLocalCoordinateListener(LocalCoordinateListener listener) {
+		this.localCoordinateListeners.remove(listener);
 	}
+	
+	// </editor-fold>
+	
+//	public void resetLocalAnchor(double mx, double my) {
+//		double newAnchorXInOldLocal = LocalCoordinates.mercToLocalX(mx);
+//		double newAnchorYInOldLocal = LocalCoordinates.mercToLocalY(my);
+//		double oldScale = LocalCoordinates.getMetersPerMerc();
+//		
+//		LocalCoordinates.setLocalAnchor(mx, my);
+//		
+//		double newScale = LocalCoordinates.getMetersPerMerc();
+//		double zoomChange = oldScale/newScale;
+//		
+//		localToPixels.translate(newAnchorXInOldLocal,newAnchorYInOldLocal);
+//		localToPixels.scale(zoomChange, zoomChange);
+//		updateTransforms();
+//	}
 	
 //	@Override
 //	public Dimension getPreferredSize() {
@@ -206,12 +282,9 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		AffineTransform zt = new AffineTransform();
 		zt.translate((1-zoomFactor)*x, (1-zoomFactor)*y);
 		zt.scale(zoomFactor, zoomFactor);
-		localToPixels.preConcatenate(zt);
-System.out.println("ZoomScale=" + zoomScalePixelsPerMeter);
+		mercatorToPixels.preConcatenate(zt);
 		updateTransforms();
-		for(MapListener mapListener:mapListeners) {
-			mapListener.onZoom(zoomScalePixelsPerMeter);
-		}
+		dispatchZoomEvent();
 		this.repaint();
 	}
 	
@@ -219,16 +292,12 @@ System.out.println("ZoomScale=" + zoomScalePixelsPerMeter);
 		lastX = x;
 		lastY = y;
 		panOn = true;
-		for(MapListener mapListener:mapListeners) {
-			mapListener.onPanStart();
-		}
+		dispatchPanStartEvent();
 	}
 	
 	public void endPan(double x, double y) {
 		panOn = false;
-		for(MapListener mapListener:mapListeners) {
-			mapListener.onPanEnd();
-		}
+		dispatchPanEndEvent();
 	}
 	
 	public void panStep(double x, double y) {
@@ -240,7 +309,7 @@ System.out.println("ZoomScale=" + zoomScalePixelsPerMeter);
 	public void translate(double dx, double dy) {
 		AffineTransform zt = new AffineTransform();
 		zt.translate(dx,dy);
-		localToPixels.preConcatenate(zt);
+		mercatorToPixels.preConcatenate(zt);
 		updateTransforms();
 		this.repaint();
 	}
@@ -249,13 +318,54 @@ System.out.println("ZoomScale=" + zoomScalePixelsPerMeter);
 	// Private Methods
 	//=================================
 	
+	/** This method takes should be called with the transforms mercatorToPixels
+	 * and mercatorToLocal set. It calculates the rest of the matrices. */
 	private void updateTransforms() {
-		zoomScalePixelsPerMeter = Math.sqrt(localToPixels.getDeterminant());
+
 		try {
-			pixelsToLocal = localToPixels.createInverse();
+			pixelsToMercator = mercatorToPixels.createInverse();
+			localToMercator = mercatorToLocal.createInverse();
+			
+			pixelsToLocal = new AffineTransform(pixelsToMercator);
+			pixelsToLocal.preConcatenate(mercatorToLocal);
+			
+			localToPixels = pixelsToLocal.createInverse();
+			
+			zoomScalePixelsPerMerc = Math.sqrt(mercatorToPixels.getDeterminant());
+			zoomScalePixelsPerLocal = Math.sqrt(localToPixels.getDeterminant());
+			zoomScaleLocalPerMerc = Math.sqrt(mercatorToLocal.getDeterminant());
 		}
 		catch(Exception ex) {
 			//should not fail
+		}
+		
+		//if we zoom too far away, calculate new local coordinates
+		if((zoomScalePixelsPerLocal > LOCAL_COORD_RESET_ZOOM)||(zoomScalePixelsPerLocal < 1/LOCAL_COORD_RESET_ZOOM)) {
+			this.resetLocalCoordinates();
+		}
+	}
+	
+	private void dispatchZoomEvent() {
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onZoom(this);
+		}
+	}
+	
+	private void dispatchPanStartEvent() {
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onPanStart(this);
+		}
+	}
+	
+	private void dispatchPanEndEvent() {
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onPanEnd(this);
+		}
+	}
+	
+	private void dispatchLocalCoordinateChangeEvent(AffineTransform oldLocalToNewLocal) {
+		for(LocalCoordinateListener localCoordinateListener:localCoordinateListeners) {
+			localCoordinateListener.onLocalCoordinateChange(this, oldLocalToNewLocal);
 		}
 	}
 

@@ -1,8 +1,11 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.model.TermiteObject;
+import intransix.osm.termite.map.feature.FeatureInfo;
+import intransix.osm.termite.map.model.TermiteData;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import org.xml.sax.Attributes;
 
 
@@ -11,7 +14,7 @@ import org.xml.sax.Attributes;
  * 
  * @author sutter
  */
-public abstract class OsmObject<T extends OsmObject> {
+public abstract class OsmObject/*<T extends OsmObject>*/ {
 	
 	//====================
 	// Constants
@@ -25,9 +28,10 @@ public abstract class OsmObject<T extends OsmObject> {
 	 * first value is the desired value. */
 	public final static String[] FALSE_STRINGS = {"no","false","f"};
 	
-	public final static long INVALID_ID = 0;
 	public final static int INVALID_LOCAL_VERSION = -1;
 	public final static int INITIAL_LOCAL_VERSION = 0;
+	
+	public final static int INVALID_DATA_VERSION = -1;
 	
 	//=======================
 	// Properties
@@ -35,19 +39,17 @@ public abstract class OsmObject<T extends OsmObject> {
 			
 	private long id;
 	private String type;
-	private boolean isLoaded = false;
-	private boolean isVirtual = false;
-	
-	private String user;
-	private String uid;
-	private boolean visible;
-	private String version;
-	private String changeset;
-	private String timestamp;
-	
-	private TermiteObject<T> termiteObject;
 	
 	private HashMap<String,String> tags = new HashMap<String,String>();
+	private List<OsmRelation> relations = new ArrayList<OsmRelation>();
+	
+	private Object renderData;
+	private Object editData;
+	private FeatureInfo featureInfo = null;
+	
+	private boolean isLoaded = false;
+	private boolean isVirtual = false;
+	private int dataVersion = 0;
 	
 	//=======================
 	// Constructor
@@ -64,6 +66,16 @@ public abstract class OsmObject<T extends OsmObject> {
 		return id;
 	}
 	
+	/** This gets the object type string. */
+	public String getObjectType() {
+		return type;
+	}
+	
+	//-----------------------
+	// State Management Methods
+	//-----------------------
+	
+	
 	/** This method gets the isLoaded flag for the object. */
 	public boolean getIsLoaded() {
 		return isLoaded;
@@ -79,54 +91,52 @@ public abstract class OsmObject<T extends OsmObject> {
 		this.isVirtual = isVirtual;
 	}
 	
-	/** This gets the object type string. */
-	public String getObjectType() {
-		return type;
+	public int getDataVersion() {
+		return dataVersion;
 	}
-	
-	/** This method sets the termite node for this OsmN0de. */
-	public void setTermiteObject(TermiteObject<T> termiteObject) {
-		this.termiteObject = termiteObject;
-	}
-	
-	/** This method gets the TermiteNode for this OsmNode. */
-	public TermiteObject<T> getTermiteObject() {
-		return termiteObject;
-	}
-	
-	/** This method is used in XMl parsing. */
-	public void startElement(String name, Attributes attr, OsmData osmData) {
-		//parse a key/value pair
-		if(name.equalsIgnoreCase("tag")) {
-			String key = attr.getValue("k");
-			String value = attr.getValue("v");
-			this.setProperty(key, value);
-		}
-	}
-	
-	/** this method should be called by objects extending osm object so the
-	 * base values can be parsed. */
-	public void parseElementBase(String name, Attributes attr) {
-		user = attr.getValue("user");
-		uid = attr.getValue("uid");
-		visible = OsmParser.getBoolean(attr,"visible",true);
-		version = attr.getValue("version");
-		changeset = attr.getValue("changeset");
-		timestamp = attr.getValue("timestamp");
-	}
-	
-	/** This is called when the object is finished being parsed. */
-	public void endElement(String name, OsmParser root) {
-		this.setIsLoaded(true);
-	}
-	
-	/** This method copies relevant data from the base OsmObject needed for reproducing
-	 * the data set. */
-	public void copyInto(T newObject) {
-		newObject.setIsLoaded(this.isLoaded);
-		newObject.setIsVirtual(this.isVirtual);
 
-		this.copyPropertiesInto(newObject);
+	void setDataVersion(int version) {
+		this.dataVersion = version;
+	}
+	
+	//---------------------------
+	// Piggyback and model data methods
+	//---------------------------
+	
+	/** This method gets the feature info associated with this object. */
+	public FeatureInfo getFeatureInfo() {
+		return featureInfo;
+	}
+
+	/** This method returns the render data.  */
+	public Object getRenderData() {
+		return renderData;
+	}
+	
+	/** This method sets the render data. The render data is an arbitrary object
+	 * that is set by the rendering software. */
+	public void setRenderData(Object renderData) {
+		this.renderData = renderData;
+	}
+	
+	/** This method returns the edit data. */
+	public Object getEditData() {
+		return editData;
+	}
+	
+	/** This method sets the edit data. The edit data is an arbitrary object
+	 * that is set by the edit software.  */
+	public void setEditData(Object editData) {
+		this.editData = editData;
+	}
+	
+	//-------------------------
+	// Relation methods
+	//-------------------------
+	
+	/** This gets the list of relations of which this object is a member. */
+	public List<OsmRelation> getRelations() {
+		return relations;
 	}
 	
 	//--------------------------
@@ -237,7 +247,6 @@ public abstract class OsmObject<T extends OsmObject> {
 		return defaultValue;
 	}
 	
-		
 	//==========================
 	// Package Methods
 	//==========================
@@ -250,5 +259,71 @@ public abstract class OsmObject<T extends OsmObject> {
 	void setIsLoaded(boolean isLoaded) {
 		this.isLoaded = isLoaded;
 	}
+	
+	void addRelation(OsmRelation relation) {
+		if(!relations.contains(relation)) {
+			relations.add(relation);
+		}
+	}
+	
+	void removeRelation(OsmRelation relation) {
+		relations.remove(relation);
+	}
+	
+	/** This method updates the version number for all relations containing this object. */
+	void setContainingObjectDataVersion(int version) {
+		for(OsmRelation relation:relations) {
+			relation.setDataVersion(version);
+		}
+	}
+	
+	/** This method verifies an object can be deleted. There can be no external
+	 * objects referring to this one.
+	 * 
+	 * @throws UnchangedException	Thrown if this object can not be deleted 
+	 */
+	void verifyDelete() throws UnchangedException {
+		if(!relations.isEmpty()) {
+			throw new UnchangedException("An object cannot be deleted is a relation contains it.");
+		}
+	}
+	
+	void objectCreated(OsmData osmData) {
+		if((this instanceof OsmNode)||(this instanceof OsmWay)) {
+			featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
+			int zorder = featureInfo.getZorder();
+
+			//update the graduated list
+			GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
+			orderedList.add(this, zorder);
+		}
+	}
+	
+	void propertiesUpdated(OsmData osmData) {
+		int initialZorder = featureInfo.getZorder();
+		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
+		int newZorder = featureInfo.getZorder();
+		
+		//update the graduated list
+		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
+		orderedList.move(this,newZorder,initialZorder);
+	}
+	
+	void objectDeleted(OsmData osmData) {
+		//this should be cleared before we delete
+		//we must check for this earlier
+		if(!relations.isEmpty()) {
+			throw new RuntimeException("A relation referenced the deleted object");
+		}
+		
+		//remoge from the graducated list
+		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
+		int zorder = featureInfo.getZorder();
+		
+		//update the graduated list
+		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
+		orderedList.remove(this, zorder);
+	}
+
 
 }

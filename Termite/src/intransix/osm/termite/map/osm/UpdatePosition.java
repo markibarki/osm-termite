@@ -1,10 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package intransix.osm.termite.map.model;
-
-import intransix.osm.termite.map.osm.OsmNode;
+package intransix.osm.termite.map.osm;
 
 /**
  *
@@ -24,8 +18,8 @@ public class UpdatePosition implements EditData<OsmNode> {
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
 	public EditData<OsmNode> readInitialData(OsmNode node) throws UnchangedException {
-		double initialX = node.getX();
-		double initialY = node.getY();
+		double initialX = node.getPoint().getX();
+		double initialY = node.getPoint().getY();
 		UpdatePosition undoUpdate = new UpdatePosition(initialX,initialY);
 		return undoUpdate;
 	}
@@ -35,21 +29,11 @@ public class UpdatePosition implements EditData<OsmNode> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	public void writeData(OsmNode node) throws UnchangedException, Exception {
+	public void writeData(OsmNode node, int editNumber) throws UnchangedException, Exception {
 		//set the property
 		node.setPosition(x,y);
 		
-		//flag as dirty the node, way and level
-		TermiteNode termiteNode = (TermiteNode)node.getTermiteObject();
-		termiteNode.incrementDataVersion();
-		//explicitly marks ways as changed
-		for(TermiteWay termiteWay:termiteNode.getWays()) {
-			termiteWay.incrementDataVersion();
-		}
-		//explicitly mark level as changed
-		TermiteLevel level = termiteNode.getLevel();
-		if(level != null) {
-			level.incrementDataVersion();
-		}
+		node.setDataVersion(editNumber);
+		node.setContainingObjectDataVersion(editNumber);
 	}
 }

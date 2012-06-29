@@ -1,5 +1,6 @@
 package intransix.osm.termite.render.structure;
 
+import intransix.osm.termite.map.osm.TermiteMember;
 import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.theme.Style;
@@ -10,31 +11,31 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.AffineTransform;
 import java.util.*;
 
 /**
  *
  * @author sutter
  */
-public class PathFeature {
+public class PathFeature implements Feature {
 	//====================
 	// Private Proeprties
 	//====================
 	
 	private int localVersion = OsmObject.INVALID_LOCAL_VERSION;
-	private TermiteWay termiteWay;
 	private OsmWay osmWay;
 	private Shape shape;
+	private boolean isArea;
 	private Style style;
-	boolean isArea;
 	
-	public PathFeature(TermiteWay termiteWay) {
-		this.termiteWay = termiteWay;
-		this.osmWay = termiteWay.getOsmObject();
+	public PathFeature(OsmWay osmWay) {
+		this.osmWay = osmWay;
 	}
 	
-	public TermiteWay getWay() {
-		return termiteWay;
+	public OsmWay getWay() {
+		return osmWay;
 	}
 	
 	public void setStyle(Style style) {
@@ -45,18 +46,16 @@ public class PathFeature {
 		return style;
 	}
 	
-	public void render(Graphics2D g2, double zoomScale, Theme theme) {
+	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
-//		if(osmWay.getLocalVersion() != this.localVersion) {
-if(termiteWay.getDataVersion() != this.localVersion) {			
+		if(osmWay.getDataVersion() != this.localVersion) {			
 			//load geometry
-			updateData();
+			updateData(mercatorToLocal);
 			
 			//get the style
 			style = theme.getStyle(osmWay);
 			
-this.localVersion = termiteWay.getDataVersion();
-//			this.localVersion = osmWay.getLocalVersion();
+			this.localVersion = osmWay.getDataVersion();
 		}
 		
 		if((shape != null)&&(style != null)) {
@@ -65,7 +64,7 @@ this.localVersion = termiteWay.getDataVersion();
 			Color fillColor = null;
 			Color strokeColor = null;
 			Stroke stroke = null;
-			if(termiteWay.getIsArea()) {
+			if(isArea) {
 				fillColor = style.getBodyColor();
 				strokeColor = style.getOutlineColor();
 			}
@@ -90,10 +89,23 @@ this.localVersion = termiteWay.getDataVersion();
 		}
 	}
 	
-	void updateData() {
+	@Override
+	public void transform(AffineTransform oldLocalToNewLocal) {
+		if(this.shape != null) {
+			shape = oldLocalToNewLocal.createTransformedShape(shape);
+		}
+	}
+	
+	void updateData(AffineTransform mercatorToLocal) {
 
 		//check if this is the member in a multipolygon
-		TermiteRelation multipoly = termiteWay.getMultipolygon();
+		OsmRelation multipoly = null;
+		for(OsmRelation relation:osmWay.getRelations()) {
+			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relation.getRelationType())) {
+				multipoly = relation;
+				break;
+			}
+		}
 		
 		if(multipoly != null) {
 			//-----------------
@@ -101,15 +113,15 @@ this.localVersion = termiteWay.getDataVersion();
 			//-----------------
 			List<TermiteMember> members = multipoly.getMembers();
 			
-			if(members.get(0).termiteObject == termiteWay) {
+			if(members.get(0).termiteObject == osmWay) {
 				//main way
 				
-				this.isArea = termiteWay.getIsArea();
+				this.isArea = osmWay.getIsArea();
 				Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
 				for(TermiteMember member:members) {
-					if(member.termiteObject instanceof TermiteWay) {
-						addWayToPath(path,(TermiteWay)member.termiteObject,isArea);
+					if(member.termiteObject instanceof OsmWay) {
+						addWayToPath(path,(OsmWay)member.termiteObject,isArea, mercatorToLocal);
 					}
 				}
 				
@@ -126,29 +138,29 @@ this.localVersion = termiteWay.getDataVersion();
 			//-----------------
 			
 			//update this object
-			this.isArea = termiteWay.getIsArea();
+			this.isArea = osmWay.getIsArea();
 		
 			//create the paths
 			Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
-			addWayToPath(path,termiteWay,isArea);
+			addWayToPath(path,osmWay,isArea, mercatorToLocal);
 			
 			this.shape = path;
 		}
 	}
 	
-	static void addWayToPath(Path2D path, TermiteWay way, boolean isArea) {
+	static void addWayToPath(Path2D path, OsmWay way, boolean isArea, AffineTransform mercatorToLocal) {
 		boolean started = false;
-		for(TermiteNode tNode:way.getNodes()) {
+		Point2D temp = new Point2D.Double();
+		for(OsmNode node:way.getNodes()) {
 			if(true /* check if node is visible here */) {
-				OsmNode oNode = tNode.getOsmObject();
-				double x = oNode.getX();
-				double y = oNode.getY();
+				mercatorToLocal.transform(node.getPoint(),temp);
+				
 				if(started) {
-					path.lineTo(x,y);
+					path.lineTo(temp.getX(),temp.getY());
 				}
 				else {
-					path.moveTo(x,y);
+					path.moveTo(temp.getX(),temp.getY());
 					started = true;
 				}
 			}

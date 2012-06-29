@@ -1,5 +1,8 @@
-package intransix.osm.termite.map.model;
+package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.model.TermiteData;
+import intransix.osm.termite.map.osm.UnchangedException;
+import intransix.osm.termite.map.osm.EditData;
 import intransix.osm.termite.map.osm.OsmObject;
 
 /**
@@ -16,10 +19,10 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 	private String initialKey;
 	private String finalKey;
 	private String finalValue;
-	private TermiteData termiteData;
+	private OsmData osmData;
 	
-	public UpdateObjectProperty(TermiteData data, String initialKey, String finalKey, String finalValue) {
-		this.termiteData = data;
+	public UpdateObjectProperty(OsmData osmData, String initialKey, String finalKey, String finalValue) {
+		this.osmData = osmData;
 		this.initialKey = initialKey;
 		this.finalKey = finalKey;
 		this.finalValue = finalValue;
@@ -36,7 +39,7 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 		else {
 			 initialValue = null;
 		}
-		UpdateObjectProperty<T> undoUpdate = new UpdateObjectProperty<T>(termiteData,finalKey,initialKey,initialValue);
+		UpdateObjectProperty<T> undoUpdate = new UpdateObjectProperty<T>(osmData,finalKey,initialKey,initialValue);
 		return undoUpdate;
 	}
 		
@@ -45,7 +48,7 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	public void writeData(T osmObject) throws UnchangedException, Exception {
+	public void writeData(T osmObject, int editNumber) throws UnchangedException, Exception {
 		//if the key changes, delete the old property
 		if(((initialKey != null)&&(!initialKey.equals(finalKey)))
 			||(finalValue == null)) {
@@ -56,9 +59,10 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 			osmObject.setProperty(finalKey, finalValue);
 		}
 		
-		TermiteObject termiteObject = osmObject.getTermiteObject();
-		if(termiteObject != null) {
-			termiteObject.propertiesUpdated(termiteData);
-		}
+		//re-classify the object
+		osmObject.propertiesUpdated(osmData);
+		
+		osmObject.setDataVersion(editNumber);
+		osmObject.setContainingObjectDataVersion(editNumber);
 	}
 }

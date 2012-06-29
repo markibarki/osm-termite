@@ -1,19 +1,22 @@
 package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.feature.FeatureInfo;
+import intransix.osm.termite.map.model.TermiteData;
 import java.util.ArrayList;
-import org.xml.sax.Attributes;
+import java.util.List;
 
 /**
  * This object holds the data of an OSM way. 
  * @author sutter
  */
-public class OsmWay extends OsmObject<OsmWay> {
+public class OsmWay extends OsmObject {
 	
 	//=======================
 	// Properties
 	//=======================
-	
-	private ArrayList<Long> nodeIds = new ArrayList<Long>();
+		
+	private List<OsmNode> nodes = new ArrayList<OsmNode>();
+	private boolean isArea;
 
 	//=======================
 	// Public Methods
@@ -24,37 +27,39 @@ public class OsmWay extends OsmObject<OsmWay> {
 		super(OsmModel.TYPE_WAY,id);
 	}
 	public OsmWay() {
-		super(OsmModel.TYPE_WAY,OsmObject.INVALID_ID);
+		super(OsmModel.TYPE_WAY,OsmData.INVALID_ID);
 	}
 	
 	/** This method gets the nodes for this way. */
-	public ArrayList<Long> getNodeIds() {
-		return nodeIds;
+	public List<OsmNode> getNodes() {
+		return nodes;
 	}
 	
-	/** This method is used in parsing XML. */
+	/** This returns true if the way should be an area. False indicates line. */
+	public boolean getIsArea() {
+		return isArea;
+	}
+
+	//====================
+	// Package Methods
+	//====================
+	
 	@Override
-	public void startElement(String name, Attributes attr, OsmData osmData) {
-		//let the parent parse
-		super.startElement(name,attr,osmData);
+	void propertiesUpdated(OsmData osmData) {
+		super.propertiesUpdated(osmData);
 		
-		//parse this node
-		if(name.equalsIgnoreCase("way")) {
-			//parse common stuff
-			parseElementBase(name, attr);
-		}
-		else if(name.equalsIgnoreCase("nd")) {
-			long ref = OsmParser.getLong(attr,"ref",INVALID_ID);
-			nodeIds.add(ref);
-		}
+		//read if this is an area
+		boolean defaultIsArea = (getFeatureInfo().getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
+		isArea = this.getBooleanProperty(OsmModel.TAG_AREA,defaultIsArea);
 	}
 	
-	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override
-	public void copyInto(OsmWay newWay) {
-		for(Long nodeId:this.nodeIds) {
-			newWay.nodeIds.add(nodeId);
+	void objectDeleted(OsmData osmData) {
+		super.objectDeleted(osmData);
+		
+		for(OsmNode node:nodes) {
+			node.removeWay(this);
 		}
-		super.copyInto(newWay);
+		nodes.clear();
 	}
 }

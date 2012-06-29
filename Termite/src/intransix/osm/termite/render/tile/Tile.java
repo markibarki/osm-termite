@@ -1,9 +1,9 @@
 package intransix.osm.termite.render.tile;
 
 import intransix.osm.termite.map.osm.OsmModel;
-import intransix.osm.termite.util.LocalCoordinates;
 import intransix.osm.termite.util.MercatorCoordinates;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 
 /**
  *
@@ -13,26 +13,29 @@ public class Tile {
 	
 	private int x;
 	private int y;
-	private int zoom;
 	private String url;
 	private long activeTime = 0;
 	private Image image;
+	private AffineTransform tileToMerc;
 	
-	public Tile(int x, int y, int zoom, String url) {
+	public Tile(int x, int y, int zoom, int numPixels, String url) {
 		this.x = x;
 		this.y = y;
-		this.zoom = zoom;
 		this.url = url;
+		
+		double tileToMercScale = 1.0 / (1 << zoom);
+		tileToMerc = new AffineTransform();
+		tileToMerc.scale(tileToMercScale,tileToMercScale);
+		tileToMerc.translate(x,y);
+		tileToMerc.scale(1.0/numPixels,1.0/numPixels);
+		
 	}
 	
 	public void render(Graphics2D g2) {
-		double mercPerTile = 1.0 / (1 << zoom);
-		int lx1 = (int)LocalCoordinates.mercToLocalX(mercPerTile * x);
-		int ly1 = (int)LocalCoordinates.mercToLocalY(mercPerTile * y);
-		int lx2 = (int)LocalCoordinates.mercToLocalX(mercPerTile * (x+1));
-		int ly2 = (int)LocalCoordinates.mercToLocalY(mercPerTile * (y+1));
-		
-		g2.drawImage(image,lx1,ly1,lx2-lx1,ly2-ly1,null);
+		java.awt.geom.AffineTransform orig = g2.getTransform();
+		g2.transform(tileToMerc);
+		g2.drawImage(image,0,0,null);
+		g2.setTransform(orig);
 	}
 	
 	public String getUrl() {

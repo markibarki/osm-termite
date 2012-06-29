@@ -4,6 +4,7 @@
  */
 package intransix.osm.termite.map.model;
 
+import intransix.osm.termite.map.osm.TermiteMember;
 import intransix.osm.termite.map.osm.OsmMember;
 import intransix.osm.termite.map.osm.OsmModel;
 import intransix.osm.termite.map.osm.OsmRelation;

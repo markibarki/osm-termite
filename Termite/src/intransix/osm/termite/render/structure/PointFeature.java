@@ -1,35 +1,35 @@
 package intransix.osm.termite.render.structure;
 
-import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.map.osm.OsmNode;
 import intransix.osm.termite.map.osm.OsmObject;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Ellipse2D;
+import java.awt.Shape;
 
 /**
  *
  * @author sutter
  */
-public class PointFeature {
+public class PointFeature implements Feature {
 	
 	private final static double RADIUS_METERS = .5;
 	
 	private int localVersion = OsmObject.INVALID_LOCAL_VERSION;
-	private TermiteNode termiteNode;
 	private OsmNode osmNode;
 	private Style style;
-	private Ellipse2D marker;
+	private Shape marker;
 	
-	public PointFeature(TermiteNode termiteNode) {
-		this.termiteNode = termiteNode;
-		this.osmNode = termiteNode.getOsmObject();
+	public PointFeature(OsmNode osmNode) {
+		this.osmNode = osmNode;
 	}
 	
-	public TermiteNode getNode() {
-		return termiteNode;
+	public OsmNode getNode() {
+		return osmNode;
 	}
 	
 	public void setStyle(Style style) {
@@ -40,18 +40,16 @@ public class PointFeature {
 		return style;
 	}
 	
-	public void render(Graphics2D g2, double zoomScale, Theme theme) {
+	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
-//		if(osmNode.getLocalVersion() != this.localVersion) {
-if(termiteNode.getDataVersion() != this.localVersion) {
+		if(osmNode.getDataVersion() != this.localVersion) {
 			//load geometry
-			updateData();
+			updateData(mercatorToLocal);
 
 			//get the style
 			style = theme.getStyle(osmNode);
 			
-//			this.localVersion = osmNode.getLocalVersion();
-this.localVersion = termiteNode.getDataVersion();
+			this.localVersion = osmNode.getDataVersion();
 		}
 		
 		if((marker != null)&&(style != null)) {
@@ -68,10 +66,19 @@ this.localVersion = termiteNode.getDataVersion();
 		}
 	}
 	
-	void updateData() {
+	@Override
+	public void transform(AffineTransform oldLocalToNewLocal) {
+		if(this.marker != null) {
+			marker = oldLocalToNewLocal.createTransformedShape(marker);
+		}
+	}
+	
+	void updateData(AffineTransform mercatorToLocal) {
 		//update this object
-		marker = new Ellipse2D.Double(osmNode.getX()-RADIUS_METERS,
-				osmNode.getY()-RADIUS_METERS,2*RADIUS_METERS,2*RADIUS_METERS);
+		Point2D localPoint = new Point2D.Double();
+		mercatorToLocal.transform(osmNode.getPoint(), localPoint);
+		marker = new Ellipse2D.Double(localPoint.getX()-RADIUS_METERS,
+				localPoint.getY()-RADIUS_METERS,2*RADIUS_METERS,2*RADIUS_METERS);
 	}	
 		
 }

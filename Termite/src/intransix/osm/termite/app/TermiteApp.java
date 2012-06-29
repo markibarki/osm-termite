@@ -1,10 +1,10 @@
 package intransix.osm.termite.app;
 
 import intransix.osm.termite.map.theme.Theme;
-import intransix.osm.termite.map.model.EditAction;
-import intransix.osm.termite.map.model.EditInstruction;
-import intransix.osm.termite.map.model.UpdatePosition;
-import intransix.osm.termite.map.model.UpdateInsertMember;
+import intransix.osm.termite.map.osm.EditAction;
+import intransix.osm.termite.map.osm.EditInstruction;
+import intransix.osm.termite.map.osm.UpdatePosition;
+import intransix.osm.termite.map.osm.UpdateInsertMember;
 import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.map.feature.FeatureInfoMap;
 import intransix.osm.termite.render.MapPanel;
@@ -16,7 +16,6 @@ import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.render.structure.RenderLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.tile.TileLayer;
-import intransix.osm.termite.util.LocalCoordinates;
 import intransix.osm.termite.util.MercatorCoordinates;
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.gui.stdmode.*;
@@ -143,9 +142,6 @@ return new Rectangle2D.Double(-117.116,40.376,.01,.01);
 		JSONObject modelJson = JsonIO.readJsonFile(modelFileName);
 		OsmModel.parse(modelJson);
 		OsmModel.featureInfoMap = featureInfoMap;
-		
-		//set the local anchor to the center
-		LocalCoordinates.setLocalAnchor(.5,.5);
 		
 		//create the gui
 		gui = new TermiteGui(this);

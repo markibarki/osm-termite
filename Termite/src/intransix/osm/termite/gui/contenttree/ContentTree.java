@@ -1,7 +1,7 @@
 package intransix.osm.termite.gui.contenttree;
 
 import intransix.osm.termite.gui.*;
-import intransix.osm.termite.map.model.TermiteData;
+import intransix.osm.termite.map.osm.OsmData;
 import intransix.osm.termite.map.osm.OsmRelation;
 import intransix.osm.termite.map.osm.OsmWay;
 
@@ -11,7 +11,7 @@ import intransix.osm.termite.map.osm.OsmWay;
  */
 public class ContentTree extends javax.swing.JPanel implements LevelSelectedListener, MapDataListener {
 	
-	private TermiteData mapData;
+	private OsmData mapData;
 
 	/**
 	 * Creates new form ContentTree
@@ -25,7 +25,7 @@ public class ContentTree extends javax.swing.JPanel implements LevelSelectedList
 	 * 
 	 * @param feature	The selected map feature
 	 */
-	public void onMapData(TermiteData mapData) {
+	public void onMapData(OsmData mapData) {
 		this.mapData = mapData;
 	}
 	

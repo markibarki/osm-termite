@@ -1,15 +1,19 @@
 package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.feature.FeatureInfo;
+import intransix.osm.termite.map.model.TermiteData;
 import intransix.osm.termite.util.MercatorCoordinates;
-import intransix.osm.termite.util.LocalCoordinates;
+import java.util.ArrayList;
+import java.util.List;
 import org.xml.sax.Attributes;
+import java.awt.geom.Point2D;
 
 /**
  * This class holds data in an OSM node. 
  * 
  * @author sutter
  */
-public class OsmNode extends OsmObject<OsmNode> {
+public class OsmNode extends OsmObject {
 	
 	//======================
 	// Properties
@@ -18,8 +22,9 @@ public class OsmNode extends OsmObject<OsmNode> {
 	public final static double INVALID_ANGLE = 720;
 	
 	//node
-	private double x;
-	private double y;
+	Point2D mxy = new Point2D.Double();
+	
+	private List<OsmWay> ways = new ArrayList<OsmWay>();
 	
 	//======================
 	// Public Methods
@@ -31,49 +36,65 @@ public class OsmNode extends OsmObject<OsmNode> {
 	}
 	
 	public OsmNode() {
-		super(OsmModel.TYPE_NODE,OsmObject.INVALID_ID);
+		super(OsmModel.TYPE_NODE,OsmData.INVALID_ID);
 	}
 	
 	/** This method gets the X coordinate of the node, in local mercator units. */
-	public double getX() {
-		return x;
-	}
-	
-	/** This method gets the Y coordinate of the node, in local mercator units. */
-	public double getY() {
-		return y;
+	public Point2D getPoint() {
+		return mxy;
 	}
 	
 	public void setPosition(double x, double y) {
-		this.x = x;
-		this.y = y;
+		mxy.setLocation(x, y);
 	}
 	
-	/** This method is used to parse the OsmNode. */
-	@Override
-	public void startElement(String name, Attributes attr, OsmData osmData) {
-		//let the parent parse
-		super.startElement(name,attr,osmData);
-		
-		//parse this node
-		if(name.equalsIgnoreCase("node")) {
-			//parse common stuff
-			parseElementBase(name, attr);
-			//get local coordinates in meters
-			double lat = OsmParser.getDouble(attr,"lat",INVALID_ANGLE);
-			double lon = OsmParser.getDouble(attr,"lon",INVALID_ANGLE);
-			double mx = MercatorCoordinates.lonRadToMx(Math.toRadians(lon));
-			double my = MercatorCoordinates.latRadToMy(Math.toRadians(lat));
-			x = LocalCoordinates.mercToLocalX(mx);
-			y = LocalCoordinates.mercToLocalY(my);
+	public List<OsmWay> getWays() {
+		return ways;
+	}
+	
+	//====================
+	// Package Methods
+	//====================
+	
+	void addWay(OsmWay way) {
+		if(!ways.contains(way)) {
+			ways.add(way);
 		}
 	}
 	
-	/** This method makes a copy of this data object in the destination OsmData object. */
+	void removeWay(OsmWay way) {
+		ways.remove(way);
+	}
+	
+	/** This method verifies an object can be deleted. There can be no external
+	 * objects referring to this one.
+	 * 
+	 * @throws UnchangedException	Thrown if this object can not be deleted 
+	 */
 	@Override
-	public void copyInto(OsmNode newNode) {
-		newNode.x = this.x;
-		newNode.y = this.y;
-		super.copyInto(newNode);
+	void verifyDelete() throws UnchangedException {
+		super.verifyDelete();
+		if(!ways.isEmpty()) {
+			throw new UnchangedException("A node cannot be deleted is a way contains it.");
+		}
+	}
+	
+	@Override
+	void objectDeleted(OsmData osmData) {
+		super.objectDeleted(osmData);
+		
+		//ways should be empty
+		//we must check for this earlier so this exception is not thrown
+		if(!ways.isEmpty()) throw new RuntimeException("A way referenced the deleted node");
+		
+	}
+	
+	/** This method updates the version number for all relations containing this object. */
+	@Override
+	void setContainingObjectDataVersion(int version) {
+		super.setContainingObjectDataVersion(version);
+		for(OsmWay way:ways) {
+			way.setDataVersion(version);
+		}
 	}
 }

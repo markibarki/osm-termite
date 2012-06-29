@@ -9,10 +9,8 @@ import java.awt.geom.*;
 import intransix.osm.termite.render.*;
 import intransix.osm.termite.app.TermiteApp;
 import intransix.osm.termite.render.tile.TileLayer;
-import intransix.osm.termite.util.LocalCoordinates;
 import intransix.osm.termite.util.MercatorCoordinates;
 
-import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.structure.RenderLayer;
 
@@ -35,7 +33,7 @@ public class TermiteGui extends javax.swing.JFrame {
 	private TermiteApp app;
 
 	//map data
-	private TermiteData termiteData;
+	private OsmData osmData;
 	
 	//editor modes
 	private EditorMode searchMode; //not an edit editor mode - has no button for mode toolbar
@@ -105,8 +103,8 @@ public class TermiteGui extends javax.swing.JFrame {
 	// <editor-fold defaultstate="collapsed" desc="Map Data Methods and Events">
 	
 	/** This method returns the map data object. */
-	public TermiteData getMapData() {
-		return termiteData;
+	public OsmData getMapData() {
+		return osmData;
 	}
 	
 	/** This adds a map data listener. */
@@ -121,15 +119,15 @@ public class TermiteGui extends javax.swing.JFrame {
 	
 	/** This method will dispatch a map data event. It should be called
 	 * when a map data is set to notify all interested objects. */
-	public void setMapData(TermiteData mapData) {
-		this.termiteData = mapData;
+	public void setMapData(OsmData osmData) {
+		this.osmData = osmData;
 		
 		for(MapDataListener listener:mapDataListeners) {
-			listener.onMapData(mapData);
+			listener.onMapData(osmData);
 		}
 		
 		//control state based on presence of data
-		if(termiteData != null) {
+		if(osmData != null) {
 			//put the app in the edit state
 			setToEditState();
 			//set the level to null (outdoor level)
@@ -367,12 +365,12 @@ public class TermiteGui extends javax.swing.JFrame {
 		double maxLat = Math.toRadians(latLonBounds.getMaxY());
 		double maxLon = Math.toRadians(latLonBounds.getMaxX());
 		
-		double minLocX = LocalCoordinates.mercToLocalX(MercatorCoordinates.lonRadToMx(minLon)); 
-		double minLocY = LocalCoordinates.mercToLocalY(MercatorCoordinates.latRadToMy(maxLat)); 
-		double maxLocX = LocalCoordinates.mercToLocalX(MercatorCoordinates.lonRadToMx(maxLon)); 
-		double maxLocY = LocalCoordinates.mercToLocalY(MercatorCoordinates.latRadToMy(minLat)); 
-		Rectangle2D localBounds = new Rectangle2D.Double(minLocX,minLocY,maxLocX - minLocX,maxLocY - minLocY);
-		mapPanel.setViewBounds(localBounds);
+		double minMX = MercatorCoordinates.lonRadToMx(minLon); 
+		double minMY = MercatorCoordinates.latRadToMy(maxLat); 
+		double maxMX = MercatorCoordinates.lonRadToMx(maxLon); 
+		double maxMY = MercatorCoordinates.latRadToMy(minLat); 
+		Rectangle2D mercBounds = new Rectangle2D.Double(minMX,minMY,maxMX - minMX,maxMY - minMY);
+		mapPanel.setViewBounds(mercBounds);
 	}
 	
 	private void initializeBaseMap() {
@@ -393,10 +391,11 @@ public class TermiteGui extends javax.swing.JFrame {
 		renderLayer.setTheme(theme);
 		renderLayer.setActiveState(false);
 		this.addMapDataListener(renderLayer);
+		mapPanel.addLocalCoordinateListener(renderLayer);
 		
 		editLayer = new EditLayer();
 		editLayer.setActiveState(false);
-//		this.addMapDataListener(editLayer);
+		this.addMapDataListener(editLayer);
 		
 		mapPanel.addLayer(renderLayer);
 		mapPanel.addLayer(editLayer);

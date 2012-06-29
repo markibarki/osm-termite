@@ -1,18 +1,12 @@
 package intransix.osm.termite.render.edit;
 
 import intransix.osm.termite.render.MapPanel;
-import intransix.osm.termite.map.model.TermiteLevel;
-import intransix.osm.termite.map.model.TermiteNode;
-import intransix.osm.termite.map.model.TermiteWay;
 import intransix.osm.termite.render.MapLayer;
-import intransix.osm.termite.render.structure.PathFeature;
-import intransix.osm.termite.render.structure.PointFeature;
-import intransix.osm.termite.map.theme.Theme;
+import intransix.osm.termite.gui.MapDataListener;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.util.MercatorCoordinates;
@@ -24,33 +18,50 @@ import java.awt.geom.*;
  *
  * @author sutter
  */
-public class EditLayer extends MapLayer implements MouseListener, MouseMotionListener {
+public class EditLayer extends MapLayer implements MapDataListener, MouseListener, MouseMotionListener {
 	
-	private final static double RADIUS_METERS = .5; 
+	private final static double RADIUS_PIXELS = 5; 
 	
 	private final static Color SELECT_COLOR = Color.RED;
 	private final static Color HIGHLIGHT_COLOR = Color.MAGENTA;
 	private final static Color BACKGROUND_HIGHLIGHT_COLOR = Color.PINK;
 	
-	private TermiteLevel currentLevel;
+	private OsmData osmData;
 	
 	private OsmNode activeNode = null;
 	
-	public void setLevel(TermiteLevel level) {
-		this.currentLevel = level;
+	public void onMapData(OsmData osmData) {
+		this.osmData = osmData;
+	}
+	
+	@Override
+	public void setActiveState(boolean isActive) {
+		super.setActiveState(isActive);
+		MapPanel mapPanel = this.getMapPanel();
+		if(mapPanel != null) {
+			if(isActive) {
+				mapPanel.addMouseListener(this);
+				mapPanel.addMouseMotionListener(this);
+			}
+			else {
+				mapPanel.removeMouseListener(this);
+				mapPanel.removeMouseMotionListener(this);
+			}
+		}
 	}
 	
 	@Override
 	public void render(Graphics2D g2) {
 		
-		AffineTransform mapToPixels = getMapPanel().getLocalToPixels();
-		g2.transform(mapToPixels);		
+		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();		
 		
-		OsmNode localNode = activeNode;
-		if(localNode != null) {
+		OsmNode node = activeNode;
+		Point2D pixXY = new Point2D.Double();
+		if(node != null) {
+			mercatorToPixels.transform(node.getPoint(),pixXY);
 			g2.setColor(HIGHLIGHT_COLOR);
-			Shape rect = new Rectangle2D.Double(localNode.getX()-RADIUS_METERS,
-					localNode.getY()-RADIUS_METERS,2*RADIUS_METERS,2*RADIUS_METERS);
+			Shape rect = new Rectangle2D.Double(pixXY.getX()-RADIUS_PIXELS,
+					pixXY.getY()-RADIUS_PIXELS,2*RADIUS_PIXELS,2*RADIUS_PIXELS);
 			g2.fill(rect);
 		}
 	}
@@ -75,21 +86,25 @@ public class EditLayer extends MapLayer implements MouseListener, MouseMotionLis
 	public void mouseMoved(MouseEvent e) {
 		//read mouse location
 		MapPanel mapPanel = getMapPanel();
-		double pixX = e.getX();
-		double pixY = e.getY();
-		Point2D point = new Point2D.Double(pixX,pixY);
-		AffineTransform pixelsToMap = mapPanel.getPixelsToLocal();
-		pixelsToMap.transform(point, point);
+		Point2D mousePix = new Point2D.Double(e.getX(),e.getY());
+		Point2D nodePix = new Point2D.Double();
+		AffineTransform mercatorToPixels = mapPanel.getMercatorToPixels();
+		
 		
 		//loook for a point
-		for(TermiteNode tNode:currentLevel.getNodes()) {
-			OsmNode oNode = tNode.getOsmObject();
-			double d = point.distance(oNode.getX(),oNode.getY());
-			if(d < RADIUS_METERS) {
-				this.activeNode = oNode;
-				mapPanel.repaint();
-				return;
-			}
+		GraduatedList<OsmObject> objectList = osmData.getOrderedList();
+		for(java.util.List<OsmObject> subList:objectList.getLists()) {
+			for(OsmObject mapObject:subList) {
+				if(mapObject instanceof OsmNode) {
+					mercatorToPixels.transform(((OsmNode)mapObject).getPoint(),nodePix);
+					double d = mousePix.distance(nodePix);
+					if(d < RADIUS_PIXELS) {
+						this.activeNode = (OsmNode)mapObject;
+						mapPanel.repaint();
+						return;
+					}
+				}
+			}			
 		}
 		if(activeNode != null) {
 			activeNode = null;
