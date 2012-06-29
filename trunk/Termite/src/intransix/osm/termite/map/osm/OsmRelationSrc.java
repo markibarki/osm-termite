@@ -38,8 +38,13 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 		osmMembers.clear();
 		for(Member m:members) {
 			OsmObject osmObject = osmData.getOsmObject(m.memberId,m.type,true);
-			osmMembers.add(new TermiteMember(osmObject,m.role));
-			osmObject.addRelation(target);
+			if(osmObject != null) {
+				osmMembers.add(new TermiteMember(osmObject,m.role));
+				osmObject.addRelation(target);
+			}
+			else {
+				//this shouldn't happen - the type was unrecognized.
+			}
 		}
 	}
 	

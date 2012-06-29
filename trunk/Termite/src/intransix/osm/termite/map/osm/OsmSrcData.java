@@ -73,8 +73,13 @@ public abstract class OsmSrcData<T extends OsmObject> {
 	void endElement(OsmData osmData) {
 		//create the osm object for this data
 		OsmObject object = osmData.getOsmObject(id, type, true);
-		this.copyInto((T)object, osmData);
-		object.objectCreated(osmData);
+		if(object != null) {
+			this.copyInto((T)object, osmData);
+			object.objectCreated(osmData);
+		}
+		else {
+			//this shouldn't happen - the type was unrecognized
+		}
 	}
 	
 	/** this method should be called by objects extending osm object so the

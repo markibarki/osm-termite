@@ -74,8 +74,14 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 			throw new UnchangedException("Invalid node index for way: " + way.getId());
 		}
 		OsmNode node = osmData.getOsmNode(nodeId, true);
-		nodes.add(index,node);
-		node.addWay(way);
+		if(node != null) {
+			nodes.add(index,node);
+			node.addWay(way);
+		}
+		else {
+			//this should never happen
+			throw new UnchangedException("An unknown error occurred looking up or creating node: " + nodeId);
+		}
 		
 		//update version
 		way.setDataVersion(editNumber);
