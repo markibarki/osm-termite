@@ -1,7 +1,7 @@
 package intransix.osm.termite.render.structure;
 
 import intransix.osm.termite.map.osm.OsmNode;
-import intransix.osm.termite.map.osm.OsmObject;
+import intransix.osm.termite.map.osm.OsmData;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
@@ -19,7 +19,7 @@ public class PointFeature implements Feature {
 	
 	private final static double RADIUS_METERS = .5;
 	
-	private int localVersion = OsmObject.INVALID_LOCAL_VERSION;
+	private int localVersion = OsmData.INVALID_DATA_VERSION;
 	private OsmNode osmNode;
 	private Style style;
 	private Shape marker;

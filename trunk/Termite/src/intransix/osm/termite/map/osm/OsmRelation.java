@@ -1,12 +1,11 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.model.TermiteData;
 import java.util.ArrayList;
 import java.util.List;
-import org.xml.sax.Attributes;
 
 /**
  * This class holds the data for an OSM relation.
+ * 
  * @author sutter
  */
 public class OsmRelation extends OsmObject {
@@ -22,18 +21,12 @@ public class OsmRelation extends OsmObject {
 	// Public Methods
 	//=======================
 	
-	/** Constructor. */
-	public OsmRelation(long id) {
-		super(OsmModel.TYPE_RELATION, id);
-	}
-	public OsmRelation() {
-		super(OsmModel.TYPE_RELATION,OsmData.INVALID_ID);
-	}
-	
+	/** This method returns the list of members for this relation. It should NOT be edited. */
 	public List<TermiteMember> getMembers() {
 		return members;
 	}
 	
+	/** This method returns the relation type. */
 	public String getRelationType() {
 		return relationType;
 	}
@@ -42,6 +35,17 @@ public class OsmRelation extends OsmObject {
 	// Package Methods
 	//=======================
 	
+	/** Constructor. */
+	OsmRelation(long id) {
+		super(OsmModel.TYPE_RELATION, id);
+	}
+	
+	/** Constructor. */
+	OsmRelation() {
+		super(OsmModel.TYPE_RELATION,OsmData.INVALID_ID);
+	}
+	
+	/** This method should be called when the properties are updated. */
 	@Override
 	void propertiesUpdated(OsmData osmData) {
 		super.propertiesUpdated(osmData);
@@ -50,6 +54,7 @@ public class OsmRelation extends OsmObject {
 		relationType = this.getProperty(OsmModel.TAG_TYPE);
 	}
 	
+	/** This method should be called when the object is deleted. */
 	@Override
 	void objectDeleted(OsmData osmData) {
 		super.objectDeleted(osmData);

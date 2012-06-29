@@ -24,7 +24,7 @@ public class PathFeature implements Feature {
 	// Private Proeprties
 	//====================
 	
-	private int localVersion = OsmObject.INVALID_LOCAL_VERSION;
+	private int localVersion = OsmData.INVALID_DATA_VERSION;
 	private OsmWay osmWay;
 	private Shape shape;
 	private boolean isArea;

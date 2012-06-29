@@ -1,12 +1,12 @@
 package intransix.osm.termite.map.osm;
 
 import intransix.osm.termite.map.feature.FeatureInfo;
-import intransix.osm.termite.map.model.TermiteData;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This object holds the data of an OSM way. 
+ * 
  * @author sutter
  */
 public class OsmWay extends OsmObject {
@@ -22,15 +22,7 @@ public class OsmWay extends OsmObject {
 	// Public Methods
 	//=======================
 	
-	/** Constructor. */
-	public OsmWay(long id) {
-		super(OsmModel.TYPE_WAY,id);
-	}
-	public OsmWay() {
-		super(OsmModel.TYPE_WAY,OsmData.INVALID_ID);
-	}
-	
-	/** This method gets the nodes for this way. */
+	/** This method gets the nodes for this way. This list should NOT be edited. */
 	public List<OsmNode> getNodes() {
 		return nodes;
 	}
@@ -44,6 +36,17 @@ public class OsmWay extends OsmObject {
 	// Package Methods
 	//====================
 	
+	/** Constructor. */
+	OsmWay(long id) {
+		super(OsmModel.TYPE_WAY,id);
+	}
+	
+	/** Constructor. */
+	OsmWay() {
+		super(OsmModel.TYPE_WAY,OsmData.INVALID_ID);
+	}
+	
+	/** This method should be calle when properties are updated. */
 	@Override
 	void propertiesUpdated(OsmData osmData) {
 		super.propertiesUpdated(osmData);
@@ -53,6 +56,7 @@ public class OsmWay extends OsmObject {
 		isArea = this.getBooleanProperty(OsmModel.TAG_AREA,defaultIsArea);
 	}
 	
+	/** This method should be called when the object is deleted. */
 	@Override
 	void objectDeleted(OsmData osmData) {
 		super.objectDeleted(osmData);

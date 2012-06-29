@@ -14,12 +14,14 @@ public class OsmData {
 	//==========================
 	
 	public final static long INVALID_ID = 0;
+	public final static int INVALID_DATA_VERSION = -1;
 	
 	private final static long FIRST_ID = -1;
 	private final static int FIRST_EDIT_NUMBER = 1;
 	
 	private long nextId = FIRST_ID;
 	private int nextEditNumber = FIRST_EDIT_NUMBER;
+	
 	
 	private String version;
 	private String generator;
