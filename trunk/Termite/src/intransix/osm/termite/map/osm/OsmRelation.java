@@ -1,19 +1,22 @@
 package intransix.osm.termite.map.osm;
 
+import intransix.osm.termite.map.model.TermiteData;
 import java.util.ArrayList;
+import java.util.List;
 import org.xml.sax.Attributes;
 
 /**
  * This class holds the data for an OSM relation.
  * @author sutter
  */
-public class OsmRelation extends OsmObject<OsmRelation> {
+public class OsmRelation extends OsmObject {
 	
 	//=======================
 	// Properties
 	//=======================
 	
-	private ArrayList<OsmMember> members = new ArrayList<OsmMember>();
+	private List<TermiteMember> members = new ArrayList<TermiteMember>();
+	private String relationType;
 	
 	//=======================
 	// Public Methods
@@ -24,53 +27,37 @@ public class OsmRelation extends OsmObject<OsmRelation> {
 		super(OsmModel.TYPE_RELATION, id);
 	}
 	public OsmRelation() {
-		super(OsmModel.TYPE_RELATION,OsmObject.INVALID_ID);
+		super(OsmModel.TYPE_RELATION,OsmData.INVALID_ID);
 	}
 	
-	/** This method gets the member list for this relation. */
-	public ArrayList<OsmMember> getMembers() {
+	public List<TermiteMember> getMembers() {
 		return members;
 	}
 	
-	/** This method is used for XMl parsing. */
+	public String getRelationType() {
+		return relationType;
+	}
+	
+	//=======================
+	// Package Methods
+	//=======================
+	
 	@Override
-	public void startElement(String name, Attributes attr, OsmData osmData) {
-		//let the parent parse
-		super.startElement(name,attr,osmData);
+	void propertiesUpdated(OsmData osmData) {
+		super.propertiesUpdated(osmData);
 		
-		//parse this node
-		if(name.equalsIgnoreCase("relation")) {
-			//parse common stuff
-			parseElementBase(name, attr);
-		}
-		else if(name.equalsIgnoreCase("member")) {
-			String type = attr.getValue("type");
-			long ref = OsmParser.getLong(attr,"ref",INVALID_ID);
-			String role = attr.getValue("role");
-			OsmMember member = new OsmMember(ref,type,role);
-			members.add(member);
-		}
+		//read the relation type
+		relationType = this.getProperty(OsmModel.TAG_TYPE);
 	}
 	
-	/** This method makes a copy of this data object in the destination OsmData object. */
 	@Override
-	public void copyInto(OsmRelation newRelation) {
-		for(OsmMember member:this.members) {
-			OsmMember newMember = member.createCopy();
-			newRelation.members.add(newMember);
+	void objectDeleted(OsmData osmData) {
+		super.objectDeleted(osmData);
+		
+		for(TermiteMember member:members) {
+			member.termiteObject.removeRelation(this);
 		}
-		super.copyInto(newRelation);
+		this.members.clear();
 	}
 	
-	/** This removes all references to this object from the member list. */
-	public void removeMemberObject(Long oid, String type) {
-		int cnt = members.size();
-		OsmMember member;
-		for(int i = cnt-1; i >= 0; i--) {
-			member = members.get(i);
-			if((member.memberId.equals(oid))&&(member.type.equals(type))) {
-				members.remove(i);
-			}
-		}
-	}
 }

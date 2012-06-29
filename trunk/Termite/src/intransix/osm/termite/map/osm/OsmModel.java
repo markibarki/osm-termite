@@ -38,6 +38,7 @@ public class OsmModel {
 	public final static String TYPE_RELATION = "relation";
 	public final static String TAG_TYPE = "type";
 	public final static String TYPE_MULTIPOLYGON = "multipolygon";
+	public final static String TAG_AREA = "area";
 	
 	public static HashSet<String> GEOMETRIC_KEYS = new HashSet<String>();
 	

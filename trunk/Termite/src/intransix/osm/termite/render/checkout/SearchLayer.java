@@ -22,9 +22,9 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 
 	private Stroke stroke = new BasicStroke(STROKE_WIDTH);
 	
-	Rectangle2D selection = null;
+	private Rectangle2D selection = null;
 	
-	public Rectangle2D getSelection() {
+	public Rectangle2D getSelectionMercator() {
 		return selection;
 	}
 	
@@ -38,7 +38,7 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 	@Override
 	public void render(Graphics2D g2) {
 		
-		AffineTransform localToPixels = getMapPanel().getLocalToPixels();
+		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();
 		if(selection != null) {
 //			g2.transform(localToPixels);
 //			
@@ -47,7 +47,7 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 //				stroke = new BasicStroke(STROKE_WIDTH/zoomScale);
 //				strokeScale = zoomScale;
 //			}
-			Shape shape = localToPixels.createTransformedShape(selection);
+			Shape shape = mercatorToPixels.createTransformedShape(selection);
 			
 			g2.setPaint(FILL_COLOR);
 			g2.fill(shape);
@@ -66,7 +66,7 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 	
 	public void mouseDragged(MouseEvent e) {	
 		if((e.getModifiers() & (MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON1_DOWN_MASK)) != 0) {
-			Point2D point = getLocalPoint(e.getX(),e.getY());
+			Point2D point = getMercatorPoint(e.getX(),e.getY());
 			if(selection == null) {
 				selection = new Rectangle2D.Double(point.getX(),point.getY(),0,0);
 			} 
@@ -93,17 +93,17 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 	}
 	
 	public void mouseReleased(MouseEvent e) {
-		Point2D point = getLocalPoint(e.getX(),e.getY());
+		Point2D point = getMercatorPoint(e.getX(),e.getY());
 		if(selection != null) {
 			selection.add(point);
 			getMapPanel().repaint();
 		}
 	}
 	
-	private Point2D getLocalPoint(int pixX, int pixY) {
+	private Point2D getMercatorPoint(int pixX, int pixY) {
 		Point2D point = new Point2D.Double(pixX,pixY);
-		AffineTransform pixelsToMap = getMapPanel().getPixelsToLocal();
-		pixelsToMap.transform(point, point);
+		AffineTransform pixelsToMercator = getMapPanel().getPixelsToMercator();
+		pixelsToMercator.transform(point, point);
 		return point;
 	}
 }

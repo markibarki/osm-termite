@@ -3,7 +3,6 @@ package intransix.osm.termite.render.tile;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.MapListener;
 import intransix.osm.termite.render.MapPanel;
-import intransix.osm.termite.util.LocalCoordinates;
 import java.awt.*;
 import java.awt.geom.*;
 import java.net.URL;
@@ -26,7 +25,9 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	public final static int MAX_ZOOM_EXCESS = 4;
 	
-	private int zoom = INVALID_ZOOM;
+	private int tileZoom = INVALID_ZOOM;
+	private double mercToTileScale = 1;
+	
 	private HashMap<String,Tile> tileCache = new HashMap<String,Tile>();
 	private String urlTemplate;
 	private int minZoom;
@@ -51,7 +52,7 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	//--------------------------
 	
 	public void reset() {
-		zoom = INVALID_ZOOM;
+		tileZoom = INVALID_ZOOM;
 	}
 	
 	@Override
@@ -60,27 +61,27 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 		if(zoomTooHigh) return;
 		
 		MapPanel mapPanel = getMapPanel();
-		AffineTransform localToPixels = mapPanel.getLocalToPixels();
-		AffineTransform pixelsToLocal = mapPanel.getPixelsToLocal();
+		AffineTransform mercToPixels = mapPanel.getMercatorToPixels();
+		AffineTransform pixelsToMerc = mapPanel.getPixelsToMercator();
 		Rectangle visibleRect = mapPanel.getVisibleRect();
 		
-		//we need to select the zoom
-		if(zoom == INVALID_ZOOM) {
-			onZoom(mapPanel.getZoomScalePixelsPerMeter());
+		//we need to select the desired tile zoom
+		if(tileZoom == INVALID_ZOOM) {
+			setZoomScale(mapPanel.getZoomScalePixelsPerMerc());
 		}
 		
 		//get the current tile zoom
-		int activeZoom = this.zoom;
+		int activeZoom = this.tileZoom;
 		
 		//get tile range needed
 		int[] tileRange = {Integer.MAX_VALUE,Integer.MAX_VALUE,0,0};
-		updateRange(visibleRect.x,visibleRect.y,pixelsToLocal,activeZoom,tileRange);
-		updateRange(visibleRect.x+visibleRect.width,visibleRect.y,pixelsToLocal,activeZoom,tileRange);
-		updateRange(visibleRect.x+visibleRect.width,visibleRect.y+visibleRect.height,pixelsToLocal,activeZoom,tileRange);
-		updateRange(visibleRect.x,visibleRect.y+visibleRect.height,pixelsToLocal,activeZoom,tileRange);
+		updateRange(visibleRect.x,visibleRect.y,pixelsToMerc,activeZoom,tileRange);
+		updateRange(visibleRect.x+visibleRect.width,visibleRect.y,pixelsToMerc,activeZoom,tileRange);
+		updateRange(visibleRect.x+visibleRect.width,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
+		updateRange(visibleRect.x,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
 		
-		//transform to mercator coordinates
-		g2.transform(localToPixels);
+		//transform to tile coordinates
+		g2.transform(mercToPixels);
 		
 		long currentTime = System.currentTimeMillis();
 		boolean tileRequested = false;
@@ -126,8 +127,11 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onZoom(double zoomScalePixelsPerMeter) {
-		double pixelsPerMerc = zoomScalePixelsPerMeter * LocalCoordinates.getMetersPerMerc();
+	public void onZoom(MapPanel mapPanel) {
+		setZoomScale(mapPanel.getZoomScalePixelsPerMerc());
+	}
+	
+	private void setZoomScale(double pixelsPerMerc) {
 		double tilesPerMerc = pixelsPerMerc / pixelsPerTile;
 		int desiredScale = (int)Math.round(Math.log(tilesPerMerc)/Math.log(2));
 		
@@ -138,22 +142,25 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 		else {
 			this.zoomTooHigh = false;
 			if(desiredScale > maxZoom) {
-				zoom = maxZoom;
+				tileZoom = maxZoom;
 			}
 			else if (desiredScale < minZoom) {
-				zoom = minZoom;
+				tileZoom = minZoom;
 			}
 			else {
-				zoom = desiredScale;
+				tileZoom = desiredScale;
 			}
+			
+			mercToTileScale = 1 << tileZoom;
+			
 		}
 	}
 	
 	@Override
-	public void onPanStart() {}
+	public void onPanStart(MapPanel mapPanel) {}
 	
 	@Override
-	public void onPanEnd() {}
+	public void onPanEnd(MapPanel mapPanel) {}
 	
 	//=================================
 	// Protected Methods
@@ -178,22 +185,24 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	//=================================
 	
 	/** This updates the range of tiles as a function of a input point in pixels. */
-	private void updateRange(int pixX, int pixY, AffineTransform pixelsToMap, 
+	private void updateRange(int pixX, int pixY, AffineTransform pixelsToMerc, 
 			int activeZoom, int[] tileRange) {
 		
 		//convert the point to mercator
-		Point2D test = new Point2D.Double();
-		test.setLocation(pixX,pixY);
-		pixelsToMap.transform(test, test);
+		Point2D mxy = new Point2D.Double(pixX,pixY);
+		pixelsToMerc.transform(mxy, mxy);
+		
 		//get the tile this is on
-		int tilesPerMerc = (1 << activeZoom);
-		int tileX = (int)(tilesPerMerc * LocalCoordinates.localToMercX(test.getX()));
-		int tileY = (int)(tilesPerMerc * LocalCoordinates.localToMercY(test.getY()));
+		int mercToTiles = (1 << activeZoom);
+		int tileX = (int)(mercToTiles * mxy.getX());
+		int tileY = (int)(mercToTiles * mxy.getY());
+		
 		//make sure we are not out of the bounds
+		int numTiles = mercToTiles;
 		if(tileX < 0) tileX = 0;
-		if(tileX >= tilesPerMerc) tileX = tilesPerMerc - 1;
+		if(tileX >= numTiles) tileX = numTiles - 1;
 		if(tileY < 0) tileY = 0;
-		if(tileY >= tilesPerMerc) tileY = tilesPerMerc - 1;
+		if(tileY >= numTiles) tileY = numTiles - 1;
 		//update the required range
 		if(tileRange[0] > tileX) tileRange[0] = tileX;
 		if(tileRange[1] > tileY) tileRange[1] = tileY;
@@ -213,7 +222,7 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 
 	/** This method makes an asynchronous request for a tile. */
 	private void requestTile(int x, int y, int zoom, String url) {
-		Tile tile = new Tile(x,y,zoom,url);
+		Tile tile = new Tile(x,y,zoom,pixelsPerTile,url);
 		Image image = getImage(url);
 		tile.setImage(image);
 		if(tileCache.size() > MAX_CACHE_SIZE) {

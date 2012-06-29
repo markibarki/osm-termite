@@ -1,4 +1,4 @@
-package intransix.osm.termite.map.model;
+package intransix.osm.termite.map.osm;
 
 import java.util.*;
 

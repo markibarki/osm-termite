@@ -1,6 +1,6 @@
 package intransix.osm.termite.gui;
 
-import intransix.osm.termite.map.model.TermiteData;
+import intransix.osm.termite.map.osm.OsmData;
 
 /**
  * This interface is used to receive notification when map data is loaded or cleared. 
@@ -12,7 +12,7 @@ public interface MapDataListener {
 	/** This method is called when the map data is set of cleared. It will be called 
 	 * with the value null when the data is cleared. 
 	 * 
-	 * @param feature	The selected map feature
+	 * @param mapData	The map data object
 	 */
-	void onMapData(TermiteData mapData);
+	void onMapData(OsmData mapData);
 }

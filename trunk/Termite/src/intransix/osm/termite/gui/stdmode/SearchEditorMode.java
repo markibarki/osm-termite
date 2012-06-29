@@ -93,23 +93,21 @@ public class SearchEditorMode implements EditorMode, ActionListener {
 	}
 	
 	private void doDownload() {
-		Rectangle2D selection = searchLayer.getSelection();
+		Rectangle2D selection = searchLayer.getSelectionMercator();
 		if(selection == null) {
 			JOptionPane.showMessageDialog(null, "You must select a bounding box to download.");
 			return;
 		}
 		
 		//get the bounding box
-		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(LocalCoordinates.localToMercY(selection.getMaxY())));
-		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercX(selection.getMinX())));
-		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(LocalCoordinates.localToMercY(selection.getMinY())));
-		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(LocalCoordinates.localToMercX(selection.getMaxX())));
+		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMaxY()));
+		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMinX()));
+		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMinY()));
+		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMaxX()));
 		
 		//set local coordinates
-		double mx = LocalCoordinates.localToMercX(selection.getCenterX());
-		double my = LocalCoordinates.localToMercY(selection.getCenterY());
 		MapPanel mapPanel = termiteGui.getMapPanel();
-		mapPanel.resetLocalAnchor(mx, my);
+		mapPanel.resetLocalCoordinates();
 		
 		//run the load data task
 		MapDataRequestTask mdrt = new MapDataRequestTask(termiteGui,minLat,minLon,maxLat,maxLon);

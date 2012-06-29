@@ -1,7 +1,5 @@
-package intransix.osm.termite.map.model;
+package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.osm.OsmMember;
-import intransix.osm.termite.map.osm.OsmRelation;
 import java.util.List;
 
 /**
@@ -22,11 +20,11 @@ public class UpdateRole implements EditData<OsmRelation> {
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
 	public EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
-		List<OsmMember> members = relation.getMembers();
+		List<TermiteMember> members = relation.getMembers();
 		if((index >= members.size())||(index < 0)) {
 			throw new UnchangedException("Invalid index for relation: " + relation.getId());
 		}
-		OsmMember member = members.get(index);
+		TermiteMember member = members.get(index);
 		String initialRole = member.role;
 		UpdateRole undoUpdate = new UpdateRole(initialRole, index);
 		return undoUpdate;
@@ -37,17 +35,16 @@ public class UpdateRole implements EditData<OsmRelation> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	public void writeData(OsmRelation relation) throws UnchangedException, Exception {
-		List<OsmMember> members = relation.getMembers();
+	public void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
+		List<TermiteMember> members = relation.getMembers();
 		if((index >= members.size())||(index < 0)) {
 			throw new UnchangedException("Invalid index for relation: " + relation.getId());
 		}
-		OsmMember member = members.get(index);
+		TermiteMember member = members.get(index);
 		member.role = role;
 		
-		TermiteRelation tRelation = (TermiteRelation)relation.getTermiteObject();
-		TermiteMember tMember = tRelation.getMembers().get(index);
-		tMember.role = role;
+		relation.setDataVersion(editNumber);
+		relation.setContainingObjectDataVersion(editNumber);
 		
 	}	
 }

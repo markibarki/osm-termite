@@ -1,4 +1,4 @@
-package intransix.osm.termite.map.model;
+package intransix.osm.termite.map.osm;
 
 /**
  * This is an exception thrown by an instruction is the instruction fails

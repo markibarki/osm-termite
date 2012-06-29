@@ -12,10 +12,10 @@ import javax.swing.*;
  *
  * @author sutter
  */
-public class MapDataRequestTask extends SwingWorker<TermiteData,Object> {
+public class MapDataRequestTask extends SwingWorker<OsmData,Object> {
 	
 	private String url;
-	private TermiteData termiteData;
+	private OsmData osmData;
 	private TermiteGui gui;
 	private JDialog blocker;
 	
@@ -36,13 +36,11 @@ public class MapDataRequestTask extends SwingWorker<TermiteData,Object> {
 	}
 	
 	@Override
-	public TermiteData doInBackground() {
+	public OsmData doInBackground() {
 		
 		try {
 			OsmParser osmParser = new OsmParser();
-			OsmData osmData = osmParser.parse(url);
-			termiteData = new TermiteData();
-			termiteData.loadData(osmData);
+			osmData = osmParser.parse(url);
 			success = true;
 		}
 		catch(Exception ex) {
@@ -51,7 +49,7 @@ public class MapDataRequestTask extends SwingWorker<TermiteData,Object> {
 			success = false;
 		}
 		
-		return termiteData;
+		return osmData;
 	}
 	
 	@Override
@@ -62,7 +60,7 @@ public class MapDataRequestTask extends SwingWorker<TermiteData,Object> {
 		}
 		
 		if(success) {
-			gui.setMapData(termiteData);
+			gui.setMapData(osmData);
 		}
 		else {
 			JOptionPane.showMessageDialog(null,"There was an error: " + errorMsg);
