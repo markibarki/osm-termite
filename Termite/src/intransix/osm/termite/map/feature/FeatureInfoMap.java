@@ -30,28 +30,28 @@ public class FeatureInfoMap {
 		return treeRoot.getPropertyData(mapObject);	
 	}
 	
-	/** This updates the properties of a feature to match those for the input color.\
-	 * It also returns the matching feature property object. */
-	public FeatureInfo updateFeatureProperties(OsmObject mapObject, String inputColorString) {
-		//find the original color
-		PropertyNode<Object,FeatureInfo> origClassifyingProp = treeRoot.getClassifyingProperty(mapObject);
-				
-		//lookup new color
-		PropertyNode<Object,FeatureInfo> newClassifyingProp = getColorProperty(treeRoot,inputColorString);
-		
-		if(newClassifyingProp == null) {
-//we should store that there was an error!!!
-			newClassifyingProp = treeRoot;
-		}
-		
-		//update the properties
-		if(origClassifyingProp != newClassifyingProp) {
-			removeKeys(mapObject,origClassifyingProp);
-			addKeys(mapObject,newClassifyingProp);
-		}
-		
-		return newClassifyingProp.getData();
-	}
+//	/** This updates the properties of a feature to match those for the input color.\
+//	 * It also returns the matching feature property object. */
+//	public FeatureInfo updateFeatureProperties(OsmObject mapObject, String inputColorString) {
+//		//find the original color
+//		PropertyNode<Object,FeatureInfo> origClassifyingProp = treeRoot.getClassifyingProperty(mapObject);
+//				
+//		//lookup new color
+//		PropertyNode<Object,FeatureInfo> newClassifyingProp = getColorProperty(treeRoot,inputColorString);
+//		
+//		if(newClassifyingProp == null) {
+////we should store that there was an error!!!
+//			newClassifyingProp = treeRoot;
+//		}
+//		
+//		//update the properties
+//		if(origClassifyingProp != newClassifyingProp) {
+//			removeKeys(mapObject,origClassifyingProp);
+//			addKeys(mapObject,newClassifyingProp);
+//		}
+//		
+//		return newClassifyingProp.getData();
+//	}
 	
 	
 	/** This method looks up a PropertyNode for a given input color. */
@@ -80,33 +80,33 @@ public class FeatureInfoMap {
 		return null;
 	}
 	
-	/** This method adds all the keys and values associated with the given 
-	 * classifying property. */
-	private void addKeys(OsmObject mapObject, PropertyNode prop) {
-		KeyNode parentKey = prop.getParentKey();
-		if(parentKey != null) {
-			//add the top level value
-			mapObject.setProperty(parentKey.getName(),prop.getName());
-			//add the parent value
-			PropertyNode parentProp = parentKey.getParentValue();
-			if(parentProp != null) {
-				addKeys(mapObject,parentProp);
-			}
-		}
-	}
-	
-	/** This method removes all the keys associated with the given 
-	 * classifying property. */
-	private void removeKeys(OsmObject mapObject, PropertyNode prop) {
-		KeyNode parentKey = prop.getParentKey();
-		if(parentKey != null) {
-			mapObject.removeProperty(parentKey.getName());
-			PropertyNode parentProp = parentKey.getParentValue();
-			if(parentProp != null) {
-				removeKeys(mapObject,parentProp);
-			}
-		}
-	}
+//	/** This method adds all the keys and values associated with the given 
+//	 * classifying property. */
+//	private void addKeys(OsmObject mapObject, PropertyNode prop) {
+//		KeyNode parentKey = prop.getParentKey();
+//		if(parentKey != null) {
+//			//add the top level value
+//			mapObject.setProperty(parentKey.getName(),prop.getName());
+//			//add the parent value
+//			PropertyNode parentProp = parentKey.getParentValue();
+//			if(parentProp != null) {
+//				addKeys(mapObject,parentProp);
+//			}
+//		}
+//	}
+//	
+//	/** This method removes all the keys associated with the given 
+//	 * classifying property. */
+//	private void removeKeys(OsmObject mapObject, PropertyNode prop) {
+//		KeyNode parentKey = prop.getParentKey();
+//		if(parentKey != null) {
+//			mapObject.removeProperty(parentKey.getName());
+//			PropertyNode parentProp = parentKey.getParentValue();
+//			if(parentProp != null) {
+//				removeKeys(mapObject,parentProp);
+//			}
+//		}
+//	}
 	
 	
 }

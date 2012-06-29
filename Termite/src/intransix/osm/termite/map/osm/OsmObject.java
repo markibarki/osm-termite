@@ -1,13 +1,7 @@
 package intransix.osm.termite.map.osm;
 
 import intransix.osm.termite.map.feature.FeatureInfo;
-import intransix.osm.termite.map.model.TermiteData;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import org.xml.sax.Attributes;
-
+import java.util.*;
 
 /**
  * This method holds data common to OsmObjects
@@ -27,11 +21,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	/** These are values of boolean strings that will be accepted as false. The
 	 * first value is the desired value. */
 	public final static String[] FALSE_STRINGS = {"no","false","f"};
-	
-	public final static int INVALID_LOCAL_VERSION = -1;
-	public final static int INITIAL_LOCAL_VERSION = 0;
-	
-	public final static int INVALID_DATA_VERSION = -1;
 	
 	//=======================
 	// Properties
@@ -54,12 +43,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	//=======================
 	// Constructor
 	//=======================
-	
-	/** The argument is the combined type + osmId string. */
-	OsmObject(String type, long id) {
-		this.type = type;
-		this.id = id;
-	}
 	
 	/** This method gets the ID for the object. */
 	public long getId() {
@@ -93,10 +76,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	
 	public int getDataVersion() {
 		return dataVersion;
-	}
-
-	void setDataVersion(int version) {
-		this.dataVersion = version;
 	}
 	
 	//---------------------------
@@ -142,22 +121,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	//--------------------------
 	// Property Methods
 	//--------------------------
-	
-
-	/** This copies the property values from one map object to another. */
-	public void copyPropertiesInto(OsmObject mapObject) {
-		for(String key:tags.keySet()) {
-			mapObject.tags.put(key,tags.get(key));
-		}
-	}
-	
-	public void setProperty(String tag, String propertyValue) {
-		this.tags.put(tag,propertyValue);
-	}
-	
-	public void removeProperty(String tag) {
-		this.tags.remove(tag);
-	}
 	
 	/** This method returns the given string property. If it is not found 
 	 * null is returned. 
@@ -251,13 +214,49 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	// Package Methods
 	//==========================
 	
+	/** The argument is the combined type + osmId string. */
+	OsmObject(String type, long id) {
+		this.type = type;
+		this.id = id;
+	}
+	
+	/** This method sets the id. */
 	void setId(long id) {
 		this.id = id;
 	}
 	
-		/** This method sets the isLoaded flag for the object. */
+	/** This method sets the isLoaded flag for the object. */
 	void setIsLoaded(boolean isLoaded) {
 		this.isLoaded = isLoaded;
+	}
+	
+	/** This sets the data version. */
+	void setDataVersion(int version) {
+		this.dataVersion = version;
+	}
+	
+	/** This method updates the version number for all relations containing this object. */
+	void setContainingObjectDataVersion(int version) {
+		for(OsmRelation relation:relations) {
+			relation.setDataVersion(version);
+		}
+	}
+	
+	/** This copies the property values from one map object to another. */
+	void copyPropertiesInto(OsmObject mapObject) {
+		for(String key:tags.keySet()) {
+			mapObject.tags.put(key,tags.get(key));
+		}
+	}
+	
+	/** This method adds or updates a property. */
+	void setProperty(String tag, String propertyValue) {
+		this.tags.put(tag,propertyValue);
+	}
+	
+	/** This method removed a property. */
+	void removeProperty(String tag) {
+		this.tags.remove(tag);
 	}
 	
 	void addRelation(OsmRelation relation) {
@@ -268,13 +267,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	
 	void removeRelation(OsmRelation relation) {
 		relations.remove(relation);
-	}
-	
-	/** This method updates the version number for all relations containing this object. */
-	void setContainingObjectDataVersion(int version) {
-		for(OsmRelation relation:relations) {
-			relation.setDataVersion(version);
-		}
 	}
 	
 	/** This method verifies an object can be deleted. There can be no external
