@@ -1,6 +1,6 @@
 package intransix.osm.termite.map.proptree;
 
-import intransix.osm.termite.map.osm.OsmObject;
+import intransix.osm.termite.map.data.OsmObject;
 import java.util.ArrayList;
 
 import org.json.*;

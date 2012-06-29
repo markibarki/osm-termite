@@ -1,9 +1,8 @@
 package intransix.osm.termite.gui.task;
 
-import intransix.osm.termite.map.model.TermiteData;
-import intransix.osm.termite.map.osm.OsmData;
-import intransix.osm.termite.map.osm.OsmModel;
-import intransix.osm.termite.map.osm.OsmParser;
+import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.data.OsmModel;
+import intransix.osm.termite.map.data.OsmParser;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.gui.BlockerDialog;
 import javax.swing.*;

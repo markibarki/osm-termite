@@ -1,6 +1,7 @@
 package intransix.osm.termite.map.model;
 
-import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.map.data.OsmNode;
 import java.util.*;
 
 /**

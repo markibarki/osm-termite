@@ -1,5 +1,9 @@
 package intransix.osm.termite.gui;
 
+import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.map.data.OsmRelation;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +18,6 @@ import intransix.osm.termite.util.MercatorCoordinates;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.structure.RenderLayer;
 
-import intransix.osm.termite.map.osm.*;
 import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.map.theme.Theme;
 

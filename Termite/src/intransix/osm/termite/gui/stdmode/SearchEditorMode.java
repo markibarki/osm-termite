@@ -8,8 +8,6 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 
-import intransix.osm.termite.map.osm.*;
-import intransix.osm.termite.map.model.*;
 import intransix.osm.termite.util.*;
 import intransix.osm.termite.gui.task.MapDataRequestTask;
 

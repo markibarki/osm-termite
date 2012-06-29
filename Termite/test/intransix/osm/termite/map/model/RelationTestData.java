@@ -1,6 +1,9 @@
 package intransix.osm.termite.map.model;
 
-import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.data.OsmRelation;
+import intransix.osm.termite.map.data.OsmMember;
+import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.map.data.OsmRelationSrc;
 import java.util.*;
 
 /**
@@ -44,16 +47,16 @@ public class RelationTestData extends ObjectTestData {
 		}
 		
 		//check members
-		List<TermiteMember> osmMembers = relation.getMembers();
+		List<OsmMember> osmMembers = relation.getMembers();
 		assert(osmMembers.size() == members.size());
 		int cnt = members.size();
 		OsmRelationSrc.Member m1;
-		TermiteMember m2;
+		OsmMember m2;
 		for(int i = 0; i < cnt; i++) {
 			m1 = members.get(i);
 			m2 = osmMembers.get(i);
-			assert(m1.memberId == m2.termiteObject.getId());
-			assert(m1.type.equals(m2.termiteObject.getObjectType()));
+			assert(m1.memberId == m2.osmObject.getId());
+			assert(m1.type.equals(m2.osmObject.getObjectType()));
 			if(m1.role != null) {
 				assert m1.role.equals(m2.role);
 			}

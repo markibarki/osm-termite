@@ -1,6 +1,5 @@
 package intransix.osm.termite.svg;
 
-import intransix.osm.termite.map.model.TermiteLevel;
 import intransix.osm.termite.map.feature.FeatureInfoMap;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;

@@ -3,8 +3,8 @@ package intransix.osm.termite.map.proptree;
 import intransix.osm.termite.map.proptree.PropertyNode;
 import intransix.osm.termite.map.proptree.KeyNode;
 import intransix.osm.termite.map.proptree.DataParser;
-import intransix.osm.termite.map.osm.OsmObject;
-import intransix.osm.termite.map.osm.OsmNode;
+import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.map.data.OsmNode;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.json.JSONObject;
@@ -103,6 +103,8 @@ public class PropertyObjectTest {
 				+ "  ]"
 				+ "}";
 		try {
+			
+			assert(false);
 			
 //			//no data, single level keys
 //			JSONObject json = new JSONObject(jsonString);
