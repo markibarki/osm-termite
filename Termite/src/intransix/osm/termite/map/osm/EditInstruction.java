@@ -56,6 +56,9 @@ public abstract class EditInstruction<T extends OsmObject> {
 
 		//make sure object doesn't exist
 		T osmObject = (T)osmData.getOsmObject(id,objectType,true);
+		if(osmObject == null) {
+			throw new UnchangedException("The object could not be created: " + objectType + " " + id);
+		}
 		if(osmObject.getIsLoaded()) {
 			throw new UnchangedException("Object already exists: " + objectType + " " + id);
 		}

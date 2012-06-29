@@ -38,8 +38,14 @@ public class OsmWaySrc extends OsmSrcData<OsmWay> {
 		nodes.clear();
 		for(Long id:nodeIds) {
 			OsmNode node = osmData.getOsmNode(id, true);
-			nodes.add(node);
-			node.addWay(target);
+			if(node != null) {
+				nodes.add(node);
+				node.addWay(target);
+			}
+			else {
+				//this shouldn't happen
+				//if so, we will ignore the node
+			}
 		}
 	}
 	
