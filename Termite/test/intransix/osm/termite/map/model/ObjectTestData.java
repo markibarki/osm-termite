@@ -12,14 +12,15 @@ import java.util.*;
  */
 public abstract class ObjectTestData {
 	
-	public static TermiteData termiteData;
 	public static OsmData osmData;
 	
 	public long id;
 	public List<Long> rels = new ArrayList<Long>();
 	public HashMap<String,String> props = new HashMap<String,String>();
 	public String featureInfoName;
-	public int minDataVersion;
+	
+	/** The data version is checked only if it is not set to OsmData.INVALID_DATA_VERSION */
+	public int dataVersion = OsmData.INVALID_DATA_VERSION;
 	
 	/** This method validates the given object, comapring the reference data
 	 * to the actual data. */
@@ -28,36 +29,36 @@ public abstract class ObjectTestData {
 	/** This method validates that the given object was deleted. */
 	public abstract void validateDeleted();
 	
-	protected void baseValidate(TermiteObject tObject, OsmObject oObject) {
+	protected void baseValidate(OsmObject osmObject) {
 
 		//check properties - both directions to make sure they are the same
 		for(String key:props.keySet()) {
 			String refValue = props.get(key);
-			String actValue = oObject.getProperty(key);
+			String actValue = osmObject.getProperty(key);
 			assert(refValue.equals(actValue));
 		}
-		Collection<String> actProps = oObject.getPropertyKeys();
+		Collection<String> actProps = osmObject.getPropertyKeys();
 		for(String key:actProps) {
 			String refValue = props.get(key);
-			String actValue = oObject.getProperty(key);
+			String actValue = osmObject.getProperty(key);
 			assert(actValue.equals(refValue));
 		}
 
 		//check relations
-		List<TermiteRelation> actRels = tObject.getRelations();
+		List<OsmRelation> actRels = osmObject.getRelations();
 		int cnt = rels.size();
-System.out.println("sizes - rel:" + rels.size() + ", act:" + actRels.size());
 		assert(cnt == actRels.size());
-		for(TermiteRelation tr:actRels) {
-			OsmRelation or = tr.getOsmObject();
+		for(OsmRelation or:actRels) {
 			assert(rels.contains(or.getId()));	
 		}
 		
 		//check feature info
-		FeatureInfo fi = tObject.getFeatureInfo();
+		FeatureInfo fi = osmObject.getFeatureInfo();
 		if(fi == null) assert(featureInfoName == null);
 		else assert(featureInfoName.equals(fi.getName()));
 		
-		assert(tObject.getDataVersion() >= minDataVersion);
+		if(dataVersion != OsmData.INVALID_DATA_VERSION) {
+			assert(osmObject.getDataVersion() == dataVersion);
+		}
 	}
 }

@@ -281,6 +281,7 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	}
 	
 	void objectCreated(OsmData osmData) {
+		//classify objects and add to feature list for all nodes and ways. Not for relations
 		if((this instanceof OsmNode)||(this instanceof OsmWay)) {
 			featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
 			int zorder = featureInfo.getZorder();
@@ -292,13 +293,16 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	}
 	
 	void propertiesUpdated(OsmData osmData) {
-		int initialZorder = featureInfo.getZorder();
-		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
-		int newZorder = featureInfo.getZorder();
-		
-		//update the graduated list
-		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
-		orderedList.move(this,newZorder,initialZorder);
+		//classify objects and add to feature list for all nodes and ways. Not for relations
+		if((this instanceof OsmNode)||(this instanceof OsmWay)) {
+			int initialZorder = featureInfo.getZorder();
+			featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
+			int newZorder = featureInfo.getZorder();
+
+			//update the graduated list
+			GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
+			orderedList.move(this,newZorder,initialZorder);
+		}
 	}
 	
 	void objectDeleted(OsmData osmData) {

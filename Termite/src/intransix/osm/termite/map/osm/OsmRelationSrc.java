@@ -25,6 +25,11 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 		super(OsmModel.TYPE_RELATION,OsmData.INVALID_ID);
 	}
 	
+	/** This adds a member. */
+	public void addMember(long id, String objectType, String role) {
+		members.add(new Member(id,objectType,role));
+	}
+	
 	/** This method retrieves the member list. It can be used to populate the
 	 * member list. 
 	 * 
@@ -101,7 +106,7 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 	// Internal Class
 	//=========================== 
 	
-	public class Member {
+	public static class Member {
 		public String role;
 		public String type;
 		public Long memberId;

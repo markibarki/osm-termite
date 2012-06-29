@@ -46,6 +46,16 @@ public class OsmWay extends OsmObject {
 		super(OsmModel.TYPE_WAY,OsmData.INVALID_ID);
 	}
 	
+	/** This overrides the base method to add functionality. */
+	@Override
+	void objectCreated(OsmData osmData) {
+		super.objectCreated(osmData);
+		
+		//read if this is an area
+		boolean defaultIsArea = (getFeatureInfo().getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
+		isArea = this.getBooleanProperty(OsmModel.TAG_AREA,defaultIsArea);
+	}
+	
 	/** This method should be calle when properties are updated. */
 	@Override
 	void propertiesUpdated(OsmData osmData) {
