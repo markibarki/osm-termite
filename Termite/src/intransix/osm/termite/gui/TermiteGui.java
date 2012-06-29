@@ -16,7 +16,7 @@ import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
 import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.structure.RenderLayer;
+import intransix.osm.termite.render.map.RenderLayer;
 
 import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.map.theme.Theme;
