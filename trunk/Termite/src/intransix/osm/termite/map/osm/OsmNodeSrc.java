@@ -58,23 +58,6 @@ public class OsmNodeSrc extends OsmSrcData<OsmNode> {
 		}
 	}
 	
-	/** Copies the source data to this instance. */
-	@Override
-	public void copyInto(OsmNode target, OsmData osmData) {
-		super.copyInto(target,osmData);
-		
-		target.setPosition(mxy.getX(), mxy.getY());
-	}
-	
-	/** This method copies the src data to this object. */
-	@Override
-	public void copyFrom(OsmNode src) {
-		super.copyFrom(src);
-		
-		Point2D point = src.getPoint();
-		this.mxy = new Point2D.Double(point.getX(),point.getY());
-	}
-	
 	//===================
 	// Package Methods
 	//===================
@@ -82,6 +65,23 @@ public class OsmNodeSrc extends OsmSrcData<OsmNode> {
 	/** Constructor. */
 	OsmNodeSrc(long id) {
 		super(OsmModel.TYPE_NODE,id);
+	}
+	
+	/** Copies the source data to this instance. */
+	@Override
+	void copyInto(OsmNode target, OsmData osmData) {
+		super.copyInto(target,osmData);
+		
+		target.setPosition(mxy.getX(), mxy.getY());
+	}
+	
+	/** This method copies the src data to this object. */
+	@Override
+	void copyFrom(OsmNode src) {
+		super.copyFrom(src);
+		
+		Point2D point = src.getPoint();
+		this.mxy = new Point2D.Double(point.getX(),point.getY());
 	}
 	
 }
