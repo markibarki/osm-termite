@@ -25,40 +25,13 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 		super(OsmModel.TYPE_RELATION,OsmData.INVALID_ID);
 	}
 	
+	/** This method retrieves the member list. It can be used to populate the
+	 * member list. 
+	 * 
+	 * @return 
+	 */
 	public List<Member> getMembers() {
 		return members;
-	}
-	
-	/** Copies the source data to this instance. */
-	@Override
-	public void copyInto(OsmRelation target, OsmData osmData) {
-		super.copyInto(target,osmData);
-		
-		List<TermiteMember> osmMembers = target.getMembers();
-		osmMembers.clear();
-		for(Member m:members) {
-			OsmObject osmObject = osmData.getOsmObject(m.memberId,m.type,true);
-			if(osmObject != null) {
-				osmMembers.add(new TermiteMember(osmObject,m.role));
-				osmObject.addRelation(target);
-			}
-			else {
-				//this shouldn't happen - the type was unrecognized.
-			}
-		}
-	}
-	
-	/** This method copies the src data to this object. */
-	@Override
-	public void copyFrom(OsmRelation src) {
-		super.copyFrom(src);
-		
-		List<TermiteMember> sm = src.getMembers();
-		members.clear();
-		for(TermiteMember m:sm) {
-			Member member = new Member(m.termiteObject.getId(),m.termiteObject.getObjectType(),m.role);
-			members.add(member);
-		}
 	}
 	
 	//-------------------------
@@ -91,6 +64,42 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 	OsmRelationSrc(long id) {
 		super(OsmModel.TYPE_RELATION, id);
 	}
+	
+	/** Copies the source data to this instance. */
+	@Override
+	void copyInto(OsmRelation target, OsmData osmData) {
+		super.copyInto(target,osmData);
+		
+		List<TermiteMember> osmMembers = target.getMembers();
+		osmMembers.clear();
+		for(Member m:members) {
+			OsmObject osmObject = osmData.getOsmObject(m.memberId,m.type,true);
+			if(osmObject != null) {
+				osmMembers.add(new TermiteMember(osmObject,m.role));
+				osmObject.addRelation(target);
+			}
+			else {
+				//this shouldn't happen - the type was unrecognized.
+			}
+		}
+	}
+	
+	/** This method copies the src data to this object. */
+	@Override
+	void copyFrom(OsmRelation src) {
+		super.copyFrom(src);
+		
+		List<TermiteMember> sm = src.getMembers();
+		members.clear();
+		for(TermiteMember m:sm) {
+			Member member = new Member(m.termiteObject.getId(),m.termiteObject.getObjectType(),m.role);
+			members.add(member);
+		}
+	}
+	
+	//===========================
+	// Internal Class
+	//=========================== 
 	
 	public class Member {
 		public String role;

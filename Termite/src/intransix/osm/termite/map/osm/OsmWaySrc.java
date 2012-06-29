@@ -24,40 +24,10 @@ public class OsmWaySrc extends OsmSrcData<OsmWay> {
 		super(OsmModel.TYPE_WAY,OsmData.INVALID_ID);
 	}
 	
-	/** This method gets the nodes for this way. */
+	/** This method gets the nodes for this way. It can be used to populate the
+	 * nodes in the way. */
 	public List<Long> getNodeIds() {
 		return nodeIds;
-	}
-	
-	/** Copies the source data to this instance. */
-	@Override
-	public void copyInto(OsmWay target, OsmData osmData) {
-		super.copyInto(target,osmData);
-		
-		Collection nodes = target.getNodes();
-		nodes.clear();
-		for(Long id:nodeIds) {
-			OsmNode node = osmData.getOsmNode(id, true);
-			if(node != null) {
-				nodes.add(node);
-				node.addWay(target);
-			}
-			else {
-				//this shouldn't happen
-				//if so, we will ignore the node
-			}
-		}
-	}
-	
-	/** This method copies the src data to this object. */
-	@Override
-	public void copyFrom(OsmWay src) {
-		super.copyFrom(src);
-		
-		nodeIds.clear();
-		for(OsmNode node:src.getNodes()) {
-			nodeIds.add(node.getId());
-		}
 	}
 	
 	//-----------------------
@@ -87,5 +57,36 @@ public class OsmWaySrc extends OsmSrcData<OsmWay> {
 	
 	OsmWaySrc(long id) {
 		super(OsmModel.TYPE_WAY,id);
+	}
+	
+	/** Copies the source data to this instance. */
+	@Override
+	void copyInto(OsmWay target, OsmData osmData) {
+		super.copyInto(target,osmData);
+		
+		Collection nodes = target.getNodes();
+		nodes.clear();
+		for(Long id:nodeIds) {
+			OsmNode node = osmData.getOsmNode(id, true);
+			if(node != null) {
+				nodes.add(node);
+				node.addWay(target);
+			}
+			else {
+				//this shouldn't happen
+				//if so, we will ignore the node
+			}
+		}
+	}
+	
+	/** This method copies the src data to this object. */
+	@Override
+	void copyFrom(OsmWay src) {
+		super.copyFrom(src);
+		
+		nodeIds.clear();
+		for(OsmNode node:src.getNodes()) {
+			nodeIds.add(node.getId());
+		}
 	}
 }

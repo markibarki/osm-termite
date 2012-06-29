@@ -9,7 +9,16 @@ import java.util.*;
  */
 public class GraduatedList<T> {
 	
+	//=======================
+	// Private Properties
+	//=======================
+	
+	
 	private List<IndexedList<T>> lists = new ArrayList<IndexedList<T>>();
+	
+	//=======================
+	// Public Methods
+	//=======================
 	
 	/** This method returns the list of lists. */
 	public List<IndexedList<T>> getLists() {
@@ -34,6 +43,10 @@ public class GraduatedList<T> {
 		add(obj,toZorder);
 	}
 	
+	//=======================
+	// Private Methods
+	//=======================
+	
 	/** This looks up the list with the given zorder. If one does not exits,
 	 * a new one is created and added in the proper location. */
 	private List<T> getList(int zorder) {
@@ -54,6 +67,10 @@ public class GraduatedList<T> {
 		lists.add(index,list);
 		return list;
 	}
+	
+	//=======================
+	// Internal Classes
+	//=======================
 	
 	/** This is a list that has an index integer on it. */
 	public class IndexedList<F> extends ArrayList<F> {

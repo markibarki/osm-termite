@@ -4,10 +4,16 @@ import java.util.*;
 import org.xml.sax.Attributes;
 
 /**
- *
+ * This is the base class for a source object. They are used to set the data for
+ * creating an object and for parsing downloaded data.
+ * 
  * @author sutter
  */
 public abstract class OsmSrcData<T extends OsmObject> {
+	
+	//======================
+	// Properties
+	//======================
 	
 	private long id;
 	private String type;
@@ -21,47 +27,26 @@ public abstract class OsmSrcData<T extends OsmObject> {
 	
 	private List<PropertyPair> properties = new ArrayList<PropertyPair>();
 	
+	//======================
+	// Public Methods
+	//======================
+	
+	/** This method gets the id. */
 	public long getId() {
 		return id;
 	}
 	
+	/** This method gets the object type. */
 	public String getObjectType() {
 		return type;
-	}
-	
-	/** This method copies the src data to the target. */
-	public void copyInto(T targetData, OsmData osmData) {
-		targetData.setId(id);
-		for(PropertyPair pp:properties) {
-			targetData.setProperty(pp.key,pp.value);
-		}
-	}
-	
-	/** This method copies the src data to this object. */
-	public void copyFrom(T srcData) {
-		this.id = srcData.getId();
-		this.type = srcData.getObjectType();
-		properties.clear();
-		for(String key:srcData.getPropertyKeys()) {
-			properties.add(new PropertyPair(key,srcData.getProperty(key)));
-		}
 	}
 	
 	//-----------------------
 	// Parsing Methods
 	//-----------------------
 	
-	OsmSrcData(String type, long id) {
-		this.type = type;
-		this.id = id;
-	}
-	
-	void setId(long id) {
-		this.id = id;
-	}
-	
 	/** This method is used in XMl parsing. */
-	void startElement(String name, Attributes attr, OsmData osmData) {
+	public void startElement(String name, Attributes attr, OsmData osmData) {
 		//parse a key/value pair
 		if(name.equalsIgnoreCase("tag")) {
 			String key = attr.getValue("k");
@@ -70,7 +55,7 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		}
 	}
 	
-	void endElement(OsmData osmData) {
+	public void endElement(OsmData osmData) {
 		//create the osm object for this data
 		OsmObject object = osmData.getOsmObject(id, type, true);
 		if(object != null) {
@@ -79,6 +64,39 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		}
 		else {
 			//this shouldn't happen - the type was unrecognized
+		}
+	}
+	
+	//=======================
+	// Package Methods
+	//=======================
+	
+	/** Constructor where the id is assigned. */
+	OsmSrcData(String type, long id) {
+		this.type = type;
+		this.id = id;
+	}
+	
+	/** This method sets the id. */
+	void setId(long id) {
+		this.id = id;
+	}
+	
+	/** This method copies the src data to the target. */
+	void copyInto(T targetData, OsmData osmData) {
+		targetData.setId(id);
+		for(PropertyPair pp:properties) {
+			targetData.setProperty(pp.key,pp.value);
+		}
+	}
+	
+	/** This method copies the src data to this object. */
+	void copyFrom(T srcData) {
+		this.id = srcData.getId();
+		this.type = srcData.getObjectType();
+		properties.clear();
+		for(String key:srcData.getPropertyKeys()) {
+			properties.add(new PropertyPair(key,srcData.getProperty(key)));
 		}
 	}
 	
@@ -93,7 +111,11 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		timestamp = attr.getValue("timestamp");
 	}
 	
-	public class PropertyPair {
+	//=========================
+	// Internal Classes
+	//=========================
+	
+	private class PropertyPair {
 		
 		public PropertyPair(String key, String value) {
 			this.key = key;

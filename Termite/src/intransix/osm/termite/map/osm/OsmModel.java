@@ -43,9 +43,10 @@ public class OsmModel {
 	public static HashSet<String> GEOMETRIC_KEYS = new HashSet<String>();
 	
 	//data request
-	public final static String SERVER = "http://api.openstreetmap.org";
-	public final static String PATH = "/api/0.6/map?bbox=";
+	public static String SERVER = "http://api.openstreetmap.org";
+	public static String PATH = "/api/0.6/map?bbox=";
 	
+	/** This method gets a URL for a data request for a bouding box. */
 	public static String getBBoxRequestUrl(double minLat, double minLon, double maxLat, double maxLon) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(SERVER);
