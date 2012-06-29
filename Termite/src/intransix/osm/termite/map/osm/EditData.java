@@ -1,9 +1,12 @@
 package intransix.osm.termite.map.osm;
 
 /**
- * This object is used to edit data on OsmObjects. It is implemented as an abstract
+ * <p>This object is used to edit data on OsmObjects. It is implemented as an abstract
  * class instead of an interface to the inherited methods to be package methods and
- * not public methods.
+ * not public methods.</p>
+ * 
+ * <p> An edit data object should respect the data version rules described in the
+ * notes in EditAction</p> 
  * 
  * @author sutter
  */

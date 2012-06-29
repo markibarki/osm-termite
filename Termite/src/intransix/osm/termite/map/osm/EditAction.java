@@ -10,6 +10,14 @@ import java.util.*;
  * 
  * <p>The action will return true if it succeeds. If an exception is thrown the
  * data may be corrupt and the program should exit without saving any data.</p>
+ * 
+ * <p>Each action execution (or undo) will be given an edit number. Objects which
+ * are updated have their data version set to this edit number to allow visibility
+ * as to when data for an object changes. When data on an object updated, the 
+ * object as well as any object that contains it (a way contains nodes and a relation
+ * contains nodes, ways or relations) has the version updated. The version number
+ * update is not cascaded beyond this.
+
  * @author sutter
  */
 public class EditAction {
