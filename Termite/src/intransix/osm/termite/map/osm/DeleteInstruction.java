@@ -1,16 +1,23 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.model.TermiteData;
-import intransix.osm.termite.map.osm.*;
-
 /**
- *
+ * This is a delete instruction.
+ * 
  * @author sutter
  */
 public class DeleteInstruction<T extends OsmObject> extends EditInstruction {
 	
+	//========================
+	// Properties
+	//========================
+	
 	private OsmSrcData<T> srcData;
 	
+	//========================
+	// Public Methods
+	//========================
+	
+	/** Constructor */
 	public DeleteInstruction(T objectToDelete) {
 		//get a copy of the object to delete
 		long id = objectToDelete.getId();
@@ -31,11 +38,19 @@ public class DeleteInstruction<T extends OsmObject> extends EditInstruction {
 		}
 	}
 	
-	public void doInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception {
+	//========================
+	// Package Methods
+	//========================
+	
+	/** This method executes the instruction. */
+	@Override
+	void doInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception {
 		executeDelete(osmData,srcData,editNumber);
 	}
 	
-	public void undoInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception {
+	/** This method undoes the instruction. */
+	@Override
+	void undoInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception {
 		executeCreate(osmData,srcData,editNumber);
 	}
 

@@ -15,8 +15,10 @@ public class OsmData {
 	public final static long INVALID_ID = 0;
 	
 	private final static long FIRST_ID = -1;
+	private final static int FIRST_EDIT_NUMBER = 1;
 	
 	private long nextId = FIRST_ID;
+	private int nextEditNumber = FIRST_EDIT_NUMBER;
 	
 	private String version;
 	private String generator;
@@ -91,10 +93,16 @@ public class OsmData {
 	// Package Methods
 	//=============================
 	
-	/** This method gets the next available termite id, to be used for generating
+	/** This method gets the next available map object id, to be used for generating
 	 * temporary IDs. */
 	synchronized long getNextId() {
 		return nextId--;
+	}
+	
+	/** This method gets the next available edit number, to be used for data
+	 * versioning within the editor. */
+	synchronized int getNextEditNumber() {
+		return nextEditNumber++;
 	}
 	
 	OsmObject getOsmObject(long id, String type, boolean createReference) {

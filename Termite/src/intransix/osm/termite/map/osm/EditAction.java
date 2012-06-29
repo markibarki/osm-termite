@@ -1,38 +1,61 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.osm.EditInstruction;
-import intransix.osm.termite.map.osm.OsmData;
 import java.util.*;
 
 /**
- *
+ * <p>All edits to data should be done using an EditAction. An edit action includes
+ * a set of instructions, corresponding to changes to the data. The actions should
+ * be run in the UI thread, making all data changes synchronized in this thread.
+ * Actions can also be undone, providing a mechanism for undo/redo functionality.</p>
+ * 
+ * <p>The action will return true if it succeeds. If an exception is thrown the
+ * data may be corrupt and the program should exit without saving any data.</p>
  * @author sutter
  */
 public class EditAction {
 	
-	private int editNumber;
+	//========================
+	// Properties
+	//========================
+	
 	private OsmData osmData;
 	private String desc;
 	private List<EditInstruction> instructions = new ArrayList<EditInstruction>();
 	
+	//========================
+	// Public Methods
+	//========================
+	
+	/** Constructor */
 	public EditAction(OsmData osmData, String desc) {
 		this.osmData = osmData;
 		this.desc = desc;
 	}
 	
+	/** This method sets the description. One place this is used is in the UI
+	 * for undo and redo actions, to prompt the user as to what the undo/redo
+	 * will do.
+	 * 
+	 * @param desc 
+	 */
 	public void setDesc(String desc) {
 		this.desc = desc;
 	}
 	
+	/** This retrieves the description for the action. */
 	public String getDesc() {
 		return desc;
 	}
 	
+	/** This method adds an instruction to the action. */
 	public void addInstruction(EditInstruction instr) {
 		instructions.add(instr);
 	}
 	
+	/** This method executes the action. It should be done in the UI thread. */
 	public boolean doAction() throws Exception {
+		int editNumber = osmData.getNextEditNumber();
+		
 		int index = 0;
 		int cnt = instructions.size();
 		EditInstruction instr;
@@ -56,7 +79,15 @@ public class EditAction {
 		return true;
 	}
 	
+	/** This method undoes the action. It should be done in the UI thread. It should
+	 * also be done only after the action has been done the first time. 
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
 	public boolean undoAction() throws Exception {
+		int editNumber = osmData.getNextEditNumber();
+		
 		int index = 0;
 		int cnt = instructions.size();
 		EditInstruction instr;

@@ -3,23 +3,41 @@ package intransix.osm.termite.map.osm;
 import java.util.List;
 
 /**
- *
+ * This class removes a member from a relation.
+ * 
  * @author sutter
  */
-public class UpdateRemoveMember implements EditData<OsmRelation> {
+public class UpdateRemoveMember extends EditData<OsmRelation> {
 
+	//========================
+	// Pproperties
+	//========================
+	
 	private OsmData osmData;
 	private int index;
 	
+	//========================
+	// Public Methods
+	//========================
+	
+	/** Constructor
+	 * 
+	 * @param osmData		The data manager
+	 * @param index			The index of the member to remove
+	 */
 	public UpdateRemoveMember(OsmData osmData, int index) {
 		this.osmData = osmData;
 		this.index = index;
 	}
 	
+	//========================
+	// Package Methods
+	//========================
+	
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	public EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
+	EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
 		
 		//get the undo command
 		List<TermiteMember> members = relation.getMembers();
@@ -49,7 +67,7 @@ public class UpdateRemoveMember implements EditData<OsmRelation> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	public void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
+	void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
 		//set the property
 		List<TermiteMember> members = relation.getMembers();
 		if((index < 0)||(index >= members.size())) {

@@ -1,26 +1,35 @@
 package intransix.osm.termite.map.osm;
 
-import intransix.osm.termite.map.model.TermiteData;
-import intransix.osm.termite.map.osm.UnchangedException;
-import intransix.osm.termite.map.osm.EditData;
-import intransix.osm.termite.map.osm.OsmObject;
-
 /**
- * This EditData object is used to create, update and delete a property. To create,
- * the initial key should be null. To delete, the final key should be null and the final
- * value is unused. To update a key value without changing the key, the initial and
- * final keys should be the same. To change the key without changing the value, the final
- * and initial keys should be different. The final value should still be entered. If the
- * final value is set to null, this will delete the key.
+ * This EditData object is used to create, update and delete a property.
+ * 
  * @author sutter
  */
-public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
+public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
+	
+	//========================
+	// Properties
+	//========================
 	
 	private String initialKey;
 	private String finalKey;
 	private String finalValue;
 	private OsmData osmData;
 	
+	//========================
+	// Public Methods
+	//========================
+	
+	/** Constructor
+	 * 
+	 * @param osmData		The data manager object
+	 * @param initialKey	The initial value of the key. If this is null, a new property
+	 *						will be created.
+	 * @param finalKey		The final value of the key.  If this is null, the property
+	 *						will be deleted. If the key value is not being changed, the initial
+	 *						key and final key should be the same. 
+	 * @param finalValue	The final value of the key. If this is null the key is deleted.
+	 */
 	public UpdateObjectProperty(OsmData osmData, String initialKey, String finalKey, String finalValue) {
 		this.osmData = osmData;
 		this.initialKey = initialKey;
@@ -28,10 +37,14 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 		this.finalValue = finalValue;
 	}
 	
+	//========================
+	// Package Methods
+	//========================
+	
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	public EditData<T> readInitialData(T osmObject) throws UnchangedException {
+	EditData<T> readInitialData(T osmObject) throws UnchangedException {
 		String initialValue;
 		if(initialKey != null) {
 			initialValue = osmObject.getProperty(initialKey);
@@ -48,7 +61,7 @@ public class UpdateObjectProperty<T extends OsmObject> implements EditData<T> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	public void writeData(T osmObject, int editNumber) throws UnchangedException, Exception {
+	void writeData(T osmObject, int editNumber) throws UnchangedException, Exception {
 		//if the key changes, delete the old property
 		if(((initialKey != null)&&(!initialKey.equals(finalKey)))
 			||(finalValue == null)) {

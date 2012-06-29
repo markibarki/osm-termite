@@ -3,10 +3,17 @@ package intransix.osm.termite.map.osm;
 import java.util.List;
 
 /**
- *
+ * This edit instruction adds a member to a relation.
+ * 
  * @author sutter
  */
-public class UpdateInsertMember implements EditData<OsmRelation> {
+public class UpdateInsertMember extends EditData<OsmRelation> {
+	
+	//========================
+	// Properties
+	//========================
+	
+	private final static int INVALID_INDEX = -1;
 	
 	private OsmData osmData;
 	private long id;
@@ -14,6 +21,18 @@ public class UpdateInsertMember implements EditData<OsmRelation> {
 	private String role;
 	private int index;
 	
+	//========================
+	// Public Methods
+	//========================
+	
+	/** Constructor
+	 * 
+	 * @param osmData		The data manager object
+	 * @param id			The id of the object to insert into the relation.
+	 * @param objectType	The type of object to insert into the relation.
+	 * @param role			The role of the object in the relation
+	 * @param nodeIndex		The position in the relation to insert the object.
+	 */
 	public UpdateInsertMember(OsmData osmData, long id, String objectType, String role, int nodeIndex) {
 		this.osmData = osmData;
 		this.id = id;
@@ -22,10 +41,29 @@ public class UpdateInsertMember implements EditData<OsmRelation> {
 		this.index = nodeIndex;
 	}
 	
+	/** Constructor to insert the object at the end of the list
+	 * 
+	 * @param osmData		The data manager object
+	 * @param id			The id of the object to insert into the relation.
+	 * @param objectType	The type of object to insert into the relation.
+	 * @param role			The role of the object in the relation
+	 */
+	public UpdateInsertMember(OsmData osmData, long id, String objectType, String role) {
+		this.osmData = osmData;
+		this.id = id;
+		this.objectType = objectType;
+		this.role = role;
+		this.index = INVALID_INDEX;
+	}
+	
+	//========================
+	// Package Methods
+	//========================
+	
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a UnchangedException, which means no data was changed. */
 	@Override
-	public EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
+	EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
 		UpdateRemoveMember undoUpdate = new UpdateRemoveMember(osmData,index);
 		return undoUpdate;
 	}
@@ -35,10 +73,13 @@ public class UpdateInsertMember implements EditData<OsmRelation> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	public void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
+	void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
 		
 		//set the property
 		List<TermiteMember> members = relation.getMembers();
+		if(index == INVALID_INDEX) {
+			index = members.size();
+		}
 		if((index < 0)||(index > members.size())) {
 			throw new UnchangedException("Invalid index for relation: " + index);
 		}

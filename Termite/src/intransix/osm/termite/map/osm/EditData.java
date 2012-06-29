@@ -1,15 +1,17 @@
 package intransix.osm.termite.map.osm;
 
 /**
- * This object is used to edit data on OsmObjects.
+ * This object is used to edit data on OsmObjects. It is implemented as an abstract
+ * class instead of an interface to the inherited methods to be package methods and
+ * not public methods.
  * 
  * @author sutter
  */
-public interface EditData<T extends OsmObject> {
+public abstract class EditData<T extends OsmObject> {
 	
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
-	public EditData<T> readInitialData(T osmObject) throws UnchangedException;
+	abstract EditData<T> readInitialData(T osmObject) throws UnchangedException;
 		
 	/** This method writes the data to the object. This method can throw an RecoverableException,
 	 * which means the state of the data was not modified, or a different exception, in which case it
@@ -19,5 +21,5 @@ public interface EditData<T extends OsmObject> {
 	 * @param editNumber	The version associated with this action doing this edit.
 	 * @return				The value for the property
 	 * */
-	public void writeData(T osmObject, int editNumber) throws UnchangedException, Exception;
+	abstract void writeData(T osmObject, int editNumber) throws UnchangedException, Exception;
 }
