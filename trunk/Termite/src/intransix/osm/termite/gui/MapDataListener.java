@@ -1,6 +1,6 @@
 package intransix.osm.termite.gui;
 
-import intransix.osm.termite.map.osm.OsmData;
+import intransix.osm.termite.map.data.OsmData;
 
 /**
  * This interface is used to receive notification when map data is loaded or cleared. 

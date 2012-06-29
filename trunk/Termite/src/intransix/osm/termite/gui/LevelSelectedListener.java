@@ -1,7 +1,7 @@
 package intransix.osm.termite.gui;
 
-import intransix.osm.termite.map.osm.OsmWay;
-import intransix.osm.termite.map.osm.OsmRelation;
+import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.map.data.OsmRelation;
 
 /**
  * This interface is used to receive notification when a map level is selected. 

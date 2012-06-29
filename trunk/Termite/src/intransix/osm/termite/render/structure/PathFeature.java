@@ -1,8 +1,11 @@
 package intransix.osm.termite.render.structure;
 
-import intransix.osm.termite.map.osm.TermiteMember;
-import intransix.osm.termite.map.model.*;
-import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.data.OsmNode;
+import intransix.osm.termite.map.data.OsmModel;
+import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.map.data.OsmRelation;
+import intransix.osm.termite.map.data.OsmMember;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
@@ -111,17 +114,17 @@ public class PathFeature implements Feature {
 			//-----------------
 			// Multipoly Case
 			//-----------------
-			List<TermiteMember> members = multipoly.getMembers();
+			List<OsmMember> members = multipoly.getMembers();
 			
-			if(members.get(0).termiteObject == osmWay) {
+			if(members.get(0).osmObject == osmWay) {
 				//main way
 				
 				this.isArea = osmWay.getIsArea();
 				Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
-				for(TermiteMember member:members) {
-					if(member.termiteObject instanceof OsmWay) {
-						addWayToPath(path,(OsmWay)member.termiteObject,isArea, mercatorToLocal);
+				for(OsmMember member:members) {
+					if(member.osmObject instanceof OsmWay) {
+						addWayToPath(path,(OsmWay)member.osmObject,isArea, mercatorToLocal);
 					}
 				}
 				

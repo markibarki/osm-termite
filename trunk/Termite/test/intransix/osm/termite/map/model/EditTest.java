@@ -1,6 +1,26 @@
 package intransix.osm.termite.map.model;
 
-import intransix.osm.termite.map.osm.*;
+import intransix.osm.termite.map.data.UpdatePosition;
+import intransix.osm.termite.map.data.OsmNode;
+import intransix.osm.termite.map.data.OsmModel;
+import intransix.osm.termite.map.data.DeleteInstruction;
+import intransix.osm.termite.map.data.OsmRelationSrc;
+import intransix.osm.termite.map.data.EditAction;
+import intransix.osm.termite.map.data.UpdateInsertMember;
+import intransix.osm.termite.map.data.OsmWaySrc;
+import intransix.osm.termite.map.data.EditInstruction;
+import intransix.osm.termite.map.data.OsmNodeSrc;
+import intransix.osm.termite.map.data.UpdateRemoveNode;
+import intransix.osm.termite.map.data.UpdateInstruction;
+import intransix.osm.termite.map.data.OsmRelation;
+import intransix.osm.termite.map.data.UpdateObjectProperty;
+import intransix.osm.termite.map.data.UpdateInsertNode;
+import intransix.osm.termite.map.data.UpdateMemberOrder;
+import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.data.CreateInstruction;
+import intransix.osm.termite.map.data.UpdateRemoveMember;
+import intransix.osm.termite.map.data.UpdateRole;
 import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.util.JsonIO;
 import intransix.osm.termite.util.MercatorCoordinates;

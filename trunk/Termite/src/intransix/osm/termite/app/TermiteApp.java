@@ -1,17 +1,16 @@
 package intransix.osm.termite.app;
 
+import intransix.osm.termite.map.data.OsmModel;
 import intransix.osm.termite.map.theme.Theme;
-import intransix.osm.termite.map.osm.EditAction;
-import intransix.osm.termite.map.osm.EditInstruction;
-import intransix.osm.termite.map.osm.UpdatePosition;
-import intransix.osm.termite.map.osm.UpdateInsertMember;
-import intransix.osm.termite.map.model.*;
+import intransix.osm.termite.map.data.EditAction;
+import intransix.osm.termite.map.data.EditInstruction;
+import intransix.osm.termite.map.data.UpdatePosition;
+import intransix.osm.termite.map.data.UpdateInsertMember;
 import intransix.osm.termite.map.feature.FeatureInfoMap;
 import intransix.osm.termite.render.MapPanel;
 
 import intransix.osm.termite.util.JsonIO;
 
-import intransix.osm.termite.map.osm.*;
 
 import intransix.osm.termite.render.structure.RenderLayer;
 import intransix.osm.termite.render.edit.EditLayer;
@@ -36,8 +35,6 @@ public class TermiteApp {
 	//=====================
 	
 	private TermiteGui gui;
-	
-	private TermiteData termiteData;
 	
 	private Theme theme;
 	private FeatureInfoMap featureInfoMap;

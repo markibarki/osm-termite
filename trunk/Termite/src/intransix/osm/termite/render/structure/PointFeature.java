@@ -1,7 +1,7 @@
 package intransix.osm.termite.render.structure;
 
-import intransix.osm.termite.map.osm.OsmNode;
-import intransix.osm.termite.map.osm.OsmData;
+import intransix.osm.termite.map.data.OsmNode;
+import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;

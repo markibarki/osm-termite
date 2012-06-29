@@ -1,6 +1,6 @@
 package intransix.osm.termite.gui;
 
-import intransix.osm.termite.map.osm.OsmObject;
+import intransix.osm.termite.map.data.OsmObject;
 
 /**
  * This interface is used to receive notification when a map feature is selected. 

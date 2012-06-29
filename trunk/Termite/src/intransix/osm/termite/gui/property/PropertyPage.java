@@ -1,9 +1,8 @@
 package intransix.osm.termite.gui.property;
 
+import intransix.osm.termite.map.data.OsmObject;
 import javax.swing.*;
 
-import intransix.osm.termite.map.model.*;
-import intransix.osm.termite.map.osm.*;
 
 /**
  *

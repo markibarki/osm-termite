@@ -2,13 +2,7 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
-import intransix.osm.termite.map.model.TermiteLevel;
-import intransix.osm.termite.map.model.TermiteStructure;
-import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.MapLayer;
-import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.structure.RenderLayer;
-import intransix.osm.termite.map.theme.Theme;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;

@@ -1,8 +1,8 @@
 package intransix.osm.termite.gui.property;
 
-import intransix.osm.termite.map.osm.OsmObject;
-import intransix.osm.termite.map.osm.OsmRelation;
-import intransix.osm.termite.map.osm.OsmWay;
+import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.map.data.OsmRelation;
+import intransix.osm.termite.map.data.OsmWay;
 import intransix.osm.termite.gui.FeatureSelectedListener;
 import intransix.osm.termite.gui.LevelSelectedListener;
 import javax.swing.JTabbedPane;

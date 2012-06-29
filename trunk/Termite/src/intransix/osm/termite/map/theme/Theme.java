@@ -1,7 +1,7 @@
 package intransix.osm.termite.map.theme;
 
 import intransix.osm.termite.map.proptree.PropertyNode;
-import intransix.osm.termite.map.osm.OsmObject;
+import intransix.osm.termite.map.data.OsmObject;
 import org.json.*;
 
 /**

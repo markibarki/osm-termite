@@ -1,9 +1,9 @@
 package intransix.osm.termite.gui.contenttree;
 
 import intransix.osm.termite.gui.*;
-import intransix.osm.termite.map.osm.OsmData;
-import intransix.osm.termite.map.osm.OsmRelation;
-import intransix.osm.termite.map.osm.OsmWay;
+import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.data.OsmRelation;
+import intransix.osm.termite.map.data.OsmWay;
 
 /**
  *
