@@ -3,7 +3,7 @@ package intransix.osm.termite.render.map;
 import intransix.osm.termite.map.data.OsmObject;
 import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.data.OsmNode;
-import intransix.osm.termite.map.data.GraduatedList;
+import intransix.osm.termite.util.GraduatedList;
 import intransix.osm.termite.map.data.OsmWay;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.MapPanel;

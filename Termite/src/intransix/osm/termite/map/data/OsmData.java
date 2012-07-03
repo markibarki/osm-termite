@@ -1,5 +1,6 @@
 package intransix.osm.termite.map.data;
 
+import intransix.osm.termite.util.GraduatedList;
 import java.util.*;
 
 /**
