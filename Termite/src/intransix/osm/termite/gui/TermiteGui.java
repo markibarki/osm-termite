@@ -460,7 +460,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		
 		//feature tree
         jScrollPane2 = new javax.swing.JScrollPane();
-        featureTree = new intransix.osm.termite.gui.featuretree.FeatureTree();
+        featureTree = new intransix.osm.termite.gui.featuretree.FeatureTree(this);
 		this.addFeatureLayerListener(featureTree);
 		featureTree.setFeatureInfoMap(app.getFeatureInfoMap());
 		jScrollPane2.setViewportView(featureTree);

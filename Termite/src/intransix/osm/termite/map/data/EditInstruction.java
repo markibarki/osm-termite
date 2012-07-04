@@ -64,7 +64,7 @@ public abstract class EditInstruction<T extends OsmObject> {
 		}
 
 		srcData.copyInto(osmObject,osmData);
-		osmObject.setDataVersion(editNumber);
+		osmObject.setDataVersion(osmData,editNumber);
 		
 		//initialize object
 		osmObject.objectCreated(osmData);

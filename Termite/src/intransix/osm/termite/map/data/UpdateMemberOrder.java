@@ -13,6 +13,7 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 	// Properties
 	//========================
 	
+	private OsmData osmData;
 	private int initialIndex;
 	private int finalIndex;
 	
@@ -25,7 +26,8 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 	 * @param initialIndex		The index of the member to move.
 	 * @param finalIndex		The destination index
 	 */
-	public UpdateMemberOrder(int initialIndex, int finalIndex) {
+	public UpdateMemberOrder(OsmData osmData, int initialIndex, int finalIndex) {
+		this.osmData = osmData;
 		this.initialIndex = initialIndex;
 		this.finalIndex = finalIndex;
 	}
@@ -38,7 +40,7 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
 	EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
-		UpdateMemberOrder undoUpdate = new UpdateMemberOrder(finalIndex,initialIndex);
+		UpdateMemberOrder undoUpdate = new UpdateMemberOrder(osmData,finalIndex,initialIndex);
 		return undoUpdate;
 	}
 		
@@ -59,7 +61,7 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 		OsmMember member = members.remove(initialIndex);
 		members.add(finalIndex,member);
 		
-		relation.setDataVersion(editNumber);
-		relation.setContainingObjectDataVersion(editNumber);
+		relation.setDataVersion(osmData,editNumber);
+		relation.setContainingObjectDataVersion(osmData,editNumber);
 	}	
 }

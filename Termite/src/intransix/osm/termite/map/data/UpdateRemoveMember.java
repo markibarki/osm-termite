@@ -86,7 +86,7 @@ public class UpdateRemoveMember extends EditData<OsmRelation> {
 			}
 		}
 		
-		relation.setDataVersion(editNumber);
-		relation.setContainingObjectDataVersion(editNumber);
+		relation.setDataVersion(osmData,editNumber);
+		relation.setContainingObjectDataVersion(osmData,editNumber);
 	}	
 }

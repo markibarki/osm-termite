@@ -91,7 +91,7 @@ public class UpdateInsertMember extends EditData<OsmRelation> {
 		members.add(index,member);
 		osmObject.addRelation(relation);
 		
-		relation.setDataVersion(editNumber);
-		relation.setContainingObjectDataVersion(editNumber);
+		relation.setDataVersion(osmData,editNumber);
+		relation.setContainingObjectDataVersion(osmData,editNumber);
 	}
 }

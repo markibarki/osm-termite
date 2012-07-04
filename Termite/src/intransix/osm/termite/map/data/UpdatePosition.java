@@ -11,6 +11,7 @@ public class UpdatePosition extends EditData<OsmNode> {
 	// Properties
 	//========================
 	
+	private OsmData osmData;
 	private double x;
 	private double y;
 	
@@ -23,7 +24,8 @@ public class UpdatePosition extends EditData<OsmNode> {
 	 * @param x		The target x position, in mercator coordinates
 	 * @param y		The target y position, in mercator coordinates
 	 */
-	public UpdatePosition(double x, double y) {
+	public UpdatePosition(OsmData osmData, double x, double y) {
+		this.osmData = osmData;
 		this.x = x;
 		this.y = y;
 	}
@@ -38,7 +40,7 @@ public class UpdatePosition extends EditData<OsmNode> {
 	EditData<OsmNode> readInitialData(OsmNode node) throws UnchangedException {
 		double initialX = node.getPoint().getX();
 		double initialY = node.getPoint().getY();
-		UpdatePosition undoUpdate = new UpdatePosition(initialX,initialY);
+		UpdatePosition undoUpdate = new UpdatePosition(osmData,initialX,initialY);
 		return undoUpdate;
 	}
 		
@@ -51,7 +53,7 @@ public class UpdatePosition extends EditData<OsmNode> {
 		//set the property
 		node.setPosition(x,y);
 		
-		node.setDataVersion(editNumber);
-		node.setContainingObjectDataVersion(editNumber);
+		node.setDataVersion(osmData,editNumber);
+		node.setContainingObjectDataVersion(osmData,editNumber);
 	}
 }

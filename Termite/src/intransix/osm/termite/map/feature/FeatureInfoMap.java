@@ -25,6 +25,11 @@ public class FeatureInfoMap {
 		
 	}
 	
+	/** This method returns the tree root. */
+	public PropertyNode<Object,FeatureInfo> getRoot() {
+		return treeRoot;
+	} 
+	
 	/** This method sets the style for a feature. */
 	public FeatureInfo getFeatureInfo(OsmObject mapObject) {
 		return treeRoot.getPropertyData(mapObject);	

@@ -41,12 +41,22 @@ public class OsmData {
 	private List<OsmWaySrc> srcWays = new ArrayList<OsmWaySrc>();
 	private List<OsmRelationSrc> srcRelations = new ArrayList<OsmRelationSrc>();
 	
+	//this is for filtering the features
+	private FeatureFilter filter = null;
+	
 	//the list of edit actions
 	private List<EditAction> actions = new ArrayList<EditAction>();
 	
 	//======================
 	// Public Methods
 	//======================
+	
+	public void setFilter(FeatureFilter filter) {
+		this.filter = filter;
+		
+		//update the filtered value for all features. */
+		filterAll();
+	}
 	
 	/** This method returns a ordered list of osm objects, ordered according to
 	 * the feature info for the given objects. 
@@ -279,6 +289,30 @@ public class OsmData {
 			relationMap.put(id,relation);
 		}
 		return relation;
+	}
+	
+	/** This method runs the given object through the filter. */
+	void filterObject(OsmObject osmObject) {
+		if(filter != null) {
+			filter.filterFeature(osmObject);
+		}
+		else {
+			osmObject.setFilterState(FilterRule.ALL_ENABLED);
+		}
+	}
+	
+	//==========================
+	// Private Methods
+	//==========================
+	
+	/** this runs all object through the filter. */
+	private void filterAll() {
+		for(OsmNode node:nodeMap.values()) {
+			filterObject(node);
+		}
+		for(OsmWay way:wayMap.values()) {
+			filterObject(way);
+		}
 	}
 
 }

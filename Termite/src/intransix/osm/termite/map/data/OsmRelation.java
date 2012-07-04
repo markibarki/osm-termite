@@ -48,8 +48,6 @@ public class OsmRelation extends OsmObject {
 	/** This overrides the base method to add functionality. */
 	@Override
 	void objectCreated(OsmData osmData) {
-		super.objectCreated(osmData);
-		
 		//read the relation type
 		relationType = this.getProperty(OsmModel.TAG_TYPE);
 	}
@@ -57,10 +55,12 @@ public class OsmRelation extends OsmObject {
 	/** This method should be called when the properties are updated. */
 	@Override
 	void propertiesUpdated(OsmData osmData) {
-		super.propertiesUpdated(osmData);
-		
 		//read the relation type
 		relationType = this.getProperty(OsmModel.TAG_TYPE);
+	}
+	
+	@Override
+	void objectUpdated(OsmData osmData) {
 	}
 	
 	/** This method should be called when the object is deleted. */

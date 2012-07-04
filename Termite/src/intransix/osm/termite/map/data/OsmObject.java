@@ -41,6 +41,8 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	private boolean isVirtual = false;
 	private int dataVersion = 0;
 	
+	private int filterState;
+	
 	//=======================
 	// Constructor
 	//=======================
@@ -59,6 +61,30 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	// State Management Methods
 	//-----------------------
 	
+	
+	public void setFilterState(int state) {
+		this.filterState = state;
+	}
+	
+	public boolean editEnabled() {
+		return ((filterState & FilterRule.EDIT_ENABLED) != 0);
+	}
+	
+	public boolean renderEnabled() {
+		return ((filterState & FilterRule.RENDER_ENABLED) != 0);
+	}
+	
+	public int getFilterState() {
+		return filterState;
+	}
+	
+	public void bitwiseAndFilterState(int state) {
+		filterState &= state;
+	}
+	
+	public void bitwiseOrFilterState(int state) {
+		filterState |= state;
+	}
 	
 	/** This method gets the isLoaded flag for the object. */
 	public boolean getIsLoaded() {
@@ -232,14 +258,17 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	}
 	
 	/** This sets the data version. */
-	void setDataVersion(int version) {
+	void setDataVersion(OsmData osmData, int version) {
+		if(version != dataVersion) {
+			objectUpdated(osmData);
+		}
 		this.dataVersion = version;
 	}
 	
 	/** This method updates the version number for all relations containing this object. */
-	void setContainingObjectDataVersion(int version) {
+	void setContainingObjectDataVersion(OsmData osmData, int version) {
 		for(OsmRelation relation:relations) {
-			relation.setDataVersion(version);
+			relation.setDataVersion(osmData,version);
 		}
 	}
 	
@@ -281,30 +310,11 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 		}
 	}
 	
-	void objectCreated(OsmData osmData) {
-		//classify objects and add to feature list for all nodes and ways. Not for relations
-		if((this instanceof OsmNode)||(this instanceof OsmWay)) {
-			featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
-			int zorder = featureInfo.getZorder();
-
-			//update the graduated list
-			GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
-			orderedList.add(this, zorder);
-		}
-	}
+	abstract void objectCreated(OsmData osmData);
 	
-	void propertiesUpdated(OsmData osmData) {
-		//classify objects and add to feature list for all nodes and ways. Not for relations
-		if((this instanceof OsmNode)||(this instanceof OsmWay)) {
-			int initialZorder = featureInfo.getZorder();
-			featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
-			int newZorder = featureInfo.getZorder();
-
-			//update the graduated list
-			GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
-			orderedList.move(this,newZorder,initialZorder);
-		}
-	}
+	abstract void propertiesUpdated(OsmData osmData);
+	
+	abstract void objectUpdated(OsmData osmData);
 	
 	void objectDeleted(OsmData osmData) {
 		//this should be cleared before we delete
@@ -312,8 +322,37 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 		if(!relations.isEmpty()) {
 			throw new RuntimeException("A relation referenced the deleted object");
 		}
+	}
+	
+	void featureCreatedProcessing(OsmData osmData) {
+		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
+		int zorder = featureInfo.getZorder();
+
+		//update the graduated list
+		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
+		orderedList.add(this, zorder);
 		
-		//remoge from the graducated list
+		osmData.filterObject(this);
+	}
+	
+	void featurePropertiesUpdatedProcessing(OsmData osmData) {
+		int initialZorder = featureInfo.getZorder();
+		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
+		int newZorder = featureInfo.getZorder();
+
+		//update the graduated list
+		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
+		orderedList.move(this,newZorder,initialZorder);
+		
+		osmData.filterObject(this);
+	}
+	
+	void featureUpdated(OsmData osmData) {
+		osmData.filterObject(this);
+	}
+	
+	void featureDeletedProcessing(OsmData osmData) {
+		//remove from the graducated list
 		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
 		int zorder = featureInfo.getZorder();
 		
