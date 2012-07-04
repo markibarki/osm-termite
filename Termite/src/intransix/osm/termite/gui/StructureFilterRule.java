@@ -39,7 +39,22 @@ public class StructureFilterRule implements FilterRule {
 	 */ 
 	@Override
 	public void filterObject(OsmObject osmObject) {
-		if(objects.contains(osmObject)) {
+		boolean enabled = false;
+		if(osmObject instanceof OsmWay) {
+			//see if this way is in the structure (there are multiple if it is a multipoly)
+			enabled = objects.contains(osmObject);
+		}
+		else if(osmObject instanceof OsmNode) {
+			//check if this node is on a way in the structure
+			for(OsmWay way:((OsmNode)osmObject).getWays()) {
+				if(objects.contains(way)) {
+					enabled = true;
+					break;
+				}
+			}
+		}
+		
+		if(enabled) {
 			osmObject.bitwiseOrFilterState(FilterRule.ALL_ENABLED);
 		}
 	}
