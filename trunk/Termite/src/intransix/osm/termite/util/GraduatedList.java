@@ -13,7 +13,6 @@ public class GraduatedList<T> {
 	// Private Properties
 	//=======================
 	
-	
 	private List<IndexedList<T>> lists = new ArrayList<IndexedList<T>>();
 	
 	//=======================

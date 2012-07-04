@@ -66,7 +66,7 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 		}
 		
 		//update version
-		way.setDataVersion(editNumber);
-		way.setContainingObjectDataVersion(editNumber);
+		way.setDataVersion(osmData,editNumber);
+		way.setContainingObjectDataVersion(osmData,editNumber);
 	}
 }

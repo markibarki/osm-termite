@@ -49,17 +49,22 @@ public class OsmWay extends OsmObject {
 	/** This overrides the base method to add functionality. */
 	@Override
 	void objectCreated(OsmData osmData) {
-		super.objectCreated(osmData);
+		featureCreatedProcessing(osmData);
 		
 		//read if this is an area
 		boolean defaultIsArea = (getFeatureInfo().getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
 		isArea = this.getBooleanProperty(OsmModel.TAG_AREA,defaultIsArea);
 	}
 	
+	@Override
+	void objectUpdated(OsmData osmData) {
+		featureUpdated(osmData);
+	}
+	
 	/** This method should be calle when properties are updated. */
 	@Override
 	void propertiesUpdated(OsmData osmData) {
-		super.propertiesUpdated(osmData);
+		featurePropertiesUpdatedProcessing(osmData);
 		
 		//read if this is an area
 		boolean defaultIsArea = (getFeatureInfo().getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
@@ -70,6 +75,7 @@ public class OsmWay extends OsmObject {
 	@Override
 	void objectDeleted(OsmData osmData) {
 		super.objectDeleted(osmData);
+		featureDeletedProcessing(osmData);
 		
 		for(OsmNode node:nodes) {
 			node.removeWay(this);

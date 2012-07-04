@@ -8,10 +8,12 @@ import java.util.List;
  */
 public class UpdateRole extends EditData<OsmRelation> {
 	
+	private OsmData osmData;
 	private String role;
 	private int index;
 	
-	public UpdateRole(String role, int index) {
+	public UpdateRole(OsmData osmData, String role, int index) {
+		this.osmData = osmData;
 		this.role = role;
 		this.index = index;
 	}
@@ -26,7 +28,7 @@ public class UpdateRole extends EditData<OsmRelation> {
 		}
 		OsmMember member = members.get(index);
 		String initialRole = member.role;
-		UpdateRole undoUpdate = new UpdateRole(initialRole, index);
+		UpdateRole undoUpdate = new UpdateRole(osmData,initialRole, index);
 		return undoUpdate;
 	}
 		
@@ -43,8 +45,8 @@ public class UpdateRole extends EditData<OsmRelation> {
 		OsmMember member = members.get(index);
 		member.role = role;
 		
-		relation.setDataVersion(editNumber);
-		relation.setContainingObjectDataVersion(editNumber);
+		relation.setDataVersion(osmData,editNumber);
+		relation.setContainingObjectDataVersion(osmData,editNumber);
 		
 	}	
 }

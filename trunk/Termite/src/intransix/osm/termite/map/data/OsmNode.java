@@ -88,6 +88,21 @@ public class OsmNode extends OsmObject {
 		}
 	}
 	
+	@Override
+	void objectCreated(OsmData osmData) {
+		featureCreatedProcessing(osmData);
+	}
+	
+	@Override
+	void propertiesUpdated(OsmData osmData) {
+		featurePropertiesUpdatedProcessing(osmData);
+	}
+	
+	@Override
+	void objectUpdated(OsmData osmData) {
+		featureUpdated(osmData);
+	}
+	
 	/** This method should be called when the object is deleted. */
 	@Override
 	void objectDeleted(OsmData osmData) {
@@ -99,14 +114,15 @@ public class OsmNode extends OsmObject {
 				+ "referenced the deleted node. This"
 				+ "should be checked elsewhere before we get here.");
 		
+		featureDeletedProcessing(osmData);
 	}
 	
 	/** This method updates the version number for all relations containing this object. */
 	@Override
-	void setContainingObjectDataVersion(int version) {
-		super.setContainingObjectDataVersion(version);
+	void setContainingObjectDataVersion(OsmData osmData, int version) {
+		super.setContainingObjectDataVersion(osmData,version);
 		for(OsmWay way:ways) {
-			way.setDataVersion(version);
+			way.setDataVersion(osmData,version);
 		}
 	}
 }

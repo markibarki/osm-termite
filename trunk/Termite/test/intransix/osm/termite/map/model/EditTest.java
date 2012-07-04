@@ -642,7 +642,7 @@ public class EditTest {
 	
 		double x1b = n1Data.x + 1;
 		double y1b = n1Data.y + 1;
-		UpdatePosition up = new UpdatePosition(x1b,y1b);
+		UpdatePosition up = new UpdatePosition(osmData,x1b,y1b);
 		instr = new UpdateInstruction(osmNode,up);
 		action.addInstruction(instr);
 		
@@ -1065,7 +1065,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
-		UpdateMemberOrder umo = new UpdateMemberOrder(1,0);
+		UpdateMemberOrder umo = new UpdateMemberOrder(osmData,1,0);
 		instr = new UpdateInstruction(osmRelation,umo);
 		action.addInstruction(instr);
 		
@@ -1114,7 +1114,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
-		umo = new UpdateMemberOrder(1,25);
+		umo = new UpdateMemberOrder(osmData,1,25);
 		instr = new UpdateInstruction(osmRelation,umo);
 		action.addInstruction(instr);
 		
@@ -1140,7 +1140,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
-		UpdateRole ur = new UpdateRole("xyz",1);
+		UpdateRole ur = new UpdateRole(osmData,"xyz",1);
 		instr = new UpdateInstruction(osmRelation,ur);
 		action.addInstruction(instr);
 		
