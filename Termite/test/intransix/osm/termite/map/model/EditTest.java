@@ -324,14 +324,14 @@ public class EditTest {
 		OsmRelationSrc relationSrc = new OsmRelationSrc();
 		relationSrc.addMember(w1Data.id,"way","outer");
 		relationSrc.addMember(idw2,"way","inner");
-		relationSrc.addProperty(OsmModel.TAG_TYPE,"multipolygon");
+		relationSrc.addProperty(OsmModel.KEY_TYPE,"multipolygon");
 		instr = new CreateInstruction(relationSrc,osmData);
 		r1Data.id = relationSrc.getId();
 		action.addInstruction(instr);
 		
 		r1Data.addMember(w1Data.id,"way","outer");
 		r1Data.addMember(idw2,"way","inner");
-		r1Data.props.put(OsmModel.TAG_TYPE,OsmModel.TYPE_MULTIPOLYGON);
+		r1Data.props.put(OsmModel.KEY_TYPE,OsmModel.TYPE_MULTIPOLYGON);
 		r1Data.relationType = "multipolygon";
 		
 		try {
@@ -390,7 +390,7 @@ public class EditTest {
 		relationSrc.addMember(w1Data.id,"way","aaa");
 		relationSrc.addMember(r1Data.id,"relation","bbb");
 		relationSrc.addMember(n1Data.id,"node","ccc");
-		relationSrc.addProperty(OsmModel.TAG_TYPE,"generic");
+		relationSrc.addProperty(OsmModel.KEY_TYPE,"generic");
 		relationSrc.addProperty("key","value");
 		instr = new CreateInstruction(relationSrc,osmData);
 		r2Data.id = relationSrc.getId();
@@ -399,7 +399,7 @@ public class EditTest {
 		r2Data.addMember(w1Data.id,"way","aaa");
 		r2Data.addMember(r1Data.id,"relation","bbb");
 		r2Data.addMember(n1Data.id,"node","ccc");
-		r2Data.props.put(OsmModel.TAG_TYPE,"generic");
+		r2Data.props.put(OsmModel.KEY_TYPE,"generic");
 		r2Data.relationType = "generic";
 		r2Data.props.put("key","value");
 				

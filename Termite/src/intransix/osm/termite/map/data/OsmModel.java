@@ -20,7 +20,7 @@ public class OsmModel {
 	
 	public static String TYPE_STRUCTURE = "structure";
 	public static String TYPE_LEVEL = "level";
-	public static String ROLE_PARENT = "parent";
+	public static String ROLE_PARENT = "structure";
 	public static String ROLE_LEVEL = "level";
 	public static String ROLE_SHELL = "shell";
 	public static String ROLE_ANCHOR = "anchor";
@@ -36,9 +36,10 @@ public class OsmModel {
 	public final static String TYPE_NODE = "node";
 	public final static String TYPE_WAY = "way";
 	public final static String TYPE_RELATION = "relation";
-	public final static String TAG_TYPE = "type";
+	public final static String KEY_TYPE = "type";
 	public final static String TYPE_MULTIPOLYGON = "multipolygon";
-	public final static String TAG_AREA = "area";
+	public final static String KEY_AREA = "area";
+	public final static String KEY_NAME = "name";
 	
 	public static HashSet<String> GEOMETRIC_KEYS = new HashSet<String>();
 	

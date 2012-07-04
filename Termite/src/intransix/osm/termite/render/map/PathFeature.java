@@ -51,6 +51,8 @@ public class PathFeature implements Feature {
 	
 	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
+		if(!osmWay.renderEnabled()) return;
+		
 		if(osmWay.getDataVersion() != this.localVersion) {			
 			//load geometry
 			updateData(mercatorToLocal);

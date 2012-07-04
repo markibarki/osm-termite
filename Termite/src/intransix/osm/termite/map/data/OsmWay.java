@@ -53,7 +53,7 @@ public class OsmWay extends OsmObject {
 		
 		//read if this is an area
 		boolean defaultIsArea = (getFeatureInfo().getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
-		isArea = this.getBooleanProperty(OsmModel.TAG_AREA,defaultIsArea);
+		isArea = this.getBooleanProperty(OsmModel.KEY_AREA,defaultIsArea);
 	}
 	
 	@Override
@@ -68,7 +68,7 @@ public class OsmWay extends OsmObject {
 		
 		//read if this is an area
 		boolean defaultIsArea = (getFeatureInfo().getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
-		isArea = this.getBooleanProperty(OsmModel.TAG_AREA,defaultIsArea);
+		isArea = this.getBooleanProperty(OsmModel.KEY_AREA,defaultIsArea);
 	}
 	
 	/** This method should be called when the object is deleted. */

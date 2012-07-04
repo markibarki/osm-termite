@@ -12,6 +12,7 @@ public interface FilterRule {
 	
 	public final static int RENDER_ENABLED = 0x01;
 	public final static int EDIT_ENABLED = 0x02;
+	public final static int ALL_DISABLED = 0x00;
 	public final static int ALL_ENABLED = RENDER_ENABLED | EDIT_ENABLED;
 	
 	/** This method returns the desired initial filter state. The object will 

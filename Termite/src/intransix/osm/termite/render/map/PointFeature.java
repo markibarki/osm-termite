@@ -42,6 +42,8 @@ public class PointFeature implements Feature {
 	
 	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
+		if(!osmNode.renderEnabled()) return;
+		
 		if(osmNode.getDataVersion() != this.localVersion) {
 			//load geometry
 			updateData(mercatorToLocal);

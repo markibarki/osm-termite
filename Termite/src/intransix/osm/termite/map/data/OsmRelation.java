@@ -49,14 +49,14 @@ public class OsmRelation extends OsmObject {
 	@Override
 	void objectCreated(OsmData osmData) {
 		//read the relation type
-		relationType = this.getProperty(OsmModel.TAG_TYPE);
+		relationType = this.getProperty(OsmModel.KEY_TYPE);
 	}
 	
 	/** This method should be called when the properties are updated. */
 	@Override
 	void propertiesUpdated(OsmData osmData) {
 		//read the relation type
-		relationType = this.getProperty(OsmModel.TAG_TYPE);
+		relationType = this.getProperty(OsmModel.KEY_TYPE);
 	}
 	
 	@Override

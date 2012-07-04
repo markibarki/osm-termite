@@ -1,9 +1,6 @@
 package intransix.osm.termite.gui;
 
-import intransix.osm.termite.map.data.OsmObject;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmWay;
-import intransix.osm.termite.map.data.OsmRelation;
+import intransix.osm.termite.map.data.*;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
@@ -193,6 +190,25 @@ public class TermiteGui extends javax.swing.JFrame {
 		this.activeStructure = structure;
 		this.activeLevel = level;
 		
+		//update filter
+		FilterRule filterRule = null;
+		if(level != null) {
+			filterRule = new LevelFilterRule(level);
+			
+		}
+		else if(structure != null) {
+			filterRule = new StructureFilterRule(structure);
+		}
+		else {
+			filterRule = new OutdoorFilterRule();
+		}
+		
+		FeatureFilter filter = new FeatureFilter(filterRule);
+		osmData.setFilter(filter);
+		mapPanel.repaint();
+	
+		
+		//notify listeners
 		for(LevelSelectedListener listener:levelSelectedListeners) {
 			listener.onLevelSelected(structure,level);
 		}
@@ -453,7 +469,7 @@ public class TermiteGui extends javax.swing.JFrame {
     
 		//content tree
 		jScrollPane1 = new javax.swing.JScrollPane();
-        contentTree = new intransix.osm.termite.gui.contenttree.ContentTree();
+        contentTree = new intransix.osm.termite.gui.contenttree.ContentTree(this);
 		this.addMapDataListener(contentTree);
 		this.addLevelSelectedListener(contentTree);
 		jScrollPane1.setViewportView(contentTree);
