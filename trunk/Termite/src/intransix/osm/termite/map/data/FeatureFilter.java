@@ -1,6 +1,6 @@
 package intransix.osm.termite.map.data;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * This is a filter for features. It should be populated with a list of filter rules. 
@@ -14,11 +14,18 @@ public class FeatureFilter {
 	
 	/** Constructor */
 	public FeatureFilter(List<FilterRule> filterRules) {
-		this.filterRules = filterRules;
+		filterRules = filterRules;
 		if(filterRules.size() > 0) {
 			FilterRule initialRule = filterRules.get(0);
 			initialState = initialRule.getInitialState();
 		}
+	}
+	
+	/** Constructor */
+	public FeatureFilter(FilterRule filterRule) {
+		filterRules = new ArrayList<FilterRule>();
+		filterRules.add(filterRule);
+		initialState = filterRule.getInitialState();
 	}
 	
 	/** This method filters the given feature. */

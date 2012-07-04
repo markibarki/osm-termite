@@ -2,7 +2,7 @@
 	"levelSpec":"nodes",
 	"nameDefs":{
 		"structureType":"building",
-		"parentRole":"parent",
+		"parentRole":"structure",
 		"levelRole":"level",
 		"shellRole":"shell",
 		"featureRole":"buildingpart",
