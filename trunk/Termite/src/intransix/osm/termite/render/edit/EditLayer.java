@@ -98,6 +98,10 @@ public class EditLayer extends MapLayer implements MapDataListener, MouseListene
 		GraduatedList<OsmObject> objectList = osmData.getOrderedList();
 		for(java.util.List<OsmObject> subList:objectList.getLists()) {
 			for(OsmObject mapObject:subList) {
+				//make sure edit is enabled for this object
+				if(!mapObject.editEnabled()) continue;
+				
+				//check for hit
 				if(mapObject instanceof OsmNode) {
 					mercatorToPixels.transform(((OsmNode)mapObject).getPoint(),nodePix);
 					double d = mousePix.distance(nodePix);

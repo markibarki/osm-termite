@@ -28,6 +28,7 @@ public class ContentTree extends javax.swing.JTree
 		this.gui = gui;
 		this.setRootVisible(false);
 		this.addTreeSelectionListener(this);
+		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		clearTree();
 	}
 	

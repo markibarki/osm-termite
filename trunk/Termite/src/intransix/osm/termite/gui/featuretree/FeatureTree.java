@@ -26,7 +26,9 @@ public class FeatureTree extends javax.swing.JTree
 	 */
 	public FeatureTree(TermiteGui gui) {
 		this.gui = gui;
+		this.setRootVisible(true);
 		this.addTreeSelectionListener(this);
+		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 	}
 	
 	public void setFeatureInfoMap(FeatureInfoMap featureInfoMap) {
