@@ -29,6 +29,7 @@ public class ContentTree extends javax.swing.JTree
 		this.setRootVisible(false);
 		this.addTreeSelectionListener(this);
 		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		this.setCellRenderer(new ContentTreeRenderer());
 		clearTree();
 	}
 	
@@ -90,15 +91,21 @@ public class ContentTree extends javax.swing.JTree
 	@Override
 	public void valueChanged(TreeSelectionEvent event) {
 		TreePath tp = event.getNewLeadSelectionPath();
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode)tp.getLastPathComponent();
-		Object data = node.getUserObject();
-		if(data instanceof StructureWrapper) {
-			gui.setSelectedLevel(((StructureWrapper)data).structure,null);
-		}
-		else if(data instanceof LevelWrapper) {
-			gui.setSelectedLevel(((LevelWrapper)data).structure,((LevelWrapper)data).level);
+		if(tp != null) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode)tp.getLastPathComponent();
+			Object data = node.getUserObject();
+			if(data instanceof StructureWrapper) {
+				gui.setSelectedLevel(((StructureWrapper)data).structure,null);
+			}
+			else if(data instanceof LevelWrapper) {
+				gui.setSelectedLevel(((LevelWrapper)data).structure,((LevelWrapper)data).level);
+			}
+			else {
+				gui.setSelectedLevel(null,null);
+			}
 		}
 		else {
+//I'm not sure what to do here
 			gui.setSelectedLevel(null,null);
 		}
 	}
