@@ -29,6 +29,7 @@ public class FeatureTree extends javax.swing.JTree
 		this.setRootVisible(true);
 		this.addTreeSelectionListener(this);
 		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		this.setCellRenderer(new FeatureTreeRenderer());
 	}
 	
 	public void setFeatureInfoMap(FeatureInfoMap featureInfoMap) {

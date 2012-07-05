@@ -191,22 +191,23 @@ public class TermiteGui extends javax.swing.JFrame {
 		this.activeLevel = level;
 		
 		//update filter
-		FilterRule filterRule = null;
-		if(level != null) {
-			filterRule = new LevelFilterRule(level);
-			
+		if(osmData != null) {
+			FilterRule filterRule = null;
+			if(level != null) {
+				filterRule = new LevelFilterRule(level);
+
+			}
+			else if(structure != null) {
+				filterRule = new StructureFilterRule(structure);
+			}
+			else {
+				filterRule = new OutdoorFilterRule();
+			}
+
+			FeatureFilter filter = new FeatureFilter(filterRule);
+			osmData.setFilter(filter);
+			mapPanel.repaint();
 		}
-		else if(structure != null) {
-			filterRule = new StructureFilterRule(structure);
-		}
-		else {
-			filterRule = new OutdoorFilterRule();
-		}
-		
-		FeatureFilter filter = new FeatureFilter(filterRule);
-		osmData.setFilter(filter);
-		mapPanel.repaint();
-	
 		
 		//notify listeners
 		for(LevelSelectedListener listener:levelSelectedListeners) {
