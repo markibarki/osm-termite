@@ -1,5 +1,8 @@
 package intransix.osm.termite.gui;
 
+import intransix.osm.termite.gui.filter.LevelFilterRule;
+import intransix.osm.termite.gui.filter.StructureFilterRule;
+import intransix.osm.termite.gui.filter.OutdoorFilterRule;
 import intransix.osm.termite.map.data.*;
 import java.util.*;
 import javax.swing.*;

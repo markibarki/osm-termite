@@ -1,18 +1,19 @@
-package intransix.osm.termite.gui;
+package intransix.osm.termite.gui.filter;
 
 import intransix.osm.termite.map.data.FilterRule;
 import intransix.osm.termite.map.data.*;
+import java.util.*;
 
 /**
  *
  * @author sutter
  */
-public class LevelFilterRule implements FilterRule {
+public class StructureFilterRule implements FilterRule {
 	
-	private OsmRelation level;
+	private List<OsmObject> objects = new ArrayList<OsmObject>();
 	
-	public LevelFilterRule(OsmRelation level) {
-		this.level = level;
+	public StructureFilterRule(OsmWay structure) {
+		populateMultipolyList(structure);
 	}
 
 	/** This method returns the desired initial filter state. The object will 
@@ -39,31 +40,37 @@ public class LevelFilterRule implements FilterRule {
 	@Override
 	public void filterObject(OsmObject osmObject) {
 		boolean enabled = false;
-		if(osmObject instanceof OsmNode) {
-			enabled = nodeOnLevel((OsmNode)osmObject);
+		if(osmObject instanceof OsmWay) {
+			//see if this way is in the structure (there are multiple if it is a multipoly)
+			enabled = objects.contains(osmObject);
 		}
-		else if(osmObject instanceof OsmWay) {
-			enabled = wayOnLevel((OsmWay)osmObject);
+		else if(osmObject instanceof OsmNode) {
+			//check if this node is on a way in the structure
+			for(OsmWay way:((OsmNode)osmObject).getWays()) {
+				if(objects.contains(way)) {
+					enabled = true;
+					break;
+				}
+			}
 		}
 		
 		if(enabled) {
 			osmObject.bitwiseOrFilterState(FilterRule.ALL_ENABLED);
 		}
 	}
-	
-	private boolean nodeOnLevel(OsmNode node) {
-		for(OsmRelation relation:node.getRelations()) {
-			if(relation == level) {
-				return true;
+
+	private void populateMultipolyList(OsmWay way) {
+		//handle the case this is in a relation
+		for(OsmRelation relation:way.getRelations()) {
+			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relation.getRelationType())) {
+				for(OsmMember member:relation.getMembers()) {
+					this.objects.add(member.osmObject);
+				}
 			}
 		}
-		return false;
-	}
-	
-	private boolean wayOnLevel(OsmWay way) {
-		for(OsmNode node:way.getNodes()) {
-			if(nodeOnLevel(node)) return true;
+		//if this is not in a relation, just add this object
+		if(objects.isEmpty()) {
+			objects.add(way);
 		}
-		return false;
 	}
 }

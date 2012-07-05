@@ -1,4 +1,4 @@
-package intransix.osm.termite.gui;
+package intransix.osm.termite.gui.filter;
 
 import intransix.osm.termite.map.data.FilterRule;
 import intransix.osm.termite.map.data.*;
@@ -7,11 +7,12 @@ import intransix.osm.termite.map.data.*;
  *
  * @author sutter
  */
-public class OutdoorFilterRule implements FilterRule {
+public class LevelFilterRule implements FilterRule {
 	
 	private OsmRelation level;
 	
-	public OutdoorFilterRule() {
+	public LevelFilterRule(OsmRelation level) {
+		this.level = level;
 	}
 
 	/** This method returns the desired initial filter state. The object will 
@@ -23,7 +24,7 @@ public class OutdoorFilterRule implements FilterRule {
 	 */
 	@Override
 	public int getInitialState() {
-		return FilterRule.ALL_ENABLED;
+		return FilterRule.ALL_DISABLED;
 	}
 	
 	/** This method sets the filter value for the object, based on the object
@@ -39,31 +40,29 @@ public class OutdoorFilterRule implements FilterRule {
 	public void filterObject(OsmObject osmObject) {
 		boolean enabled = false;
 		if(osmObject instanceof OsmNode) {
-			enabled = nodeOutdoors((OsmNode)osmObject);
+			enabled = nodeOnLevel((OsmNode)osmObject);
 		}
 		else if(osmObject instanceof OsmWay) {
-			enabled = wayOutdoors((OsmWay)osmObject);
+			enabled = wayOnLevel((OsmWay)osmObject);
 		}
 		
-		if(!enabled) {
-			osmObject.bitwiseAndFilterState(FilterRule.ALL_DISABLED);
+		if(enabled) {
+			osmObject.bitwiseOrFilterState(FilterRule.ALL_ENABLED);
 		}
 	}
 	
-	/** This returns false if the node is on a level. */
-	private boolean nodeOutdoors(OsmNode node) {
+	private boolean nodeOnLevel(OsmNode node) {
 		for(OsmRelation relation:node.getRelations()) {
-			if(OsmModel.TYPE_LEVEL.equalsIgnoreCase(relation.getRelationType())) {
-				return false;
+			if(relation == level) {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 	
-	/** This returns true if any node on the way is outdoors. */
-	private boolean wayOutdoors(OsmWay way) {
+	private boolean wayOnLevel(OsmWay way) {
 		for(OsmNode node:way.getNodes()) {
-			if(nodeOutdoors(node)) return true;
+			if(nodeOnLevel(node)) return true;
 		}
 		return false;
 	}
