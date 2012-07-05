@@ -7,7 +7,8 @@ import java.awt.Component;
 
 
 /**
- *
+ * This is a cell renderer for the content tree.
+ * 
  * @author sutter
  */
 public class ContentTreeRenderer extends DefaultTreeCellRenderer {

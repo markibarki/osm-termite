@@ -1,19 +1,17 @@
-package intransix.osm.termite.gui;
+package intransix.osm.termite.gui.filter;
 
 import intransix.osm.termite.map.data.FilterRule;
 import intransix.osm.termite.map.data.*;
-import java.util.*;
 
 /**
  *
  * @author sutter
  */
-public class StructureFilterRule implements FilterRule {
+public class OutdoorFilterRule implements FilterRule {
 	
-	private List<OsmObject> objects = new ArrayList<OsmObject>();
+	private OsmRelation level;
 	
-	public StructureFilterRule(OsmWay structure) {
-		populateMultipolyList(structure);
+	public OutdoorFilterRule() {
 	}
 
 	/** This method returns the desired initial filter state. The object will 
@@ -25,7 +23,7 @@ public class StructureFilterRule implements FilterRule {
 	 */
 	@Override
 	public int getInitialState() {
-		return FilterRule.ALL_DISABLED;
+		return FilterRule.ALL_ENABLED;
 	}
 	
 	/** This method sets the filter value for the object, based on the object
@@ -40,37 +38,33 @@ public class StructureFilterRule implements FilterRule {
 	@Override
 	public void filterObject(OsmObject osmObject) {
 		boolean enabled = false;
-		if(osmObject instanceof OsmWay) {
-			//see if this way is in the structure (there are multiple if it is a multipoly)
-			enabled = objects.contains(osmObject);
+		if(osmObject instanceof OsmNode) {
+			enabled = nodeOutdoors((OsmNode)osmObject);
 		}
-		else if(osmObject instanceof OsmNode) {
-			//check if this node is on a way in the structure
-			for(OsmWay way:((OsmNode)osmObject).getWays()) {
-				if(objects.contains(way)) {
-					enabled = true;
-					break;
-				}
-			}
+		else if(osmObject instanceof OsmWay) {
+			enabled = wayOutdoors((OsmWay)osmObject);
 		}
 		
-		if(enabled) {
-			osmObject.bitwiseOrFilterState(FilterRule.ALL_ENABLED);
+		if(!enabled) {
+			osmObject.bitwiseAndFilterState(FilterRule.ALL_DISABLED);
 		}
 	}
-
-	private void populateMultipolyList(OsmWay way) {
-		//handle the case this is in a relation
-		for(OsmRelation relation:way.getRelations()) {
-			if(OsmModel.TYPE_MULTIPOLYGON.equalsIgnoreCase(relation.getRelationType())) {
-				for(OsmMember member:relation.getMembers()) {
-					this.objects.add(member.osmObject);
-				}
+	
+	/** This returns false if the node is on a level. */
+	private boolean nodeOutdoors(OsmNode node) {
+		for(OsmRelation relation:node.getRelations()) {
+			if(OsmModel.TYPE_LEVEL.equalsIgnoreCase(relation.getRelationType())) {
+				return false;
 			}
 		}
-		//if this is not in a relation, just add this object
-		if(objects.isEmpty()) {
-			objects.add(way);
+		return true;
+	}
+	
+	/** This returns true if any node on the way is outdoors. */
+	private boolean wayOutdoors(OsmWay way) {
+		for(OsmNode node:way.getNodes()) {
+			if(nodeOutdoors(node)) return true;
 		}
+		return false;
 	}
 }

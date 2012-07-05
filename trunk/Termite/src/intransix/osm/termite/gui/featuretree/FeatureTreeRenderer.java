@@ -8,7 +8,8 @@ import intransix.osm.termite.map.proptree.*;
 
 
 /**
- *
+ * This is a cell renderer for the feature tree.
+ * 
  * @author sutter
  */
 public class FeatureTreeRenderer extends DefaultTreeCellRenderer {
