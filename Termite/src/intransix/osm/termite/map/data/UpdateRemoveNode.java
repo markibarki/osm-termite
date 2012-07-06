@@ -13,7 +13,6 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 	// Properties
 	//========================
 	
-	private OsmData osmData;
 	private int index;
 	
 	//========================
@@ -22,11 +21,9 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 	
 	/** Constructor
 	 * 
-	 * @param osmData		The data manager
 	 * @param nodeIndex		The index of the node to remove
 	 */
-	public UpdateRemoveNode(OsmData osmData, int nodeIndex) {
-		this.osmData = osmData;
+	public UpdateRemoveNode(int nodeIndex) {
 		this.index = nodeIndex;
 	}
 	
@@ -37,13 +34,13 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	EditData<OsmWay> readInitialData(OsmWay way) throws UnchangedException {
+	EditData<OsmWay> readInitialData(OsmData osmData, OsmWay way) throws UnchangedException {
 		List<OsmNode> nodes = way.getNodes();
 		if(index >= nodes.size()) {
 			throw new UnchangedException("Invalid node index for way: " + way.getId());
 		}
 		OsmNode node = nodes.get(index);
-		UpdateInsertNode undoUpdate = new UpdateInsertNode(osmData,node.getId(),index);
+		UpdateInsertNode undoUpdate = new UpdateInsertNode(node.getId(),index);
 		return undoUpdate;
 	}
 		
@@ -52,7 +49,7 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	void writeData(OsmWay way, int editNumber) throws UnchangedException, Exception {
+	void writeData(OsmData osmData, OsmWay way, int editNumber) throws UnchangedException, Exception {
 		//remove node from osm way
 		List<OsmNode> nodes = way.getNodes();
 		if(index >= nodes.size()) {

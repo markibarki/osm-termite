@@ -39,8 +39,8 @@ public abstract class EditInstruction<T extends OsmObject> {
 	EditData<T> executeUpdate(OsmData osmData, T osmObject, EditData<T> targetData, int editNumber) 
 			throws UnchangedException, Exception {
 		
-		EditData<T> newInitialData = targetData.readInitialData(osmObject);
-		targetData.writeData(osmObject,editNumber);
+		EditData<T> newInitialData = targetData.readInitialData(osmData,osmObject);
+		targetData.writeData(osmData,osmObject,editNumber);
 		
 		return newInitialData;
 	}

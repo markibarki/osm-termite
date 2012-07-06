@@ -481,7 +481,7 @@ public class EditTest {
 		initialKey = "test";
 		initialValue = "xxx";
 		finalValue = "yyy";
-		targetData = new UpdateObjectProperty(osmData,initialKey,initialKey,finalValue);
+		targetData = new UpdateObjectProperty(initialKey,initialKey,finalValue);
 		instr = new UpdateInstruction(osmNode,targetData);
 		action.addInstruction(instr);
 		
@@ -534,7 +534,7 @@ public class EditTest {
 		initialKey = "buildingpart";
 		initialValue = "wall";
 		finalValue = "unit";
-		targetData = new UpdateObjectProperty(osmData,initialKey,initialKey,finalValue);
+		targetData = new UpdateObjectProperty(initialKey,initialKey,finalValue);
 		instr = new UpdateInstruction(osmWay,targetData);
 		action.addInstruction(instr);
 		
@@ -589,7 +589,7 @@ public class EditTest {
 		initialKey = "key";
 		finalKey = "keyPrime";
 		initialValue = "value";
-		targetData = new UpdateObjectProperty(osmData,initialKey,finalKey,initialValue);
+		targetData = new UpdateObjectProperty(initialKey,finalKey,initialValue);
 		instr = new UpdateInstruction(osmRelation,targetData);
 		action.addInstruction(instr);
 	
@@ -642,7 +642,7 @@ public class EditTest {
 	
 		double x1b = n1Data.x + 1;
 		double y1b = n1Data.y + 1;
-		UpdatePosition up = new UpdatePosition(osmData,x1b,y1b);
+		UpdatePosition up = new UpdatePosition(x1b,y1b);
 		instr = new UpdateInstruction(osmNode,up);
 		action.addInstruction(instr);
 		
@@ -697,7 +697,7 @@ public class EditTest {
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
-		UpdateRemoveNode urn = new UpdateRemoveNode(osmData,0);
+		UpdateRemoveNode urn = new UpdateRemoveNode(0);
 		instr = new UpdateInstruction(osmWay,urn);
 		action.addInstruction(instr);
 		
@@ -771,7 +771,7 @@ public class EditTest {
 		
 		action = new EditAction(osmData,"Remove a node");
 		
-		UpdateRemoveNode urn2 = new UpdateRemoveNode(osmData,2);
+		UpdateRemoveNode urn2 = new UpdateRemoveNode(2);
 		instr = new UpdateInstruction(osmWay,urn2);
 		action.addInstruction(instr);
 		
@@ -804,7 +804,7 @@ public class EditTest {
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
-		UpdateInsertNode uin = new UpdateInsertNode(osmData,n1Data.id,0);
+		UpdateInsertNode uin = new UpdateInsertNode(n1Data.id,0);
 		instr = new UpdateInstruction(osmWay,uin);
 		action.addInstruction(instr);
 		
@@ -879,7 +879,7 @@ public class EditTest {
 		
 		action = new EditAction(osmData,"Insert a node");
 		
-		UpdateInsertNode uin2 = new UpdateInsertNode(osmData,n1Data.id,3);
+		UpdateInsertNode uin2 = new UpdateInsertNode(n1Data.id,3);
 		instr = new UpdateInstruction(osmWay,uin2);
 		action.addInstruction(instr);
 		
@@ -912,7 +912,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r1Data.id);
 		
-		UpdateRemoveMember urm = new UpdateRemoveMember(osmData,0);
+		UpdateRemoveMember urm = new UpdateRemoveMember(0);
 		instr = new UpdateInstruction(osmRelation,urm);
 		action.addInstruction(instr);
 		
@@ -987,7 +987,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r1Data.id);
 
-		UpdateInsertMember uim = new UpdateInsertMember(osmData,w1Data.id,"way","outer",0);
+		UpdateInsertMember uim = new UpdateInsertMember(w1Data.id,"way","outer",0);
 		instr = new UpdateInstruction(osmRelation,uim);
 		action.addInstruction(instr);
 		
@@ -1065,7 +1065,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
-		UpdateMemberOrder umo = new UpdateMemberOrder(osmData,1,0);
+		UpdateMemberOrder umo = new UpdateMemberOrder(1,0);
 		instr = new UpdateInstruction(osmRelation,umo);
 		action.addInstruction(instr);
 		
@@ -1114,7 +1114,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
-		umo = new UpdateMemberOrder(osmData,1,25);
+		umo = new UpdateMemberOrder(1,25);
 		instr = new UpdateInstruction(osmRelation,umo);
 		action.addInstruction(instr);
 		
@@ -1140,7 +1140,7 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
-		UpdateRole ur = new UpdateRole(osmData,"xyz",1);
+		UpdateRole ur = new UpdateRole("xyz",1);
 		instr = new UpdateInstruction(osmRelation,ur);
 		action.addInstruction(instr);
 		
@@ -1298,10 +1298,10 @@ public class EditTest {
 		
 		osmRelation = osmData.getOsmRelation(r1Data.id);
 		
-		instr = new UpdateInstruction(osmRelation,new UpdateRemoveMember(osmData,0));
+		instr = new UpdateInstruction(osmRelation,new UpdateRemoveMember(0));
 		action.addInstruction(instr);
 		
-		instr = new UpdateInstruction(osmRelation,new UpdateRemoveMember(osmData,0));
+		instr = new UpdateInstruction(osmRelation,new UpdateRemoveMember(0));
 		action.addInstruction(instr);
 		
 		w1Data.rels.remove(r1Data.id);
@@ -1404,10 +1404,10 @@ public class EditTest {
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
-		instr = new UpdateInstruction(osmWay, new UpdateRemoveNode(osmData,3));
+		instr = new UpdateInstruction(osmWay, new UpdateRemoveNode(3));
 		action.addInstruction(instr);
 		
-		instr = new UpdateInstruction(osmWay, new UpdateRemoveNode(osmData,0));
+		instr = new UpdateInstruction(osmWay, new UpdateRemoveNode(0));
 		action.addInstruction(instr);
 		
 		n1Data.wayIds.remove(w1Data.id);

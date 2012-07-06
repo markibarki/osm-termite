@@ -13,7 +13,6 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 	// Properties
 	//========================
 	
-	private OsmData osmData;
 	private int initialIndex;
 	private int finalIndex;
 	
@@ -26,8 +25,7 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 	 * @param initialIndex		The index of the member to move.
 	 * @param finalIndex		The destination index
 	 */
-	public UpdateMemberOrder(OsmData osmData, int initialIndex, int finalIndex) {
-		this.osmData = osmData;
+	public UpdateMemberOrder(int initialIndex, int finalIndex) {
 		this.initialIndex = initialIndex;
 		this.finalIndex = finalIndex;
 	}
@@ -39,8 +37,8 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
-		UpdateMemberOrder undoUpdate = new UpdateMemberOrder(osmData,finalIndex,initialIndex);
+	EditData<OsmRelation> readInitialData(OsmData osmData, OsmRelation relation) throws UnchangedException {
+		UpdateMemberOrder undoUpdate = new UpdateMemberOrder(finalIndex,initialIndex);
 		return undoUpdate;
 	}
 		
@@ -49,7 +47,7 @@ public class UpdateMemberOrder extends EditData<OsmRelation> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
+	void writeData(OsmData osmData, OsmRelation relation, int editNumber) throws UnchangedException, Exception {
 		//set the property
 		List<OsmMember> members = relation.getMembers();
 		if((initialIndex >= members.size())||(initialIndex < 0)) {

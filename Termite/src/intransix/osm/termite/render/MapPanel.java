@@ -6,12 +6,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.event.*;
+import intransix.osm.termite.map.data.OsmDataChangedListener;
 
 /**
  *
  * @author sutter
  */
-public class MapPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener  {
+public class MapPanel extends JPanel implements OsmDataChangedListener,
+		MouseListener, MouseMotionListener, MouseWheelListener  {
 	
 	//zoom factor for a mouse wheel click
 	private final static double ROTATION_SCALE_FACTOR = 1.1;
@@ -217,58 +219,55 @@ public class MapPanel extends JPanel implements MouseListener, MouseMotionListen
 		}
 	}
 	
+	/** This method is called when the data has changed.
+	 * 
+	 * @param editNumber	This is the data version that will be reflected in any data changed 
+	 *						by this edit action.
+	 */
+	@Override
+	public void osmDataChanged(int editNumber) {
+		this.repaint();
+	}
+	
 	//-------------------------
 	// Mouse Events
 	//-------------------------
 	
 	public void mouseClicked(MouseEvent e) {
-//		e.getButton();
-//		e.getClickCount();
-//		e.getLocationOnScreen();
-//		e.getPoint();
-//		e.isPopupTrigger();
-		System.out.println(e.paramString());
 	}
 	
 	public void mouseDragged(MouseEvent e) {
-//		System.out.println(e.paramString());
 		if(panOn) {
 			panStep(e.getX(),e.getY());
 		}
 	}
 	
 	public void mouseEntered(MouseEvent e) {
-		System.out.println(e.paramString());
 	}
 	
 	public void mouseExited(MouseEvent e) {
-		System.out.println(e.paramString());
 		if(panOn) {
 			endPan(e.getX(),e.getY());
 		}
 	}
 	
 	public void mouseMoved(MouseEvent e) {
-//		System.out.println(e.paramString());
-		
+	
 	}
 	
 	public void mousePressed(MouseEvent e) {
-		System.out.println(e.paramString());
 		if(e.getButton() == MouseEvent.BUTTON2) {
 			startPan(e.getX(),e.getY());
 		}
 	}
 	
 	public void mouseReleased(MouseEvent e) {
-		System.out.println(e.paramString());
 		if(panOn) {
 			endPan(e.getX(),e.getY());
 		}
 	}
 	
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		System.out.println(e.paramString());
 		
 		int rotation = e.getWheelRotation();
 		double scaleFactor = Math.pow(ROTATION_SCALE_FACTOR,rotation);

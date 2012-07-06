@@ -12,8 +12,7 @@ public class UpdateRemoveMember extends EditData<OsmRelation> {
 	//========================
 	// Pproperties
 	//========================
-	
-	private OsmData osmData;
+
 	private int index;
 	
 	//========================
@@ -22,11 +21,9 @@ public class UpdateRemoveMember extends EditData<OsmRelation> {
 	
 	/** Constructor
 	 * 
-	 * @param osmData		The data manager
 	 * @param index			The index of the member to remove
 	 */
-	public UpdateRemoveMember(OsmData osmData, int index) {
-		this.osmData = osmData;
+	public UpdateRemoveMember(int index) {
 		this.index = index;
 	}
 	
@@ -37,7 +34,7 @@ public class UpdateRemoveMember extends EditData<OsmRelation> {
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
+	EditData<OsmRelation> readInitialData(OsmData osmData, OsmRelation relation) throws UnchangedException {
 		
 		//get the undo command
 		List<OsmMember> members = relation.getMembers();
@@ -58,7 +55,7 @@ public class UpdateRemoveMember extends EditData<OsmRelation> {
 			id = osmObject.getId();
 			objectType = osmObject.getObjectType();
 		}
-		UpdateInsertMember undoUpdate = new UpdateInsertMember(osmData,id,objectType,member.role,index);
+		UpdateInsertMember undoUpdate = new UpdateInsertMember(id,objectType,member.role,index);
 		return undoUpdate;
 	}
 		
@@ -67,7 +64,7 @@ public class UpdateRemoveMember extends EditData<OsmRelation> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
+	void writeData(OsmData osmData, OsmRelation relation, int editNumber) throws UnchangedException, Exception {
 		//set the property
 		List<OsmMember> members = relation.getMembers();
 		if((index < 0)||(index >= members.size())) {

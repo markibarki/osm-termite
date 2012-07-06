@@ -47,6 +47,8 @@ public class OsmData {
 	//the list of edit actions
 	private List<EditAction> actions = new ArrayList<EditAction>();
 	
+	private List<OsmDataChangedListener> listeners = new ArrayList<OsmDataChangedListener>();
+	
 	//======================
 	// Public Methods
 	//======================
@@ -56,6 +58,16 @@ public class OsmData {
 		
 		//update the filtered value for all features. */
 		filterAll();
+	}
+	
+	/** This adds a data changed listener. */
+	public void addDataChangedListener(OsmDataChangedListener listener) {
+		listeners.add(listener);
+	}
+	
+	/** This removes a data changed listener. */
+	public void removeDataChangedListener(OsmDataChangedListener listener) {
+		listeners.remove(listener);
 	}
 	
 	/** This method returns a ordered list of osm objects, ordered according to
@@ -298,6 +310,17 @@ public class OsmData {
 		}
 		else {
 			osmObject.setFilterState(FilterRule.ALL_ENABLED);
+		}
+	}
+	
+	/** This method notifies any data changed listeners. It should be called 
+	 * when the data changes.
+	 * 
+	 * @param editNumber	This is the data version for any data changed in this edit. 
+	 */
+	void dataChanged(int editNumber) {
+		for(OsmDataChangedListener listener:listeners) {
+			listener.osmDataChanged(editNumber);
 		}
 	}
 	
