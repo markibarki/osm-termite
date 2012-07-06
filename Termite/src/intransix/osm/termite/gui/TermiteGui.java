@@ -1,28 +1,25 @@
 package intransix.osm.termite.gui;
 
-import intransix.osm.termite.gui.filter.LevelFilterRule;
-import intransix.osm.termite.gui.filter.StructureFilterRule;
-import intransix.osm.termite.gui.filter.OutdoorFilterRule;
-import intransix.osm.termite.map.data.*;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 
-import intransix.osm.termite.render.*;
 import intransix.osm.termite.app.TermiteApp;
-import intransix.osm.termite.render.tile.TileLayer;
-import intransix.osm.termite.util.MercatorCoordinates;
-
-import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.map.RenderLayer;
-
+import intransix.osm.termite.gui.filter.*;
+import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.map.theme.Theme;
+import intransix.osm.termite.render.*;
+import intransix.osm.termite.render.tile.TileLayer;
+import intransix.osm.termite.render.edit.EditLayer;
+import intransix.osm.termite.render.map.RenderLayer;
+import intransix.osm.termite.util.MercatorCoordinates;
 
 /**
- *
+ * This is the main UI class. It initializes the UI and it manages event flow.
+ * 
  * @author sutter
  */
 public class TermiteGui extends javax.swing.JFrame {
@@ -43,6 +40,10 @@ public class TermiteGui extends javax.swing.JFrame {
 	private EditorMode defaultEditMode; //the default edit editor mode
 	private java.util.List<EditorMode> editModes; //the list of possible edit editor modes
 	private EditorMode activeMode = null; //the active editor mode
+	
+	//edit mode ui elements we need to change programmatically
+	private ButtonGroup editModeButtonGroup;
+	private JToggleButton defaultEditModeButton;
 	
 	//standard map layers
 	private TileLayer baseMapLayer;
@@ -76,7 +77,6 @@ public class TermiteGui extends javax.swing.JFrame {
 	private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JSplitPane jSplitPane4;
-    
 	
     private javax.swing.JScrollPane jScrollPane1;
     private intransix.osm.termite.gui.contenttree.ContentTree contentTree;
@@ -95,6 +95,7 @@ public class TermiteGui extends javax.swing.JFrame {
 	// Public Methods
 	//=====================
 
+	// <editor-fold defaultstate="collapsed" desc="Constructor">
 	/**
 	 * Creates new form TermiteGui
 	 */
@@ -102,8 +103,10 @@ public class TermiteGui extends javax.swing.JFrame {
 		this.app = app;
 		initComponents();
 	}
+	// </editor-fold>
 	
 	// <editor-fold defaultstate="collapsed" desc="Map Data Methods and Events">
+	//These methods are used for event flow.
 	
 	/** This method returns the map data object. */
 	public OsmData getMapData() {
@@ -128,12 +131,13 @@ public class TermiteGui extends javax.swing.JFrame {
 		for(MapDataListener listener:mapDataListeners) {
 			listener.onMapData(osmData);
 		}
-
-//temporary - need to do more
-osmData.addDataChangedListener(mapPanel);
 		
 		//control state based on presence of data
 		if(osmData != null) {
+			
+//temporary - need to do more		
+osmData.addDataChangedListener(mapPanel);
+
 			//put the app in the edit state
 			setToEditState();
 			//set the level to null (outdoor level)
@@ -296,6 +300,7 @@ osmData.addDataChangedListener(mapPanel);
 	
 	// </editor-fold>
 
+	// <editor-fold defaultstate="collapsed" desc="Initialize">
 	public void initialize() {
 		
 		//MODES
@@ -311,6 +316,7 @@ osmData.addDataChangedListener(mapPanel);
 		//DATA PANEL
 		setToSearchState();
 	}
+	// </editor-fold>
 	
 	//================================
 	// Private Methods
@@ -321,15 +327,17 @@ osmData.addDataChangedListener(mapPanel);
 	private void setToSearchState() {
 		this.setEditModesEnable(false);
 		this.setEditorMode(searchMode);
+		this.editModeButtonGroup.clearSelection();
 	}
 	
 	private void setToEditState() {
 		this.setEditModesEnable(true);
 		this.setEditorMode(defaultEditMode);
+		defaultEditModeButton.setSelected(true);
 	}
 	
 	private void loadEditModes() {
-		ButtonGroup buttonGroup = new ButtonGroup();
+		editModeButtonGroup = new ButtonGroup();
 		for(EditorMode mode:editModes) {
 			
 			//initialize default edit mode
@@ -352,8 +360,12 @@ osmData.addDataChangedListener(mapPanel);
 			button.addActionListener(new ModeButtonListener(mode));
 			button.setMargin(new Insets(1,1,1,1));
 			button.setToolTipText(name);
-			buttonGroup.add(button);
+			editModeButtonGroup.add(button);
 			modeToolBar.add(button);
+			
+			if(mode == defaultEditMode) {
+				defaultEditModeButton = button;
+			}
 			
 		}
 	}
@@ -424,6 +436,8 @@ this.editLayer.setEditMode(editorMode);
 		editLayer = new EditLayer();
 		editLayer.setActiveState(false);
 		this.addMapDataListener(editLayer);
+		this.addFeatureLayerListener(editLayer);
+		this.addLevelSelectedListener(editLayer);
 		
 		mapPanel.addLayer(renderLayer);
 		mapPanel.addLayer(editLayer);
@@ -545,7 +559,8 @@ this.editLayer.setEditMode(editorMode);
 	
 	// </editor-fold>
 
-	private void quitItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitItemActionPerformed
+	// <editor-fold defaultstate="collapsed" desc="Internal Event Functions ans Classes">
+	private void quitItemActionPerformed(java.awt.event.ActionEvent evt) {
 		app.exit();
 	}
 	
@@ -563,5 +578,5 @@ this.editLayer.setEditMode(editorMode);
 			setEditorMode(mode);
 		}
 	}
-
+	// </editor-fold>
 }

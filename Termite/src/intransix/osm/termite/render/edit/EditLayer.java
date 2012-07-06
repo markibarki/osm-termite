@@ -1,31 +1,37 @@
 package intransix.osm.termite.render.edit;
 
+import java.util.*;
+import java.awt.Graphics2D;
+import java.awt.Color;
+import java.awt.BasicStroke;
+import java.awt.geom.*;
+import java.awt.event.*;
+
 import intransix.osm.termite.map.data.*;
+import intransix.osm.termite.map.data.edit.*;
+import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.util.GraduatedList;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.gui.stdmode.*;
-import intransix.osm.termite.map.data.edit.*;
-import intransix.osm.termite.map.feature.FeatureInfo;
-import java.awt.Graphics2D;
-import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import intransix.osm.termite.util.MercatorCoordinates;
-import java.awt.Color;
-import java.awt.BasicStroke;
-import java.awt.Shape;
-import java.awt.geom.*;
-import java.util.*;
 
 /**
- *
+ * This layer controls the user interaction with the active map data. It is designed
+ * to run with the editor modes for the Select Tool, Node Tool and Way Tool.
+ * 
  * @author sutter
  */
-public class EditLayer extends MapLayer implements MapDataListener, FeatureLayerListener,  
-		MouseListener, MouseMotionListener, KeyListener {
+public class EditLayer extends MapLayer implements MapDataListener, 
+		FeatureLayerListener, LevelSelectedListener,  
+		MouseListener, MouseMotionListener, KeyListener, FocusListener {
 	
-	public enum EditMode {
+	//=========================
+	// Properties 
+	//=========================
+	
+	// <editor-fold defaultstate="collapsed" desc="Properties">
+	private enum EditMode {
 		SelectTool,
 		NodeTool,
 		WayTool,
@@ -36,20 +42,28 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 	private final static float SELECT_WIDTH = 3;
 	private final static float HOVER_PRESELECT_WIDTH = 4;
 	private final static float HOVER_OTHER_WIDTH = 2;
+	private final static float PENDING_WIDTH = 2;
 	
 	private final static Color SELECT_COLOR = Color.RED;
 	private final static Color HOVER_PRESELECT_COLOR = Color.MAGENTA;
 	private final static Color HOVER_OTHER_COLOR = Color.PINK;
+	private final static Color PENDING_COLOR = Color.BLACK;
+	
 	private final static BasicStroke SELECT_STROKE = new BasicStroke(SELECT_WIDTH);
 	private final static BasicStroke HOVER_PRESELECT_STROKE = new BasicStroke(HOVER_PRESELECT_WIDTH);
 	private final static BasicStroke HOVER_OTHER_STROKE = new BasicStroke(HOVER_OTHER_WIDTH);
+	private final static BasicStroke PENDING_STROKE = new BasicStroke(PENDING_WIDTH);
 	
 	private OsmData osmData;
 	private EditManager editManager;
+	
 	private EditMode editMode;
 	private FeatureInfo featureInfo;
-
+	private OsmWay activeStructure;
+	private OsmRelation activeLevel;
 	
+	
+	//these variables hold the hover state
 	private List<OsmNode> hoveredNodes = new ArrayList<OsmNode>();
 	private int preselectNode;
 	private List<OsmWay> hoveredWays = new ArrayList<OsmWay>();
@@ -57,20 +71,29 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 	private List<NodeSegment> hoveredSegments = new ArrayList<NodeSegment>();
 	private int preselectSegment;
 	
+	//this holds the active selection
 	private List<OsmObject> selection = new ArrayList<OsmObject>();
 	
-	private List<EditNode> virtualNodes = new ArrayList<EditNode>();
-	private List<EditSegment> virtualSegments = new ArrayList<EditSegment>();
+	//these variables hold the pending edit state
+	private List<EditNode> movingNodes = new ArrayList<EditNode>();
+	private List<EditNode> pendingNodes = new ArrayList<EditNode>();
+	private List<EditSegment> pendingSegments = new ArrayList<EditSegment>();
 	
-//set these up!!!
+	//working variables
 	private EditDestPoint moveStartPoint;
 	private boolean inMove;
 	private OsmWay activeWay;
 	private boolean isEnd;
 	
-	public void onMapData(OsmData osmData) {
-		this.osmData = osmData;
-		editManager = new EditManager(osmData);
+	// </editor-fold>
+	
+	//=========================
+	// Public Methods
+	//=========================
+	
+	/** This returns the current selection. */
+	public List<OsmObject> getSelection() {
+		return selection;
 	}
 	
 	public void setEditMode(EditorMode editorMode) {
@@ -85,6 +108,7 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		else if(editorMode instanceof WayEditorMode) {
 			editMode = EditMode.WayTool;
 			if(selection.size() == 1) {
+				//if there is a single way selected, use it as the active way
 				OsmObject osmObject = selection.get(0);
 				if(osmObject instanceof OsmWay) {
 					activeWay = (OsmWay)osmObject;
@@ -122,6 +146,7 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		}
 	}
 	
+	// <editor-fold defaultstate="collapsed" desc="Render">
 	@Override
 	public void render(Graphics2D g2) {
 		
@@ -146,7 +171,7 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 					g2.setColor(HOVER_OTHER_COLOR);
 				}
 				//render
-				renderNode(g2,node,mercatorToPixels,pixXY,rect);
+				renderPoint(g2,node.getPoint(),mercatorToPixels,pixXY,rect);
 			}
 		}
 		else if(!hoveredWays.isEmpty()) {
@@ -178,7 +203,23 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 					g2.setStroke(HOVER_OTHER_STROKE);
 				}
 				//render
-				renderSegment(g2,ns,mercatorToPixels,pixXY,prevPixXY,line);
+				renderSegment(g2,ns.node1.getPoint(),ns.node2.getPoint(),
+						mercatorToPixels,pixXY,prevPixXY,line);
+			}
+		}
+		
+		//render pending objects
+		if(!pendingNodes.isEmpty()) {
+			g2.setColor(PENDING_COLOR);
+			for(EditNode en:pendingNodes) {
+				renderPoint(g2,en.point,mercatorToPixels,pixXY,rect);
+			}
+		}
+		if(!pendingSegments.isEmpty()) {
+			g2.setColor(PENDING_COLOR);
+			g2.setStroke(PENDING_STROKE);
+			for(EditSegment es:pendingSegments) {
+				renderSegment(g2,es.p1,es.p2,mercatorToPixels,pixXY,prevPixXY,line);
 			}
 		}
 		
@@ -188,7 +229,7 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 			g2.setStroke(SELECT_STROKE);
 			for(OsmObject osmObject:selection) {
 				if(osmObject instanceof OsmNode) {
-					renderNode(g2,(OsmNode)osmObject,mercatorToPixels,pixXY,rect);
+					renderPoint(g2,((OsmNode)osmObject).getPoint(),mercatorToPixels,pixXY,rect);
 				}
 				else if(osmObject instanceof OsmWay) {
 					renderWay(g2,(OsmWay)osmObject,mercatorToPixels,pixXY,prevPixXY,line);
@@ -197,9 +238,9 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		}
 	}
 	
-	private void renderNode(Graphics2D g2, OsmNode node, 
+	private void renderPoint(Graphics2D g2, Point2D point, 
 			AffineTransform mercatorToPixels, Point2D pixXY, Rectangle2D rect) {
-		mercatorToPixels.transform(node.getPoint(),pixXY);
+		mercatorToPixels.transform(point,pixXY);
 		rect.setRect(pixXY.getX()-RADIUS_PIXELS, pixXY.getY() - RADIUS_PIXELS,
 				2*RADIUS_PIXELS, 2*RADIUS_PIXELS);
 		g2.fill(rect);
@@ -222,42 +263,80 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		}
 	}
 	
-	private void renderSegment(Graphics2D g2, NodeSegment ns, 
+	private void renderSegment(Graphics2D g2, Point2D p1, Point2D p2, 
 			AffineTransform mercatorToPixels, Point2D pixXY, Point2D prevPixXY, Line2D line) {
 		
-		mercatorToPixels.transform(ns.node1.getPoint(),prevPixXY);
-		mercatorToPixels.transform(ns.node2.getPoint(),pixXY);
+		mercatorToPixels.transform(p1,prevPixXY);
+		mercatorToPixels.transform(p2,pixXY);
 		line.setLine(pixXY,prevPixXY);
 		g2.draw(line);
 	}
 	
+	// </editor-fold>
+	
+	// <editor-fold defaultstate="collapsed" desc="Map Data Listener">
+	/** This method is called when the map data is set. */
+	@Override
+	public void onMapData(OsmData osmData) {
+		this.osmData = osmData;
+		if(osmData != null) {
+			editManager = new EditManager(osmData);
+		}
+		else {
+			editManager = null;
+			activeStructure = null;
+			activeLevel = null;
+		}
+	}
+	// </editor-fold>
+	
+	// <editor-fold defaultstate="collapsed" desc="Feature Layer Listener">
 	/** This method is called when a feature layer is selected. It may be called 
 	 * with the value null if a selection is cleared an no new selection is made. 
 	 * 
 	 * @param featureInfo	The selected feature type
 	 */
+	@Override
 	public void onFeatureLayerSelected(FeatureInfo featureInfo) {
 		this.featureInfo = featureInfo;
 	}
+	// </editor-fold>
 	
-	//-------------------------
-	// Mouse Events
-	//-------------------------
+	// <editor-fold defaultstate="collapsed" desc="Level Selected Listener">
+	/** This method is called when a map level is selected. It may be called 
+	 * with the value null for the level or the level and the structure. 
+	 * 
+	 * @param structure		The footprint in the outdoor map for the selected level
+	 * @param level			The selected level
+	 */
+	@Override
+	public void onLevelSelected(OsmWay structure, OsmRelation level) {
+		this.activeStructure = structure;
+		this.activeLevel = level;
+	}
+	// </editor-fold>
 	
+	// <editor-fold defaultstate="collapsed" desc="Mouse Listeners">
+	
+	@Override
 	public void mouseClicked(MouseEvent e) {
 	}
 	
+	@Override
 	public void mouseDragged(MouseEvent e) {
 	}
 	
+	@Override
 	public void mouseEntered(MouseEvent e) {
 		this.getMapPanel().requestFocusInWindow();
 	}
 	
+	@Override
 	public void mouseExited(MouseEvent e) {
 		clearHover();
 	}
 	
+	@Override
 	public void mouseMoved(MouseEvent e) {
 		boolean prevHit = !((hoveredNodes.isEmpty())&&(hoveredWays.isEmpty())&&(hoveredSegments.isEmpty()));
 		hoveredNodes.clear();
@@ -309,12 +388,27 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		preselectWay = hoveredWays.size() - 1;
 		preselectSegment = hoveredSegments.size() - 1;
 		
+		//handle a move
+		boolean moved = false;
+		if(!movingNodes.isEmpty()) {
+			if(moveStartPoint != null) {
+				double dx = mouseMerc.getX() - moveStartPoint.point.getX();
+				double dy = mouseMerc.getY() - moveStartPoint.point.getY();
+				for(EditNode en:movingNodes) {
+					Point2D nodePoint = en.node.getPoint();
+					en.point.setLocation(nodePoint.getX() + dx, nodePoint.getY() + dy);
+				}
+				moved = true;
+			}
+		}
+		
 		//repaint if there is a hit or if the hit status changes
-		if((hit)||(prevHit != hit)) {
+		if((hit)||(prevHit != hit)||(moved)) {
 			mapPanel.repaint();
 		}
 	}
 	
+	@Override
 	public void mousePressed(MouseEvent e) {
 		MapPanel mapPanel = getMapPanel();
 		AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
@@ -336,23 +430,15 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 				moveStartPoint = new EditDestPoint();
 				moveStartPoint.point = mouseMerc;
 				
+				OsmObject obj = null;
 				if(!hoveredNodes.isEmpty()) {
-					OsmNode node = hoveredNodes.get(preselectNode);
-					if(!e.isShiftDown()) {
-						selection.clear();
-					}
-					selection.add(node);
+					obj = hoveredNodes.get(preselectNode);
 					
 					//add a snap node for a move start
-					moveStartPoint.snapNode = node;
+					moveStartPoint.snapNode = (OsmNode)obj;
 				}
 				else if(!hoveredWays.isEmpty()) {
-					OsmWay way = hoveredWays.get(preselectWay);
-					if(!e.isShiftDown()) {
-						selection.clear();
-					}
-					selection.add(way);
-					
+					obj = hoveredWays.get(preselectWay);
 					//no snap for move start for now with ways
 				}
 				else {
@@ -360,33 +446,56 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 						selection.clear();
 					}
 				}
+				
+				//handle selection
+				if(!e.isShiftDown()) {
+					//no shift - replace selection
+					selection.clear();
+					if(obj != null) {
+						selection.add(obj);
+					}
+				}
+				else {
+					//shift - add or remove object
+					if(obj != null) {
+						if(selection.contains(obj)) {
+							selection.remove(obj);
+						}
+						else {
+							selection.add(obj);
+						}
+					}
+				}
 			}
 		}
 		else if(editMode == EditMode.NodeTool) {
 			//execute a node addition
 			EditDestPoint dest = getDestinationPoint(mouseMerc);
-			OsmNode node = editManager.nodeToolClicked(dest,featureInfo);
+			OsmNode node = editManager.nodeToolClicked(dest,featureInfo,activeLevel);
 		}
 		else if(editMode == EditMode.WayTool) {
 			//execute a way node addition
 			EditDestPoint dest = getDestinationPoint(mouseMerc);
-			activeWay = editManager.wayToolClicked(activeWay,isEnd,dest,featureInfo);
+			activeWay = editManager.wayToolClicked(activeWay,isEnd,dest,featureInfo,activeLevel);
 		}
 		getMapPanel().repaint();
 	}
 	
+	@Override
 	public void mouseReleased(MouseEvent e) {
 	}
 	
-	//------------------------
-	// Key Event
-	//------------------------
+	// </editor-fold>
+	
+	// <editor-fold defaultstate="collapsed" desc="Key Listener and Focus Listener">
 	
 	/** Handle the key typed event from the text field. */
-    public void keyTyped(KeyEvent e) {
+    @Override
+	public void keyTyped(KeyEvent e) {
     }
 
     /** Handle the key-pressed event from the text field. */
+	@Override
     public void keyPressed(KeyEvent e) {
 		boolean changed = false;
 		if((e.getKeyCode() == KeyEvent.VK_LEFT)||(e.getKeyCode() == KeyEvent.VK_UP)) {
@@ -425,6 +534,8 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_M) {
 			inMove = true;
+			loadPendingFromSelection();
+			changed = true;
 		}
 		
 		if(changed) {
@@ -434,11 +545,26 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
     }
 
     /** Handle the key-released event from the text field. */
-    public void keyReleased(KeyEvent e) {
+    @Override
+	public void keyReleased(KeyEvent e) {
 		if(inMove) {
 			inMove = false;
+			clearPending();
 		}
     }
+	
+	@Override
+	public void focusGained(FocusEvent e) {
+		
+	}
+	
+	@Override
+	public void focusLost(FocusEvent e) {
+		inMove = false;
+		clearPending();
+	}
+	
+	// </editor-fold>
 	
 	//============================
 	// Private Methods
@@ -467,17 +593,18 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		return edp;
 	}
 	
-	//-----------------------
-	// Hit Methods
-	//-----------------------
+	// <editor-fold defaultstate="collapsed" desc="Hit Methods">
 	
+	/** Thie method clears the current selection. */
 	private void clearSelection() {
 		selection.clear();
 		activeWay = null;
 		inMove = false;
+		clearPending();
 		getMapPanel().repaint();
 	}
 	
+	/** This method clears the hover variables. */
 	private void clearHover() {
 		hoveredNodes.clear();
 		hoveredWays.clear();
@@ -536,6 +663,36 @@ public class EditLayer extends MapLayer implements MapDataListener, FeatureLayer
 		return Line2D.ptSegDistSq(p1.getX(),p1.getY(),p2.getX(),p2.getY(),mercPoint.getX(),mercPoint.getY()) < mercRadSq;
 	}
 	
+	// </editor-fold>
+	
+	// <editor-fold defaultstate="collapsed" desc="Pending Methods">
+	private void clearPending() {
+		pendingNodes.clear();
+		pendingSegments.clear();
+		movingNodes.clear();
+	}
+	
+	private void loadPendingFromSelection() {
+		for(OsmObject obj:selection) {
+			if(obj instanceof OsmNode) {
+				EditNode node = new EditNode((OsmNode)obj);
+				pendingNodes.add(node);
+				movingNodes.add(node);
+			}
+			else if(obj instanceof OsmWay) {
+				EditSegment seg;
+				OsmNode prev = null;
+				for(OsmNode node:((OsmWay)obj).getNodes()) {
+					if(prev != null) {
+						seg = new EditSegment(node.getPoint(),prev.getPoint());
+						pendingSegments.add(seg);
+					}
+					prev = node;
+				}
+			}
+		}
+	}
+	// </editor-fold>
 	public class NodeSegment {
 		public OsmNode node1;
 		public OsmNode node2;

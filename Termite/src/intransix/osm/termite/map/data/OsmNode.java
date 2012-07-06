@@ -94,13 +94,8 @@ public class OsmNode extends OsmObject {
 	}
 	
 	@Override
-	void propertiesUpdated(OsmData osmData) {
-		featurePropertiesUpdatedProcessing(osmData);
-	}
-	
-	@Override
 	void objectUpdated(OsmData osmData) {
-		featureUpdated(osmData);
+		featurePropertiesUpdatedProcessing(osmData);
 	}
 	
 	/** This method should be called when the object is deleted. */
