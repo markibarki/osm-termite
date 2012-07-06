@@ -54,13 +54,9 @@ public class OsmRelation extends OsmObject {
 	
 	/** This method should be called when the properties are updated. */
 	@Override
-	void propertiesUpdated(OsmData osmData) {
+	void objectUpdated(OsmData osmData) {
 		//read the relation type
 		relationType = this.getProperty(OsmModel.KEY_TYPE);
-	}
-	
-	@Override
-	void objectUpdated(OsmData osmData) {
 	}
 	
 	/** This method should be called when the object is deleted. */

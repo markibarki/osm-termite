@@ -42,6 +42,9 @@ public abstract class EditInstruction<T extends OsmObject> {
 		EditData<T> newInitialData = targetData.readInitialData(osmData,osmObject);
 		targetData.writeData(osmData,osmObject,editNumber);
 		
+		//notify of update
+		osmObject.objectUpdated(osmData);
+		
 		return newInitialData;
 	}
 	
@@ -86,7 +89,7 @@ public abstract class EditInstruction<T extends OsmObject> {
 			//if this is a delete, remove the object
 			osmData.removeOsmObject(srcData.getId(), srcData.getObjectType());
 			
-					
+			//cleanup object		
 			osmObject.objectDeleted(osmData);
 		}
 

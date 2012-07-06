@@ -69,9 +69,6 @@ public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
 			osmObject.setProperty(finalKey, finalValue);
 		}
 		
-		//re-classify the object
-		osmObject.propertiesUpdated(osmData);
-		
 		osmObject.setDataVersion(osmData,editNumber);
 		osmObject.setContainingObjectDataVersion(osmData,editNumber);
 	}

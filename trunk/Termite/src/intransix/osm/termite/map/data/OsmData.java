@@ -319,6 +319,10 @@ public class OsmData {
 	 * @param editNumber	This is the data version for any data changed in this edit. 
 	 */
 	void dataChanged(int editNumber) {
+		//update filter
+		filterAll();
+		
+		//notify
 		for(OsmDataChangedListener listener:listeners) {
 			listener.osmDataChanged(editNumber);
 		}

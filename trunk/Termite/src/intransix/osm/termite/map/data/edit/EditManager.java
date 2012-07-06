@@ -18,7 +18,8 @@ public class EditManager {
 		this.osmData = osmData;
 	}
 	
-	public OsmNode nodeToolClicked(EditDestPoint destPoint, FeatureInfo featureInfo) {
+	public OsmNode nodeToolClicked(EditDestPoint destPoint, FeatureInfo featureInfo, 
+			OsmRelation currentLevel) {
 System.out.println("Create a node");
 
 		EditAction action = new EditAction(osmData,"Create Node");
@@ -34,11 +35,19 @@ if((destPoint.snapNode != null)&&(destPoint.snapNode2 == null)) {
 //need to add properties!!!
 			EditInstruction instr = new CreateInstruction(nodeSrc,osmData);
 			action.addInstruction(instr);
+			long nodeId = nodeSrc.getId();
+			
+			if(currentLevel != null) {
+				//place node on the current level
+				UpdateInsertMember uim = new UpdateInsertMember(nodeId,OsmModel.TYPE_NODE,OsmModel.ROLE_FEATURE);
+				instr = new UpdateInstruction(currentLevel,uim);
+				action.addInstruction(instr);
+			}
 			
 			boolean success = action.doAction();
 			if(success) {
-				long id = nodeSrc.getId();
-				OsmNode node = osmData.getOsmNode(id);
+
+				OsmNode node = osmData.getOsmNode(nodeId);
 				return node;
 			}
 			else {
@@ -54,41 +63,49 @@ if((destPoint.snapNode != null)&&(destPoint.snapNode2 == null)) {
 	}
 	
 	public OsmWay wayToolClicked(OsmWay activeWay, boolean isEnd, 
-			EditDestPoint destPoint, FeatureInfo featureInfo) {
+			EditDestPoint destPoint, FeatureInfo featureInfo, OsmRelation currentLevel) {
 		
 System.out.println("Add a node to a way");
 		
 		if(activeWay == null) {
-			return createWay(destPoint,featureInfo);
+			return createWay(destPoint,featureInfo, currentLevel);
 		}
 		else {
-			addNodeToWay(activeWay,destPoint,isEnd);
+			addNodeToWay(activeWay,destPoint,isEnd, currentLevel);
 			return activeWay;
 		}
 	}
 	
-	public boolean selectionMoved(List<OsmObject> selection, EditDestPoint startPoint,
-			EditDestPoint destPoint) {
+	public boolean selectionMoved(List<OsmObject> selection, EditDestPoint start,
+			EditDestPoint dest) {
+	
+//for now disallow this
+if((start.snapNode != null)&&(start.snapNode2 == null)&&(dest.snapNode != null)&&(dest.snapNode2 == null)) {
+	JOptionPane.showMessageDialog(null,"Creating a node on another node not currently supported");
+	return false;
+}
 		
 System.out.println("Move the selection");
 
-		if(selection.size() == 1) {
-			OsmObject obj = selection.get(0);
+		HashSet<OsmNode> nodeSet = new HashSet<OsmNode>();
+		for(OsmObject obj:selection) {
 			if(obj instanceof OsmNode) {
-				return moveNode((OsmNode)obj,destPoint);
+				nodeSet.add((OsmNode)obj);
 			}
-			else {
-				JOptionPane.showMessageDialog(null,"For now only a single node can be moved.");
-				return false;
+			else if(obj instanceof OsmWay) {
+				for(OsmNode node:((OsmWay)obj).getNodes()) {
+					nodeSet.add(node);
+				}
 			}
 		}
-		else { 
-			JOptionPane.showMessageDialog(null,"For now only a single node can be moved.");
-			return false;
-		}
+
+		double dx = dest.point.getX() - start.point.getX();
+		double dy = dest.point.getY() - start.point.getY();
+
+		return moveNodes(nodeSet,dx,dy);
 	}
 	
-	private OsmWay createWay(EditDestPoint dest, FeatureInfo featureInfo) {
+	private OsmWay createWay(EditDestPoint dest, FeatureInfo featureInfo, OsmRelation currentLevel) {
 		EditAction action = new EditAction(osmData,"Create Way");
 		
 		Long startNodeId = null;
@@ -101,6 +118,13 @@ System.out.println("Move the selection");
 			EditInstruction instr = new CreateInstruction(nodeSrc,osmData);
 			action.addInstruction(instr);
 			startNodeId = nodeSrc.getId();
+			
+			if(currentLevel != null) {
+				//place node on the current level
+				UpdateInsertMember uim = new UpdateInsertMember(startNodeId,OsmModel.TYPE_NODE,OsmModel.ROLE_FEATURE);
+				instr = new UpdateInstruction(currentLevel,uim);
+				action.addInstruction(instr);
+			}
 		}
 		
 		OsmWaySrc waySrc = new OsmWaySrc();
@@ -130,7 +154,7 @@ System.out.println("Move the selection");
 		}
 	}
 	
-	private boolean addNodeToWay(OsmWay way, EditDestPoint dest, boolean isEnd) {
+	private boolean addNodeToWay(OsmWay way, EditDestPoint dest, boolean isEnd, OsmRelation currentLevel) {
 		EditAction action = new EditAction(osmData,"Add node to way");
 		
 		long addNodeId;
@@ -143,6 +167,13 @@ System.out.println("Move the selection");
 			EditInstruction instr = new CreateInstruction(nodeSrc,osmData);
 			action.addInstruction(instr);
 			addNodeId = nodeSrc.getId();
+			
+			if(currentLevel != null) {
+				//place node on the current level
+				UpdateInsertMember uim = new UpdateInsertMember(addNodeId,OsmModel.TYPE_NODE,OsmModel.ROLE_FEATURE);
+				instr = new UpdateInstruction(currentLevel,uim);
+				action.addInstruction(instr);
+			}
 		}
 		else {
 			JOptionPane.showMessageDialog(null,"Error - the poitn to add to the way was not found");
@@ -172,18 +203,16 @@ System.out.println("Move the selection");
 		}
 	}
 	
-	private boolean moveNode(OsmNode node, EditDestPoint dest) {
+	private boolean moveNodes(Collection<OsmNode> nodes, double dx, double dy) {
 		EditAction action = new EditAction(osmData,"Create Node");
 
-if((dest.snapNode != null)&&(dest.snapNode2 == null)) {
-	JOptionPane.showMessageDialog(null,"Creating a node on another node not currently supported");
-	return false;
-}
-
 		try {
-			UpdatePosition up = new UpdatePosition(dest.point.getX(),dest.point.getY());
-			EditInstruction instr = new UpdateInstruction(node,up);
-			action.addInstruction(instr);
+			for(OsmNode node:nodes) {
+				UpdatePosition up = new UpdatePosition(node.getPoint().getX() + dx,
+						node.getPoint().getY() + dy);
+				EditInstruction instr = new UpdateInstruction(node,up);
+				action.addInstruction(instr);
+			}
 			
 			boolean success = action.doAction();
 			if(success) {

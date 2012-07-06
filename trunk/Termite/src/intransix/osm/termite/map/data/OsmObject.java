@@ -259,9 +259,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	
 	/** This sets the data version. */
 	void setDataVersion(OsmData osmData, int version) {
-		if(version != dataVersion) {
-			objectUpdated(osmData);
-		}
 		this.dataVersion = version;
 	}
 	
@@ -312,8 +309,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 	
 	abstract void objectCreated(OsmData osmData);
 	
-	abstract void propertiesUpdated(OsmData osmData);
-	
 	abstract void objectUpdated(OsmData osmData);
 	
 	void objectDeleted(OsmData osmData) {
@@ -331,8 +326,6 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 		//update the graduated list
 		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
 		orderedList.add(this, zorder);
-		
-		osmData.filterObject(this);
 	}
 	
 	void featurePropertiesUpdatedProcessing(OsmData osmData) {
@@ -340,15 +333,11 @@ public abstract class OsmObject/*<T extends OsmObject>*/ {
 		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
 		int newZorder = featureInfo.getZorder();
 
-		//update the graduated list
-		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
-		orderedList.move(this,newZorder,initialZorder);
-		
-		osmData.filterObject(this);
-	}
-	
-	void featureUpdated(OsmData osmData) {
-		osmData.filterObject(this);
+		//update the ordered feature list if needed
+		if(newZorder != initialZorder) {
+			GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
+			orderedList.move(this,newZorder,initialZorder);
+		}
 	}
 	
 	void featureDeletedProcessing(OsmData osmData) {

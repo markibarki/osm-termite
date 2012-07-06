@@ -56,14 +56,9 @@ public class OsmWay extends OsmObject {
 		isArea = this.getBooleanProperty(OsmModel.KEY_AREA,defaultIsArea);
 	}
 	
-	@Override
-	void objectUpdated(OsmData osmData) {
-		featureUpdated(osmData);
-	}
-	
 	/** This method should be calle when properties are updated. */
 	@Override
-	void propertiesUpdated(OsmData osmData) {
+	void objectUpdated(OsmData osmData) {
 		featurePropertiesUpdatedProcessing(osmData);
 		
 		//read if this is an area

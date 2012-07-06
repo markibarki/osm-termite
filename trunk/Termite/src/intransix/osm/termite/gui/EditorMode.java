@@ -1,9 +1,9 @@
 package intransix.osm.termite.gui;
 
-import javax.swing.JToolBar;
-
 /**
- *
+ * This is the base class for an editor mode. The editor mode controls what the 
+ * editor does.
+ * 
  * @author sutter
  */
 public interface EditorMode {

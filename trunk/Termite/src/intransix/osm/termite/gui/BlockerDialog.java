@@ -3,7 +3,9 @@ package intransix.osm.termite.gui;
 import javax.swing.*;
 
 /**
- *
+ * This is used as a input blocker during an asynchronous task, which should be
+ * implemented with a swing worker.
+ * 
  * @author sutter
  */
 public class BlockerDialog extends javax.swing.JDialog {
