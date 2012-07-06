@@ -8,12 +8,10 @@ import java.util.List;
  */
 public class UpdateRole extends EditData<OsmRelation> {
 	
-	private OsmData osmData;
 	private String role;
 	private int index;
 	
-	public UpdateRole(OsmData osmData, String role, int index) {
-		this.osmData = osmData;
+	public UpdateRole(String role, int index) {
 		this.role = role;
 		this.index = index;
 	}
@@ -21,14 +19,14 @@ public class UpdateRole extends EditData<OsmRelation> {
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	public EditData<OsmRelation> readInitialData(OsmRelation relation) throws UnchangedException {
+	public EditData<OsmRelation> readInitialData(OsmData osmData, OsmRelation relation) throws UnchangedException {
 		List<OsmMember> members = relation.getMembers();
 		if((index >= members.size())||(index < 0)) {
 			throw new UnchangedException("Invalid index for relation: " + relation.getId());
 		}
 		OsmMember member = members.get(index);
 		String initialRole = member.role;
-		UpdateRole undoUpdate = new UpdateRole(osmData,initialRole, index);
+		UpdateRole undoUpdate = new UpdateRole(initialRole, index);
 		return undoUpdate;
 	}
 		
@@ -37,7 +35,7 @@ public class UpdateRole extends EditData<OsmRelation> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	public void writeData(OsmRelation relation, int editNumber) throws UnchangedException, Exception {
+	public void writeData(OsmData osmData, OsmRelation relation, int editNumber) throws UnchangedException, Exception {
 		List<OsmMember> members = relation.getMembers();
 		if((index >= members.size())||(index < 0)) {
 			throw new UnchangedException("Invalid index for relation: " + relation.getId());

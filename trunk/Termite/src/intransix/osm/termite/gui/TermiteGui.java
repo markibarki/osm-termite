@@ -128,6 +128,9 @@ public class TermiteGui extends javax.swing.JFrame {
 		for(MapDataListener listener:mapDataListeners) {
 			listener.onMapData(osmData);
 		}
+
+//temporary - need to do more
+osmData.addDataChangedListener(mapPanel);
 		
 		//control state based on presence of data
 		if(osmData != null) {
@@ -366,6 +369,8 @@ public class TermiteGui extends javax.swing.JFrame {
 		activeMode = editorMode;	
 		//prepare the new mode
 		editorMode.turnOn();
+		
+this.editLayer.setEditMode(editorMode);
 		
 		//repaint map
 		mapPanel.repaint();

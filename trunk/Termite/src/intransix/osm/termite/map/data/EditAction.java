@@ -60,6 +60,11 @@ public class EditAction {
 		instructions.add(instr);
 	}
 	
+	/** This method returns the OsmData. */
+	public OsmData getOsmData() {
+		return osmData;
+	}
+	
 	/** This method executes the action. It should be done in the UI thread. */
 	public boolean doAction() throws Exception {
 		int editNumber = osmData.getNextEditNumber();
@@ -83,6 +88,9 @@ public class EditAction {
 			}
 			return false;
 		}
+		
+		//notify data changed
+		osmData.dataChanged(editNumber);
 		
 		return true;
 	}
@@ -116,6 +124,9 @@ public class EditAction {
 			}
 			return false;
 		}
+		
+		//notify data changed
+		osmData.dataChanged(editNumber);
 
 		return true;
 	}

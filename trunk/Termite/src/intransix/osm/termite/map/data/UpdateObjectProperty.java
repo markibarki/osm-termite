@@ -14,7 +14,6 @@ public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
 	private String initialKey;
 	private String finalKey;
 	private String finalValue;
-	private OsmData osmData;
 	
 	//========================
 	// Public Methods
@@ -22,7 +21,6 @@ public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
 	
 	/** Constructor
 	 * 
-	 * @param osmData		The data manager object
 	 * @param initialKey	The initial value of the key. If this is null, a new property
 	 *						will be created.
 	 * @param finalKey		The final value of the key.  If this is null, the property
@@ -30,8 +28,7 @@ public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
 	 *						key and final key should be the same. 
 	 * @param finalValue	The final value of the key. If this is null the key is deleted.
 	 */
-	public UpdateObjectProperty(OsmData osmData, String initialKey, String finalKey, String finalValue) {
-		this.osmData = osmData;
+	public UpdateObjectProperty(String initialKey, String finalKey, String finalValue) {
 		this.initialKey = initialKey;
 		this.finalKey = finalKey;
 		this.finalValue = finalValue;
@@ -44,7 +41,7 @@ public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	EditData<T> readInitialData(T osmObject) throws UnchangedException {
+	EditData<T> readInitialData(OsmData osmData, T osmObject) throws UnchangedException {
 		String initialValue;
 		if(initialKey != null) {
 			initialValue = osmObject.getProperty(initialKey);
@@ -52,7 +49,7 @@ public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
 		else {
 			 initialValue = null;
 		}
-		UpdateObjectProperty<T> undoUpdate = new UpdateObjectProperty<T>(osmData,finalKey,initialKey,initialValue);
+		UpdateObjectProperty<T> undoUpdate = new UpdateObjectProperty<T>(finalKey,initialKey,initialValue);
 		return undoUpdate;
 	}
 		
@@ -61,7 +58,7 @@ public class UpdateObjectProperty<T extends OsmObject> extends EditData<T> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	void writeData(T osmObject, int editNumber) throws UnchangedException, Exception {
+	void writeData(OsmData osmData, T osmObject, int editNumber) throws UnchangedException, Exception {
 		//if the key changes, delete the old property
 		if(((initialKey != null)&&(!initialKey.equals(finalKey)))
 			||(finalValue == null)) {

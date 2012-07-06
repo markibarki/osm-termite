@@ -15,7 +15,6 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 	
 	private final static int INVALID_INDEX = -1;
 	
-	private OsmData osmData;
 	private long nodeId;
 	private int index;
 	
@@ -25,24 +24,20 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 	
 	/** Constructor. 
 	 * 
-	 * @param osmData		The data manager
 	 * @param nodeId		The id of the node to add
 	 * @param nodeIndex		The index at which to add the node
 	 */
-	public UpdateInsertNode(OsmData osmData, long nodeId, int nodeIndex) {
-		this.osmData = osmData;
+	public UpdateInsertNode(long nodeId, int nodeIndex) {
 		this.nodeId = nodeId;
 		this.index = nodeIndex;
 	}
 	
 	/** Constructor to add the node at the end of the list
 	 * 
-	 * @param osmData		The data manager
 	 * @param nodeId		The id of the node to add
 	 * @param nodeIndex		The index at which to add the node
 	 */
-	public UpdateInsertNode(OsmData osmData, long nodeId) {
-		this.osmData = osmData;
+	public UpdateInsertNode(long nodeId) {
 		this.nodeId = nodeId;
 		this.index = INVALID_INDEX;
 	}
@@ -54,8 +49,8 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 	/** This method creates a copy of the edit data that can restore the initial state. 
 	 * This method can throw a RecoeveableException, which means no data was changed. */
 	@Override
-	EditData<OsmWay> readInitialData(OsmWay way) throws UnchangedException {
-		UpdateRemoveNode undoUpdate = new UpdateRemoveNode(osmData,index);
+	EditData<OsmWay> readInitialData(OsmData osmData, OsmWay way) throws UnchangedException {
+		UpdateRemoveNode undoUpdate = new UpdateRemoveNode(index);
 		return undoUpdate;
 	}
 		
@@ -64,7 +59,7 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 	 will be assumed the data was changes and the state of the system can not be recovered. The
 	 application will be forced to close if this happens. */
 	@Override
-	void writeData(OsmWay way, int editNumber) throws UnchangedException, Exception {
+	void writeData(OsmData osmData, OsmWay way, int editNumber) throws UnchangedException, Exception {
 		//set the property
 		List<OsmNode> nodes = way.getNodes();
 		if(index == INVALID_INDEX) {
