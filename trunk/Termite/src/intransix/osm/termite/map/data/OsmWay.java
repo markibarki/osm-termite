@@ -17,6 +17,8 @@ public class OsmWay extends OsmObject {
 		
 	private List<OsmNode> nodes = new ArrayList<OsmNode>();
 	private boolean isArea;
+	
+	private List<OsmSegmentWrapper> segments = new ArrayList<OsmSegmentWrapper>();
 
 	//=======================
 	// Public Methods
@@ -25,6 +27,10 @@ public class OsmWay extends OsmObject {
 	/** This method gets the nodes for this way. This list should NOT be edited. */
 	public List<OsmNode> getNodes() {
 		return nodes;
+	}
+	
+	public List<OsmSegmentWrapper> getSegments() {
+		return segments;
 	}
 	
 	/** This returns true if the way should be an area. False indicates line. */
@@ -76,5 +82,12 @@ public class OsmWay extends OsmObject {
 			node.removeWay(this);
 		}
 		nodes.clear();
+		for(OsmSegmentWrapper osw:segments) {
+			OsmSegment segment = osw.segment;
+			segment.removeWay(this);
+			if(segment.getOsmWays().isEmpty()) {
+				osmData.discardSegment(segment);
+			}
+		}
 	}
 }

@@ -68,6 +68,18 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 		if((index < 0)||(index > nodes.size())) {
 			throw new UnchangedException("Invalid node index for way: " + way.getId());
 		}
+
+		//get the neighboring nodes
+		OsmNode prevNode = null;
+		OsmNode nextNode = null;
+		if(index > 0) {
+			prevNode = nodes.get(index-1);
+		}
+		if(index < nodes.size()) {
+			nextNode = nodes.get(index);
+		}
+		
+		//update the nodes
 		OsmNode node = osmData.getOsmNode(nodeId, true);
 		if(node != null) {
 			nodes.add(index,node);
@@ -76,6 +88,39 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 		else {
 			//this should never happen
 			throw new UnchangedException("An unknown error occurred looking up or creating node: " + nodeId);
+		}
+		
+		//update the segments
+		List<OsmSegmentWrapper> osws = way.getSegments();
+		if((prevNode != null)&&(nextNode != null)) {
+			OsmSegmentWrapper removeOsw = osws.remove(index-1);
+			OsmSegment removeSegment = removeOsw.segment;
+			//make sure there are no more copies of this segment in this way
+			//this shouldn't happen in theory
+			boolean moreCopies = false;
+			for(OsmSegmentWrapper t:osws) {
+				if(t.segment == removeSegment) moreCopies = true;
+				break;
+			}
+			if(!moreCopies) {
+				removeSegment.removeWay(way);
+				//check if there are no references to this way
+				if(removeSegment.getOsmWays().isEmpty()) {
+					osmData.discardSegment(removeSegment);
+				}
+			}
+		}
+		if(prevNode != null) {
+			OsmSegment segment = osmData.getOsmSegment(prevNode, node);
+			OsmSegmentWrapper osw = new OsmSegmentWrapper(segment,prevNode,node);
+			osws.add(index-1, osw);
+			segment.addWay(way);
+		}
+		if(nextNode != null) {
+			OsmSegment segment = osmData.getOsmSegment(node,nextNode);
+			OsmSegmentWrapper osw = new OsmSegmentWrapper(segment,node,nextNode);
+			osws.add(index, osw);
+			segment.addWay(way);
 		}
 		
 		//update version

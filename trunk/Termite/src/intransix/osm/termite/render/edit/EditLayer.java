@@ -15,6 +15,7 @@ import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.gui.stdmode.*;
+import java.awt.MouseInfo;
 
 /**
  * This layer controls the user interaction with the active map data. It is designed
@@ -68,7 +69,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private int preselectNode;
 	private List<OsmWay> hoveredWays = new ArrayList<OsmWay>();
 	private int preselectWay;
-	private List<NodeSegment> hoveredSegments = new ArrayList<NodeSegment>();
+	private List<OsmSegment> hoveredSegments = new ArrayList<OsmSegment>();
 	private int preselectSegment;
 	
 	//this holds the active selection
@@ -104,6 +105,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		else if(editorMode instanceof NodeEditorMode) {
 			editMode = EditMode.NodeTool;
 			clearSelection();
+			//initialize virtual node with a dummy point - it will get updated on a mouse move
+			setNodeToolPendingData(new Point2D.Double());
 		}
 		else if(editorMode instanceof WayEditorMode) {
 			editMode = EditMode.WayTool;
@@ -121,6 +124,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			else {
 				clearSelection();
 			}
+			//initialize virtual node with a dummy point - it will get updated on a mouse move
+			setWayToolPendingData(new Point2D.Double());
 		}
 		else {
 			editMode = EditMode.Other;
@@ -192,7 +197,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 		else if(!hoveredSegments.isEmpty()) {
 			index = 0;
-			for(NodeSegment ns:hoveredSegments) {
+			for(OsmSegment segment:hoveredSegments) {
 				//get proper render style
 				if(index++ == preselectSegment) {
 					g2.setColor(HOVER_PRESELECT_COLOR);
@@ -203,7 +208,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 					g2.setStroke(HOVER_OTHER_STROKE);
 				}
 				//render
-				renderSegment(g2,ns.node1.getPoint(),ns.node2.getPoint(),
+				renderSegment(g2,segment.getNode1().getPoint(),segment.getNode2().getPoint(),
 						mercatorToPixels,pixXY,prevPixXY,line);
 			}
 		}
@@ -219,7 +224,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			g2.setColor(PENDING_COLOR);
 			g2.setStroke(PENDING_STROKE);
 			for(EditSegment es:pendingSegments) {
-				renderSegment(g2,es.p1,es.p2,mercatorToPixels,pixXY,prevPixXY,line);
+				renderSegment(g2,es.en1.point,es.en2.point,mercatorToPixels,pixXY,prevPixXY,line);
 			}
 		}
 		
@@ -362,22 +367,27 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				
 				//check for hit
 				if(mapObject instanceof OsmNode) {
+					//check for a node hit
 					if(nodeHit((OsmNode)mapObject,mouseMerc,mercRadSq)) {
 						hoveredNodes.add((OsmNode)mapObject);
 					}
-				}
-				else if(mapObject instanceof OsmWay) {
-					if((editMode == EditMode.SelectTool)&&(!inMove)) {
-						//check for hitting ways
-						if(wayHit((OsmWay)mapObject,mouseMerc,mercRadSq)) {
-							hoveredWays.add((OsmWay)mapObject);
-						}
-					}
-					else {
-						//check for hitting segments
-						final NodeSegment segmentHit = getHitSegment((OsmWay)mapObject,mouseMerc,mercRadSq);
-						if(segmentHit != null) {
-							hoveredSegments.add(segmentHit);
+					//check for a segment hit
+					for(OsmSegment segment:((OsmNode)mapObject).getSegments()) {
+						//only do the segments that start with this node, to avoid doing them twice
+						if(segment.getNode1() == mapObject) {
+							if(segmentHit(segment,mouseMerc,mercRadSq)) {
+								//process the hit segment
+								if((editMode == EditMode.SelectTool)&&(!inMove)) {
+									//select - add ways
+									for(OsmWay way:segment.getOsmWays()) {
+										hoveredWays.add(way);
+									}
+								}
+								else {
+									//segment select
+									hoveredSegments.add(segment);
+								}		
+							}
 						}
 					}
 				}
@@ -391,15 +401,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		//handle a move
 		boolean moved = false;
 		if(!movingNodes.isEmpty()) {
-			if(moveStartPoint != null) {
-				double dx = mouseMerc.getX() - moveStartPoint.point.getX();
-				double dy = mouseMerc.getY() - moveStartPoint.point.getY();
-				for(EditNode en:movingNodes) {
-					Point2D nodePoint = en.node.getPoint();
-					en.point.setLocation(nodePoint.getX() + dx, nodePoint.getY() + dy);
-				}
-				moved = true;
-			}
+			updateMovingNodes(mouseMerc);
+			moved = true;
 		}
 		
 		//repaint if there is a hit or if the hit status changes
@@ -417,10 +420,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 		if(editMode == EditMode.SelectTool) {
 			if(inMove) {
-				if(!selection.isEmpty()) {
+				if((!selection.isEmpty())&&(e.getButton() == MouseEvent.BUTTON1)) {
 					//execute the move
 					EditDestPoint dest = getDestinationPoint(mouseMerc);
 					editManager.selectionMoved(selection,moveStartPoint,dest);
+					clearPending();
+					
+					//update the start point location - just change the point
+					moveStartPoint.point.setLocation(mouseMerc);
 				}
 			}
 			else {
@@ -472,11 +479,15 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			//execute a node addition
 			EditDestPoint dest = getDestinationPoint(mouseMerc);
 			OsmNode node = editManager.nodeToolClicked(dest,featureInfo,activeLevel);
+			//prepare for next
+			setNodeToolPendingData(mouseMerc);
 		}
 		else if(editMode == EditMode.WayTool) {
 			//execute a way node addition
 			EditDestPoint dest = getDestinationPoint(mouseMerc);
 			activeWay = editManager.wayToolClicked(activeWay,isEnd,dest,featureInfo,activeLevel);
+			//prepare for next
+			setWayToolPendingData(mouseMerc);
 		}
 		getMapPanel().repaint();
 	}
@@ -533,9 +544,22 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_M) {
-			inMove = true;
-			loadPendingFromSelection();
-			changed = true;
+			if(!inMove) {
+				inMove = true;
+				loadPendingFromSelection();
+
+				//get the current mouse location and update the nodes that move with the mouse
+				MapPanel mapPanel = getMapPanel();
+				AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
+				java.awt.Point mouseInApp = MouseInfo.getPointerInfo().getLocation();
+				java.awt.Point mapPanelInApp = mapPanel.getLocationOnScreen();
+				Point2D mousePix = new Point2D.Double(mouseInApp.x - mapPanelInApp.x,mouseInApp.y - mapPanelInApp.y);
+				Point2D mouseMerc = new Point2D.Double(); 
+				pixelsToMercator.transform(mousePix,mouseMerc);
+				updateMovingNodes(mouseMerc);
+
+				changed = true;
+			}
 		}
 		
 		if(changed) {
@@ -550,6 +574,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		if(inMove) {
 			inMove = false;
 			clearPending();
+			getMapPanel().repaint();
 		}
     }
 	
@@ -585,9 +610,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			edp.snapNode2 = null;
 		}
 		if(!hoveredSegments.isEmpty()) {
-			NodeSegment ns = hoveredSegments.get(preselectSegment);
-			edp.snapNode = ns.node1;
-			edp.snapNode2 = ns.node2;
+			OsmSegment segment = hoveredSegments.get(preselectSegment);
+			edp.snapNode = segment.getNode1();
+			edp.snapNode2 = segment.getNode2();
 		}
 		
 		return edp;
@@ -617,53 +642,35 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		return (mouseMerc.distanceSq(node.getPoint()) < mercRadSq);
 	}
 	
-	/** This returns true if the way was hit. */
-	private boolean wayHit(OsmWay way, Point2D mouseMerc, double mercRadSq) {
-		OsmNode prevNode = null;
-		for(OsmNode node:way.getNodes()) {
-			if(prevNode != null) {
-				if(segmentHit(node,prevNode,mouseMerc,mercRadSq)) {
-					return true;
-				}
-			}
-			prevNode = node;
-		}
-		return false;
-	}
-	
-	private NodeSegment getHitSegment(OsmWay way, Point2D mouseMerc, double mercRadSq) {
-		OsmNode prevNode = null;
-		for(OsmNode node:way.getNodes()) {
-			if(prevNode != null) {
-				if((segmentHit(node,prevNode,mouseMerc,mercRadSq))&&(getSegmentIsNew(node,prevNode))) {
-					NodeSegment nodeSegment = new NodeSegment(prevNode,node);
-					return nodeSegment;
-				}
-			}
-			prevNode = node;
-		}
-		return null;
-	}
-	
-	/** This method checks if the given pair of nodes is in the hover list already.
-	 * If so, it returns false, if not it returns true. */
-	private boolean getSegmentIsNew(OsmNode node1, OsmNode node2) {
-		for(NodeSegment ns:hoveredSegments) {
-			if(((ns.node1 == node1)&&(ns.node2 == node2))||((ns.node1 == node2)&&(ns.node2 == node1))) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
 	/** This returns true if a segment was hit. */
-	private boolean segmentHit(OsmNode node1, OsmNode node2, Point2D mercPoint, double mercRadSq) {
-		Point2D p1 = node1.getPoint();
-		Point2D p2 = node2.getPoint();
+	private boolean segmentHit(OsmSegment segment, Point2D mercPoint, double mercRadSq) {
+		Point2D p1 = segment.getNode1().getPoint();
+		Point2D p2 = segment.getNode2().getPoint();
 		return Line2D.ptSegDistSq(p1.getX(),p1.getY(),p2.getX(),p2.getY(),mercPoint.getX(),mercPoint.getY()) < mercRadSq;
 	}
 	
 	// </editor-fold>
+	
+	private void updateMovingNodes(Point2D mouseMerc) {
+		if(inMove) {
+			//this is a move - there may be several nodes
+			if(moveStartPoint != null) {
+				double dx = mouseMerc.getX() - moveStartPoint.point.getX();
+				double dy = mouseMerc.getY() - moveStartPoint.point.getY();
+				for(EditNode en:movingNodes) {
+					Point2D nodePoint = en.node.getPoint();
+					en.point.setLocation(nodePoint.getX() + dx, nodePoint.getY() + dy);
+				}
+			}
+		}
+		else {
+			//this is a new node - there should be just one node
+			if(!movingNodes.isEmpty()) {
+				EditNode en = movingNodes.get(0);
+				en.point.setLocation(mouseMerc);
+			}
+		}
+	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Pending Methods">
 	private void clearPending() {
@@ -673,33 +680,82 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	}
 	
 	private void loadPendingFromSelection() {
+		//get unique copies of nodes
+		HashMap<OsmNode,EditNode> nodeMap = new HashMap<OsmNode,EditNode>();
 		for(OsmObject obj:selection) {
 			if(obj instanceof OsmNode) {
-				EditNode node = new EditNode((OsmNode)obj);
-				pendingNodes.add(node);
-				movingNodes.add(node);
+				addNodeToMap(nodeMap,(OsmNode)obj);
 			}
 			else if(obj instanceof OsmWay) {
-				EditSegment seg;
-				OsmNode prev = null;
 				for(OsmNode node:((OsmWay)obj).getNodes()) {
-					if(prev != null) {
-						seg = new EditSegment(node.getPoint(),prev.getPoint());
-						pendingSegments.add(seg);
-					}
-					prev = node;
+					addNodeToMap(nodeMap,node);
 				}
 			}
 		}
+
+		//load the edit segments - we may have duplicates here but that is ok
+		for(OsmNode node:nodeMap.keySet()) {
+			for(OsmSegment segment:node.getSegments()) {
+				EditNode en1 = nodeMap.get(segment.getNode1());
+				if(en1 == null) {
+					en1 = new EditNode(segment.getNode1());
+				}
+				EditNode en2 = nodeMap.get(segment.getNode2());
+				if(en2 == null) {
+					en2 = new EditNode(segment.getNode2());
+				}
+				EditSegment es = new EditSegment(en1,en2);
+				pendingSegments.add(es);
+			}
+		}
+	}
+
+	private void addNodeToMap(HashMap<OsmNode,EditNode> nodeMap,OsmNode node) {
+		if(!nodeMap.containsKey(node)) {
+			EditNode en = new EditNode(node);
+			pendingNodes.add(en);
+			movingNodes.add(en);
+			nodeMap.put(node,en);
+		}
+	}
+	
+	private void setNodeToolPendingData(Point2D mouseMerc) {
+		clearPending();
+		
+		EditNode en = new EditNode(mouseMerc,featureInfo);
+		movingNodes.add(en);
+		pendingNodes.add(en);
+	}
+	
+	private void setWayToolPendingData(Point2D mouseMerc) {
+		clearPending();
+		
+		//get the node to add
+		EditNode en = new EditNode(mouseMerc,null);
+		movingNodes.add(en);
+		pendingNodes.add(en);
+		//get the segment from the previous node
+		OsmNode activeNode = null;
+		if(activeWay != null) {
+			List<OsmNode> nodes = activeWay.getNodes();
+			
+			if(!nodes.isEmpty()) {
+				if(isEnd) {
+					activeNode = nodes.get(nodes.size()-1);
+				}
+				else {
+					activeNode = nodes.get(0);
+				}
+			}
+		}
+		if(activeNode != null) {
+			EditNode en2 = new EditNode(activeNode);
+			EditSegment es = new EditSegment(en,en2);
+			pendingNodes.add(en2);
+			pendingSegments.add(es);
+		}
+		
 	}
 	// </editor-fold>
-	public class NodeSegment {
-		public OsmNode node1;
-		public OsmNode node2;
-		
-		public NodeSegment(OsmNode node1, OsmNode node2) {
-			this.node1 = node1;
-			this.node2 = node2;
-		} 
-	}
+
 }

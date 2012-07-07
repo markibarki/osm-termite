@@ -55,11 +55,68 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 		if(index >= nodes.size()) {
 			throw new UnchangedException("Invalid node index for way: " + way.getId());
 		}
+		
+		//get the neighboring nodes
+		OsmNode prevNode = null;
+		OsmNode nextNode = null;
+		if(index > 0) {
+			prevNode = nodes.get(index-1);
+		}
+		if(index < nodes.size()-1) {
+			nextNode = nodes.get(index+1);
+		}
+		
+		//remove the node
 		OsmNode removedNode = nodes.remove(index);
 		
 		//remove the way from the node if it was in the way once
 		if(!nodes.contains(removedNode)) {
 			removedNode.removeWay(way);
+		}
+		
+		//update the segments
+		List<OsmSegmentWrapper> osws = way.getSegments();
+		if(prevNode != null) {
+			OsmSegmentWrapper removeOsw = osws.remove(index-1);
+			OsmSegment removeSegment = removeOsw.segment;
+			//make sure there are no more copies of this segment in this way
+			//this shouldn't happen in theory
+			boolean moreCopies = false;
+			for(OsmSegmentWrapper t:osws) {
+				if(t.segment == removeSegment) moreCopies = true;
+				break;
+			}
+			if(!moreCopies) {
+				removeSegment.removeWay(way);
+				//check if there are no references to this way
+				if(removeSegment.getOsmWays().isEmpty()) {
+					osmData.discardSegment(removeSegment);
+				}
+			}
+		}
+		if(nextNode != null) {
+			OsmSegmentWrapper removeOsw = osws.remove(index);
+			OsmSegment removeSegment = removeOsw.segment;
+			//make sure there are no more copies of this segment in this way
+			//this shouldn't happen in theory
+			boolean moreCopies = false;
+			for(OsmSegmentWrapper t:osws) {
+				if(t.segment == removeSegment) moreCopies = true;
+				break;
+			}
+			if(!moreCopies) {
+				removeSegment.removeWay(way);
+				//check if there are no references to this way
+				if(removeSegment.getOsmWays().isEmpty()) {
+					osmData.discardSegment(removeSegment);
+				}
+			}
+		}
+		if((prevNode != null)&&(nextNode != null)) {
+			OsmSegment segment = osmData.getOsmSegment(prevNode,nextNode);
+			OsmSegmentWrapper osw = new OsmSegmentWrapper(segment,prevNode,nextNode);
+			osws.add(index, osw);
+			segment.addWay(way);
 		}
 		
 		//update version
