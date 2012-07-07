@@ -64,18 +64,28 @@ public class OsmWaySrc extends OsmSrcData<OsmWay> {
 	void copyInto(OsmWay target, OsmData osmData) {
 		super.copyInto(target,osmData);
 		
-		Collection nodes = target.getNodes();
+		List<OsmNode> nodes = target.getNodes();
+		List<OsmSegmentWrapper> segments = target.getSegments();
 		nodes.clear();
+		OsmNode prevNode = null;
+		OsmNode node;
 		for(Long id:nodeIds) {
-			OsmNode node = osmData.getOsmNode(id, true);
+			node = osmData.getOsmNode(id, true);
 			if(node != null) {
 				nodes.add(node);
 				node.addWay(target);
+				if(prevNode != null) {
+					OsmSegment segment = osmData.getOsmSegment(node,prevNode);
+					OsmSegmentWrapper osw = new OsmSegmentWrapper(segment,node,prevNode);
+					segments.add(osw);
+					segment.addWay(target);
+				}
 			}
 			else {
 				//this shouldn't happen
 				//if so, we will ignore the node
 			}
+			prevNode = node;
 		}
 	}
 	

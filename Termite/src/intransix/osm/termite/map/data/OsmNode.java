@@ -22,6 +22,8 @@ public class OsmNode extends OsmObject {
 	
 	private List<OsmWay> ways = new ArrayList<OsmWay>();
 	
+	private List<OsmSegment> segments = new ArrayList<OsmSegment>();
+	
 	//======================
 	// Public Methods
 	//======================
@@ -38,6 +40,10 @@ public class OsmNode extends OsmObject {
 	 */
 	public List<OsmWay> getWays() {
 		return ways;
+	}
+	
+	public List<OsmSegment> getSegments() {
+		return segments;
 	}
 	
 	//====================
@@ -73,6 +79,16 @@ public class OsmNode extends OsmObject {
 	/** This method removes the way from the node. */
 	void removeWay(OsmWay way) {
 		ways.remove(way);
+	}
+	
+	void addSegment(OsmSegment segment) {
+		if(!segments.contains(segment)) {
+			segments.add(segment);
+		}
+	}
+	
+	void removeSegment(OsmSegment segment) {
+		segments.remove(segment);
 	}
 	
 	/** This method verifies an object can be deleted. There can be no external

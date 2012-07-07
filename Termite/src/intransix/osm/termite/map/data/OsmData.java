@@ -36,6 +36,8 @@ public class OsmData {
 	//by the feature info map
 	private GraduatedList<OsmObject> orderedMapObjects = new GraduatedList<OsmObject>();
 	
+	private HashMap<Object,OsmSegment> segments = new HashMap<Object,OsmSegment>();
+	
 	//the base data that was checked out
 	private List<OsmNodeSrc> srcNodes = new ArrayList<OsmNodeSrc>();
 	private List<OsmWaySrc> srcWays = new ArrayList<OsmWaySrc>();
@@ -99,6 +101,24 @@ public class OsmData {
 			//unknown object
 			return null;
 		}
+	}
+	
+	public OsmSegment getOsmSegment(OsmNode nodeA, OsmNode nodeB) {
+		Object key = OsmSegment.getKey(nodeA, nodeB);
+		OsmSegment segment = segments.get(key);
+		if(segment == null) {
+			segment = new OsmSegment(nodeA,nodeB);
+			nodeA.addSegment(segment);
+			nodeB.addSegment(segment);
+			segments.put(key, segment);
+		}
+		return segment;
+	}
+	
+	public void discardSegment(OsmSegment segment) {
+		segment.getNode1().removeSegment(segment);
+		segment.getNode2().removeSegment(segment);
+		segments.remove(segment.getKey());
 	}
 
 	/** This method gets the node of the given id. If there is no matching node,
