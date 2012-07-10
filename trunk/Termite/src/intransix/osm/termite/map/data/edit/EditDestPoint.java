@@ -16,13 +16,7 @@ public class EditDestPoint {
 	public Point2D point;
 	
 	/** In the case of snapping to a node, this is the node that should be snapped
-	 * to. In this case, snapNode2 should be null. In the case of snapping to a 
-	 * line segment, this should be one of the two nodes on the segment. */
+	 * to. */
 	public OsmNode snapNode;
 	
-	/** This value is used of a point is snapped to a line segment. In this case, 
-	 * snapNode2 should be the opposite end node from snapNode. If this is not the
-	 * case of snapping to a line segment, this should be null.
-	 */
-	public OsmNode snapNode2;
 }

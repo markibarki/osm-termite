@@ -24,7 +24,7 @@ System.out.println("Create a node");
 
 		EditAction action = new EditAction(osmData,"Create Node");
 
-if((destPoint.snapNode != null)&&(destPoint.snapNode2 == null)) {
+if(destPoint.snapNode != null) {
 	JOptionPane.showMessageDialog(null,"Creating a node on another node not currently supported");
 	return null;
 }
@@ -80,7 +80,7 @@ System.out.println("Add a node to a way");
 			EditDestPoint dest) {
 	
 //for now disallow this
-if((start.snapNode != null)&&(start.snapNode2 == null)&&(dest.snapNode != null)&&(dest.snapNode2 == null)) {
+if((start.snapNode != null)&&(dest.snapNode != null)) {
 	JOptionPane.showMessageDialog(null,"Creating a node on another node not currently supported");
 	return false;
 }
@@ -109,7 +109,7 @@ System.out.println("Move the selection");
 		EditAction action = new EditAction(osmData,"Create Way");
 		
 		Long startNodeId = null;
-		if((dest.snapNode != null)&&(dest.snapNode2 == null)) {
+		if(dest.snapNode != null) {
 			startNodeId = dest.snapNode.getId();
 		}
 		else if(dest.point != null) {
@@ -158,7 +158,7 @@ System.out.println("Move the selection");
 		EditAction action = new EditAction(osmData,"Add node to way");
 		
 		long addNodeId;
-		if((dest.snapNode != null)&&(dest.snapNode2 == null)) {
+		if(dest.snapNode != null) {
 			addNodeId = dest.snapNode.getId();
 		}
 		else if(dest.point != null) {
