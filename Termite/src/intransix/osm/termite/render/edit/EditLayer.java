@@ -39,19 +39,29 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		Other
 	}
 	
+	//this is the limit for ignoring pairs of lines for intersecting
+	private final static double ALMOST_PARALLEL_SIN_THETA = .1; //5.7 degrees
+	
 	private final static double RADIUS_PIXELS = 5; 
 	private final static float SELECT_WIDTH = 3;
-	private final static float HOVER_PRESELECT_WIDTH = 4;
+	private final static float HOVER_PRESELECT_WIDTH = 2;
+	private final static float HOVER_EXTENSION_WIDTH = 2;
 	private final static float HOVER_OTHER_WIDTH = 2;
 	private final static float PENDING_WIDTH = 2;
+	private final static float MITER_LIMIT = 5f;
 	
 	private final static Color SELECT_COLOR = Color.RED;
 	private final static Color HOVER_PRESELECT_COLOR = Color.MAGENTA;
 	private final static Color HOVER_OTHER_COLOR = Color.PINK;
 	private final static Color PENDING_COLOR = Color.BLACK;
 	
+	private final static float[] DASH_SPACING = {3f};
+	private final static float DASH_PHASE = 0f;
+	
 	private final static BasicStroke SELECT_STROKE = new BasicStroke(SELECT_WIDTH);
 	private final static BasicStroke HOVER_PRESELECT_STROKE = new BasicStroke(HOVER_PRESELECT_WIDTH);
+	private final static BasicStroke HOVER_EXTENSION_STROKE = new BasicStroke(HOVER_EXTENSION_WIDTH, BasicStroke.CAP_BUTT,
+        BasicStroke.JOIN_MITER, MITER_LIMIT,DASH_SPACING,DASH_PHASE);
 	private final static BasicStroke HOVER_OTHER_STROKE = new BasicStroke(HOVER_OTHER_WIDTH);
 	private final static BasicStroke PENDING_STROKE = new BasicStroke(PENDING_WIDTH);
 	
@@ -65,12 +75,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	
 	//these variables hold the hover state
-	private List<OsmNode> hoveredNodes = new ArrayList<OsmNode>();
-	private int preselectNode;
+	private OsmNode snapNode;
+	private SnapSegment snapSegment;
+	private SnapIntersection snapIntersection;
 	private List<OsmWay> hoveredWays = new ArrayList<OsmWay>();
 	private int preselectWay;
-	private List<OsmSegment> hoveredSegments = new ArrayList<OsmSegment>();
-	private int preselectSegment;
+	private List<SnapSegment> hoveredSegments = new ArrayList<SnapSegment>();
 	
 	//this holds the active selection
 	private List<OsmObject> selection = new ArrayList<OsmObject>();
@@ -165,19 +175,10 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		int index;
 		
 		//render hover
-		if(!hoveredNodes.isEmpty()) {
-			index = 0;
-			for(OsmNode node:hoveredNodes) {
-				//get proper render style
-				if(index++ == preselectNode) {
-					g2.setColor(HOVER_PRESELECT_COLOR);
-				}
-				else {
-					g2.setColor(HOVER_OTHER_COLOR);
-				}
-				//render
-				renderPoint(g2,node.getPoint(),mercatorToPixels,pixXY,rect);
-			}
+		if(snapNode != null) {
+			g2.setColor(HOVER_PRESELECT_COLOR);
+			//render
+			renderPoint(g2,snapNode.getPoint(),mercatorToPixels,pixXY,rect);
 		}
 		else if(!hoveredWays.isEmpty()) {
 			index = 0;
@@ -195,22 +196,37 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				renderWay(g2,way,mercatorToPixels,pixXY,prevPixXY,line);
 			}
 		}
-		else if(!hoveredSegments.isEmpty()) {
-			index = 0;
-			for(OsmSegment segment:hoveredSegments) {
-				//get proper render style
-				if(index++ == preselectSegment) {
-					g2.setColor(HOVER_PRESELECT_COLOR);
-					g2.setStroke(HOVER_PRESELECT_STROKE);
-				}
-				else {
-					g2.setColor(HOVER_OTHER_COLOR);
-					g2.setStroke(HOVER_OTHER_STROKE);
-				}
-				//render
-				renderSegment(g2,segment.getNode1().getPoint(),segment.getNode2().getPoint(),
-						mercatorToPixels,pixXY,prevPixXY,line);
+		else if(snapIntersection != null) {
+			g2.setColor(HOVER_PRESELECT_COLOR);
+			SnapSegment ss;
+			
+			ss = snapIntersection.s1;
+			if(ss.snapType == SnapType.SEGMENT_INT) {
+				g2.setStroke(HOVER_PRESELECT_STROKE);
 			}
+			else {
+				g2.setStroke(HOVER_EXTENSION_STROKE);
+			}
+			renderSegment(g2,ss.p1,ss.p2,mercatorToPixels,pixXY,prevPixXY,line);
+			
+			ss = snapIntersection.s2;
+			if(ss.snapType == SnapType.SEGMENT_INT) {
+				g2.setStroke(HOVER_PRESELECT_STROKE);
+			}
+			else {
+				g2.setStroke(HOVER_EXTENSION_STROKE);
+			}
+			renderSegment(g2,ss.p1,ss.p2,mercatorToPixels,pixXY,prevPixXY,line);
+		}
+		else if(snapSegment != null) {
+			g2.setColor(HOVER_PRESELECT_COLOR);
+			if(snapSegment.snapType == SnapType.SEGMENT_INT) {
+				g2.setStroke(HOVER_PRESELECT_STROKE);
+			}
+			else {
+				g2.setStroke(HOVER_EXTENSION_STROKE);
+			}
+			renderSegment(g2,snapSegment.p1,snapSegment.p2,mercatorToPixels,pixXY,prevPixXY,line);
 		}
 		
 		//render pending objects
@@ -343,8 +359,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		boolean prevHit = !((hoveredNodes.isEmpty())&&(hoveredWays.isEmpty())&&(hoveredSegments.isEmpty()));
-		hoveredNodes.clear();
+		
+		boolean wasActive = ((snapNode != null)||(snapSegment != null)||
+				(snapIntersection != null)||(!hoveredWays.isEmpty()));
+
+		//clear snapObjects
+		snapNode = null;
+		snapSegment = null;
+		snapIntersection = null;
 		hoveredWays.clear();
 		hoveredSegments.clear();
 		
@@ -357,8 +379,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		double mercRad = RADIUS_PIXELS / scalePixelsPerMerc;
 		double mercRadSq = mercRad * mercRad;
 		
-		
 		//loook for a point
+		double minNodeErr2 = mercRadSq;
 		GraduatedList<OsmObject> objectList = osmData.getOrderedList();
 		for(java.util.List<OsmObject> subList:objectList.getLists()) {
 			for(OsmObject mapObject:subList) {
@@ -368,45 +390,60 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				//check for hit
 				if(mapObject instanceof OsmNode) {
 					//check for a node hit
-					if(nodeHit((OsmNode)mapObject,mouseMerc,mercRadSq)) {
-						hoveredNodes.add((OsmNode)mapObject);
+					double err2 = mouseMerc.distanceSq(((OsmNode)mapObject).getPoint());
+					if(err2 < minNodeErr2) {
+						snapNode = (OsmNode)mapObject;
 					}
 					//check for a segment hit
 					for(OsmSegment segment:((OsmNode)mapObject).getSegments()) {
 						//only do the segments that start with this node, to avoid doing them twice
 						if(segment.getNode1() == mapObject) {
-							if(segmentHit(segment,mouseMerc,mercRadSq)) {
-								//process the hit segment
-								if((editMode == EditMode.SelectTool)&&(!inMove)) {
-									//select - add ways
+							if((editMode == EditMode.SelectTool)&&(!inMove)) {
+								//selection
+								//check for segment hit
+								if(segmentHit(segment,mouseMerc,mercRadSq)) {
+									//add ways for this segment
 									for(OsmWay way:segment.getOsmWays()) {
 										hoveredWays.add(way);
 									}
 								}
-								else {
-									//segment select
-									hoveredSegments.add(segment);
-								}		
 							}
+							else {
+								//snap
+								Point2D sp1 = segment.getNode1().getPoint();
+								Point2D sp2 = segment.getNode2().getPoint();
+								SnapSegment ss = getSnapSegment(mouseMerc,sp1,sp2,mercRadSq);
+								if(ss != null) {
+									hoveredSegments.add(ss);
+								}
+							}		
 						}
+						
 					}
 				}
 			}			
 		}
-		boolean hit = !((hoveredNodes.isEmpty())&&(hoveredWays.isEmpty())&&(hoveredSegments.isEmpty()));
-		preselectNode = hoveredNodes.size() - 1;
-		preselectWay = hoveredWays.size() - 1;
-		preselectSegment = hoveredSegments.size() - 1;
 		
-		//handle a move
-		boolean moved = false;
+		//select the segment and intersection
+		if(!hoveredSegments.isEmpty()) {
+			selectActiveSegment(mouseMerc,mercRadSq);
+		}
+		
+		//select the active object, this can be updated with the arrow keys
+		//as it is now, it resets every move. we might want to change this.
+		preselectWay = hoveredWays.size() - 1;
+		
+		boolean isActive = ((snapNode != null)||(snapSegment != null)||
+				(snapIntersection != null)||(!hoveredWays.isEmpty()));
+		
+		//handle a move preview
 		if(!movingNodes.isEmpty()) {
 			updateMovingNodes(mouseMerc);
-			moved = true;
+			isActive = true;
 		}
 		
 		//repaint if there is a hit or if the hit status changes
-		if((hit)||(prevHit != hit)||(moved)) {
+		if(wasActive||isActive) {
 			mapPanel.repaint();
 		}
 	}
@@ -438,8 +475,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				moveStartPoint.point = mouseMerc;
 				
 				OsmObject obj = null;
-				if(!hoveredNodes.isEmpty()) {
-					obj = hoveredNodes.get(preselectNode);
+				if(snapNode != null) {
+					obj = snapNode;
 					
 					//add a snap node for a move start
 					moveStartPoint.snapNode = (OsmNode)obj;
@@ -510,36 +547,16 @@ public class EditLayer extends MapLayer implements MapDataListener,
     public void keyPressed(KeyEvent e) {
 		boolean changed = false;
 		if((e.getKeyCode() == KeyEvent.VK_LEFT)||(e.getKeyCode() == KeyEvent.VK_UP)) {
-			if(!hoveredNodes.isEmpty()) {
-				preselectNode--;
-				if(preselectNode < 0) preselectNode = hoveredNodes.size() - 1;
-				changed = true;
-			}
-			else if(!hoveredWays.isEmpty()) {
+			if(!hoveredWays.isEmpty()) {
 				preselectWay--;
 				if(preselectWay < 0) preselectWay = hoveredWays.size() - 1;
 				changed = true;
 			}
-			else if(!hoveredSegments.isEmpty()) {
-				preselectSegment--;
-				if(preselectSegment < 0) preselectSegment = hoveredSegments.size() - 1;
-				changed = true;
-			}
 		}
 		else if((e.getKeyCode() == KeyEvent.VK_RIGHT)||(e.getKeyCode() == KeyEvent.VK_DOWN)) {
-			if(!hoveredNodes.isEmpty()) {
-				preselectNode++;
-				if(preselectNode >= hoveredNodes.size()) preselectNode = 0;
-				changed = true;
-			}
-			else if(!hoveredWays.isEmpty()) {
+			if(!hoveredWays.isEmpty()) {
 				preselectWay++;
 				if(preselectWay >= hoveredWays.size()) preselectWay = 0;
-				changed = true;
-			}
-			else if(!hoveredSegments.isEmpty()) {
-				preselectSegment++;
-				if(preselectSegment >= hoveredSegments.size()) preselectSegment = 0;
 				changed = true;
 			}
 		}
@@ -603,19 +620,138 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	 */
 	private EditDestPoint getDestinationPoint(Point2D mouseMerc) {
 		EditDestPoint edp = new EditDestPoint();
-		edp.point = mouseMerc;
+		edp.point = new Point2D.Double();
+		edp.snapNode = null;
 		
-		if(!hoveredNodes.isEmpty()) {
-			edp.snapNode = hoveredNodes.get(preselectNode);
-			edp.snapNode2 = null;
+		if(snapNode != null) {
+			edp.snapNode = snapNode;
+			edp.point.setLocation(edp.snapNode.getPoint());
 		}
-		if(!hoveredSegments.isEmpty()) {
-			OsmSegment segment = hoveredSegments.get(preselectSegment);
-			edp.snapNode = segment.getNode1();
-			edp.snapNode2 = segment.getNode2();
+		else if(snapIntersection != null) {
+			edp.point = snapIntersection.ps;
+		}
+		else if(snapSegment != null) {
+			edp.point = snapSegment.ps;
+		}
+		else {
+			edp.point.setLocation(mouseMerc);
 		}
 		
 		return edp;
+	}
+	
+	private SnapSegment getSnapSegment(Point2D inPoint, Point2D segPt1, Point2D segPt2, double mercRadSq) {
+		//check for a hit
+		if(Line2D.ptLineDistSq(segPt1.getX(),segPt1.getY(),segPt2.getX(),segPt2.getY(),inPoint.getX(),inPoint.getY()) >= mercRadSq) {
+			//no hit for this segment
+			return null;
+		}
+			
+		//calculate the hit point
+		SnapSegment ss = new SnapSegment();
+		double dxs = segPt2.getX() - segPt1.getX();
+		double dys = segPt2.getY() - segPt1.getY();
+		double dxp = inPoint.getX() - segPt1.getX();
+		double dyp = inPoint.getY() - segPt1.getY();
+		
+		double fraction = (dxs * dxp + dys * dyp)/(dxs * dxs + dys * dys);
+		ss.ps = new Point2D.Double(segPt1.getX() + fraction * dxs,segPt1.getY() + fraction * dys);
+		ss.err2 = ss.ps.distanceSq(inPoint);
+		if(fraction < 0) {
+			//snap to extension from point 1
+			ss.p1 = new Point2D.Double(segPt1.getX(),segPt1.getY());
+			ss.p2 = ss.ps;
+			ss.snapType = SnapType.SEGMENT_EXT;
+		}
+		else if(fraction > 1) {
+			//snap to extension from point 2
+			ss.p1 = new Point2D.Double(segPt2.getX(),segPt2.getY());
+			ss.p2 = ss.ps;
+			ss.snapType = SnapType.SEGMENT_EXT;
+		}
+		else {
+			//snap to segment
+			ss.p1 = new Point2D.Double(segPt1.getX(),segPt1.getY());
+			ss.p2 = new Point2D.Double(segPt2.getX(),segPt2.getY());
+			ss.snapType = SnapType.SEGMENT_INT;
+		}
+		
+		return ss;
+	}
+	
+	/** This method selects the active snap segments from the list of hovered
+	 * segments. It discards the non-active segments. */
+	private void selectActiveSegment(Point2D mouseMerc, double mercRadSq) {
+		//least error segment
+		SnapSegment ss0 = null;
+		double err2 = Double.MAX_VALUE;
+		//intersection 
+		SnapIntersection si0 = null;
+		//working values
+		SnapSegment ss1;
+		SnapSegment ss2;
+		int cnt = hoveredSegments.size();
+		for(int i = 0; i < cnt; i++) {
+			ss1 = hoveredSegments.get(i);
+			//get least error
+			if(ss1.err2 < err2) {
+				ss0 = ss1;
+			}
+			//look for intersection
+			for(int j = i+1; j < cnt; j++) {
+				ss2 = hoveredSegments.get(j);
+				SnapIntersection si = checkIntersection(ss1,ss2,mouseMerc,mercRadSq);
+				//save best
+				if((si != null)&&((si0 == null)||(si.err2 < si0.err2))) {
+					si0 = si;
+				}
+			}
+		}
+		//sve results
+		snapSegment = ss0;
+		snapIntersection = si0;
+	}
+	
+	private SnapIntersection checkIntersection(SnapSegment ss1, SnapSegment ss2, 
+			Point2D mouseMer, double mercRadSq) {
+		
+		double xs1 = ss1.p1.getX();
+		double ys1 = ss1.p1.getY();
+		double dx1 = ss1.p2.getX() - xs1;
+		double dy1 = ss1.p2.getY() - ys1;
+		double xs2 = ss2.p1.getX();
+		double ys2 = ss2.p1.getY();
+		double dx2 = ss2.p2.getX() - xs2;
+		double dy2 = ss2.p2.getY() - ys2;
+		
+		double den = dx1*dy2 - dy1*dx2;
+		double len1 = Math.sqrt(dx1*dx1 + dy1*dy1);
+		double len2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+		
+		//make sure lines are not cloe to being parallel
+		if( Math.abs(den / (len1 * len2)) < ALMOST_PARALLEL_SIN_THETA) return null;
+		
+		//find intersection
+		double num = -(xs1*dy2 - ys1*dx2) + (xs2*dy2 - ys2*dx2);
+		double alpha = num / den;
+		
+		double xSnap = xs1 + alpha * dx1;
+		double ySnap = ys1 + alpha * dy1;
+		
+		double err2 = mouseMer.distanceSq(xSnap,ySnap);
+		
+		if(err2 >= mercRadSq) {
+			//not in range
+			return null;	
+		}	
+		
+		SnapIntersection si = new SnapIntersection();
+		si.ps = new Point2D.Double(xSnap,ySnap);
+		si.s1 = ss1;
+		si.s2 = ss2;
+		si.err2 = err2;
+		return si;
+		
 	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Hit Methods">
@@ -631,15 +767,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	/** This method clears the hover variables. */
 	private void clearHover() {
-		hoveredNodes.clear();
+		snapNode = null;
+		snapSegment = null;
+		snapIntersection = null;
 		hoveredWays.clear();
 		hoveredSegments.clear();
 		getMapPanel().repaint();
-	}
-	
-	/** This returns true if the node was hit. */
-	private boolean nodeHit(OsmNode node, Point2D mouseMerc, double mercRadSq) {
-		return (mouseMerc.distanceSq(node.getPoint()) < mercRadSq);
 	}
 	
 	/** This returns true if a segment was hit. */
@@ -758,4 +891,30 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	}
 	// </editor-fold>
 
+	private enum SnapType {
+		SEGMENT_INT,
+		SEGMENT_EXT,
+		SEGMENT_PERP,
+		INTERSECTION
+	}
+	
+	private class SnapSegment {
+		//display line start
+		public Point2D p1;
+		//display line end
+		public Point2D p2;
+		//target point
+		public Point2D ps;
+		//type
+		public SnapType snapType;
+		//error
+		public double err2;
+	}
+	
+	private class SnapIntersection {
+		public Point2D ps;
+		public SnapSegment s1;
+		public SnapSegment s2;
+		public double err2;
+	}
 }
