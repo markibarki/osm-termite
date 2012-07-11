@@ -32,11 +32,24 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	//=========================
 	
 	// <editor-fold defaultstate="collapsed" desc="Properties">
+	
+	/** This indicates the mode of the edit layer. */
 	private enum EditMode {
 		SelectTool,
 		NodeTool,
 		WayTool,
 		Other
+	}
+	
+	/** This indicates the type of snap that is being done. */
+	private enum SnapType {
+		SEGMENT_INT,
+		SEGMENT_EXT,
+		SEGMENT_PERP,
+		INTERSECTION,
+		HORIZONTAL,
+		VERTICAL,
+		UNKNOWN
 	}
 	
 	//this is the limit for ignoring pairs of lines for intersecting
@@ -73,8 +86,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private EditMode editMode;
 	private FeatureInfo featureInfo;
 	private OsmWay activeStructure;
-	private OsmRelation activeLevel;
-	
+	private OsmRelation activeLevel;	
 	
 	//these variables hold the hover state
 	private OsmNode snapNode;
@@ -82,7 +94,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private SnapIntersection snapIntersection;
 	private List<OsmWay> hoveredWays = new ArrayList<OsmWay>();
 	private int preselectWay;
-	private List<SnapSegment> hoveredSegments = new ArrayList<SnapSegment>();
 	
 	//this holds the active selection
 	private List<OsmObject> selection = new ArrayList<OsmObject>();
@@ -101,6 +112,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	//working variables
 	private EditDestPoint moveStartPoint;
+	private List<SnapSegment> hoveredSegments = new ArrayList<SnapSegment>();
 	private boolean inMove;
 	private OsmWay activeWay;
 	private boolean isEnd;
@@ -116,6 +128,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		return selection;
 	}
 	
+	/** This method sets the edit mode. */
 	public void setEditMode(EditorMode editorMode) {
 		if(editorMode instanceof SelectEditorMode) {
 			editMode = EditMode.SelectTool;
@@ -152,6 +165,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 	}
 	
+	/** This mode sets the edit layer active. */
 	@Override
 	public void setActiveState(boolean isActive) {
 		super.setActiveState(isActive);
@@ -171,6 +185,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Render">
+	
+	/** This method renders the edit state. */
 	@Override
 	public void render(Graphics2D g2) {
 		
@@ -285,6 +301,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 	}
 	
+	/** This method renders a point. */
 	private void renderPoint(Graphics2D g2, Point2D point, 
 			AffineTransform mercatorToPixels, Point2D pixXY, Rectangle2D rect) {
 		mercatorToPixels.transform(point,pixXY);
@@ -293,6 +310,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		g2.fill(rect);
 	}
 	
+	/** This method renders a way. */
 	private void renderWay(Graphics2D g2, OsmWay way, 
 			AffineTransform mercatorToPixels, Point2D pixXY, Point2D prevPixXY, Line2D line) {
 		
@@ -310,6 +328,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 	}
 	
+	/** This method renders a segment. */
 	private void renderSegment(Graphics2D g2, Point2D p1, Point2D p2, 
 			AffineTransform mercatorToPixels, Point2D pixXY, Point2D prevPixXY, Line2D line) {
 		
@@ -405,6 +424,11 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		double mercRad = RADIUS_PIXELS / scalePixelsPerMerc;
 		double mercRadSq = mercRad * mercRad;
 		
+		//handle a move preview
+		if(!movingNodes.isEmpty()) {
+			updateMovingNodes(mouseMerc);
+		}
+		
 		//loook for a point
 		double minNodeErr2 = mercRadSq;
 		GraduatedList<OsmObject> objectList = osmData.getOrderedList();
@@ -413,7 +437,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				//make sure edit is enabled for this object
 				if(!mapObject.editEnabled()) continue;
 				
-				//check for hit
+				//do the hover check
 				if(mapObject instanceof OsmNode) {
 					//check for a node hit
 					double err2 = mouseMerc.distanceSq(((OsmNode)mapObject).getPoint());
@@ -425,7 +449,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 						//only do the segments that start with this node, to avoid doing them twice
 						if(segment.getNode1() == mapObject) {
 							if((editMode == EditMode.SelectTool)&&(!inMove)) {
-								//selection preview
+								//selection preview - when we are selecting an object
 								//check for segment hit
 								if(segmentHit(segment,mouseMerc,mercRadSq)) {
 									//add ways for this segment
@@ -435,11 +459,11 @@ public class EditLayer extends MapLayer implements MapDataListener,
 								}
 							}
 							else {
-								//snap preview
+								//snap preview - when we are in an edit
 								//check for segment and extension hit
 								Point2D sp1 = segment.getNode1().getPoint();
 								Point2D sp2 = segment.getNode2().getPoint();
-								SnapSegment ss = getSnapSegment(mouseMerc,sp1,sp2,mercRadSq);
+								SnapSegment ss = getSnapSegment(mouseMerc,sp1,sp2,false,mercRadSq);
 								if(ss != null) {
 									hoveredSegments.add(ss);
 								}
@@ -451,35 +475,39 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}			
 		}
 		
-		//handle a move preview
-		if(!movingNodes.isEmpty()) {
-			updateMovingNodes(mouseMerc);
-		}
-		
 		//check for snapping in the pending snap segments
-		SnapSegment ss;
-		for(EditSegment es:pendingSnapSegments) {
-			//check for horizontal snap
-			ss = getHorOrVertSnapSegment(es,mouseMerc,mercRadSq);
-			if(ss != null) {
-				hoveredSegments.add(ss);
-			}
-			else {
-				//only check perpicular if it is not already a horizontal or vertical snap
-				//check for perps from both ends
-				ss = getPerpSegment(es,mouseMerc,mercRadSq);
+		SnapSegment ss = null;
+		if(pendingSnapSegments != null) {
+			Point2D mercPix00 = new Point2D.Double(0,0);
+			Point2D mercPix10 = new Point2D.Double(1,0);
+			Point2D mercPix01 = new Point2D.Double(0,1);
+			pixelsToMercator.transform(mercPix00, mercPix00);
+			pixelsToMercator.transform(mercPix10, mercPix10);
+			pixelsToMercator.transform(mercPix01, mercPix01);
+		
+			for(EditSegment es:pendingSnapSegments) {
+				//check for horizontal snap
+				ss = getHorOrVertSnapSegment(es,mouseMerc,mercRadSq,mercPix00,mercPix10,mercPix01);
 				if(ss != null) {
 					hoveredSegments.add(ss);
+				}
+				else {
+					//only check perpicular if it is not already a horizontal or vertical snap
+					//check for perps from both ends
+					ss = getPerpSegment(es,mouseMerc,mercRadSq);
+					if(ss != null) {
+						hoveredSegments.add(ss);
+					}
 				}
 			}
 		}
 		
-		//select the segment and intersection
+		//select the segment and intersection from list of segments
 		if(!hoveredSegments.isEmpty()) {
-			selectActiveSegment(mouseMerc,mercRadSq);
+			chooseActiveSegment(mouseMerc,mercRadSq);
 		}
 		
-		//select the active object, this can be updated with the arrow keys
+		//select the active way, this can be updated with the arrow keys
 		//as it is now, it resets every move. we might want to change this.
 		preselectWay = hoveredWays.size() - 1;
 		
@@ -568,6 +596,10 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			//execute a way node addition
 			EditDestPoint dest = getDestinationPoint(mouseMerc);
 			activeWay = editManager.wayToolClicked(activeWay,isEnd,dest,featureInfo,activeLevel);
+			//make sure this is selected
+			if(selection.isEmpty()) {
+				selection.add(activeWay);
+			}
 			//prepare for next
 			setWayToolPendingData(mouseMerc);
 		}
@@ -657,35 +689,45 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	// Private Methods
 	//============================
 	
-	/** This method returns the current edit destination point based on the
-	 * currently selected hover node or segment. 
-	 * 
-	 * @param mouseMerc		The location of the mouse in mercator coordinates.
-	 * @return				The EditDestPoint
-	 */
-	private EditDestPoint getDestinationPoint(Point2D mouseMerc) {
-		EditDestPoint edp = new EditDestPoint();
-		edp.point = new Point2D.Double();
-		edp.snapNode = null;
-		
-		if(snapNode != null) {
-			edp.snapNode = snapNode;
-			edp.point.setLocation(edp.snapNode.getPoint());
-		}
-		else if(snapIntersection != null) {
-			edp.point = snapIntersection.ps;
-		}
-		else if(snapSegment != null) {
-			edp.point = snapSegment.ps;
-		}
-		else {
-			edp.point.setLocation(mouseMerc);
-		}
-		
-		return edp;
+	// <editor-fold defaultstate="collapsed" desc="Hit Methods">
+	
+	/** This method clears the hover variables. */
+	private void clearHover() {
+		snapNode = null;
+		snapSegment = null;
+		snapIntersection = null;
+		hoveredWays.clear();
+		hoveredSegments.clear();
+		getMapPanel().repaint();
 	}
 	
-	private SnapSegment getSnapSegment(Point2D inPoint, Point2D segPt1, Point2D segPt2, double mercRadSq) {
+	/** This returns true if a segment was hit. */
+	private boolean segmentHit(OsmSegment segment, Point2D mercPoint, double mercRadSq) {
+		Point2D p1 = segment.getNode1().getPoint();
+		Point2D p2 = segment.getNode2().getPoint();
+		return Line2D.ptSegDistSq(p1.getX(),p1.getY(),p2.getX(),p2.getY(),mercPoint.getX(),mercPoint.getY()) < mercRadSq;
+	}
+	
+	/** This method calculates a snap point for an input point on a segment. The
+	 * edit layer will snap from the input (mouse) location to a segment. The snap
+	 * is also rendered in the UI. It is rendered differently for snapping to a point
+	 * within a real segment as opposed to snapping to an extension of a real segment
+	 * of snapping to a virtual segment. In the case of the virtual segment, the
+	 * extension will be drawn from the segment point 1. In the case of an extension
+	 * from a real segment, the extension will be drawn from the closest end.
+	 * 
+	 * @param inPoint			This is the input point (mouse location)
+	 * @param segPt1			This is one point on the segment. If this is a virtual
+	 *							segment this should be the anchor point.
+	 * @param segPt2			This is the other point on the segment.
+	 * @param segmentIsVirtual	This should be flagged as true if the segment is virtual.
+	 *							A snap within a real segment is rendered differently
+	 *							than a snap outside of a real segment.
+	 * @param mercRadSq			This is the radius of a hit in mercator coordinates.
+	 * @return					The SnapSegmnt object. Null if there is no snap.
+	 */
+	private SnapSegment getSnapSegment(Point2D inPoint, Point2D segPt1, Point2D segPt2, 
+			boolean segmentIsVirtual, double mercRadSq) {
 		//check for a hit
 		if(Line2D.ptLineDistSq(segPt1.getX(),segPt1.getY(),segPt2.getX(),segPt2.getY(),inPoint.getX(),inPoint.getY()) >= mercRadSq) {
 			//no hit for this segment
@@ -702,7 +744,15 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		double fraction = (dxs * dxp + dys * dyp)/(dxs * dxs + dys * dys);
 		ss.ps = new Point2D.Double(segPt1.getX() + fraction * dxs,segPt1.getY() + fraction * dys);
 		ss.err2 = ss.ps.distanceSq(inPoint);
-		if(fraction < 0) {
+		if(segmentIsVirtual) {
+			//for a virtual segment, draw from pt1 to snap point.
+			//pt1 one should be the anchor point
+			ss.p1 = new Point2D.Double(segPt1.getX(),segPt1.getY());
+			ss.p2 = ss.ps;
+			//fill in proper snap type
+			ss.snapType = SnapType.UNKNOWN;
+		}
+		else if(fraction < 0) {
 			//snap to extension from point 1
 			ss.p1 = new Point2D.Double(segPt1.getX(),segPt1.getY());
 			ss.p2 = ss.ps;
@@ -726,7 +776,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	/** This method selects the active snap segments from the list of hovered
 	 * segments. It discards the non-active segments. */
-	private void selectActiveSegment(Point2D mouseMerc, double mercRadSq) {
+	private void chooseActiveSegment(Point2D mouseMerc, double mercRadSq) {
 		//least error segment
 		SnapSegment ss0 = null;
 		double err2 = Double.MAX_VALUE;
@@ -757,6 +807,15 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		snapIntersection = si0;
 	}
 	
+	/** This method calculates the intersection of the two segments and checks if
+	 * the intersection in in range. 
+	 * 
+	 * @param ss1			one segment
+	 * @param ss2			the other segment
+	 * @param mouseMerc		the mouse location,in mercator coordinates 
+	 * @param mercRadSq		the error radius for a snap, in mercator coordinates
+	 * @return 
+	 */
 	private SnapIntersection checkIntersection(SnapSegment ss1, SnapSegment ss2, 
 			Point2D mouseMer, double mercRadSq) {
 		
@@ -799,69 +858,61 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 	}
 	
-	/** This method creates the best horizontal or vertical snap for the given segment and mouse point.
-	 * The segment should include the mouse point as one of the ends. If no perpendicular snap is
-	 * found null is returned. */
-	private SnapSegment getHorOrVertSnapSegment(EditSegment es, Point2D mouseMerc, double mercRadSq) {
-		double dx1 = Math.abs(mouseMerc.getX() - es.en1.point.getX());
-		double dy1 = Math.abs(mouseMerc.getY() - es.en1.point.getY());
-		double dx2 = Math.abs(mouseMerc.getX() - es.en2.point.getX());
-		double dy2 = Math.abs(mouseMerc.getY() - es.en2.point.getY());
-		double err2;
-		SnapSegment ss = null;
-		if((dx1 == 0)&&(dy1 == 0)) {
-			if(dx2 < dy2) {
-				err2 = dx2 * dx2;
-				if(err2 < mercRadSq) {
-					ss = new SnapSegment();
-					ss.p1 = es.en2.point;
-					ss.p2 = new Point2D.Double(es.en2.point.getX(),mouseMerc.getY());
-					ss.ps = ss.p2;
-					ss.err2 = err2;
-					ss.snapType = SnapType.HORIZONTAL;
-				}
-			}
-			else {
-				err2 = dy2 * dy2;
-				if(err2 < mercRadSq) {
-					ss = new SnapSegment();
-					ss.p1 = es.en2.point;
-					ss.p2 = new Point2D.Double(mouseMerc.getX(),es.en2.point.getY());
-					ss.ps = ss.p2;
-					ss.err2 = err2;
-					ss.snapType = SnapType.VERTICAL;
-				}
-			}
+//	/** This method creates the best horizontal or vertical snap for the given segment and mouse point.
+//	 * The horizontal and vertical are measured relative to the current screen coordinates and
+//	 * not global coordinates. 
+//	 * The segment should include the mouse point as one of the ends. If no perpendicular snap is
+//	 * found null is returned.*/
+	
+	/** asdf
+	 * 
+	 * @param es			The segment that should be checked
+	 * @param mouseMerc		the mouse position, in mercator coordinates
+	 * @param mercRadSq		the error radius for a snap, in mercator coordinates
+	 * @param mercPix00		the 0,0 pixel location on the screen, in mercator coordinates
+	 * @param mercPix10		the 1,0 pixel location on the screen, in mercator coordinates
+	 * @param mercPix01		the 0,1 pixel location on the screen, in mercator coordinates
+	 * @return 
+	 */
+	private SnapSegment getHorOrVertSnapSegment(EditSegment es, Point2D mouseMerc, double mercRadSq,
+			Point2D mercPix00, Point2D mercPix10, Point2D mercPix01) {
+		
+		//use the point AWAY from the mouse as the base point
+		Point2D basePoint;
+		if(mouseMerc.equals(es.en1.point)) {
+			basePoint = es.en2.point;
 		}
-		else if((dx2 == 0)&&(dy2 == 0)) {
-			if(dx1 < dy1) {
-				err2 = dx1 * dx1;
-				if(err2 < mercRadSq) {
-					ss = new SnapSegment();
-					ss.p1 = es.en1.point;
-					ss.p2 = new Point2D.Double(es.en1.point.getX(),mouseMerc.getY());
-					ss.ps = ss.p2;
-					ss.err2 = err2;
-					ss.snapType = SnapType.HORIZONTAL;
-				}
-			}
-			else {
-				err2 = dy1 * dy1;
-				if(err2 < mercRadSq) {
-					ss = new SnapSegment();
-					ss.p1 = es.en1.point;
-					ss.p2 = new Point2D.Double(mouseMerc.getX(),es.en1.point.getY());
-					ss.ps = ss.p2;
-					ss.err2 = err2;
-					ss.snapType = SnapType.VERTICAL;
-				}
-			}
+		else {
+			basePoint = es.en1.point;
 		}
-		return ss;
+		
+		//add the screen horizontal and vertical diretions to make a virtual segment 
+		Point2D hvPoint = new Point2D.Double();
+		//horizontal
+		hvPoint.setLocation(basePoint.getX() + mercPix10.getX() - mercPix00.getX(), 
+				basePoint.getY() + mercPix10.getY() - mercPix00.getY());
+		SnapSegment ssh = this.getSnapSegment(mouseMerc,basePoint,hvPoint,true,mercRadSq);
+		//vertical
+		hvPoint.setLocation(basePoint.getX() + mercPix01.getX() - mercPix00.getX(), 
+				basePoint.getY() + mercPix01.getY() - mercPix00.getY());
+		SnapSegment ssv = this.getSnapSegment(mouseMerc,basePoint,hvPoint,true,mercRadSq);		
+		
+		if((ssh != null)&&((ssv == null)||(ssh.err2 < ssv.err2))) {
+			ssh.snapType = SnapType.HORIZONTAL;
+			return ssh;
+		}
+		else if(ssv != null) {
+			ssv.snapType = SnapType.VERTICAL;
+			return ssv;
+		}
+		else {
+			return null;
+		}
 	}
 	
-	/** This method loads the best perpindicualr snap segment. If none is found
-	 * null is returned. */
+	/** This method loads the best perpendicular snap segment. If none is found
+	 * null is returned. This only searches for a perpendicular between the 
+	 * input segment and segments connected to it at the FIXED end. */
 	private SnapSegment getPerpSegment(EditSegment editSegment, Point2D mouseMerc, double mercRadSq) {
 		OsmNode pivotNode;
 		Point2D pivotPoint = new Point2D.Double();
@@ -870,8 +921,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		OsmNode node;
 		Point2D basePoint;
 		
-		//check for perpindiculars at node 1
-		node = editSegment.en1.node;
+		//check for perpindiculars only to segments conected to the non-mouse node
+		if(editSegment.en1.point.equals(mouseMerc)) {
+			node = editSegment.en2.node;
+		}
+		else {
+			node = editSegment.en1.node;
+		}
+		
 		if(node != null) {
 			basePoint = node.getPoint();
 			for(OsmSegment segment:node.getSegments()) {
@@ -884,57 +941,27 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				double dx = pivotNode.getPoint().getX() - basePoint.getX();
 				double dy = pivotNode.getPoint().getY() - basePoint.getY();
 				pivotPoint.setLocation(basePoint.getX() - dy,basePoint.getY() + dx);
-				ss = this.getSnapSegment(mouseMerc,basePoint,pivotPoint,mercRadSq);
+				//get snap to virtual segment
+				ss = this.getSnapSegment(mouseMerc,basePoint,pivotPoint,true,mercRadSq);
 				if((ss != null)&&((ss0 == null)||(ss.err2 < ss0.err2))) {
 					ss0 = ss;
 				}
 			}
 		}
 		
-		//check for perpindiculars at node 2
-		node = editSegment.en2.node;
-		if(node != null) {
-			basePoint = node.getPoint();
-			for(OsmSegment segment:node.getSegments()) {
-				if(segment.getNode1() == node) {
-					pivotNode = segment.getNode2();
-				}
-				else {
-					pivotNode = segment.getNode1();
-				}
-				double dx = pivotNode.getPoint().getX() - basePoint.getX();
-				double dy = pivotNode.getPoint().getY() - basePoint.getY();
-				pivotPoint.setLocation(basePoint.getX() - dy,basePoint.getY() + dx);
-				ss = this.getSnapSegment(mouseMerc,basePoint,pivotPoint,mercRadSq);
-				if((ss != null)&&((ss0 == null)||(ss.err2 < ss0.err2))) {
-					ss0 = ss;
-				}
-			}
-		}
-		
-		//we calculated ss0 as if it were based on a real segment
-		//it should be based on a perpindicular virtual segment - correct it
-		//cludge allert
+		//set the proper snap type - not known for virtual nodes
 		if(ss0 != null) {
 			ss0.snapType = SnapType.SEGMENT_PERP;
-			//one end of the segment should be the mouse
-			// we want to draw from the other end to the snap point
-			if((mouseMerc.getX() == editSegment.en1.point.getX())&&
-					(mouseMerc.getY() == editSegment.en1.point.getY())) {
-				ss0.p1 = editSegment.en2.point;
-			}
-			else {
-				ss0.p1 = editSegment.en1.point;
-			}
-			ss0.p2 = ss0.ps;	
 		}
 		
 		return ss0;
 	}
 	
-	// <editor-fold defaultstate="collapsed" desc="Hit Methods">
+	// </editor-fold>
 	
-	/** Thie method clears the current selection. */
+	// <editor-fold defaultstate="collapsed" desc="Select Methods">
+	
+	/** This method clears the current selection. */
 	private void clearSelection() {
 		selection.clear();
 		activeWay = null;
@@ -943,25 +970,47 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		getMapPanel().repaint();
 	}
 	
-	/** This method clears the hover variables. */
-	private void clearHover() {
-		snapNode = null;
-		snapSegment = null;
-		snapIntersection = null;
-		hoveredWays.clear();
-		hoveredSegments.clear();
-		getMapPanel().repaint();
-	}
-	
-	/** This returns true if a segment was hit. */
-	private boolean segmentHit(OsmSegment segment, Point2D mercPoint, double mercRadSq) {
-		Point2D p1 = segment.getNode1().getPoint();
-		Point2D p2 = segment.getNode2().getPoint();
-		return Line2D.ptSegDistSq(p1.getX(),p1.getY(),p2.getX(),p2.getY(),mercPoint.getX(),mercPoint.getY()) < mercRadSq;
+	/** This method returns the current edit destination point based on the
+	 * currently selected hover node or segment. 
+	 * 
+	 * @param mouseMerc		The location of the mouse in mercator coordinates.
+	 * @return				The EditDestPoint
+	 */
+	private EditDestPoint getDestinationPoint(Point2D mouseMerc) {
+		EditDestPoint edp = new EditDestPoint();
+		edp.point = new Point2D.Double();
+		edp.snapNode = null;
+		
+		if(snapNode != null) {
+			edp.snapNode = snapNode;
+			edp.point.setLocation(edp.snapNode.getPoint());
+		}
+		else if(snapIntersection != null) {
+			edp.point.setLocation(snapIntersection.ps);
+		}
+		else if(snapSegment != null) {
+			edp.point.setLocation(snapSegment.ps);
+		}
+		else {
+			edp.point.setLocation(mouseMerc);
+		}
+		
+		return edp;
 	}
 	
 	// </editor-fold>
 	
+	// <editor-fold defaultstate="collapsed" desc="Pending Methods">
+	
+	/** This method clears all data in the pending state. */
+	private void clearPending() {
+		pendingNodes.clear();
+		pendingSegments.clear();
+		pendingSnapSegments.clear();
+		movingNodes.clear();
+	}
+	
+	/** This method updates the location of any node moving with the mouse. */
 	private void updateMovingNodes(Point2D mouseMerc) {
 		if(inMove) {
 			//this is a move - there may be several nodes
@@ -983,15 +1032,10 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 	}
 	
-	// <editor-fold defaultstate="collapsed" desc="Pending Methods">
-	private void clearPending() {
-		pendingNodes.clear();
-		pendingSegments.clear();
-		pendingSnapSegments.clear();
-		movingNodes.clear();
-	}
-	
+	/** This method loads the pending state from the current selection. */
 	private void loadPendingFromSelection() {
+		clearPending();
+		
 		//get unique copies of nodes
 		HashMap<OsmNode,EditNode> nodeMap = new HashMap<OsmNode,EditNode>();
 		for(OsmObject obj:selection) {
@@ -1005,34 +1049,40 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}
 		}
 
-		//load the edit segments - we may have duplicates here but that is ok
+		//load edit segments - all segments connected to the moving nodes.
 		for(OsmNode node:nodeMap.keySet()) {
 			for(OsmSegment segment:node.getSegments()) {
-				boolean segmentHashNonMovingNode = false;
+				boolean segmentHasNonMovingNode = false;
 				EditNode en1 = nodeMap.get(segment.getNode1());
 				if(en1 == null) {
 					en1 = new EditNode(segment.getNode1());
-					segmentHashNonMovingNode = true;
+					segmentHasNonMovingNode = true;
 				}
 				EditNode en2 = nodeMap.get(segment.getNode2());
 				if(en2 == null) {
 					en2 = new EditNode(segment.getNode2());
-					segmentHashNonMovingNode = true;
+					segmentHasNonMovingNode = true;
 				}
 				EditSegment es = new EditSegment(en1,en2,segment);
-				//add this to pendingSnapSegments only if it connects to the node
-				//that is tied to the mouse location and the other node is not
-				//a moving node
-				if((node == moveStartPoint.snapNode)&&(segmentHashNonMovingNode)) {
+				
+				//store the edit segment
+				if((node == moveStartPoint.snapNode)&&(segmentHasNonMovingNode)) {
+					//add this to pendingSnapSegments only if it connects to the node
+					//that is tied to the mouse location and the other node is not
+					//a moving node (no snap if both move)
 					pendingSnapSegments.add(es);
 				}
-				else {
+				else if(!((!segmentHasNonMovingNode)&&(en2.node == node))) {
+					//save in normal (non-snapping) pending, unless both nodes are
+					//in the moving set, in which case only sve one copy.
 					pendingSegments.add(es);
 				}
 			}
 		}
 	}
 
+	/** This method adds an edit node to the passed hash map. If needed, a new 
+	 * edit node is created. */
 	private void addNodeToMap(HashMap<OsmNode,EditNode> nodeMap,OsmNode node) {
 		if(!nodeMap.containsKey(node)) {
 			EditNode en = new EditNode(node);
@@ -1042,6 +1092,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 	}
 	
+	/** This method sets the pending data when the node tool is selected. */
 	private void setNodeToolPendingData(Point2D mouseMerc) {
 		clearPending();
 		
@@ -1050,6 +1101,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		pendingNodes.add(en);
 	}
 	
+	/** This method sets the pending data when the way tool is selected. */
 	private void setWayToolPendingData(Point2D mouseMerc) {
 		clearPending();
 		
@@ -1080,15 +1132,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 	}
 	// </editor-fold>
-
-	private enum SnapType {
-		SEGMENT_INT,
-		SEGMENT_EXT,
-		SEGMENT_PERP,
-		INTERSECTION,
-		HORIZONTAL,
-		VERTICAL
-	}
 	
 	private class SnapSegment {
 		//display line start
