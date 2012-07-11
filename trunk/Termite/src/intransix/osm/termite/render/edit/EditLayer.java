@@ -47,7 +47,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private final static float HOVER_PRESELECT_WIDTH = 2;
 	private final static float HOVER_EXTENSION_WIDTH = 2;
 	private final static float HOVER_OTHER_WIDTH = 2;
-	private final static float PENDING_WIDTH = 2;
+	private final static float PENDING_WIDTH = 1;
 	private final static float MITER_LIMIT = 5f;
 	
 	private final static Color SELECT_COLOR = Color.RED;
@@ -63,7 +63,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private final static BasicStroke HOVER_EXTENSION_STROKE = new BasicStroke(HOVER_EXTENSION_WIDTH, BasicStroke.CAP_BUTT,
         BasicStroke.JOIN_MITER, MITER_LIMIT,DASH_SPACING,DASH_PHASE);
 	private final static BasicStroke HOVER_OTHER_STROKE = new BasicStroke(HOVER_OTHER_WIDTH);
-	private final static BasicStroke PENDING_STROKE = new BasicStroke(PENDING_WIDTH);
+	private final static BasicStroke PENDING_MOVE_STROKE = new BasicStroke(PENDING_WIDTH);
+	private final static BasicStroke PENDING_CREATE_STROKE = new BasicStroke(PENDING_WIDTH, BasicStroke.CAP_BUTT,
+        BasicStroke.JOIN_MITER, MITER_LIMIT,DASH_SPACING,DASH_PHASE);
 	
 	private OsmData osmData;
 	private EditManager editManager;
@@ -85,10 +87,17 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	//this holds the active selection
 	private List<OsmObject> selection = new ArrayList<OsmObject>();
 	
-	//these variables hold the pending edit state
+	//There are nodes that are moving  with the mouse
 	private List<EditNode> movingNodes = new ArrayList<EditNode>();
+	//these are nodes that will be displayed with in the edit preview set
+	//some of these are also moving nodes
 	private List<EditNode> pendingNodes = new ArrayList<EditNode>();
+	//these are segments that will be displayed with in the edit preview set
+	//excluding ones that are checked for snapping. See pendingSnapSegments
 	private List<EditSegment> pendingSegments = new ArrayList<EditSegment>();
+	//these are pending nodes that also travel from a fixed node to a node tied to 
+	//the mouse location - they are used to check some snap cases.
+	private List<EditSegment> pendingSnapSegments = new ArrayList<EditSegment>();
 	
 	//working variables
 	private EditDestPoint moveStartPoint;
@@ -238,8 +247,25 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 		if(!pendingSegments.isEmpty()) {
 			g2.setColor(PENDING_COLOR);
-			g2.setStroke(PENDING_STROKE);
 			for(EditSegment es:pendingSegments) {
+				if(es.osmSegment != null) {
+					g2.setStroke(PENDING_MOVE_STROKE);
+				}
+				else {
+					g2.setStroke(PENDING_CREATE_STROKE);
+				}
+				renderSegment(g2,es.en1.point,es.en2.point,mercatorToPixels,pixXY,prevPixXY,line);
+			}
+		}
+		if(!pendingSnapSegments.isEmpty()) {
+			g2.setColor(PENDING_COLOR);
+			for(EditSegment es:pendingSnapSegments) {
+				if(es.osmSegment != null) {
+					g2.setStroke(PENDING_MOVE_STROKE);
+				}
+				else {
+					g2.setStroke(PENDING_CREATE_STROKE);
+				}
 				renderSegment(g2,es.en1.point,es.en2.point,mercatorToPixels,pixXY,prevPixXY,line);
 			}
 		}
@@ -361,7 +387,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	public void mouseMoved(MouseEvent e) {
 		
 		boolean wasActive = ((snapNode != null)||(snapSegment != null)||
-				(snapIntersection != null)||(!hoveredWays.isEmpty()));
+				(snapIntersection != null)||(!hoveredWays.isEmpty())||(!movingNodes.isEmpty()));
 
 		//clear snapObjects
 		snapNode = null;
@@ -399,7 +425,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 						//only do the segments that start with this node, to avoid doing them twice
 						if(segment.getNode1() == mapObject) {
 							if((editMode == EditMode.SelectTool)&&(!inMove)) {
-								//selection
+								//selection preview
 								//check for segment hit
 								if(segmentHit(segment,mouseMerc,mercRadSq)) {
 									//add ways for this segment
@@ -409,7 +435,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 								}
 							}
 							else {
-								//snap
+								//snap preview
+								//check for segment and extension hit
 								Point2D sp1 = segment.getNode1().getPoint();
 								Point2D sp2 = segment.getNode2().getPoint();
 								SnapSegment ss = getSnapSegment(mouseMerc,sp1,sp2,mercRadSq);
@@ -424,6 +451,29 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}			
 		}
 		
+		//handle a move preview
+		if(!movingNodes.isEmpty()) {
+			updateMovingNodes(mouseMerc);
+		}
+		
+		//check for snapping in the pending snap segments
+		SnapSegment ss;
+		for(EditSegment es:pendingSnapSegments) {
+			//check for horizontal snap
+			ss = getHorOrVertSnapSegment(es,mouseMerc,mercRadSq);
+			if(ss != null) {
+				hoveredSegments.add(ss);
+			}
+			else {
+				//only check perpicular if it is not already a horizontal or vertical snap
+				//check for perps from both ends
+				ss = getPerpSegment(es,mouseMerc,mercRadSq);
+				if(ss != null) {
+					hoveredSegments.add(ss);
+				}
+			}
+		}
+		
 		//select the segment and intersection
 		if(!hoveredSegments.isEmpty()) {
 			selectActiveSegment(mouseMerc,mercRadSq);
@@ -434,13 +484,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		preselectWay = hoveredWays.size() - 1;
 		
 		boolean isActive = ((snapNode != null)||(snapSegment != null)||
-				(snapIntersection != null)||(!hoveredWays.isEmpty()));
-		
-		//handle a move preview
-		if(!movingNodes.isEmpty()) {
-			updateMovingNodes(mouseMerc);
-			isActive = true;
-		}
+				(snapIntersection != null)||(!hoveredWays.isEmpty())||(!movingNodes.isEmpty()));
 		
 		//repaint if there is a hit or if the hit status changes
 		if(wasActive||isActive) {
@@ -472,14 +516,15 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				
 				//store the latest point used for selection, for the move anchor
 				moveStartPoint = new EditDestPoint();
-				moveStartPoint.point = mouseMerc;
+				moveStartPoint.point = new Point2D.Double(mouseMerc.getX(),mouseMerc.getY());
 				
 				OsmObject obj = null;
 				if(snapNode != null) {
 					obj = snapNode;
 					
 					//add a snap node for a move start
-					moveStartPoint.snapNode = (OsmNode)obj;
+					moveStartPoint.snapNode = snapNode;
+					moveStartPoint.point.setLocation(snapNode.getPoint());
 				}
 				else if(!hoveredWays.isEmpty()) {
 					obj = hoveredWays.get(preselectWay);
@@ -754,6 +799,139 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 	}
 	
+	/** This method creates the best horizontal or vertical snap for the given segment and mouse point.
+	 * The segment should include the mouse point as one of the ends. If no perpendicular snap is
+	 * found null is returned. */
+	private SnapSegment getHorOrVertSnapSegment(EditSegment es, Point2D mouseMerc, double mercRadSq) {
+		double dx1 = Math.abs(mouseMerc.getX() - es.en1.point.getX());
+		double dy1 = Math.abs(mouseMerc.getY() - es.en1.point.getY());
+		double dx2 = Math.abs(mouseMerc.getX() - es.en2.point.getX());
+		double dy2 = Math.abs(mouseMerc.getY() - es.en2.point.getY());
+		double err2;
+		SnapSegment ss = null;
+		if((dx1 == 0)&&(dy1 == 0)) {
+			if(dx2 < dy2) {
+				err2 = dx2 * dx2;
+				if(err2 < mercRadSq) {
+					ss = new SnapSegment();
+					ss.p1 = es.en2.point;
+					ss.p2 = new Point2D.Double(es.en2.point.getX(),mouseMerc.getY());
+					ss.ps = ss.p2;
+					ss.err2 = err2;
+					ss.snapType = SnapType.HORIZONTAL;
+				}
+			}
+			else {
+				err2 = dy2 * dy2;
+				if(err2 < mercRadSq) {
+					ss = new SnapSegment();
+					ss.p1 = es.en2.point;
+					ss.p2 = new Point2D.Double(mouseMerc.getX(),es.en2.point.getY());
+					ss.ps = ss.p2;
+					ss.err2 = err2;
+					ss.snapType = SnapType.VERTICAL;
+				}
+			}
+		}
+		else if((dx2 == 0)&&(dy2 == 0)) {
+			if(dx1 < dy1) {
+				err2 = dx1 * dx1;
+				if(err2 < mercRadSq) {
+					ss = new SnapSegment();
+					ss.p1 = es.en1.point;
+					ss.p2 = new Point2D.Double(es.en1.point.getX(),mouseMerc.getY());
+					ss.ps = ss.p2;
+					ss.err2 = err2;
+					ss.snapType = SnapType.HORIZONTAL;
+				}
+			}
+			else {
+				err2 = dy1 * dy1;
+				if(err2 < mercRadSq) {
+					ss = new SnapSegment();
+					ss.p1 = es.en1.point;
+					ss.p2 = new Point2D.Double(mouseMerc.getX(),es.en1.point.getY());
+					ss.ps = ss.p2;
+					ss.err2 = err2;
+					ss.snapType = SnapType.VERTICAL;
+				}
+			}
+		}
+		return ss;
+	}
+	
+	/** This method loads the best perpindicualr snap segment. If none is found
+	 * null is returned. */
+	private SnapSegment getPerpSegment(EditSegment editSegment, Point2D mouseMerc, double mercRadSq) {
+		OsmNode pivotNode;
+		Point2D pivotPoint = new Point2D.Double();
+		SnapSegment ss;
+		SnapSegment ss0 = null;
+		OsmNode node;
+		Point2D basePoint;
+		
+		//check for perpindiculars at node 1
+		node = editSegment.en1.node;
+		if(node != null) {
+			basePoint = node.getPoint();
+			for(OsmSegment segment:node.getSegments()) {
+				if(segment.getNode1() == node) {
+					pivotNode = segment.getNode2();
+				}
+				else {
+					pivotNode = segment.getNode1();
+				}
+				double dx = pivotNode.getPoint().getX() - basePoint.getX();
+				double dy = pivotNode.getPoint().getY() - basePoint.getY();
+				pivotPoint.setLocation(basePoint.getX() - dy,basePoint.getY() + dx);
+				ss = this.getSnapSegment(mouseMerc,basePoint,pivotPoint,mercRadSq);
+				if((ss != null)&&((ss0 == null)||(ss.err2 < ss0.err2))) {
+					ss0 = ss;
+				}
+			}
+		}
+		
+		//check for perpindiculars at node 2
+		node = editSegment.en2.node;
+		if(node != null) {
+			basePoint = node.getPoint();
+			for(OsmSegment segment:node.getSegments()) {
+				if(segment.getNode1() == node) {
+					pivotNode = segment.getNode2();
+				}
+				else {
+					pivotNode = segment.getNode1();
+				}
+				double dx = pivotNode.getPoint().getX() - basePoint.getX();
+				double dy = pivotNode.getPoint().getY() - basePoint.getY();
+				pivotPoint.setLocation(basePoint.getX() - dy,basePoint.getY() + dx);
+				ss = this.getSnapSegment(mouseMerc,basePoint,pivotPoint,mercRadSq);
+				if((ss != null)&&((ss0 == null)||(ss.err2 < ss0.err2))) {
+					ss0 = ss;
+				}
+			}
+		}
+		
+		//we calculated ss0 as if it were based on a real segment
+		//it should be based on a perpindicular virtual segment - correct it
+		//cludge allert
+		if(ss0 != null) {
+			ss0.snapType = SnapType.SEGMENT_PERP;
+			//one end of the segment should be the mouse
+			// we want to draw from the other end to the snap point
+			if((mouseMerc.getX() == editSegment.en1.point.getX())&&
+					(mouseMerc.getY() == editSegment.en1.point.getY())) {
+				ss0.p1 = editSegment.en2.point;
+			}
+			else {
+				ss0.p1 = editSegment.en1.point;
+			}
+			ss0.p2 = ss0.ps;	
+		}
+		
+		return ss0;
+	}
+	
 	// <editor-fold defaultstate="collapsed" desc="Hit Methods">
 	
 	/** Thie method clears the current selection. */
@@ -809,6 +987,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private void clearPending() {
 		pendingNodes.clear();
 		pendingSegments.clear();
+		pendingSnapSegments.clear();
 		movingNodes.clear();
 	}
 	
@@ -829,16 +1008,27 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		//load the edit segments - we may have duplicates here but that is ok
 		for(OsmNode node:nodeMap.keySet()) {
 			for(OsmSegment segment:node.getSegments()) {
+				boolean segmentHashNonMovingNode = false;
 				EditNode en1 = nodeMap.get(segment.getNode1());
 				if(en1 == null) {
 					en1 = new EditNode(segment.getNode1());
+					segmentHashNonMovingNode = true;
 				}
 				EditNode en2 = nodeMap.get(segment.getNode2());
 				if(en2 == null) {
 					en2 = new EditNode(segment.getNode2());
+					segmentHashNonMovingNode = true;
 				}
-				EditSegment es = new EditSegment(en1,en2);
-				pendingSegments.add(es);
+				EditSegment es = new EditSegment(en1,en2,segment);
+				//add this to pendingSnapSegments only if it connects to the node
+				//that is tied to the mouse location and the other node is not
+				//a moving node
+				if((node == moveStartPoint.snapNode)&&(segmentHashNonMovingNode)) {
+					pendingSnapSegments.add(es);
+				}
+				else {
+					pendingSegments.add(es);
+				}
 			}
 		}
 	}
@@ -883,9 +1073,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		}
 		if(activeNode != null) {
 			EditNode en2 = new EditNode(activeNode);
-			EditSegment es = new EditSegment(en,en2);
+			EditSegment es = new EditSegment(en,en2,null);
 			pendingNodes.add(en2);
-			pendingSegments.add(es);
+			pendingSnapSegments.add(es);
 		}
 		
 	}
@@ -895,7 +1085,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		SEGMENT_INT,
 		SEGMENT_EXT,
 		SEGMENT_PERP,
-		INTERSECTION
+		INTERSECTION,
+		HORIZONTAL,
+		VERTICAL
 	}
 	
 	private class SnapSegment {
