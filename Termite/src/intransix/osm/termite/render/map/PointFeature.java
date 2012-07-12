@@ -17,12 +17,13 @@ import java.awt.Shape;
  */
 public class PointFeature implements Feature {
 	
-	private final static double RADIUS_METERS = .5;
+	private final static double RADIUS_PIXELS = 3;
 	
 	private int localVersion = OsmData.INVALID_DATA_VERSION;
 	private OsmNode osmNode;
 	private Style style;
-	private Shape marker;
+	private Ellipse2D marker = new Ellipse2D.Double();
+	private Point2D point = new Point2D.Double();
 	
 	public PointFeature(OsmNode osmNode) {
 		this.osmNode = osmNode;
@@ -61,6 +62,8 @@ public class PointFeature implements Feature {
 
 			//render the object	
 			if(fillColor != null) {
+				marker.setFrame(point.getX()-RADIUS_PIXELS,point.getY()-RADIUS_PIXELS,
+						2*RADIUS_PIXELS,2*RADIUS_PIXELS);
 				g2.setPaint(fillColor);
 				g2.fill(marker);
 			}
@@ -70,17 +73,12 @@ public class PointFeature implements Feature {
 	
 	@Override
 	public void transform(AffineTransform oldLocalToNewLocal) {
-		if(this.marker != null) {
-			marker = oldLocalToNewLocal.createTransformedShape(marker);
-		}
+		oldLocalToNewLocal.transform(point, point);
 	}
 	
 	void updateData(AffineTransform mercatorToLocal) {
 		//update this object
-		Point2D localPoint = new Point2D.Double();
-		mercatorToLocal.transform(osmNode.getPoint(), localPoint);
-		marker = new Ellipse2D.Double(localPoint.getX()-RADIUS_METERS,
-				localPoint.getY()-RADIUS_METERS,2*RADIUS_METERS,2*RADIUS_METERS);
+		mercatorToLocal.transform(osmNode.getPoint(), point);
 	}	
 		
 }

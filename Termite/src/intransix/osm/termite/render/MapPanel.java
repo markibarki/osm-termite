@@ -136,6 +136,8 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		mercatorToLocal = new AffineTransform(mercatorToPixels);
 		
 		updateTransforms();
+//teset to reset every zoom
+this.resetLocalCoordinates();
 		
 		//notify local coordinate change event
 		oldLocalToNewLocal.preConcatenate(mercatorToLocal);
@@ -283,6 +285,8 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		zt.scale(zoomFactor, zoomFactor);
 		mercatorToPixels.preConcatenate(zt);
 		updateTransforms();
+//teset to reset every zoom
+this.resetLocalCoordinates();
 		dispatchZoomEvent();
 		this.repaint();
 	}
@@ -339,9 +343,9 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		}
 		
 		//if we zoom too far away, calculate new local coordinates
-		if((zoomScalePixelsPerLocal > LOCAL_COORD_RESET_ZOOM)||(zoomScalePixelsPerLocal < 1/LOCAL_COORD_RESET_ZOOM)) {
-			this.resetLocalCoordinates();
-		}
+//		if((zoomScalePixelsPerLocal > LOCAL_COORD_RESET_ZOOM)||(zoomScalePixelsPerLocal < 1/LOCAL_COORD_RESET_ZOOM)) {
+//			this.resetLocalCoordinates();
+//		}
 	}
 	
 	private void dispatchZoomEvent() {
