@@ -12,6 +12,8 @@ public class OsmSegment {
 	private OsmNode node2;
 	private List<OsmWay> ways = new ArrayList<OsmWay>();
 	
+	private int filterState;
+	
 	public OsmSegment() {}
 	
 	public OsmSegment(OsmNode nodeA, OsmNode nodeB) {
@@ -68,6 +70,34 @@ public class OsmSegment {
 	@Override
 	public int hashCode() {
 		return getKey().hashCode();
+	}
+	
+	//------------------------
+	//filter
+	//-------------------------
+	
+	public void setFilterState(int state) {
+		this.filterState = state;
+	}
+	
+	public boolean editEnabled() {
+		return ((filterState & FilterRule.EDIT_ENABLED) != 0);
+	}
+	
+	public boolean renderEnabled() {
+		return ((filterState & FilterRule.RENDER_ENABLED) != 0);
+	}
+	
+	public int getFilterState() {
+		return filterState;
+	}
+	
+	public void bitwiseAndFilterState(int state) {
+		filterState &= state;
+	}
+	
+	public void bitwiseOrFilterState(int state) {
+		filterState |= state;
 	}
 	
 	//========================

@@ -41,7 +41,7 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 		AffineTransform localToPixels = getMapPanel().getLocalToPixels();
 		AffineTransform mercatorToLocal = getMapPanel().getMercatorToLocal();
 		double zoomScalePixelsPerLocal = getMapPanel().getZoomScalePixelsPerLocal();
-		
+System.out.println(zoomScalePixelsPerLocal);
 		if((localData == null)||(localTheme == null)) return;
 		
 		//make sure the level is sorted

@@ -360,6 +360,12 @@ public class OsmData {
 		for(OsmWay way:wayMap.values()) {
 			filterObject(way);
 		}
+		//filter segments according to node state
+		for(OsmSegment segment:segments.values()) {
+			int state1 = segment.getNode1().getFilterState();
+			int state2 = segment.getNode2().getFilterState();
+			segment.setFilterState(state1 & state2);
+		}
 	}
 
 }
