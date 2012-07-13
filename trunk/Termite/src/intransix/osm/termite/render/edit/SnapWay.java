@@ -55,13 +55,13 @@ public class SnapWay extends SnapObject {
 		renderWay(g2,mercatorToPixels,way);
 	}
 	
-	/** This method looks up an edit object for this snap object. 
+	/** This method looks up an select object for this snap object.  . 
 	 * 
 	 * @return			The edit object
 	 */
 	@Override
-	public EditObject getSelectEditObject() {
-		return EditObject.getEditWay(way);
+	public Object getSelectObject() {
+		return way;
 	}
 	
 }

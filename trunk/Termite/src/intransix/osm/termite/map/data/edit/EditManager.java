@@ -65,7 +65,7 @@ if(destPoint.snapNode != null) {
 		}
 	}
 	
-	public OsmWay wayToolClicked(OsmWay activeWay, boolean isEnd, 
+	public OsmWay wayToolClicked(OsmWay activeWay, int insertIndex, 
 			EditDestPoint destPoint, FeatureInfo featureInfo, OsmRelation currentLevel) {
 		
 System.out.println("Add a node to a way");
@@ -74,12 +74,12 @@ System.out.println("Add a node to a way");
 			return createWay(destPoint,featureInfo, currentLevel);
 		}
 		else {
-			addNodeToWay(activeWay,destPoint,isEnd,currentLevel);
+			addNodeToWay(activeWay,destPoint,insertIndex,currentLevel);
 			return activeWay;
 		}
 	}
 	
-	public boolean selectionMoved(List<EditObject> selection, EditDestPoint start,
+	public boolean selectionMoved(List<Object> selection, EditDestPoint start,
 			EditDestPoint dest) {
 	
 //for now disallow this
@@ -91,16 +91,13 @@ if((start.snapNode != null)&&(dest.snapNode != null)) {
 System.out.println("Move the selection");
 
 		HashSet<OsmNode> nodeSet = new HashSet<OsmNode>();
-		for(EditObject editObject:selection) {
-			OsmObject osmObject = editObject.getOsmObject();
-			if(osmObject != null) {
-				if(osmObject instanceof OsmNode) {
-					nodeSet.add((OsmNode)osmObject);
-				}
-				else if(osmObject instanceof OsmWay) {
-					for(OsmNode node:((OsmWay)osmObject).getNodes()) {
-						nodeSet.add(node);
-					}
+		for(Object selectObject:selection) {
+			if(selectObject instanceof OsmNode) {
+				nodeSet.add((OsmNode)selectObject);
+			}
+			else if(selectObject instanceof OsmWay) {
+				for(OsmNode node:((OsmWay)selectObject).getNodes()) {
+					nodeSet.add(node);
 				}
 			}
 		}
@@ -192,13 +189,11 @@ System.out.println("Insert node into way");
 		}
 	}
 	
-	private boolean addNodeToWay(OsmWay way, EditDestPoint dest, boolean isEnd, OsmRelation currentLevel) {
+	private boolean addNodeToWay(OsmWay way, EditDestPoint dest, int insertIndex, OsmRelation currentLevel) {
 		EditAction action = new EditAction(osmData,"Add node to way");
 		
 		Long addNodeId = createOrUseExistingNode(action,dest,currentLevel);
-		
-		int index = isEnd ? way.getNodes().size() : 0;
-		insertNodeIntoWay(action,way,addNodeId,index);
+		insertNodeIntoWay(action,way,addNodeId,insertIndex);
 		
 		try {
 			boolean success = action.doAction();

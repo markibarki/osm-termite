@@ -53,14 +53,14 @@ public class SnapNode extends SnapObject {
 		renderPoint(g2,mercatorToPixels,node.getPoint(),styleInfo.RADIUS_PIXELS);
 	}
 	
-	/** This method looks up an edit object for this snap object. 
+	/** This method looks up an select object for this snap object. 
 	 * 
 	 * @param editMap	The edit map of existing edit objects
 	 * @return			The edit object
 	 */
 	@Override
-	public EditObject getSelectEditObject() {
-		return EditObject.getEditNode(node);
+	public Object getSelectObject() {
+		return node;
 	}
 	
 }

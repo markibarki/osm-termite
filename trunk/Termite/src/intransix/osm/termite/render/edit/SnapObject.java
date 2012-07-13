@@ -77,10 +77,10 @@ public abstract class SnapObject extends EditDrawable implements Comparable<Snap
 		return (int)Math.signum(this.err2 - obj.err2);
 	}
 	
-	/** This method looks up an edit object for this snap object. 
+	/** This method looks up an select object for this snap object. 
 	 * 
 	 * @return			The edit object
 	 */
-	public abstract EditObject getSelectEditObject();
+	public abstract Object getSelectObject();
 	
 }

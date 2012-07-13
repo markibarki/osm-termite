@@ -57,12 +57,12 @@ public class SnapVirtualNode extends SnapObject {
 		renderPoint(g2,mercatorToPixels,snapPoint,styleInfo.RADIUS_PIXELS);
 	}
 	
-	/** This method looks up an edit object for this snap object. 
+	/** This method looks up an select object for this snap object.  . 
 	 * 
 	 * @return			The edit object
 	 */
 	@Override
-	public EditObject getSelectEditObject() {
-		return EditObject.getEditVirtualNode(segment);
+	public Object getSelectObject() {
+		return new VirtualNode(segment);
 	}
 }

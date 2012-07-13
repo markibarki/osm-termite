@@ -9,7 +9,7 @@ import java.util.*;
  * 
  * @author sutter
  */
-public abstract class OsmObject/*<T extends OsmObject>*/ {
+public abstract class OsmObject {
 	
 	//====================
 	// Constants

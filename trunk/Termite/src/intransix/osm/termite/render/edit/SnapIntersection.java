@@ -110,13 +110,14 @@ public class SnapIntersection extends SnapObject {
 		renderSegment(g2,mercatorToPixels,s2.p1,s2.p2);
 	}
 	
-	/** This method looks up an edit object for this snap object. There is no
+	/** This method looks up an select object for this snap object.  . There is no
 	 * select object for an intersection.
 	 * 
 	 * @return			The edit object
 	 */
 	@Override
-	public EditObject getSelectEditObject() {
+	public Object getSelectObject() {
+		//no select object for intersection
 		return null;
 	}
 }
