@@ -43,6 +43,13 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		Other
 	}
 	
+	private enum ActionMode {
+		SelectAction,
+		CreateNodeAction,
+		MoveAction,
+		NoAction
+	}
+	
 	public final static double SNAP_RADIUS_PIXELS = 3;
 	
 	private OsmData osmData;
@@ -50,6 +57,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private StyleInfo styleInfo = new StyleInfo();
 	
 	private EditMode editMode;
+	private ActionMode actionMode;
+	
 	private FeatureInfo featureInfo;
 	private OsmWay activeStructure;
 	private OsmRelation activeLevel;
@@ -59,7 +68,10 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private int activeSnapObject = -1;
 	
 	//this holds the active selection
-	private List<EditObject> selection = new ArrayList<EditObject>();
+	private List<Object> selection = new ArrayList<Object>();
+	private boolean virtualNodeSelected = false;
+	private OsmWay activeWay = null;
+	private int activeWayIndex = -1;
 	
 	//these are nodes that will be displayed with in the edit preview set
 	//some of these are also moving nodes
@@ -74,9 +86,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	//working variables
 	private EditDestPoint moveStartPoint;
 	private List<SnapSegment> workingSnapSegments = new ArrayList<SnapSegment>();
-	private boolean inMove;
-	private OsmWay activeWay;
-	private boolean isEnd;
 	
 	// </editor-fold>
 	
@@ -85,7 +94,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	//=========================
 	
 	/** This returns the current selection. */
-	public List<EditObject> getSelection() {
+	public List<Object> getSelection() {
 		return selection;
 	}
 	
@@ -93,36 +102,33 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	public void setEditMode(EditorMode editorMode) {
 		if(editorMode instanceof SelectEditorMode) {
 			editMode = EditMode.SelectTool;
-			clearSelection();
+			actionMode = ActionMode.SelectAction;
+			clearAll();
 		}
 		else if(editorMode instanceof NodeEditorMode) {
 			editMode = EditMode.NodeTool;
+			actionMode = ActionMode.CreateNodeAction;
 			clearSelection();
+			
 			//initialize virtual node with a dummy point - it will get updated on a mouse move
 			setNodeToolPendingData(new Point2D.Double());
 		}
 		else if(editorMode instanceof WayEditorMode) {
 			editMode = EditMode.WayTool;
-			if(selection.size() == 1) {
-				//if there is a single way selected, use it as the active way
-				EditDrawable editDrawable = selection.get(0);
-				if(editDrawable instanceof EditWay) {
-					activeWay = ((EditWay)editDrawable).way;
-					isEnd = true;
-				}
-				else {
-					clearSelection();
-				}
-			}
-			else {
+			actionMode = ActionMode.CreateNodeAction;
+			//clear selection only if there is not an active way
+			//otherwise the selection is the active way
+			if(activeWay == null) {
 				clearSelection();
 			}
+			
 			//initialize virtual node with a dummy point - it will get updated on a mouse move
 			setWayToolPendingData(new Point2D.Double());
 		}
 		else {
 			editMode = EditMode.Other;
-			clearSelection();
+			actionMode = ActionMode.NoAction;
+			clearAll();
 		}
 	}
 	
@@ -155,8 +161,10 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 		//render hover
 		if((activeSnapObject != -1)&&(activeSnapObject < snapObjects.size())) {
+System.out.println(("cnt = " + snapObjects.size() + "; active = " + activeSnapObject));
 			g2.setColor(styleInfo.HOVER_PRESELECT_COLOR);
 			SnapObject snapObject = snapObjects.get(activeSnapObject);
+System.out.println(snapObject);
 			snapObject.render(g2, mercatorToPixels,styleInfo);
 		}
 		
@@ -168,8 +176,18 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 		//render selection
 		g2.setColor(styleInfo.SELECT_COLOR);
-		for(EditObject editObject:selection) {
-			editObject.render(g2, mercatorToPixels, styleInfo);
+		for(Object selectObject:selection) {
+			if(selectObject instanceof OsmNode) {
+				EditDrawable.renderPoint(g2, mercatorToPixels, ((OsmNode)selectObject).getPoint(),
+						styleInfo.RADIUS_PIXELS);
+			}
+			else if(selectObject instanceof OsmWay) {
+				EditDrawable.renderWay(g2, mercatorToPixels,(OsmWay)selectObject);
+			}
+			else if(selectObject instanceof VirtualNode) {
+				EditDrawable.renderPoint(g2, mercatorToPixels,((VirtualNode)selectObject).point,
+						styleInfo.RADIUS_PIXELS);
+			}
 		}
 		
 	}
@@ -226,6 +244,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		//no edit move with mouse drag - explicit move command needed
 	}
 	
 	@Override
@@ -241,7 +260,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		
-		boolean wasActive = (snapObjects.isEmpty())||(!movingNodes.isEmpty());
+		if(actionMode == ActionMode.NoAction) return;
+		
+		boolean wasActive = (!snapObjects.isEmpty())||(!movingNodes.isEmpty());
 
 		//clear snapObjects
 		snapObjects.clear();
@@ -283,7 +304,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 						
 						//only do the segments that start with this node, to avoid doing them twice
 						if(segment.getNode1() == mapObject) {
-							if((editMode == EditMode.SelectTool)&&(!inMove)) {
+							if(actionMode == ActionMode.SelectAction) {
 								//selection preview - when we are selecting an object
 								
 								//check for a virtual node hit
@@ -300,7 +321,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 								//check for segment and extension hit
 								SnapSegment snapSegment = SnapSegment.testSegmentHit(segment,
 										mouseMerc,mercRadSq);
-								if(snapObject != null) {
+								if(snapSegment != null) {
 									snapObjects.add(snapSegment);
 									workingSnapSegments.add(snapSegment);
 								}
@@ -348,9 +369,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		if(snapObjects.size() > 1) {
 			Collections.sort(snapObjects);
 		}
-		activeSnapObject = snapObjects.size() - 1;
+		activeSnapObject = snapObjects.isEmpty() ? -1 : 0;
 		
-		boolean isActive = (snapObjects.isEmpty())||(!movingNodes.isEmpty());
+		boolean isActive = (!snapObjects.isEmpty())||(!movingNodes.isEmpty());
 		
 		//repaint if there is a hit or if the hit status changes
 		if(wasActive||isActive) {
@@ -365,99 +386,121 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
 		pixelsToMercator.transform(mouseMerc, mouseMerc);
 		
-		if(editMode == EditMode.SelectTool) {
-			if(inMove) {
-				if(e.getButton() == MouseEvent.BUTTON1) {
-					EditDestPoint dest = getDestinationPoint(mouseMerc);
-					if((selection.size() == 1) && (selection.get(0) instanceof EditVirtualNode)) {
+		if(e.getButton() == MouseEvent.BUTTON1) {
+			
+			EditDestPoint dest = getDestinationPoint(mouseMerc);
+
+			if(editMode == EditMode.SelectTool) {
+					
+				if(actionMode == ActionMode.CreateNodeAction) {
+					if(!selection.isEmpty()) {
 						OsmSegment segment = ((EditVirtualNode)selection.get(0)).osmSegment;
 						editManager.nodeInserted(segment,dest,activeLevel);
-						clearPending();
-						
-						//clear the selection after inserting a node
-						clearSelection();
 					}
+
+					//clear selection. user has to reselect to move again
+					//but move mode is still active because it is controlled elsewhere
+					clearPending();
+					clearSelection();
+				}
+				else if(actionMode == ActionMode.MoveAction) {
 					if(!selection.isEmpty()) {
 						//execute the move
 						editManager.selectionMoved(selection,moveStartPoint,dest);
-						clearPending();
-
-						//update the start point location - just change the point
-						moveStartPoint.point.setLocation(dest.point);
 					}
+					//stay in move mode, but deselect
+					//user has to end move mode and restart it to move again
+					//but keep the selection but update the start point
+					//so the user can move this object again without reselecting it
+					clearPending();
+					moveStartPoint.point.setLocation(dest.point);
 				}
-			}
-			else {
-				//do a selection
-				if((activeSnapObject > -1)&&(activeSnapObject < snapObjects.size())) {
+				else if(actionMode == ActionMode.SelectAction) {
 
 					//store the latest point used for selection, for the move anchor
-					moveStartPoint = new EditDestPoint();
+					moveStartPoint = dest;
+						
+					Object selectObject = null;
 					
-					//a little preprocessing
-					SnapObject snapObject = snapObjects.get(activeSnapObject);
-					moveStartPoint.point = snapObject.snapPoint;
-					if(snapObject instanceof SnapNode) {
-						//use the node point as the start point
-						moveStartPoint.snapNode = ((SnapNode)snapObject).node;
-					}
-					else if((snapObject instanceof SnapVirtualNode)||
-							((selection.size() == 1)&&(selection.get(0) instanceof EditVirtualNode))){
-						//only allow one SnapVirtualNode to be selected, and with no other objects
-						//if we allow this it opens up a lot of funny use cases
-						//and it makes the code harder
-						selection.clear();
+					//do a selection
+					if((activeSnapObject > -1)&&(activeSnapObject < snapObjects.size())) {	
+
+						//a little preprocessing
+						SnapObject snapObject = snapObjects.get(activeSnapObject);
+						moveStartPoint.point = snapObject.snapPoint;
+						if(snapObject instanceof SnapNode) {
+							//use the node point as the start point
+							moveStartPoint.snapNode = ((SnapNode)snapObject).node;
+						}
+
+						//get the edit object for this snap object
+						selectObject = snapObject.getSelectObject();
 					}
 					
-					//get the edit object for this snap object
-					EditObject editObject = snapObject.getSelectEditObject();
+					boolean wasVirtualNode = virtualNodeSelected;
+					boolean isVirtualNode = selectObject instanceof EditVirtualNode;
 					
 					//handle selection
-					if(!e.isShiftDown()) {
-						//no shift - replace selection
-						selection.clear();
-						if(editObject != null) {
-							selection.add(editObject);
-						}
-					}
-					else {
+					if((!selection.isEmpty())&&(e.isShiftDown())&&(!wasVirtualNode)&&(!isVirtualNode)) {
 						//shift - add or remove object
-						if(editObject != null) {
-							if(selection.contains(editObject)) {
-								selection.remove(editObject);
+						if(selectObject != null) {
+							if(selection.contains(selectObject)) {
+								selection.remove(selectObject);
 							}
 							else {
-								selection.add(editObject);
+								selection.add(selectObject);
+							}
+						}
+						activeWay = null;
+						activeWayIndex = -1;
+					}
+					else {
+						//check norma select or select node in a way
+						if((activeWay != null)&&(selectObject instanceof OsmNode)) {
+							//special case - select a node in the active way
+							if(activeWay.getNodes().contains((OsmNode)selectObject)) {
+								activeWayIndex = activeWay.getNodes().indexOf((OsmNode)selectObject);
+							}
+						}
+						else {
+							//normal - replace selection with new object
+							clearSelection();
+							if(selectObject != null) {
+								selection.add(selectObject);
+							}
+							virtualNodeSelected = isVirtualNode;
+
+							if(selectObject instanceof OsmWay) {
+								activeWay = (OsmWay)selectObject;
+								this.activeWayIndex = -1;
+							}
+							else {
+								activeWay = null;
+								activeWayIndex = -1;
 							}
 						}
 					}
 				}
-				else {
-					moveStartPoint = null;
-					clearSelection();
+			}
+			else if(editMode == EditMode.NodeTool) {
+				//execute a node addition
+				OsmNode node = editManager.nodeToolClicked(dest,featureInfo,activeLevel);
+				//prepare for next
+				setNodeToolPendingData(mouseMerc);
+			}
+			else if(editMode == EditMode.WayTool) {
+				//execute a way node addition
+				activeWay = editManager.wayToolClicked(activeWay,activeWayIndex,dest,featureInfo,activeLevel);
+				//make sure this is selected
+				if(selection.isEmpty()) {
+					selection.add(activeWay);
 				}
+				//prepare for next
+				setWayToolPendingData(mouseMerc);
 			}
+		
+			getMapPanel().repaint();
 		}
-		else if(editMode == EditMode.NodeTool) {
-			//execute a node addition
-			EditDestPoint dest = getDestinationPoint(mouseMerc);
-			OsmNode node = editManager.nodeToolClicked(dest,featureInfo,activeLevel);
-			//prepare for next
-			setNodeToolPendingData(mouseMerc);
-		}
-		else if(editMode == EditMode.WayTool) {
-			//execute a way node addition
-			EditDestPoint dest = getDestinationPoint(mouseMerc);
-			activeWay = editManager.wayToolClicked(activeWay,isEnd,dest,featureInfo,activeLevel);
-			//make sure this is selected
-			if(selection.isEmpty()) {
-				EditWay editWay = EditObject.getEditWay(activeWay);
-				selection.add(editWay);
-			}
-			//prepare for next
-			setWayToolPendingData(mouseMerc);
-		}
-		getMapPanel().repaint();
 	}
 	
 	@Override
@@ -492,10 +535,15 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_M) {
-			if(!inMove) {
-				inMove = true;
-				loadPendingFromSelection();
-
+			if(editMode == EditMode.SelectTool) {
+				if(virtualNodeSelected) {
+					actionMode = ActionMode.CreateNodeAction;
+				}
+				else {
+					actionMode = ActionMode.MoveAction;
+					loadPendingFromSelection();
+				}
+				
 				//get the current mouse location and update the nodes that move with the mouse
 				MapPanel mapPanel = getMapPanel();
 				AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
@@ -519,22 +567,29 @@ public class EditLayer extends MapLayer implements MapDataListener,
     /** Handle the key-released event from the text field. */
     @Override
 	public void keyReleased(KeyEvent e) {
-		if(inMove) {
-			inMove = false;
-			clearPending();
-			getMapPanel().repaint();
+		if(e.getKeyCode() == KeyEvent.VK_M) {
+			if(editMode == EditMode.SelectTool) {
+				actionMode = ActionMode.SelectAction;
+				clearPending();
+				getMapPanel().repaint();
+			}
 		}
     }
 	
 	@Override
 	public void focusGained(FocusEvent e) {
-		
+		//it would be nice if we could get the key state for any keys that are help down
+		//when focus is gained
 	}
 	
 	@Override
 	public void focusLost(FocusEvent e) {
-		inMove = false;
-		clearPending();
+		if(editMode == EditMode.SelectTool) {
+			//we have no choice but to clear the move or create since we will not captuer events
+			actionMode = ActionMode.SelectAction;
+			clearPending();
+			getMapPanel().repaint();
+		}
 	}
 	
 	// </editor-fold>
@@ -543,7 +598,11 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	// Private Methods
 	//============================
 	
-	// <editor-fold defaultstate="collapsed" desc="Hit Methods">
+	private void clearAll() {
+		clearHover();
+		clearPending();
+		clearSelection();
+	}
 	
 	/** This method clears the hover variables. */
 	private void clearHover() {
@@ -552,17 +611,22 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		getMapPanel().repaint();
 	}	
 	
-	// </editor-fold>
-	
-	// <editor-fold defaultstate="collapsed" desc="Select Methods">
 	
 	/** This method clears the current selection. */
 	private void clearSelection() {
 		selection.clear();
 		activeWay = null;
-		inMove = false;
+		activeWayIndex = -1;
+		virtualNodeSelected = false;
 		clearPending();
 		getMapPanel().repaint();
+	}
+	
+		/** This method clears all data in the pending state. */
+	private void clearPending() {
+		pendingObjects.clear();
+		pendingSnapSegments.clear();
+		movingNodes.clear();
 	}
 	
 	/** This method returns the current edit destination point based on the
@@ -590,42 +654,25 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		return edp;
 	}
 	
-	// </editor-fold>
-	
-	// <editor-fold defaultstate="collapsed" desc="Pending Methods">
-	
-	/** This method clears all data in the pending state. */
-	private void clearPending() {
-		pendingObjects.clear();
-		pendingSnapSegments.clear();
-		movingNodes.clear();
-	}
-	
 	/** This method updates the location of any node moving with the mouse. */
 	private void updateMovingNodes(Point2D mouseMerc) {
-		if(inMove) {
-			//this is a move - there may be several nodes
+		if(actionMode == ActionMode.MoveAction) {
 			if(moveStartPoint != null) {
 				double dx = mouseMerc.getX() - moveStartPoint.point.getX();
 				double dy = mouseMerc.getY() - moveStartPoint.point.getY();
 				for(EditNode en:movingNodes) {
-					Point2D nodePoint;
+					//for a move, all nodes should be real so node should exist
 					if(en.node != null) {
-						nodePoint = en.node.getPoint();
+						Point2D nodePoint = en.node.getPoint();
+						en.point.setLocation(nodePoint.getX() + dx, nodePoint.getY() + dy);
 					}
-					else {
-						//CLUDGE - if we don't have a node, there can be only one selection point
-						//which I have. But This has to be fixed because it will cause a bug in the future
-						nodePoint = moveStartPoint.point;
-					}
-					en.point.setLocation(nodePoint.getX() + dx, nodePoint.getY() + dy);
 				}
 			}
 		}
-		else {
-			//this is a new node - there should be just one node
-			if(!movingNodes.isEmpty()) {
-				EditNode en = movingNodes.get(0);
+		else if(actionMode == ActionMode.CreateNodeAction) {
+			//for create, there should be just one node here
+			//it follows the mouse
+			for(EditNode en:movingNodes) {
 				en.point.setLocation(mouseMerc);
 			}
 		}
@@ -638,11 +685,24 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		pendingObjects.clear();
 		pendingSnapSegments.clear();
 		
-		for(EditObject editObject:selection) {
-			editObject.loadMovingNodes(movingNodes);
+		if(actionMode == ActionMode.MoveAction) {
+			//I created a class to do this...
+			PendingSelectionLoader psl = new PendingSelectionLoader();
+			psl.loadPendingFromSelectionForMove();
 		}
-		for(EditObject editObject:selection) {
-			editObject.loadPendingObjects(pendingObjects,pendingSnapSegments,movingNodes);
+		else if(actionMode == ActionMode.CreateNodeAction) {
+			//there should be one and it should be a virtual node
+			for(Object selectObject:selection) {
+				if(selectObject instanceof VirtualNode) {
+					EditVirtualNode evn = new EditVirtualNode((VirtualNode)selectObject);
+					movingNodes.add(evn.enVirtual);
+					pendingObjects.add(evn.enVirtual);
+					pendingObjects.add(evn.es1);
+					pendingObjects.add(evn.es2);
+					pendingSnapSegments.add(evn.es1);
+					pendingSnapSegments.add(evn.es2);
+				}
+			}
 		}
 	}
 	
@@ -650,7 +710,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private void setNodeToolPendingData(Point2D mouseMerc) {
 		clearPending();
 		
-		EditNode en = EditObject.getEditNode(mouseMerc,featureInfo);
+		EditNode en = new EditNode(mouseMerc,featureInfo);
 		movingNodes.add(en);
 		pendingObjects.add(en);
 	}
@@ -660,32 +720,113 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		clearPending();
 		
 		//get the node to add
-		EditNode en = EditObject.getEditNode(mouseMerc,null);
+		EditNode en = new EditNode(mouseMerc,null);
 		movingNodes.add(en);
 		pendingObjects.add(en);
 		//get the segment from the previous node
-		OsmNode activeNode = null;
 		if(activeWay != null) {
 			List<OsmNode> nodes = activeWay.getNodes();
 			
 			if(!nodes.isEmpty()) {
-				if(isEnd) {
-					activeNode = nodes.get(nodes.size()-1);
+				//set the active way to end if it is not already set
+				if((activeWayIndex < 0)||(activeWayIndex >= nodes.size())) {
+					activeWayIndex = nodes.size() - 1;
 				}
-				else {
-					activeNode = nodes.get(0);
+
+				OsmNode activeNode = nodes.get(activeWayIndex);
+				EditNode en2 = new EditNode(activeNode);
+				EditSegment es = new EditSegment(null,en,en2);
+				pendingObjects.add(en2);
+				pendingObjects.add(es);
+				pendingSnapSegments.add(es);
+			}
+		}
+	}
+	
+	class PendingSelectionLoader {
+		
+		private HashMap<Object,EditObject> editMap = new HashMap<Object,EditObject>();
+		private boolean lastNodeWasNew;
+		private boolean lastSegmentWasNew;
+		private boolean lastSegmentWasDynamic;
+		
+		private EditNode getEditNode(OsmNode node) {
+			EditObject editObject = editMap.get(node);
+			if(editObject == null) {
+				lastNodeWasNew = true;
+				EditNode en = new EditNode(node);
+				editMap.put(node,en);
+				return en;
+			}
+			else {
+				lastNodeWasNew = false;
+				return (EditNode)editObject;
+			}
+		}
+		
+		private EditSegment getEditSegment(OsmSegment segment) {
+			EditObject editObject = editMap.get(segment);
+			if(editObject == null) {
+				//create a new segment
+				lastSegmentWasNew = true;
+				int newCount = 0;
+				EditNode en1 = this.getEditNode(segment.getNode1());
+				if(lastNodeWasNew) newCount++;
+				EditNode en2 = this.getEditNode(segment.getNode2());
+				if(lastNodeWasNew) newCount++;
+				EditSegment editSegment = new EditSegment(segment,en1,en2);
+				
+				//segment is dynamic if one node is new and the other is not
+				lastSegmentWasDynamic = (newCount == 1);
+				
+				return editSegment;
+			}
+			else {
+				lastSegmentWasNew = false;
+				//this variable is valid only for new segments
+				lastSegmentWasDynamic = false;
+				return (EditSegment)editObject;
+			}
+		}
+		
+		public void loadPendingFromSelectionForMove() {
+			
+			//add all unique nodes to the moving nodes
+			EditNode editNode;
+			for(Object selectObject:selection) {
+				if(selectObject instanceof OsmNode) {
+					//add this edit node
+					editNode = this.getEditNode((OsmNode)selectObject);
+					if(lastNodeWasNew) {
+						movingNodes.add(editNode);
+					}
+				}
+				else if(selectObject instanceof OsmWay) {
+					for(OsmNode node:((OsmWay)selectObject).getNodes()) {
+						editNode = this.getEditNode(node);
+						if(lastNodeWasNew) {
+							movingNodes.add(editNode);
+						}
+					}
+				}
+			}
+			//get the segments for each of the moving nodes
+			EditSegment editSegment;
+			for(EditNode en:movingNodes) {
+				pendingObjects.add(en);
+				for(OsmSegment segment:en.node.getSegments()) {
+					editSegment = getEditSegment(segment);
+					if(lastSegmentWasNew) {
+						pendingObjects.add(editSegment);
+						if(lastSegmentWasDynamic) {
+							pendingSnapSegments.add(editSegment);
+						}
+					}
 				}
 			}
 		}
-		if(activeNode != null) {
-			EditNode en2 = EditObject.getEditNode(activeNode);
-			EditSegment es = EditObject.getEditSegment(en,en2);
-			pendingObjects.add(en2);
-			pendingObjects.add(es);
-			pendingSnapSegments.add(es);
-		}
-		
+	
 	}
-	// </editor-fold>
+	
 	
 }

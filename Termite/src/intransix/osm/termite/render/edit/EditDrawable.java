@@ -40,7 +40,7 @@ public abstract class EditDrawable {
 	//=========================
 	
 	/** This method renders a point. */
-	protected final void renderPoint(Graphics2D g2, AffineTransform mercatorToPixels,
+	static void renderPoint(Graphics2D g2, AffineTransform mercatorToPixels,
 			Point2D point, double radiusPix) {
 		mercatorToPixels.transform(point,workingPoint1);
 		workingRect.setRect(workingPoint1.getX()-radiusPix, workingPoint1.getY() - radiusPix,
@@ -49,7 +49,7 @@ public abstract class EditDrawable {
 	}
 	
 	/** This method renders a way. */
-	protected final void renderWay(Graphics2D g2, AffineTransform mercatorToPixels,
+	static void renderWay(Graphics2D g2, AffineTransform mercatorToPixels,
 			OsmWay way) {
 		
 		for(OsmSegmentWrapper osw:way.getSegments()) {
@@ -62,7 +62,7 @@ public abstract class EditDrawable {
 	}
 	
 	/** This method renders a segment. */
-	protected final void renderSegment(Graphics2D g2, AffineTransform mercatorToPixels,
+	static void renderSegment(Graphics2D g2, AffineTransform mercatorToPixels,
 			Point2D p1, Point2D p2) {
 		
 		mercatorToPixels.transform(p1,workingPoint1);

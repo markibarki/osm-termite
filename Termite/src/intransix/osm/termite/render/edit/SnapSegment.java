@@ -71,14 +71,15 @@ public class SnapSegment extends SnapObject {
 		renderSegment(g2,mercatorToPixels,p1,p2);
 	}
 	
-	/** This method looks up an edit object for this snap object. There is
+	/** This method looks up an select object for this snap object.  . There is
 	 * no select object for a segment.
 	 * 
 	 * @param editMap	The edit map of existing edit objects
 	 * @return			The edit object
 	 */
 	@Override
-	public EditObject getSelectEditObject() {
+	public EditObject getSelectObject() {
+		//no select object for segment
 		return null;
 	}
 	
@@ -184,11 +185,11 @@ public class SnapSegment extends SnapObject {
 		//horizontal
 		hvPoint.setLocation(basePoint.getX() + mercPix10.getX() - mercPix00.getX(), 
 				basePoint.getY() + mercPix10.getY() - mercPix00.getY());
-		SnapSegment ssh = getSnapSegment(mouseMerc,basePoint,hvPoint,true,mercRadSq);
+		SnapSegment ssh = getSnapSegment(basePoint,hvPoint,mouseMerc,true,mercRadSq);
 		//vertical
 		hvPoint.setLocation(basePoint.getX() + mercPix01.getX() - mercPix00.getX(), 
 				basePoint.getY() + mercPix01.getY() - mercPix00.getY());
-		SnapSegment ssv = getSnapSegment(mouseMerc,basePoint,hvPoint,true,mercRadSq);		
+		SnapSegment ssv = getSnapSegment(basePoint,hvPoint,mouseMerc,true,mercRadSq);		
 		
 		if((ssh != null)&&((ssv == null)||(ssh.err2 < ssv.err2))) {
 			ssh.snapType = SnapObject.SnapType.HORIZONTAL;
@@ -235,7 +236,7 @@ public class SnapSegment extends SnapObject {
 				double dy = pivotNode.getPoint().getY() - basePoint.getY();
 				pivotPoint.setLocation(basePoint.getX() - dy,basePoint.getY() + dx);
 				//get snap to virtual segment
-				ss = getSnapSegment(mouseMerc,basePoint,pivotPoint,true,mercRadSq);
+				ss = getSnapSegment(basePoint,pivotPoint,mouseMerc,true,mercRadSq);
 				if((ss != null)&&((ss0 == null)||(ss.err2 < ss0.err2))) {
 					ss0 = ss;
 				}

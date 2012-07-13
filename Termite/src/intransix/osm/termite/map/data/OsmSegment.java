@@ -12,6 +12,9 @@ public class OsmSegment {
 	private OsmNode node2;
 	private List<OsmWay> ways = new ArrayList<OsmWay>();
 	
+	private Object renderData;
+	private Object editData;
+	
 	private int filterState;
 	
 	public OsmSegment() {}
@@ -38,6 +41,33 @@ public class OsmSegment {
 	
 	public OsmNode getNode2() {
 		return node2;
+	}
+	
+	//---------------------------
+	// Piggyback methods
+	//---------------------------
+	
+
+	/** This method returns the render data.  */
+	public Object getRenderData() {
+		return renderData;
+	}
+	
+	/** This method sets the render data. The render data is an arbitrary object
+	 * that is set by the rendering software. */
+	public void setRenderData(Object renderData) {
+		this.renderData = renderData;
+	}
+	
+	/** This method returns the edit data. */
+	public Object getEditData() {
+		return editData;
+	}
+	
+	/** This method sets the edit data. The edit data is an arbitrary object
+	 * that is set by the edit software.  */
+	public void setEditData(Object editData) {
+		this.editData = editData;
 	}
 	
 	public static Object getKey(OsmNode nodeA, OsmNode nodeB) {
