@@ -12,10 +12,15 @@ import java.util.List;
  *
  * @author sutter
  */
-public class EditSegment extends EditObject {
+public class EditVirtualNode extends EditObject {
 	public EditNode en1;
 	public EditNode en2;
 	public OsmSegment osmSegment;
+	
+	//this is a virtual point
+	public EditNode enVirtual;
+	public EditSegment es1;
+	public EditSegment es2;
 	
 	/** This method returns the OsmObject for this edit object. */
 	@Override
@@ -31,8 +36,7 @@ public class EditSegment extends EditObject {
 	@Override
 	public void loadMovingNodes(List<EditNode> movingNodes) {
 		
-		//no movin nodes for a segment
-		//there should be no segments in a selection
+		movingNodes.add(enVirtual);
 	}
 
 	/** This method loads the pending objects and pending snap segments if this
@@ -46,8 +50,23 @@ public class EditSegment extends EditObject {
 	public void loadPendingObjects(List<EditObject> pendingObjects,
 			List<EditSegment> pendingSnapSegments,
 			List<EditNode> movingNodes) {
-		
-		//no pending objects. There should be no segments in a selection.
+
+		//virtual segment to pending segments
+		if(!pendingObjects.contains(es1)) {
+			pendingObjects.add(es1);
+		}
+		//add vitual to snap if the non-vritual end is NOT moving
+		if((!movingNodes.contains(en1))&&(!pendingSnapSegments.contains(es1))) {
+			pendingSnapSegments.add(es1);
+		}
+		//virtual segment to pending segments
+		if(!pendingObjects.contains(es2)) {
+			pendingObjects.add(es2);
+		}
+		//add vitual to snap if the non-vritual end is NOT moving
+		if((!movingNodes.contains(en2))&&(!pendingSnapSegments.contains(es2))) {
+			pendingSnapSegments.add(es2);
+		}
 	}
 	
 	/** This method renders the object.
@@ -60,8 +79,8 @@ public class EditSegment extends EditObject {
 	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
 			StyleInfo styleInfo) {
 		
-		g2.setStroke(styleInfo.SELECT_STROKE);
-		renderSegment(g2,mercatorToPixels,en1.point,en2.point);
+		es1.render(g2, mercatorToPixels, styleInfo);
+		es2.render(g2, mercatorToPixels, styleInfo);
 	}
 	
 	//=======================
@@ -70,17 +89,17 @@ public class EditSegment extends EditObject {
 	
 	/** This method should not be called except from within the EditObjects. 
 	 * Use the static method from EditObject to get an instance of this object. */
-	EditSegment(OsmSegment osmSegment) {
+	EditVirtualNode(OsmSegment osmSegment) {
 		this.osmSegment = osmSegment;
 		en1 = (EditNode)editMap.get(osmSegment.getNode1());
 		en2 = (EditNode)editMap.get(osmSegment.getNode2());
-	}
-	
-	/** This method should not be called except from within the EditObjects. 
-	 * Use the static method from EditObject to get an instance of this object. */
-	EditSegment(EditNode en1, EditNode en2) {
-		this.en1 = en1;
-		this.en2 = en2;
-		this.osmSegment = null;
+		
+		double xCenter = (osmSegment.getNode1().getPoint().getX() + osmSegment.getNode2().getPoint().getX())/2;
+		double yCenter = (osmSegment.getNode1().getPoint().getY() + osmSegment.getNode2().getPoint().getY())/2;
+		Point2D midPoint = new Point2D.Double(xCenter,yCenter);
+		enVirtual = new EditNode(midPoint,null);
+
+		es1 = new EditSegment(en1,enVirtual);
+		es2 = new EditSegment(enVirtual,en2);
 	}
 }

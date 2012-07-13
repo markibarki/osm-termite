@@ -6,6 +6,9 @@ import java.awt.geom.Point2D;
 import java.util.*;
 import javax.swing.JOptionPane;
 
+//clean this up...
+import intransix.osm.termite.render.edit.EditObject;
+
 /**
  *
  * @author sutter
@@ -76,7 +79,7 @@ System.out.println("Add a node to a way");
 		}
 	}
 	
-	public boolean selectionMoved(List<OsmObject> selection, EditDestPoint start,
+	public boolean selectionMoved(List<EditObject> selection, EditDestPoint start,
 			EditDestPoint dest) {
 	
 //for now disallow this
@@ -88,13 +91,16 @@ if((start.snapNode != null)&&(dest.snapNode != null)) {
 System.out.println("Move the selection");
 
 		HashSet<OsmNode> nodeSet = new HashSet<OsmNode>();
-		for(OsmObject obj:selection) {
-			if(obj instanceof OsmNode) {
-				nodeSet.add((OsmNode)obj);
-			}
-			else if(obj instanceof OsmWay) {
-				for(OsmNode node:((OsmWay)obj).getNodes()) {
-					nodeSet.add(node);
+		for(EditObject editObject:selection) {
+			OsmObject osmObject = editObject.getOsmObject();
+			if(osmObject != null) {
+				if(osmObject instanceof OsmNode) {
+					nodeSet.add((OsmNode)osmObject);
+				}
+				else if(osmObject instanceof OsmWay) {
+					for(OsmNode node:((OsmWay)osmObject).getNodes()) {
+						nodeSet.add(node);
+					}
 				}
 			}
 		}
