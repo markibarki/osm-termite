@@ -121,6 +121,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			if(activeWay == null) {
 				clearSelection();
 			}
+			else {
+				int nodeCnt = activeWay.getNodes().size();
+				if((activeWayIndex != 0)&&(activeWayIndex != nodeCnt - 1)) {
+					activeWayIndex = nodeCnt - 1;
+				}
+			}
 			
 			//initialize virtual node with a dummy point - it will get updated on a mouse move
 			setWayToolPendingData(new Point2D.Double());
@@ -142,11 +148,13 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				mapPanel.addMouseListener(this);
 				mapPanel.addMouseMotionListener(this);
 				mapPanel.addKeyListener(this);
+				mapPanel.addFocusListener(this);
 			}
 			else {
 				mapPanel.removeMouseListener(this);
 				mapPanel.removeMouseMotionListener(this);
 				mapPanel.removeKeyListener(this);
+				mapPanel.removeFocusListener(this);
 			}
 		}
 	}
@@ -183,6 +191,14 @@ System.out.println(snapObject);
 			}
 			else if(selectObject instanceof OsmWay) {
 				EditDrawable.renderWay(g2, mercatorToPixels,(OsmWay)selectObject);
+				
+				if(selectObject == activeWay) {
+					if((activeWayIndex > -1)&&(activeWayIndex < activeWay.getNodes().size())) {
+						OsmNode node = activeWay.getNodes().get(activeWayIndex);
+						EditDrawable.renderPoint(g2, mercatorToPixels, node.getPoint(),
+						styleInfo.RADIUS_PIXELS);
+					}
+				}
 			}
 			else if(selectObject instanceof VirtualNode) {
 				EditDrawable.renderPoint(g2, mercatorToPixels,((VirtualNode)selectObject).point,
@@ -394,7 +410,7 @@ System.out.println(snapObject);
 					
 				if(actionMode == ActionMode.CreateNodeAction) {
 					if(!selection.isEmpty()) {
-						OsmSegment segment = ((EditVirtualNode)selection.get(0)).osmSegment;
+						OsmSegment segment = ((VirtualNode)selection.get(0)).segment;
 						editManager.nodeInserted(segment,dest,activeLevel);
 					}
 
@@ -438,7 +454,7 @@ System.out.println(snapObject);
 					}
 					
 					boolean wasVirtualNode = virtualNodeSelected;
-					boolean isVirtualNode = selectObject instanceof EditVirtualNode;
+					boolean isVirtualNode = selectObject instanceof VirtualNode;
 					
 					//handle selection
 					if((!selection.isEmpty())&&(e.isShiftDown())&&(!wasVirtualNode)&&(!isVirtualNode)) {
@@ -489,11 +505,22 @@ System.out.println(snapObject);
 				setNodeToolPendingData(mouseMerc);
 			}
 			else if(editMode == EditMode.WayTool) {
+				//flag isEnd false if we are at the start, in which case the insert
+				//node is 0. Otherwise, the insert node is the end, or one more than 
+				//the active node.
+				boolean isEnd = (activeWayIndex > 0);
 				//execute a way node addition
-				activeWay = editManager.wayToolClicked(activeWay,activeWayIndex,dest,featureInfo,activeLevel);
+				activeWay = editManager.wayToolClicked(activeWay,isEnd,dest,featureInfo,activeLevel);
 				//make sure this is selected
 				if(selection.isEmpty()) {
 					selection.add(activeWay);
+				}
+				//update the active node
+				if(isEnd) {
+					activeWayIndex = activeWay.getNodes().size()-1;
+				}
+				else {
+					activeWayIndex = 0;
 				}
 				//prepare for next
 				setWayToolPendingData(mouseMerc);
@@ -541,8 +568,9 @@ System.out.println(snapObject);
 				}
 				else {
 					actionMode = ActionMode.MoveAction;
-					loadPendingFromSelection();
 				}
+				
+				loadPendingFromSelection();
 				
 				//get the current mouse location and update the nodes that move with the mouse
 				MapPanel mapPanel = getMapPanel();

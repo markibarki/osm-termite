@@ -65,7 +65,7 @@ if(destPoint.snapNode != null) {
 		}
 	}
 	
-	public OsmWay wayToolClicked(OsmWay activeWay, int insertIndex, 
+	public OsmWay wayToolClicked(OsmWay activeWay, boolean isEnd, 
 			EditDestPoint destPoint, FeatureInfo featureInfo, OsmRelation currentLevel) {
 		
 System.out.println("Add a node to a way");
@@ -74,6 +74,9 @@ System.out.println("Add a node to a way");
 			return createWay(destPoint,featureInfo, currentLevel);
 		}
 		else {
+			int insertIndex;
+			if(isEnd) insertIndex = activeWay.getNodes().size();
+			else insertIndex = 0;
 			addNodeToWay(activeWay,destPoint,insertIndex,currentLevel);
 			return activeWay;
 		}
