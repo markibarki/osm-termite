@@ -20,7 +20,7 @@ public class SnapNode extends SnapObject {
 		super(SnapType.NODE);
 		this.node = node;
 		this.err2 = err2;
-		this.snapPoint = node.getPoint();
+		this.snapPoint = new Point2D.Double(node.getPoint().getX(),node.getPoint().getY());
 	}
 	
 	/** This method tests if the mouse point hits the node. 
