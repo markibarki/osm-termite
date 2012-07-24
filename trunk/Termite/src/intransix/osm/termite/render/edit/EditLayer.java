@@ -15,8 +15,6 @@ import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.gui.stdmode.*;
-import intransix.osm.termite.render.edit.EditNode;
-import intransix.osm.termite.render.edit.EditSegment;
 import java.awt.MouseInfo;
 
 /**
@@ -26,7 +24,7 @@ import java.awt.MouseInfo;
  * @author sutter
  */
 public class EditLayer extends MapLayer implements MapDataListener, 
-		FeatureLayerListener, LevelSelectedListener,  
+		FeatureLayerListener, LevelSelectedListener, FeatureSelectedListener,
 		MouseListener, MouseMotionListener, KeyListener, FocusListener {
 	
 	//=========================
@@ -52,8 +50,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	public final static double SNAP_RADIUS_PIXELS = 3;
 	
+	private TermiteGui termiteGui;
+	
 	private OsmData osmData;
-	private EditManager editManager;
 	private StyleInfo styleInfo = new StyleInfo();
 	
 	private EditMode editMode;
@@ -71,7 +70,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private List<Object> selection = new ArrayList<Object>();
 	private boolean virtualNodeSelected = false;
 	private OsmWay activeWay = null;
-	private int activeWayIndex = -1;
+	private List<Integer> selectedWayNodes = new ArrayList<Integer>();
+	private boolean addToWayStart;
 	
 	//these are nodes that will be displayed with in the edit preview set
 	//some of these are also moving nodes
@@ -93,9 +93,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	// Public Methods
 	//=========================
 	
-	/** This returns the current selection. */
-	public List<Object> getSelection() {
-		return selection;
+	public EditLayer(TermiteGui termiteGui) {
+		this.termiteGui = termiteGui;
 	}
 	
 	/** This method sets the edit mode. */
@@ -123,8 +122,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}
 			else {
 				int nodeCnt = activeWay.getNodes().size();
-				if((activeWayIndex != 0)&&(activeWayIndex != nodeCnt - 1)) {
-					activeWayIndex = nodeCnt - 1;
+				if(selectedWayNodes.size() == 1) {
+					int selectedIndex = selectedWayNodes.get(0);
+					addToWayStart = (selectedIndex == 0);
+				}
+				else {
+					addToWayStart = false;
 				}
 			}
 			
@@ -193,10 +196,12 @@ System.out.println(snapObject);
 				EditDrawable.renderWay(g2, mercatorToPixels,(OsmWay)selectObject);
 				
 				if(selectObject == activeWay) {
-					if((activeWayIndex > -1)&&(activeWayIndex < activeWay.getNodes().size())) {
-						OsmNode node = activeWay.getNodes().get(activeWayIndex);
-						EditDrawable.renderPoint(g2, mercatorToPixels, node.getPoint(),
-						styleInfo.RADIUS_PIXELS);
+					for(Integer index:selectedWayNodes) {
+						if((index > -1)&&(index < activeWay.getNodes().size())) {
+							OsmNode node = activeWay.getNodes().get(index);
+							EditDrawable.renderPoint(g2, mercatorToPixels, node.getPoint(),
+							styleInfo.RADIUS_PIXELS);
+						}
 					}
 				}
 			}
@@ -215,14 +220,8 @@ System.out.println(snapObject);
 	@Override
 	public void onMapData(OsmData osmData) {
 		this.osmData = osmData;
-		if(osmData != null) {
-			editManager = new EditManager(osmData);
-		}
-		else {
-			editManager = null;
-			activeStructure = null;
-			activeLevel = null;
-		}
+		activeStructure = null;
+		activeLevel = null;
 	}
 	// </editor-fold>
 	
@@ -251,6 +250,44 @@ System.out.println(snapObject);
 		this.activeLevel = level;
 	}
 	// </editor-fold>
+	
+	/** This method is called when a map feature is selected. The arguments selectionType
+	 * and wayNodeType indicate the type of selection made. The list objects may be null
+	 * if there is no selection for the list. 
+	 * 
+	 * @param selection			A list of the selected objects
+	 * @param selectionType		The type objects objects in the selection
+	 * @param wayNodeSelection	If the selection is a single way, this is a possible list
+	 *							of selected nodes within the way.
+	 * @param wayNodeType		This is the type of way nodes selected for the way, if applicable.
+	 */
+	@Override
+	public void onFeatureSelected(List<Object> selection, SelectionType selectionType,
+			List<Integer> wayNodeSelection, WayNodeType wayNodeType) {
+		
+		//see if the selection needs to be updated
+		if(selection != null) {
+			if(selection != this.selection) {
+				clearSelection();
+				for(Object selectObject:selection) {
+					selection.add(selectObject);
+				}
+			}
+			if(wayNodeSelection != null) {
+				if(wayNodeSelection != this.selectedWayNodes) {
+					this.selectedWayNodes.clear();
+					for(Integer index:wayNodeSelection) {
+						this.selectedWayNodes.add(index);
+					}
+				}
+			}
+		}
+		else {
+			if(!this.selection.isEmpty()) {
+				clearSelection();
+			}
+		}
+	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Mouse Listeners">
 	
@@ -411,7 +448,8 @@ System.out.println(snapObject);
 				if(actionMode == ActionMode.CreateNodeAction) {
 					if(!selection.isEmpty()) {
 						OsmSegment segment = ((VirtualNode)selection.get(0)).segment;
-						editManager.nodeInserted(segment,dest,activeLevel);
+						WayNodeEdit wne = new WayNodeEdit(osmData);
+						wne.nodeInserted(segment,dest,activeLevel);
 					}
 
 					//clear selection. user has to reselect to move again
@@ -422,7 +460,8 @@ System.out.println(snapObject);
 				else if(actionMode == ActionMode.MoveAction) {
 					if(!selection.isEmpty()) {
 						//execute the move
-						editManager.selectionMoved(selection,moveStartPoint,dest);
+						MoveEdit me = new MoveEdit(osmData);
+						me.selectionMoved(selection,moveStartPoint,dest);
 					}
 					//stay in move mode, but deselect
 					//user has to end move mode and restart it to move again
@@ -457,76 +496,102 @@ System.out.println(snapObject);
 					boolean isVirtualNode = selectObject instanceof VirtualNode;
 					
 					//handle selection
-					if((!selection.isEmpty())&&(e.isShiftDown())&&(!wasVirtualNode)&&(!isVirtualNode)) {
-						//shift - add or remove object
-						if(selectObject != null) {
-							if(selection.contains(selectObject)) {
-								selection.remove(selectObject);
+
+					//check normal select or select node in a way
+					if((activeWay != null)&&(selectObject instanceof OsmNode)&&
+							(activeWay.getNodes().contains((OsmNode)selectObject))) {
+
+						//select a node within a way
+						int selectedIndex = activeWay.getNodes().indexOf((OsmNode)selectObject);
+						if(e.isShiftDown()) {
+							if(!selectedWayNodes.contains(selectedIndex)) {
+								selectedWayNodes.add(selectedIndex);
 							}
 							else {
-								selection.add(selectObject);
-							}
-						}
-						activeWay = null;
-						activeWayIndex = -1;
-					}
-					else {
-						//check norma select or select node in a way
-						if((activeWay != null)&&(selectObject instanceof OsmNode)) {
-							//special case - select a node in the active way
-							if(activeWay.getNodes().contains((OsmNode)selectObject)) {
-								activeWayIndex = activeWay.getNodes().indexOf((OsmNode)selectObject);
+								selectedWayNodes.remove(selectedIndex);
 							}
 						}
 						else {
-							//normal - replace selection with new object
-							clearSelection();
-							if(selectObject != null) {
-								selection.add(selectObject);
-							}
-							virtualNodeSelected = isVirtualNode;
-
-							if(selectObject instanceof OsmWay) {
-								activeWay = (OsmWay)selectObject;
-								this.activeWayIndex = -1;
-							}
-							else {
-								activeWay = null;
-								activeWayIndex = -1;
-							}
+							selectedWayNodes.clear();
+							selectedWayNodes.add(selectedIndex);
 						}
 					}
+					else {
+						//normal select action
+
+						//if shift is down do add/remove rather than replace selection
+						//except do not allow virtual nodes to be selected with anything else
+						boolean doAddRemove = ((e.isShiftDown())&&
+								(!isVirtualNode)&&(!wasVirtualNode));
+
+						if(doAddRemove) {
+							if(selectObject != null) {
+								if(selection.contains(selectObject)) {
+									selection.remove(selectObject);
+								}
+								else {
+									selection.add(selectObject);
+								}
+							}
+						}
+						else {
+							selection.clear();
+							if((selectObject != null)&&(!selection.contains(selectObject))) {
+								selection.add(selectObject);
+							}
+						}
+						
+						//make sure selected nodes cleared
+						this.selectedWayNodes.clear();
+
+						//update the active way
+						if((selectObject instanceof OsmWay)&&(selection.size() == 1)) {
+							activeWay = (OsmWay)selectObject;
+						}
+						else {
+							activeWay = null;
+						}
+					}
+
+					virtualNodeSelected = isVirtualNode;
+					
+					//report selection
+					termiteGui.setSelection(selection, selectedWayNodes);
+					this.getMapPanel().repaint();
 				}
 			}
 			else if(editMode == EditMode.NodeTool) {
 				//execute a node addition
-				OsmNode node = editManager.nodeToolClicked(dest,featureInfo,activeLevel);
+				NodeCreateEdit nce = new NodeCreateEdit(osmData);
+				OsmNode node = nce.nodeToolClicked(dest,featureInfo,activeLevel);
 				//prepare for next
 				setNodeToolPendingData(mouseMerc);
 			}
 			else if(editMode == EditMode.WayTool) {
-				//flag isEnd false if we are at the start, in which case the insert
-				//node is 0. Otherwise, the insert node is the end, or one more than 
-				//the active node.
-				boolean isEnd = (activeWayIndex > 0);
 				//execute a way node addition
-				activeWay = editManager.wayToolClicked(activeWay,isEnd,dest,featureInfo,activeLevel);
-				//make sure this is selected
-				if(selection.isEmpty()) {
-					selection.add(activeWay);
-				}
-				//update the active node
-				if(isEnd) {
-					activeWayIndex = activeWay.getNodes().size()-1;
+				WayNodeEdit wne = new WayNodeEdit(osmData);
+				activeWay = wne.wayToolClicked(activeWay,!addToWayStart,dest,featureInfo,activeLevel);
+				
+				if(activeWay != null) {
+					//make sure this is selected
+					if(selection.isEmpty()) {
+						selection.add(activeWay);
+					}
+					//update the active node
+					int activeWayNodeIndex;
+					if(!addToWayStart) {
+						activeWayNodeIndex = activeWay.getNodes().size()-1;
+						selectedWayNodes.clear();
+						selectedWayNodes.add(activeWayNodeIndex);
+					}
+					//prepare for next
+					setWayToolPendingData(mouseMerc);
 				}
 				else {
-					activeWayIndex = 0;
+					//something wrong happened - clean up
+					clearSelection();
 				}
-				//prepare for next
-				setWayToolPendingData(mouseMerc);
 			}
-		
-			getMapPanel().repaint();
 		}
 	}
 	
@@ -643,8 +708,8 @@ System.out.println(snapObject);
 	/** This method clears the current selection. */
 	private void clearSelection() {
 		selection.clear();
+		selectedWayNodes.clear();
 		activeWay = null;
-		activeWayIndex = -1;
 		virtualNodeSelected = false;
 		clearPending();
 		getMapPanel().repaint();
@@ -756,12 +821,8 @@ System.out.println(snapObject);
 			List<OsmNode> nodes = activeWay.getNodes();
 			
 			if(!nodes.isEmpty()) {
-				//set the active way to end if it is not already set
-				if((activeWayIndex < 0)||(activeWayIndex >= nodes.size())) {
-					activeWayIndex = nodes.size() - 1;
-				}
-
-				OsmNode activeNode = nodes.get(activeWayIndex);
+				int nodeIndex = this.addToWayStart ? 0 : nodes.size() - 1;
+				OsmNode activeNode = nodes.get(nodeIndex);
 				EditNode en2 = new EditNode(activeNode);
 				EditSegment es = new EditSegment(null,en,en2);
 				pendingObjects.add(en2);

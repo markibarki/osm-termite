@@ -46,6 +46,15 @@ public class OsmNode extends OsmObject {
 		return segments;
 	}
 	
+	/** This method checks if the node is a feature. It is a feature if it has
+	 * any non-geometry properties, as defined by the OsmModel object. */
+	public boolean isFeature() {
+		for(String key:getPropertyKeys()) {
+			if(!OsmModel.GEOMETRIC_KEYS.contains(key)) return true;
+		}
+		return false;
+	}
+	
 	//====================
 	// Package Methods
 	//====================
