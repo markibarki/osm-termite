@@ -55,7 +55,10 @@ public class TermiteGui extends javax.swing.JFrame {
 	private FeatureInfo activeFeatureLayer;
 	
 	//selected level and feature
-	private OsmObject selectedFeature;
+	private java.util.List<Object> selection;
+	private FeatureSelectedListener.SelectionType selectionType;
+	private java.util.List<Integer> wayNodeSelection;
+	private FeatureSelectedListener.WayNodeType wayNodeType;
 	private OsmWay activeStructure;
 	private OsmRelation activeLevel;
 	
@@ -105,6 +108,10 @@ public class TermiteGui extends javax.swing.JFrame {
 	}
 	// </editor-fold>
 	
+	public TermiteApp getTermiteApp() {
+		return app;
+	}
+	
 	// <editor-fold defaultstate="collapsed" desc="Map Data Methods and Events">
 	//These methods are used for event flow.
 	
@@ -149,10 +156,25 @@ osmData.addDataChangedListener(mapPanel);
 		}
 	}
 	
-	/** This method returns the selected feature. */
-	public OsmObject getSelectedFeature() {
-		return null;
+	/** This method returns the selected features. */
+	public java.util.List<Object> getSelection() {
+		return selection;
 	}
+	
+	/** This method returns the type of selection. */
+	public FeatureSelectedListener.SelectionType getSelectionType() {
+		return selectionType;
+	}
+	
+	/** This method returns the selected way nodes. */
+	public java.util.List<Integer> getWayNodeSelection() {
+		return wayNodeSelection;
+	}
+	
+	/** This method returns the type of selected way nodes. */
+	public FeatureSelectedListener.WayNodeType getWayNodeType() {
+		return wayNodeType;
+	}	
 	
 	/** This adds a feature selected listener. */
 	public void addFeatureSelectedListener(FeatureSelectedListener listener) {
@@ -166,11 +188,62 @@ osmData.addDataChangedListener(mapPanel);
 	
 	/** This method will dispatch a feature selected event. It should be called
 	 * when a feature is selected to notify all interested objects. */
-	public void setSelectedFeature(OsmObject feature) {
-		this.selectedFeature = feature;
+	public void setSelection(java.util.List<Object> selection,
+			java.util.List<Integer> wayNodeSelection) {
+		if((selection != null)||(selection.size() > 0)) {
+			this.selection = selection;
+
+			if(selection.size() == 1) {
+				Object selectObject = selection.get(0);
+				if(selectObject instanceof OsmWay) {
+					selectionType = FeatureSelectedListener.SelectionType.WAY;
+				}
+				else if(selectObject instanceof OsmNode) {
+					selectionType = FeatureSelectedListener.SelectionType.NODE;
+				}
+				else if(selectObject instanceof intransix.osm.termite.render.edit.VirtualNode) {
+					selectionType = FeatureSelectedListener.SelectionType.VIRTUAL_NODE;
+				}
+				else {
+					selection = null;
+					selectionType = FeatureSelectedListener.SelectionType.NONE;
+				}
+			}
+			else if(selection.size() > 1) {
+				selectionType = FeatureSelectedListener.SelectionType.COLLECTION;
+			}
+			else {
+				this.selection = null;
+				this.selectionType = FeatureSelectedListener.SelectionType.NONE;
+			}
+		}
+		else {
+			this.selection = null;
+			this.selectionType = FeatureSelectedListener.SelectionType.NONE;
+		}
+		
+		//get the way node selection, if applicable
+		if((wayNodeSelection != null)&&(selectionType == FeatureSelectedListener.SelectionType.WAY)) {
+			//check way node selection
+			int count = wayNodeSelection.size();
+			if(count == 0) {
+				wayNodeType = FeatureSelectedListener.WayNodeType.NONE;
+			}
+			else if(count == 1) {
+				wayNodeType = FeatureSelectedListener.WayNodeType.SINGLE;
+			}
+			else {
+				wayNodeType = FeatureSelectedListener.WayNodeType.MULTIPLE;
+			}
+		}
+		else {
+			//no way nodes selected
+			this.wayNodeSelection = null;
+			wayNodeType = FeatureSelectedListener.WayNodeType.NONE;
+		}
 		
 		for(FeatureSelectedListener listener:featureSelectedListeners) {
-			listener.onFeatureSelected(feature);
+			listener.onFeatureSelected(selection,selectionType,wayNodeSelection,wayNodeType);
 		}
 	}
 	
@@ -433,11 +506,12 @@ this.editLayer.setEditMode(editorMode);
 		this.addMapDataListener(renderLayer);
 		mapPanel.addLocalCoordinateListener(renderLayer);
 		
-		editLayer = new EditLayer();
+		editLayer = new EditLayer(this);
 		editLayer.setActiveState(false);
 		this.addMapDataListener(editLayer);
 		this.addFeatureLayerListener(editLayer);
 		this.addLevelSelectedListener(editLayer);
+		this.addFeatureSelectedListener(editLayer);
 		
 		mapPanel.addLayer(renderLayer);
 		mapPanel.addLayer(editLayer);

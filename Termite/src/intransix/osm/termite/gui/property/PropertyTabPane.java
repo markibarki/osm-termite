@@ -5,6 +5,7 @@ import intransix.osm.termite.map.data.OsmRelation;
 import intransix.osm.termite.map.data.OsmWay;
 import intransix.osm.termite.gui.FeatureSelectedListener;
 import intransix.osm.termite.gui.LevelSelectedListener;
+import java.util.List;
 import javax.swing.JTabbedPane;
 
 
@@ -25,13 +26,20 @@ public class PropertyTabPane extends JTabbedPane implements LevelSelectedListene
 //implement this	
 	}
 	
-	/** This method is called when a map feature is selected. It may be called 
-	 * with the value null if a selection is cleared an no new selection is made. 
+	/** This method is called when a map feature is selected. The arguments selectionType
+	 * and wayNodeType indicate the type of selection made. The list objects may be null
+	 * if there is no selection for the list. 
 	 * 
-	 * @param feature	The selected map feature
+	 * @param selection			A list of the selected objects
+	 * @param selectionType		The type objects objects in the selection
+	 * @param wayNodeSelection	If the selection is a single way, this is a possible list
+	 *							of selected nodes within the way.
+	 * @param wayNodeType		This is the type of way nodes selected for the way, if applicable.
 	 */
-	@Override
-	public void onFeatureSelected(OsmObject feature) {
+	public void onFeatureSelected(List<Object> selection, 
+			FeatureSelectedListener.SelectionType selectionType,
+			List<Integer> wayNodeSelection,
+			FeatureSelectedListener.WayNodeType wayNodeType) {
 //implement this		
 	}
 	
