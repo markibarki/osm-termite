@@ -183,7 +183,7 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 			OsmData osmData = termiteGui.getMapData();
 			if((selection != null)&&(selectedNodes != null)&&(osmData != null)) {
 				if(!selection.isEmpty()) {
-					Object obj = selection.get(1);
+					Object obj = selection.get(0);
 					if(obj instanceof OsmWay) {
 						RemoveWayNodeEdit rwne = new RemoveWayNodeEdit(osmData);
 						rwne.removeNodesFromWay((OsmWay)obj,selectedNodes);

@@ -55,10 +55,6 @@ public class TermiteGui extends javax.swing.JFrame {
 	private FeatureInfo activeFeatureLayer;
 	
 	//selected level and feature
-	private java.util.List<Object> selection;
-	private FeatureSelectedListener.SelectionType selectionType;
-	private java.util.List<Integer> wayNodeSelection;
-	private FeatureSelectedListener.WayNodeType wayNodeType;
 	private OsmWay activeStructure;
 	private OsmRelation activeLevel;
 	
@@ -72,6 +68,9 @@ public class TermiteGui extends javax.swing.JFrame {
 	private javax.swing.JMenuBar menuBar;
 	private javax.swing.JMenu fileMenu;
 	private javax.swing.JMenuItem quitItem;
+	private javax.swing.JMenu editMenu;
+	private javax.swing.JMenuItem undoItem;
+	private javax.swing.JMenuItem redoItem;
 	
 	private javax.swing.JPanel toolBarPanel;
 	private javax.swing.JToolBar modeToolBar;
@@ -158,23 +157,23 @@ osmData.addDataChangedListener(mapPanel);
 	
 	/** This method returns the selected features. */
 	public java.util.List<Object> getSelection() {
-		return selection;
-	}
-	
-	/** This method returns the type of selection. */
-	public FeatureSelectedListener.SelectionType getSelectionType() {
-		return selectionType;
+		if(editLayer != null) {
+			return editLayer.getSelection();
+		}
+		else {
+			return null;
+		}
 	}
 	
 	/** This method returns the selected way nodes. */
 	public java.util.List<Integer> getWayNodeSelection() {
-		return wayNodeSelection;
+		if(editLayer != null) {
+			return editLayer.getSelectedWayNodes();
+		}
+		else {
+			return null;
+		}
 	}
-	
-	/** This method returns the type of selected way nodes. */
-	public FeatureSelectedListener.WayNodeType getWayNodeType() {
-		return wayNodeType;
-	}	
 	
 	/** This adds a feature selected listener. */
 	public void addFeatureSelectedListener(FeatureSelectedListener listener) {
@@ -190,8 +189,14 @@ osmData.addDataChangedListener(mapPanel);
 	 * when a feature is selected to notify all interested objects. */
 	public void setSelection(java.util.List<Object> selection,
 			java.util.List<Integer> wayNodeSelection) {
+		
+		//set the selection in the edit layer
+		editLayer.setSelection(selection,wayNodeSelection);
+		
+		//find the selection type
+		FeatureSelectedListener.SelectionType selectionType;
+		FeatureSelectedListener.WayNodeType wayNodeType;
 		if((selection != null)||(selection.size() > 0)) {
-			this.selection = selection;
 
 			if(selection.size() == 1) {
 				Object selectObject = selection.get(0);
@@ -213,13 +218,11 @@ osmData.addDataChangedListener(mapPanel);
 				selectionType = FeatureSelectedListener.SelectionType.COLLECTION;
 			}
 			else {
-				this.selection = null;
-				this.selectionType = FeatureSelectedListener.SelectionType.NONE;
+				selectionType = FeatureSelectedListener.SelectionType.NONE;
 			}
 		}
 		else {
-			this.selection = null;
-			this.selectionType = FeatureSelectedListener.SelectionType.NONE;
+			selectionType = FeatureSelectedListener.SelectionType.NONE;
 		}
 		
 		//get the way node selection, if applicable
@@ -238,7 +241,6 @@ osmData.addDataChangedListener(mapPanel);
 		}
 		else {
 			//no way nodes selected
-			this.wayNodeSelection = null;
 			wayNodeType = FeatureSelectedListener.WayNodeType.NONE;
 		}
 		
@@ -510,7 +512,6 @@ osmData.addDataChangedListener(mapPanel);
 		this.addMapDataListener(editLayer);
 		this.addFeatureLayerListener(editLayer);
 		this.addLevelSelectedListener(editLayer);
-		this.addFeatureSelectedListener(editLayer);
 		
 		mapPanel.addLayer(renderLayer);
 		mapPanel.addLayer(editLayer);
@@ -540,6 +541,26 @@ osmData.addDataChangedListener(mapPanel);
         });
         fileMenu.add(quitItem);
         menuBar.add(fileMenu);
+		
+		editMenu = new javax.swing.JMenu();
+		editMenu.setText("Edit");
+        undoItem = new javax.swing.JMenuItem();
+        undoItem.setText("Undo");
+		undoItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undoItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(undoItem);
+		redoItem = new javax.swing.JMenuItem();
+        redoItem.setText("Redo");
+		redoItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redoItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(redoItem);
+        menuBar.add(editMenu);
 		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		
@@ -635,6 +656,18 @@ osmData.addDataChangedListener(mapPanel);
 	// <editor-fold defaultstate="collapsed" desc="Internal Event Functions ans Classes">
 	private void quitItemActionPerformed(java.awt.event.ActionEvent evt) {
 		app.exit();
+	}
+	
+	private void undoItemActionPerformed(java.awt.event.ActionEvent evt) {
+		if(osmData != null) {
+			osmData.undo();
+		}
+	}
+	
+	private void redoItemActionPerformed(java.awt.event.ActionEvent evt) {
+		if(osmData != null) {
+			osmData.redo();
+		}
 	}
 	
 	/** This is a listener for the mode buttons. */

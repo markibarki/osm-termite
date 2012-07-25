@@ -53,11 +53,11 @@ public class EditOperation {
 		action.addInstruction(instr);
 	}
 	
-	protected void reportError(String actionDesc) {
+	public static void reportError(String actionDesc) {
 		JOptionPane.showMessageDialog(null,"There was an unknown error on the action: " + actionDesc);
 	}
 	
-	protected void reportFatalError(String actionDesc, String exceptionMsg) {
+	public static void reportFatalError(String actionDesc, String exceptionMsg) {
 		JOptionPane.showMessageDialog(null,"There was a fatal error on the action: " + actionDesc +
 				"; " + exceptionMsg + "The application must exit");
 		System.exit(-1);

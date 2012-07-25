@@ -76,8 +76,8 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 		
 		//update the segments
 		List<OsmSegmentWrapper> osws = way.getSegments();
-		if(prevNode != null) {
-			OsmSegmentWrapper removeOsw = osws.remove(index-1);
+		if(nextNode != null) {
+			OsmSegmentWrapper removeOsw = osws.remove(index);
 			OsmSegment removeSegment = removeOsw.segment;
 			//make sure there are no more copies of this segment in this way
 			//this shouldn't happen in theory
@@ -94,7 +94,7 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 				}
 			}
 		}
-		if(nextNode != null) {
+		if(prevNode != null) {
 			OsmSegmentWrapper removeOsw = osws.remove(index-1);
 			OsmSegment removeSegment = removeOsw.segment;
 			//make sure there are no more copies of this segment in this way

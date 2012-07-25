@@ -22,7 +22,7 @@ import java.awt.MouseInfo;
  * @author sutter
  */
 public class EditLayer extends MapLayer implements MapDataListener, 
-		FeatureLayerListener, LevelSelectedListener, FeatureSelectedListener,
+		FeatureLayerListener, LevelSelectedListener,
 		MouseListener, MouseMotionListener, KeyListener, FocusListener {
 	
 	//=========================
@@ -277,46 +277,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	public void onLevelSelected(OsmWay structure, OsmRelation level) {
 		this.activeStructure = structure;
 		this.activeLevel = level;
-	}
-	// </editor-fold>
-	
-	// <editor-fold defaultstate="collapsed" desc="Feature Selected Listener">
-	/** This method is called when a map feature is selected. The arguments selectionType
-	 * and wayNodeType indicate the type of selection made. The list objects may be null
-	 * if there is no selection for the list. 
-	 * 
-	 * @param selection			A list of the selected objects
-	 * @param selectionType		The type objects objects in the selection
-	 * @param wayNodeSelection	If the selection is a single way, this is a possible list
-	 *							of selected nodes within the way.
-	 * @param wayNodeType		This is the type of way nodes selected for the way, if applicable.
-	 */
-	@Override
-	public void onFeatureSelected(List<Object> selection, SelectionType selectionType,
-			List<Integer> wayNodeSelection, WayNodeType wayNodeType) {
-		
-		//see if the selection needs to be updated
-		if(selection != null) {
-			if(selection != this.selection) {
-				clearSelection();
-				for(Object selectObject:selection) {
-					selection.add(selectObject);
-				}
-			}
-			if(wayNodeSelection != null) {
-				if(wayNodeSelection != this.selectedWayNodes) {
-					this.selectedWayNodes.clear();
-					for(Integer index:wayNodeSelection) {
-						this.selectedWayNodes.add(index);
-					}
-				}
-			}
-		}
-		else {
-			if(!this.selection.isEmpty()) {
-				clearSelection();
-			}
-		}
 	}
 	// </editor-fold>
 	
@@ -650,6 +610,47 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	}
 	
 	// </editor-fold>
+	
+	//===========================
+	// Package Methods
+	//===========================
+	
+	/** This method sets the selection, called from the TermiteGui. This is 
+	 * called when this class sets the selection in the TermiteGui, so it must
+	 * gracefully handle that state. This method should not be called by classes 
+	 * trying to update the selection. the method should be called in TermiteGui.
+	 * 
+	 * @param selection			The selected objects
+	 * @param wayNodeSelection	Any selected nodes in the way, if the selection
+	 *							is a single way.
+	 */
+	public void setSelection(java.util.List<Object> selection,
+			java.util.List<Integer> wayNodeSelection) {
+		
+		//see if the selection needs to be updated
+		if(selection != null) {
+			if(selection != this.selection) {
+				clearSelection();
+				for(Object selectObject:selection) {
+					selection.add(selectObject);
+				}
+			}
+			if(wayNodeSelection != null) {
+				if(wayNodeSelection != this.selectedWayNodes) {
+					this.selectedWayNodes.clear();
+					for(Integer index:wayNodeSelection) {
+						this.selectedWayNodes.add(index);
+					}
+				}
+			}
+		}
+		else {
+			if(!this.selection.isEmpty()) {
+				clearSelection();
+			}
+		}
+		
+	}
 	
 	//============================
 	// Private Methods
