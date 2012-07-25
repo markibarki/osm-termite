@@ -40,6 +40,8 @@ public class OsmParser extends DefaultHandler {
 			osmData = new OsmData();
 			
 			saxParser.parse(uri, this);
+			
+			osmData.dataChanged(OsmData.INITIAL_DATA_VERSION);
 
 			return osmData;
 

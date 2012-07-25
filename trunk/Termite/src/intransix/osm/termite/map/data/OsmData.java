@@ -1,7 +1,7 @@
 package intransix.osm.termite.map.data;
 
-import intransix.osm.termite.util.GraduatedList;
 import java.util.*;
+import intransix.osm.termite.map.feature.FeatureInfo;
 
 /**
  * This object serves as the data manager for a working set of OSM data.
@@ -19,6 +19,7 @@ public class OsmData {
 	
 	private final static long FIRST_ID = -1;
 	private final static int FIRST_EDIT_NUMBER = 1;
+	public final static int INITIAL_DATA_VERSION = 0;
 	
 	private long nextId = FIRST_ID;
 	private int nextEditNumber = FIRST_EDIT_NUMBER;
@@ -34,7 +35,8 @@ public class OsmData {
 	
 	//This list holds the object according to there presentation order as determined
 	//by the feature info map
-	private GraduatedList<OsmObject> orderedMapObjects = new GraduatedList<OsmObject>();
+	private List<OsmObject> orderedFeatures = new ArrayList<OsmObject>();
+	private FeatureLayerComparator flc = new FeatureLayerComparator();
 	
 	private HashMap<Object,OsmSegment> segments = new HashMap<Object,OsmSegment>();
 	
@@ -77,8 +79,8 @@ public class OsmData {
 	 * 
 	 * @return		An ordered list of objects 
 	 */
-	public GraduatedList<OsmObject> getOrderedList() {
-		return orderedMapObjects;
+	public List<OsmObject> getFeatureList() {
+		return orderedFeatures;
 	}
 	
 	/** This method gets the specified object of the given id. If there is no matching object,
@@ -341,13 +343,33 @@ public class OsmData {
 	void dataChanged(int editNumber) {
 		//update filter
 		filterAll();
-		
+
+long startMsec = System.currentTimeMillis();
+long start = System.nanoTime();
+orderedFeatures.clear();
+long t1 = System.nanoTime();
+		for(OsmNode node:nodeMap.values()) {
+			orderedFeatures.add(node);
+		}
+long t2 = System.nanoTime();
+		for(OsmWay way:wayMap.values()) {
+			orderedFeatures.add(way);
+		}
+long t3 = System.nanoTime();
+		Collections.sort(orderedFeatures,flc);
+long t4 = System.nanoTime();
+long endMsec = System.currentTimeMillis();
+System.out.println(getDelta(start,t1) + getDelta(t1,t2) + getDelta(t2,t3) + getDelta(t3,t4) + getDelta(start,t4));
+System.out.println(endMsec - startMsec);
 		//notify
 		for(OsmDataChangedListener listener:listeners) {
 			listener.osmDataChanged(editNumber);
 		}
 	}
 	
+private String getDelta(long t1, long t2) {
+	return String.valueOf((t2 - t1)/1000000.0) + " ";
+}
 	//==========================
 	// Private Methods
 	//==========================
@@ -365,6 +387,18 @@ public class OsmData {
 			int state1 = segment.getNode1().getFilterState();
 			int state2 = segment.getNode2().getFilterState();
 			segment.setFilterState(state1 & state2);
+		}
+	}
+	
+	public class FeatureLayerComparator implements Comparator<OsmObject> {
+		public int compare(OsmObject o1, OsmObject o2) {
+			//remove sign bit, making negative nubmers larger than positives (with small enough negatives)
+			FeatureInfo fi;
+			fi= o1.getFeatureInfo();
+			int ord1 = (fi != null) ? fi.getZorder() : FeatureInfo.DEFAULT_ZORDER;
+			fi = o2.getFeatureInfo();
+			int ord2 = (fi != null) ? fi.getZorder() : FeatureInfo.DEFAULT_ZORDER;
+			return ord1 - ord2;
 		}
 	}
 

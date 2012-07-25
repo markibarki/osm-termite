@@ -3,7 +3,6 @@ package intransix.osm.termite.render.map;
 import intransix.osm.termite.map.data.OsmObject;
 import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.data.OsmNode;
-import intransix.osm.termite.util.GraduatedList;
 import intransix.osm.termite.map.data.OsmWay;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.MapPanel;
@@ -41,34 +40,32 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 		AffineTransform localToPixels = getMapPanel().getLocalToPixels();
 		AffineTransform mercatorToLocal = getMapPanel().getMercatorToLocal();
 		double zoomScalePixelsPerLocal = getMapPanel().getZoomScalePixelsPerLocal();
-System.out.println(zoomScalePixelsPerLocal);
+//System.out.println(zoomScalePixelsPerLocal);
 		if((localData == null)||(localTheme == null)) return;
 		
 		//make sure the level is sorted
-		GraduatedList<OsmObject> objectList = mapData.getOrderedList();
+		java.util.List<OsmObject> objectList = mapData.getFeatureList();
 		
 		g2.transform(localToPixels);		
 			
 		PathFeature pathFeature;
 		PointFeature pointFeature;
-		for(java.util.List<OsmObject> subList:objectList.getLists()) {
-			for(OsmObject mapObject:subList) {
-				if(mapObject instanceof OsmWay) {
-					pathFeature = (PathFeature)mapObject.getRenderData();
-					if(pathFeature == null) {
-						pathFeature = new PathFeature((OsmWay)mapObject);
-						mapObject.setRenderData(pathFeature);
-					}
-					pathFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
+		for(OsmObject mapObject:objectList) {
+			if(mapObject instanceof OsmWay) {
+				pathFeature = (PathFeature)mapObject.getRenderData();
+				if(pathFeature == null) {
+					pathFeature = new PathFeature((OsmWay)mapObject);
+					mapObject.setRenderData(pathFeature);
 				}
-				else if(mapObject instanceof OsmNode) {
-					pointFeature = (PointFeature)mapObject.getRenderData();
-					if(pointFeature == null) {
-						pointFeature = new PointFeature((OsmNode)mapObject);
-						mapObject.setRenderData(pointFeature);
-					}
-					pointFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
+				pathFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
+			}
+			else if(mapObject instanceof OsmNode) {
+				pointFeature = (PointFeature)mapObject.getRenderData();
+				if(pointFeature == null) {
+					pointFeature = new PointFeature((OsmNode)mapObject);
+					mapObject.setRenderData(pointFeature);
 				}
+				pointFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
 			}
 		}
 //		for(TermiteWay way:localLevel.getWays()) {
@@ -95,14 +92,12 @@ System.out.println(zoomScalePixelsPerLocal);
 	public void onLocalCoordinateChange(MapPanel mapPanel, AffineTransform oldLocalToNewLocal) {
 		if(mapData != null) {
 			Feature feature;
-			GraduatedList<OsmObject> objectList = mapData.getOrderedList();
+			java.util.List<OsmObject> objectList = mapData.getFeatureList();
 			//transform the cached data
-			for(java.util.List<OsmObject> subList:objectList.getLists()) {
-				for(OsmObject mapObject:subList) {
-					feature = (Feature)mapObject.getRenderData();
-					if(feature != null) {
-						feature.transform(oldLocalToNewLocal);
-					}
+			for(OsmObject mapObject:objectList) {
+				feature = (Feature)mapObject.getRenderData();
+				if(feature != null) {
+					feature.transform(oldLocalToNewLocal);
 				}
 			}
 		}

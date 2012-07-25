@@ -2,6 +2,8 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.edit.EditLayer;
+import intransix.osm.termite.render.edit.NodeToolAction;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -56,9 +58,10 @@ public class NodeEditorMode implements EditorMode, ActionListener {
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
 		}
-		MapLayer editLayer = termiteGui.getEditLayer();
+		EditLayer editLayer = termiteGui.getEditLayer();
 		if(editLayer != null) {
 			editLayer.setActiveState(true);
+			editLayer.setMouseEditAction(new NodeToolAction());
 		}
 		
 		if(toolBar == null) {
@@ -75,9 +78,10 @@ public class NodeEditorMode implements EditorMode, ActionListener {
 		if(renderLayer != null) {
 			renderLayer.setActiveState(false);
 		}
-		MapLayer editLayer = termiteGui.getEditLayer();
+		EditLayer editLayer = termiteGui.getEditLayer();
 		if(editLayer != null) {
 			editLayer.setActiveState(false);
+			editLayer.setMouseEditAction(null);
 		}
 		
 		if(toolBar != null) {

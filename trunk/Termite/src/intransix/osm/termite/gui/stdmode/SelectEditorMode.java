@@ -4,6 +4,7 @@ import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.gui.FeatureSelectedListener;
 import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.map.data.edit.*;
 import intransix.osm.termite.map.data.*;
 import java.awt.event.ActionEvent;
@@ -74,9 +75,10 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
 		}
-		MapLayer editLayer = termiteGui.getEditLayer();
+		EditLayer editLayer = termiteGui.getEditLayer();
 		if(editLayer != null) {
 			editLayer.setActiveState(true);
+			editLayer.setMouseEditAction(null);
 		}
 		
 		if(toolBar == null) {

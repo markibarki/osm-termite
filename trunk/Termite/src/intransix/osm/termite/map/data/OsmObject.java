@@ -1,6 +1,5 @@
 package intransix.osm.termite.map.data;
 
-import intransix.osm.termite.util.GraduatedList;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.util.*;
 
@@ -39,7 +38,7 @@ public abstract class OsmObject {
 	
 	private boolean isLoaded = false;
 	private boolean isVirtual = false;
-	private int dataVersion = 0;
+	private int dataVersion = OsmData.INITIAL_DATA_VERSION;
 	
 	private int filterState;
 	
@@ -160,6 +159,11 @@ public abstract class OsmObject {
 	
 	public Collection<String> getPropertyKeys() {
 		return tags.keySet();
+	}
+	
+	/** This returns the number of properties. */
+	public boolean  hasProperties() {
+		return tags.size() > 0;
 	}
 	
 	/** This method returns the given property as an integer. If it is not found 
@@ -321,34 +325,16 @@ public abstract class OsmObject {
 	
 	void featureCreatedProcessing(OsmData osmData) {
 		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
-		int zorder = featureInfo.getZorder();
-
-		//update the graduated list
-		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
-		orderedList.add(this, zorder);
 	}
 	
 	void featurePropertiesUpdatedProcessing(OsmData osmData) {
-		int initialZorder = featureInfo.getZorder();
 		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
-		int newZorder = featureInfo.getZorder();
-
-		//update the ordered feature list if needed
-		if(newZorder != initialZorder) {
-			GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
-			orderedList.move(this,newZorder,initialZorder);
-		}
 	}
 	
-	void featureDeletedProcessing(OsmData osmData) {
-		//remove from the graducated list
-		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
-		int zorder = featureInfo.getZorder();
-		
-		//update the graduated list
-		GraduatedList<OsmObject> orderedList = osmData.getOrderedList();
-		orderedList.remove(this, zorder);
-	}
+//	void featureDeletedProcessing(OsmData osmData) {
+//		//remove from the graducated list
+//		featureInfo = OsmModel.featureInfoMap.getFeatureInfo(this);
+//	}
 
 
 }

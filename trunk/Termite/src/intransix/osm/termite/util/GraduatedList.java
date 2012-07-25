@@ -62,7 +62,7 @@ public class GraduatedList<T> {
 			}
 		}
 		//list not found, add a new one
-		IndexedList<T> list = new IndexedList<T>();
+		IndexedList<T> list = new IndexedList<T>(order);
 		lists.add(index,list);
 		return list;
 	}
@@ -73,6 +73,9 @@ public class GraduatedList<T> {
 	
 	/** This is a list that has an index integer on it. */
 	public class IndexedList<F> extends ArrayList<F> {
+		public IndexedList(int order) {
+			this.order = order;
+		}
 		public int order;
 	}
 	

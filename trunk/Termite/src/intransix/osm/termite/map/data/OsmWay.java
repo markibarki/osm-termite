@@ -76,7 +76,6 @@ public class OsmWay extends OsmObject {
 	@Override
 	void objectDeleted(OsmData osmData) {
 		super.objectDeleted(osmData);
-		featureDeletedProcessing(osmData);
 		
 		for(OsmNode node:nodes) {
 			node.removeWay(this);
