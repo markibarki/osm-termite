@@ -133,8 +133,6 @@ public class OsmNode extends OsmObject {
 		if(!ways.isEmpty()) throw new RuntimeException("Unkown program error. A way "
 				+ "referenced the deleted node. This"
 				+ "should be checked elsewhere before we get here.");
-		
-		featureDeletedProcessing(osmData);
 	}
 	
 	/** This method updates the version number for all relations containing this object. */

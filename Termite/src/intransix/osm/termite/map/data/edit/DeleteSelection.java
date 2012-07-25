@@ -1,8 +1,7 @@
 package intransix.osm.termite.map.data.edit;
 
 import intransix.osm.termite.map.data.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -17,47 +16,75 @@ public class DeleteSelection extends EditOperation {
 	
 	public boolean deleteSelection(List<Object> selection) {
 		System.out.println("Delete selecton");
+		
+		//delete all ways in selection
+		//delete all nodes in selection
+		//delete nodes in the ways if:
+		// - they are not in any ways not included in the selection
+		// - they have no properties
 
 		EditAction action = new EditAction(getOsmData(),"Delete objects");
 
 		try {
 			//create a local selection of the objects to be deleted
-			List<OsmObject> localSelection = new ArrayList<OsmObject>();
+			HashSet<OsmWay> ways = new HashSet<OsmWay>();
+			HashSet<OsmNode> nodes = new HashSet<OsmNode>();
 			for(Object object:selection) {
-				if(object instanceof OsmObject) {
+				if(object instanceof OsmNode) {
 					//copy object to working selection
-					if(!localSelection.contains(object)) {
-						localSelection.add((OsmObject)object);
-					}
-
-					//for ways, also add any nodes if they are not features on their own
-					if(object instanceof OsmWay) {
-						for(OsmNode node:((OsmWay)object).getNodes()) {
-							//don't delete nodes that are features in their own right
-							if((!node.isFeature())&&(!localSelection.contains(node))) {
-								localSelection.add(node);
-							}
+					nodes.add((OsmNode)object);
+				}
+				else if(object instanceof OsmWay) {
+					ways.add((OsmWay)object);
+				}
+			}
+			
+			//figure out what way nodes should be deleted - no properties and no other ways
+			for(OsmWay way:ways) {
+				for(OsmNode node:way.getNodes()) {
+					//if the node has properties, don't delete it with the way
+					if(node.hasProperties()) continue;
+					
+					//if the node is in a way not in the delete set, don't delete it
+					boolean inExternalWay = false;
+					for(OsmWay containerWay:node.getWays()) {
+						if(!ways.contains(containerWay)) {
+							inExternalWay = true;
 						}
 					}
+					if(inExternalWay) continue;
+					
+					//add this node to the node set if it is not there
+					nodes.add(node);
 				}
 			}
 		
-			//delete these objects
+			//delete these ways
 			EditInstruction instr;
-			for(OsmObject osmObject:localSelection) {
-		
+			for(OsmWay way:ways) {
 				//remove this object from any relations it is in
-				removeFromRelations(osmObject,action);
-
-				//for a node remove it from any ways
-				if(osmObject instanceof OsmNode) {
-					removeNodeFromWays((OsmNode)osmObject,action);
-				}
+				removeFromRelations(way,action);
 
 				//delete the object
-				instr = new DeleteInstruction(osmObject);
+				instr = new DeleteInstruction(way);
 				action.addInstruction(instr);
-
+			}
+			
+			//delete the nodes
+			for(OsmNode node:nodes) {
+				//remove this object from any relations it is in
+				removeFromRelations(node,action);
+				
+				//remove from any external ways
+				for(OsmWay containerWay:node.getWays()) {
+					if(!ways.contains(containerWay)) {
+						removeNodeFromWay(node,containerWay,action);
+					}
+				}
+				
+				//delete the object
+				instr = new DeleteInstruction(node);
+				action.addInstruction(instr);
 			}
 			
 			//execute the action
@@ -92,15 +119,13 @@ public class DeleteSelection extends EditOperation {
 	}
 	
 	/** This method removes the node (all copies) from the ways it is in. */
-	private void removeNodeFromWays(OsmNode node, EditAction action) {
-		for(OsmWay way:node.getWays()) {
-			List<OsmNode> nodes = way.getNodes();
-			for(int index = nodes.size()-1; index >= 0; index--) {
-				OsmNode n = nodes.get(index);
-				if(n == node) {
-					UpdateRemoveNode urn = new UpdateRemoveNode(index);
-					action.addInstruction(new UpdateInstruction(way,urn));
-				}
+	private void removeNodeFromWay(OsmNode node, OsmWay way, EditAction action) {
+		List<OsmNode> nodes = way.getNodes();
+		for(int index = nodes.size()-1; index >= 0; index--) {
+			OsmNode n = nodes.get(index);
+			if(n == node) {
+				UpdateRemoveNode urn = new UpdateRemoveNode(index);
+				action.addInstruction(new UpdateInstruction(way,urn));
 			}
 		}
 	}

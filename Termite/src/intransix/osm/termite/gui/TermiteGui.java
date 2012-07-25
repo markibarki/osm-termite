@@ -451,11 +451,10 @@ osmData.addDataChangedListener(mapPanel);
 			this.activeMode = null;
 		}
 		
-		activeMode = editorMode;	
+		activeMode = editorMode;
+		
 		//prepare the new mode
 		editorMode.turnOn();
-		
-this.editLayer.setEditMode(editorMode);
 		
 		//repaint map
 		mapPanel.repaint();

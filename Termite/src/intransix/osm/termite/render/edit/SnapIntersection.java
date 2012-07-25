@@ -1,10 +1,8 @@
 package intransix.osm.termite.render.edit;
 
-import intransix.osm.termite.map.data.OsmObject;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -33,7 +31,7 @@ public class SnapIntersection extends SnapObject {
 	 * @param mercRadSq		the error radius for a snap, in mercator coordinates
 	 * @return 
 	 */
-	public static void loadIntersectiona(List<SnapSegment> snapSegments, 
+	public static void loadIntersections(List<SnapSegment> snapSegments, 
 			Point2D mouseMer, double mercRadSq, List<SnapObject> snapObjects) {
 		
 		int cnt = snapSegments.size();
