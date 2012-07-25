@@ -16,7 +16,7 @@ import java.util.*;
  * as to when data for an object changes. When data on an object updated, the 
  * object as well as any object that contains it (a way contains nodes and a relation
  * contains nodes, ways or relations) has the version updated. The version number
- * update is not cascaded beyond this.
+ * update is not cascaded beyond this.</p>
 
  * @author sutter
  */
@@ -29,6 +29,7 @@ public class EditAction {
 	private OsmData osmData;
 	private String desc;
 	private List<EditInstruction> instructions = new ArrayList<EditInstruction>();
+	private boolean hasBeenExecuted = false;
 	
 	//========================
 	// Public Methods
@@ -90,6 +91,10 @@ public class EditAction {
 		}
 		
 		//notify data changed
+		if(!hasBeenExecuted) {
+			osmData.saveAction(this);
+			hasBeenExecuted = true;
+		}
 		osmData.dataChanged(editNumber);
 		
 		return true;

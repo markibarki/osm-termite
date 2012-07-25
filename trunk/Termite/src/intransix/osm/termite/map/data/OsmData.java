@@ -2,6 +2,8 @@ package intransix.osm.termite.map.data;
 
 import java.util.*;
 import intransix.osm.termite.map.feature.FeatureInfo;
+import intransix.osm.termite.map.data.edit.EditOperation;
+import javax.swing.JOptionPane;
 
 /**
  * This object serves as the data manager for a working set of OSM data.
@@ -50,6 +52,7 @@ public class OsmData {
 	
 	//the list of edit actions
 	private List<EditAction> actions = new ArrayList<EditAction>();
+	private int nextAddIndex = 0;
 	
 	private List<OsmDataChangedListener> listeners = new ArrayList<OsmDataChangedListener>();
 	
@@ -171,6 +174,103 @@ public class OsmData {
 	/** This is a test method to load the latest edit number used. */
 	public int test_getLatestEditNumber() {
 		return nextEditNumber - 1;
+	}
+	
+	//-----------------------------
+	// Undo/Redo Actions
+	//-----------------------------
+	
+	/** This method returns a description of the undo command. If there is no
+	 * command to undo, null will be returned. 
+	 * 
+	 * @return	A description of the action to be done for undo
+	 */
+	public String getUndoMessage() {
+		if(nextAddIndex > 0) {
+			EditAction undoAction = actions.get(nextAddIndex - 1);
+			String desc = undoAction.getDesc();
+			if(desc == null) {
+				desc = "Unspecified action";
+			}
+			return desc;
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public String getRedoMessage() {
+		if(nextAddIndex < actions.size()) {
+			EditAction redoAction = actions.get(nextAddIndex);
+			String desc = redoAction.getDesc();
+			if(desc == null) {
+				desc = "Unspecified action";
+			}
+			return desc;
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public boolean undo() {
+		if(nextAddIndex > 0) {
+			EditAction undoAction = actions.get(nextAddIndex - 1);
+			try {
+				undoAction.undoAction();
+				nextAddIndex--;
+				return true;
+			}
+			catch(Exception ex) {
+				ex.printStackTrace();
+				reportFatalError(undoAction.getDesc(),ex.getMessage());
+				return false;
+			}
+		}
+		else {
+			JOptionPane.showMessageDialog(null,"There is no action to undo.");
+			return false;
+		}
+	}
+	
+	public boolean redo() {
+		if(nextAddIndex < actions.size()) {
+			EditAction redoAction = actions.get(nextAddIndex);
+			try {
+				redoAction.doAction();
+				nextAddIndex++;
+				return true;
+			}
+			catch(Exception ex) {
+				ex.printStackTrace();
+				reportFatalError(redoAction.getDesc(),ex.getMessage());
+				return false;
+			}
+		}
+		else {
+			JOptionPane.showMessageDialog(null,"There is no action to redo.");
+			return false;
+		}
+	}
+	
+	private void reportFatalError(String actionDesc, String exceptionMsg) {
+		JOptionPane.showMessageDialog(null,"There was a fatal error on the action: " + actionDesc +
+				"; " + exceptionMsg + "The application must exit");
+		System.exit(-1);
+	}
+	
+	/** This method saves the actions to the queue. If there are any actions that
+	 * can be redone, they will be removed before this is added. 
+	 * 
+	 * @param action	The action to add 
+	 */
+	void saveAction(EditAction action) {
+		//get rid of any actions after this one
+		while(nextAddIndex < actions.size()) {
+			actions.remove(actions.size() - 1);
+		}
+		actions.add(action);
+		nextAddIndex = actions.size();
 	}
 	
 	//=============================
