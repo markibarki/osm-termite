@@ -11,7 +11,8 @@ public class UpdateInstruction<T extends OsmObject> extends EditInstruction {
 	// Properties
 	//========================
 	
-	private T osmObject;
+	private long objectId;
+	private String objectType;
 	private EditData<T> targetData;
 	private EditData<T> initialData;
 	
@@ -21,7 +22,14 @@ public class UpdateInstruction<T extends OsmObject> extends EditInstruction {
 	
 	/** Constructor. */
 	public UpdateInstruction(T objectToUpdate, EditData<T> targetData) {
-		this.osmObject = objectToUpdate;
+		this.objectId = objectToUpdate.getId();
+		this.objectType = objectToUpdate.getObjectType();
+		this.targetData = targetData;
+	}
+	
+	public UpdateInstruction(long objectId, String objectType, EditData<T> targetData) {
+		this.objectId = objectId;
+		this.objectType = objectType;
 		this.targetData = targetData;
 	}
 	
@@ -32,12 +40,18 @@ public class UpdateInstruction<T extends OsmObject> extends EditInstruction {
 	/** This method executes the instruction. */
 	@Override
 	void doInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception {
+		OsmObject osmObject = osmData.getOsmObject(objectId, objectType, false);
+		if(osmObject == null) throw new UnchangedException("Object not found");
+		
 		initialData = executeUpdate(osmData,osmObject,targetData,editNumber);
 	}
 	
 	/** This method undoes the instruction. */
 	@Override
 	void undoInstruction(OsmData osmData, int editNumber) throws UnchangedException, Exception {
+		OsmObject osmObject = osmData.getOsmObject(objectId, objectType, false);
+		if(osmObject == null) throw new UnchangedException("Object not found");
+		
 		targetData = executeUpdate(osmData,osmObject,initialData,editNumber);
 	}
 }

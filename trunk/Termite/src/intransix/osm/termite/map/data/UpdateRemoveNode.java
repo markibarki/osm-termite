@@ -21,7 +21,12 @@ public class UpdateRemoveNode extends EditData<OsmWay> {
 	
 	/** Constructor
 	 * 
-	 * @param nodeIndex		The index of the node to remove
+	 * @param index			The index of the member to remove. This refers to 
+	 *						the index at the time the instruction is executed
+	 *						and not when the instruction is created. If another
+	 *						node is added or removed, this can change the index
+	 *						at instruction execution time relative to the index when
+	 *						at the time before the action is executed.
 	 */
 	public UpdateRemoveNode(int nodeIndex) {
 		this.index = nodeIndex;

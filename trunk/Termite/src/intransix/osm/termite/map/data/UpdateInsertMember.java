@@ -30,13 +30,13 @@ public class UpdateInsertMember extends EditData<OsmRelation> {
 	 * @param id			The id of the object to insert into the relation.
 	 * @param objectType	The type of object to insert into the relation.
 	 * @param role			The role of the object in the relation
-	 * @param nodeIndex		The position in the relation to insert the object.
+	 * @param index			The position in the relation to insert the object.
 	 */
-	public UpdateInsertMember(long id, String objectType, String role, int nodeIndex) {
+	public UpdateInsertMember(long id, String objectType, String role, int index) {
 		this.id = id;
 		this.objectType = objectType;
 		this.role = role;
-		this.index = nodeIndex;
+		this.index = index;
 	}
 	
 	/** Constructor to insert the object at the end of the list

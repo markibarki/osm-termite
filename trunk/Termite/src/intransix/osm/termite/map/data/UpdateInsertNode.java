@@ -25,7 +25,9 @@ public class UpdateInsertNode extends EditData<OsmWay> {
 	/** Constructor. 
 	 * 
 	 * @param nodeId		The id of the node to add
-	 * @param nodeIndex		The index at which to add the node
+	 * @param nodeIndex		The index at which to add the node. This refers to 
+	 *						the index at the time the instruction is exectued, not
+	 *						at the time the instruction is created.
 	 */
 	public UpdateInsertNode(long nodeId, int nodeIndex) {
 		this.nodeId = nodeId;
