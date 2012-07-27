@@ -7,13 +7,15 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.event.*;
 import intransix.osm.termite.map.data.OsmDataChangedListener;
+import intransix.osm.termite.gui.MapDataListener;
+import intransix.osm.termite.map.data.OsmData;
 
 /**
  *
  * @author sutter
  */
 public class MapPanel extends JPanel implements OsmDataChangedListener,
-		MouseListener, MouseMotionListener, MouseWheelListener  {
+		MouseListener, MouseMotionListener, MouseWheelListener, MapDataListener {
 	
 	//zoom factor for a mouse wheel click
 	private final static double ROTATION_SCALE_FACTOR = 1.1;
@@ -219,6 +221,15 @@ this.resetLocalCoordinates();
 			layer.render(g2);
 			g2.setTransform(originalTransform);
 		}
+	}
+	
+	/** This method is called when the map data is set of cleared. It will be called 
+	 * with the value null when the data is cleared. 
+	 * 
+	 * @param mapData	The map data object
+	 */
+	public void onMapData(OsmData mapData) {
+		mapData.addDataChangedListener(this);
 	}
 	
 	/** This method is called when the data has changed.

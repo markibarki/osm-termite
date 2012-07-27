@@ -10,7 +10,7 @@ import org.json.*;
 
 import java.util.*;
 import java.awt.geom.Rectangle2D;
-
+import javax.swing.UIManager;
 
 /**
  *
@@ -100,6 +100,8 @@ public class TermiteApp {
 	//=====================
 	
 	private void init() throws Exception {
+		
+		 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		
 		//load the initialization files
 		String themeFileName = "theme.json";
