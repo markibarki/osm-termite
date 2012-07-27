@@ -2,6 +2,10 @@ package intransix.osm.termite.gui.property;
 
 import intransix.osm.termite.map.data.OsmObject;
 import javax.swing.*;
+import javax.swing.table.*;
+import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.data.edit.PropertyEdit;
+import intransix.osm.termite.gui.TermiteGui;
 
 
 /**
@@ -9,12 +13,44 @@ import javax.swing.*;
  * @author sutter
  */
 public class PropertyPage extends javax.swing.JPanel {
+	
+	private final static int KEY_INDEX = 0;
+	private final static int VALUE_INDEX = 1;
+	
+	private TermiteGui gui;
+	private OsmObject osmObject;
 
 	/**
 	 * Creates new form PropertyPage
 	 */
-	public PropertyPage(String title, OsmObject osmObject) {
+	public PropertyPage(TermiteGui gui) {
 		initComponents();
+		this.gui = gui;
+	}
+	
+	public void setObject(OsmObject osmObject) {
+		this.osmObject = osmObject;
+		updateProperties();
+	}
+	
+	public void updateProperties() {
+		clearTable();
+		if(osmObject != null) {
+			DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
+			for(String key:osmObject.getPropertyKeys()) {
+				String value = osmObject.getProperty(key);
+				String[] row = new String[] {key,value};
+				model.addRow(row);
+			}
+		}
+	}
+	
+	
+	private void clearTable() {
+		DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
+		while(model.getRowCount() > 0) {
+			model.removeRow(0);
+		}
 	}
 
 	/**
@@ -26,17 +62,114 @@ public class PropertyPage extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        newButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(200, 275));
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Key", "Value"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTable1.getTableHeader().setReorderingAllowed(false);
+        jScrollPane1.setViewportView(jTable1);
+
+        newButton.setText("New");
+        newButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newButtonActionPerformed(evt);
+            }
+        });
+
+        editButton.setText("Edit");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
+        deleteButton.setText("Delete");
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(newButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(editButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(deleteButton)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(newButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(editButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(deleteButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+		int rowIndex = jTable1.getSelectedRow();
+		if(rowIndex >= 0) {
+			String key = (String)jTable1.getModel().getValueAt(rowIndex,KEY_INDEX);
+			PropertyEditDialog ped = new PropertyEditDialog(null,gui.getMapData(),osmObject,key);
+			ped.setVisible(true);
+		}
+	}//GEN-LAST:event_editButtonActionPerformed
+
+	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+		PropertyEditDialog ped = new PropertyEditDialog(null,gui.getMapData(),osmObject);
+		ped.setVisible(true);
+	}//GEN-LAST:event_newButtonActionPerformed
+
+	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+		int rowIndex = jTable1.getSelectedRow();
+		if(rowIndex >= 0) {
+			String key = (String)jTable1.getModel().getValueAt(rowIndex,KEY_INDEX);
+			PropertyEdit pe = new PropertyEdit(gui.getMapData());
+			pe.editProperty(osmObject,key,null,null);
+		}
+	}//GEN-LAST:event_deleteButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JButton editButton;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JButton newButton;
     // End of variables declaration//GEN-END:variables
 }

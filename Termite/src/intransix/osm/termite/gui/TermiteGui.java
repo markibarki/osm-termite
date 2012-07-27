@@ -140,10 +140,6 @@ public class TermiteGui extends javax.swing.JFrame {
 		
 		//control state based on presence of data
 		if(osmData != null) {
-			
-//temporary - need to do more		
-osmData.addDataChangedListener(mapPanel);
-
 			//put the app in the edit state
 			setToEditState();
 			//set the level to null (outdoor level)
@@ -599,14 +595,16 @@ osmData.addDataChangedListener(mapPanel);
 		jScrollPane2.setViewportView(featureTree);
 		
 		//property tabbed pane
-		propertyTabPane = new intransix.osm.termite.gui.property.PropertyTabPane();
+		propertyTabPane = new intransix.osm.termite.gui.property.PropertyTabPane(this);
 		this.addFeatureSelectedListener(propertyTabPane);
 		this.addLevelSelectedListener(propertyTabPane);
+		this.addMapDataListener(propertyTabPane);
         
 		//map panel
         mapPanel = new intransix.osm.termite.render.MapPanel();
 		mapPanel.setMinimumSize(new java.awt.Dimension(200, 200));
         mapPanel.setPreferredSize(new java.awt.Dimension(600, 600));
+		this.addMapDataListener(mapPanel);
 		
 		//supplemental tabbed pane
         supplementalTabPane = new javax.swing.JTabbedPane();
