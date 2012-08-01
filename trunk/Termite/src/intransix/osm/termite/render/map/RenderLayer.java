@@ -23,6 +23,10 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 	private OsmData mapData;
 	private Theme theme;
 	
+	public RenderLayer() {
+		this.setName("Render Layer");
+	}
+	
 	public void onMapData(OsmData mapData) {
 		this.mapData = mapData;
 	}
@@ -45,6 +49,14 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 		
 		//make sure the level is sorted
 		java.util.List<OsmObject> objectList = mapData.getFeatureList();
+		
+		//set the opacity for the layer
+		Composite originalComposite = null;
+		Composite activeComposite = this.getComposite();
+		if(activeComposite != null) {
+			originalComposite = g2.getComposite();
+			g2.setComposite(activeComposite);
+		}
 		
 		g2.transform(localToPixels);		
 			
@@ -86,6 +98,10 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 //			}
 //			pointFeature.render(g2,zoomScale,localTheme,localLevel);
 //		}
+		
+		if(originalComposite != null) {
+			g2.setComposite(originalComposite);
+		}
 	}
 	
 	@Override

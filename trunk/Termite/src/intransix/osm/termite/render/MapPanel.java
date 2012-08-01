@@ -53,14 +53,11 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addMouseWheelListener(this);
+		this.setBackground(Color.WHITE);
     }
 	
 	public void setMapLayerManager(MapLayerManagerPane mapLayerTab) {
 		mapLayerManager = mapLayerTab;
-	}
-	
-	public java.util.List<MapLayer> getMapLayers() {
-		return layers;
 	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Transform Methods">
@@ -153,10 +150,12 @@ this.resetLocalCoordinates();
 	public void addLayer(MapLayer layer) {
 		this.layers.add(layer);
 		layer.setMapPanel(this);
+		mapLayerManager.tableUpdated();
 	}
 	
 	public void removeLayer(MapLayer layer) {
 		this.layers.remove(layer);
+		mapLayerManager.tableUpdated();
 	}
 	
 	public java.util.List<MapLayer> getLayers() {
@@ -218,8 +217,10 @@ this.resetLocalCoordinates();
 			
 		AffineTransform originalTransform = g2.getTransform();
 		for(MapLayer layer:layers) {
-			layer.render(g2);
-			g2.setTransform(originalTransform);
+			if(!layer.getHidden()) {
+				layer.render(g2);
+				g2.setTransform(originalTransform);
+			}
 		}
 	}
 	

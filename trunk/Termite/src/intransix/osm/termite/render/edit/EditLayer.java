@@ -13,7 +13,8 @@ import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.gui.*;
-import java.awt.MouseInfo;
+import java.awt.*;
+import java.util.List;
 
 /**
  * This layer controls the user interaction with the active map data. It is designed
@@ -76,6 +77,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	public EditLayer(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
+
+		this.setName("Edit Layer");
 	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Accessors">
@@ -197,6 +200,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	@Override
 	public void render(Graphics2D g2) {
 		
+		//set the opacity for the layer
+		Composite originalComposite = null;
+		Composite activeComposite = this.getComposite();
+		if(activeComposite != null) {
+			originalComposite = g2.getComposite();
+			g2.setComposite(activeComposite);
+		}
+		
 		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();		
 		
 		//render hover
@@ -240,6 +251,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}
 		}
 		
+		if(originalComposite != null) {
+			g2.setComposite(originalComposite);
+		}
 	}
 	
 	// </editor-fold>
