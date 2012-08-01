@@ -44,7 +44,9 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 		this.urlTemplate = urlTemplate;
 		this.minZoom = minZoom;
 		this.maxZoom = maxZoom;
-		this.pixelsPerTile = pixelsPerTile; 
+		this.pixelsPerTile = pixelsPerTile;
+		
+		this.setName("Base Map");
 	}
 	
 	//--------------------------
@@ -80,6 +82,14 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 		updateRange(visibleRect.x+visibleRect.width,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
 		updateRange(visibleRect.x,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
 		
+		//set the opacity for the layer
+		Composite originalComposite = null;
+		Composite activeComposite = this.getComposite();
+		if(activeComposite != null) {
+			originalComposite = g2.getComposite();
+			g2.setComposite(activeComposite);
+		}
+		
 		//transform to tile coordinates
 		g2.transform(mercToPixels);
 		
@@ -106,6 +116,10 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 					tileRequested = true;
 				}
 			}
+		}
+		
+		if(originalComposite != null) {
+			g2.setComposite(originalComposite);
 		}
 	}
 	

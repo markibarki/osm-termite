@@ -71,6 +71,12 @@ public class TermiteGui extends javax.swing.JFrame {
 	private javax.swing.JMenu editMenu;
 	private javax.swing.JMenuItem undoItem;
 	private javax.swing.JMenuItem redoItem;
+	private javax.swing.JMenu mapMenu;
+	
+	private javax.swing.JMenu baseMapMenu;
+    private javax.swing.JRadioButtonMenuItem baseMapHiddenMenuItem;
+    private javax.swing.JRadioButtonMenuItem baseMapOsmarenderMenuItem;
+    private javax.swing.ButtonGroup baceMapButtonGroup;
 	
 	private javax.swing.JPanel toolBarPanel;
 	private javax.swing.JToolBar modeToolBar;
@@ -490,7 +496,8 @@ public class TermiteGui extends javax.swing.JFrame {
 		int mapQuestTileSize = 256;
 		
 		baseMapLayer = new TileLayer(mapQuestUrlTemplate,mapQuestMinZoom,mapQuestMaxZoom,mapQuestTileSize);
-	
+		baseMapLayer.setHidden(false);
+		
 		mapPanel.addLayer(baseMapLayer);
 		mapPanel.addMapListener(baseMapLayer);
 	}
@@ -557,6 +564,38 @@ public class TermiteGui extends javax.swing.JFrame {
         });
         editMenu.add(redoItem);
         menuBar.add(editMenu);
+		
+		mapMenu = new javax.swing.JMenu();
+		mapMenu.setText("Map");
+		
+		baseMapMenu = new javax.swing.JMenu();
+        baseMapHiddenMenuItem = new javax.swing.JRadioButtonMenuItem();
+        baseMapOsmarenderMenuItem = new javax.swing.JRadioButtonMenuItem();
+		baceMapButtonGroup = new javax.swing.ButtonGroup();
+		baceMapButtonGroup.add(baseMapHiddenMenuItem);
+		baceMapButtonGroup.add(baseMapOsmarenderMenuItem);
+		baseMapMenu.setText("Base Map");
+
+        baseMapHiddenMenuItem.setSelected(false);
+        baseMapHiddenMenuItem.setText("Hidden");
+		baseMapHiddenMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                baseMapHideActionPerformed(evt);
+            }
+        });
+        baseMapMenu.add(baseMapHiddenMenuItem);
+
+        baseMapOsmarenderMenuItem.setSelected(true);
+        baseMapOsmarenderMenuItem.setText("Osmarender");
+		baseMapOsmarenderMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                baseMapOsmarenderActionPerformed(evt);
+            }
+        });
+        baseMapMenu.add(baseMapOsmarenderMenuItem);
+
+        mapMenu.add(baseMapMenu);
+		menuBar.add(mapMenu);
 		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		
@@ -666,6 +705,16 @@ public class TermiteGui extends javax.swing.JFrame {
 		if(osmData != null) {
 			osmData.redo();
 		}
+	}
+	
+	private void baseMapHideActionPerformed(java.awt.event.ActionEvent evt) {
+		baseMapLayer.setHidden(true);
+		mapPanel.repaint();
+	}
+	
+	private void baseMapOsmarenderActionPerformed(java.awt.event.ActionEvent evt) {
+		baseMapLayer.setHidden(false);
+		mapPanel.repaint();
 	}
 	
 	/** This is a listener for the mode buttons. */
