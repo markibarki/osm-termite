@@ -95,8 +95,6 @@ public class TermiteGui extends javax.swing.JFrame {
     private intransix.osm.termite.render.MapPanel mapPanel;
 	private javax.swing.JTabbedPane supplementalTabPane;
 	
-	private intransix.osm.termite.gui.maplayer.MapLayerManagerPane mapLayerTab;
-	
 	// </editor-fold>
 	
 	//=====================
@@ -675,11 +673,11 @@ public class TermiteGui extends javax.swing.JFrame {
 		
 		//create standard supplemental tabs
 		
-		//map layer manager
-		mapLayerTab = new intransix.osm.termite.gui.maplayer.MapLayerManagerPane();
-		mapPanel.setMapLayerManager(mapLayerTab);
-		mapLayerTab.setMapPanel(mapPanel);
-		this.addSupplementalTab("Map Layers", mapLayerTab);
+		//supplemental tab
+//		mapLayerTab = new intransix.osm.termite.gui.maplayer.MapLayerManagerPane();
+//		mapPanel.setMapLayerManager(mapLayerTab);
+//		mapLayerTab.setMapPanel(mapPanel);
+//		this.addSupplementalTab("Map Layers", mapLayerTab);
 		
 		this.add(menuBar);
 		this.add(toolBarPanel);

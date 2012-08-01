@@ -1,6 +1,5 @@
 package intransix.osm.termite.render;
 
-import intransix.osm.termite.gui.maplayer.MapLayerManagerPane;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
@@ -45,9 +44,6 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	private double lastX;
 	private double lastY;
 	
-	
-	private MapLayerManagerPane mapLayerManager;
-	
 	public MapPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
 		this.addMouseListener(this);
@@ -55,10 +51,6 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		this.addMouseWheelListener(this);
 		this.setBackground(Color.WHITE);
     }
-	
-	public void setMapLayerManager(MapLayerManagerPane mapLayerTab) {
-		mapLayerManager = mapLayerTab;
-	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Transform Methods">
 	
@@ -150,12 +142,10 @@ this.resetLocalCoordinates();
 	public void addLayer(MapLayer layer) {
 		this.layers.add(layer);
 		layer.setMapPanel(this);
-		mapLayerManager.tableUpdated();
 	}
 	
 	public void removeLayer(MapLayer layer) {
 		this.layers.remove(layer);
-		mapLayerManager.tableUpdated();
 	}
 	
 	public java.util.List<MapLayer> getLayers() {
