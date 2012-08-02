@@ -71,7 +71,7 @@ public abstract class MapLayer {
 		this.hidden = hidden;
 	}
 	
-	public final boolean getHidden() {
+	public boolean getHidden() {
 		return hidden;
 	}
 	

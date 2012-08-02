@@ -29,10 +29,10 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	private double mercToTileScale = 1;
 	
 	private HashMap<String,Tile> tileCache = new HashMap<String,Tile>();
-	private String urlTemplate;
 	private int minZoom;
 	private int maxZoom;
 	private int pixelsPerTile;
+	private TileInfo tileInfo;
 	
 	private boolean zoomTooHigh = false;
 
@@ -40,13 +40,16 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	// Public Methods
 	//=========================
 	
-	public TileLayer(String urlTemplate, int minZoom, int maxZoom, int pixelsPerTile) {
-		this.urlTemplate = urlTemplate;
-		this.minZoom = minZoom;
-		this.maxZoom = maxZoom;
-		this.pixelsPerTile = pixelsPerTile;
-		
+	public TileLayer() {
+
 		this.setName("Base Map");
+	}
+	
+	public void setTileInfo(TileInfo tileInfo) {
+		this.tileInfo = tileInfo;
+		minZoom = tileInfo.getMinZoom();
+		maxZoom = tileInfo.getMaxZoom();
+		pixelsPerTile = tileInfo.getTileSize();
 	}
 	
 	//--------------------------
@@ -58,8 +61,19 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	}
 	
 	@Override
+	public boolean getHidden() {
+		if(tileInfo == null) {
+			return false;
+		}
+		else {
+			return super.getHidden();
+		}
+	}
+	
+	@Override
 	public void render(Graphics2D g2) {
 		
+		if(tileInfo == null) return;
 		if(zoomTooHigh) return;
 		
 		MapPanel mapPanel = getMapPanel();
@@ -105,7 +119,7 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 				}
 					
 				//add a tile to map
-				String key = this.getUrl(ix, iy, activeZoom);
+				String key = tileInfo.getUrl(ix, iy, activeZoom);
 				Tile tile = getTile(key);
 				if(tile != null) {
 					tile.render(g2);
@@ -175,24 +189,6 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	@Override
 	public void onPanEnd(MapPanel mapPanel) {}
-	
-	//=================================
-	// Protected Methods
-	//=================================
-	
-	/** This method reads the URL from the template, using the inputs
-	 * ix, iy and zoom in that order. If different values are needed for the
-	 * string this method can be overridden. 
-	 * 
-	 * @param ix		The x tile index
-	 * @param iy		The y tile index
-	 * @param zoom		The zoom scale
-	 * @return			The url string
-	 */
-	protected String getUrl(int ix, int iy, int zoom) {
-		return String.format(urlTemplate,ix,iy,zoom);
-	}
-	
 	
 	//=================================
 	// Private Methods
