@@ -110,16 +110,16 @@ public class TileInfo {
 	}
 	
 	private String getLatLonMinMaxUrl(int ix, int iy, int zoom) {
-		double zoomScale = (1 >> zoom);
+		double zoomScale = (1 << zoom);
 		double minMercX = ((double)ix) / zoomScale;
 		double minMercY = ((double)iy) / zoomScale;
 		double maxMercX = ((double)ix + 1.0) / zoomScale;
 		double maxMercY = ((double)iy + 1.0) / zoomScale;
 		
 		double minLonDeg = Math.toDegrees(MercatorCoordinates.mxToLonRad(minMercX));
-		double minLatDeg = Math.toDegrees(MercatorCoordinates.mxToLonRad(minMercY));
+		double maxLatDeg = Math.toDegrees(MercatorCoordinates.myToLatRad(minMercY));
 		double maxLonDeg = Math.toDegrees(MercatorCoordinates.mxToLonRad(maxMercX));
-		double maxLatDeg = Math.toDegrees(MercatorCoordinates.mxToLonRad(maxMercY));
+		double minLatDeg = Math.toDegrees(MercatorCoordinates.myToLatRad(maxMercY));
 		
 		return String.format(urlTemplate,minLatDeg,minLonDeg,maxLatDeg,maxLonDeg);
 	}
