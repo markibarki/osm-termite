@@ -13,6 +13,7 @@ import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.render.*;
 import intransix.osm.termite.render.tile.TileLayer;
+import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.map.RenderLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
@@ -27,6 +28,8 @@ public class TermiteGui extends javax.swing.JFrame {
 	//=====================
 	// Private Properties
 	//=====================
+	
+	private final static String HIDDEN_BASE_MAP_NAME = "Hidden";
 	
 	// <editor-fold defaultstate="collapsed" desc="Properties">
 	
@@ -54,6 +57,9 @@ public class TermiteGui extends javax.swing.JFrame {
 	private FeatureInfoMap featureMap;
 	private FeatureInfo activeFeatureLayer;
 	
+	//base map options
+	private java.util.List<TileInfo> tileInfoList;
+	
 	//selected level and feature
 	private OsmWay activeStructure;
 	private OsmRelation activeLevel;
@@ -74,8 +80,6 @@ public class TermiteGui extends javax.swing.JFrame {
 	private javax.swing.JMenu mapMenu;
 	
 	private javax.swing.JMenu baseMapMenu;
-    private javax.swing.JRadioButtonMenuItem baseMapHiddenMenuItem;
-    private javax.swing.JRadioButtonMenuItem baseMapOsmarenderMenuItem;
     private javax.swing.ButtonGroup baceMapButtonGroup;
 	
 	private javax.swing.JPanel toolBarPanel;
@@ -488,12 +492,7 @@ public class TermiteGui extends javax.swing.JFrame {
 	}
 	
 	private void initializeBaseMap() {
-		String mapQuestUrlTemplate = "http://otile1.mqcdn.com/tiles/1.0.0/osm/%3$d/%1$d/%2$d.jpg";
-		int mapQuestMaxZoom = 18;
-		int mapQuestMinZoom = 0;
-		int mapQuestTileSize = 256;
-		
-		baseMapLayer = new TileLayer(mapQuestUrlTemplate,mapQuestMinZoom,mapQuestMaxZoom,mapQuestTileSize);
+		baseMapLayer = new TileLayer();
 		baseMapLayer.setHidden(false);
 		
 		mapPanel.addLayer(baseMapLayer);
@@ -567,30 +566,18 @@ public class TermiteGui extends javax.swing.JFrame {
 		mapMenu.setText("Map");
 		
 		baseMapMenu = new javax.swing.JMenu();
-        baseMapHiddenMenuItem = new javax.swing.JRadioButtonMenuItem();
-        baseMapOsmarenderMenuItem = new javax.swing.JRadioButtonMenuItem();
-		baceMapButtonGroup = new javax.swing.ButtonGroup();
-		baceMapButtonGroup.add(baseMapHiddenMenuItem);
-		baceMapButtonGroup.add(baseMapOsmarenderMenuItem);
 		baseMapMenu.setText("Base Map");
-
-        baseMapHiddenMenuItem.setSelected(false);
-        baseMapHiddenMenuItem.setText("Hidden");
-		baseMapHiddenMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                baseMapHideActionPerformed(evt);
-            }
-        });
-        baseMapMenu.add(baseMapHiddenMenuItem);
-
-        baseMapOsmarenderMenuItem.setSelected(true);
-        baseMapOsmarenderMenuItem.setText("Osmarender");
-		baseMapOsmarenderMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                baseMapOsmarenderActionPerformed(evt);
-            }
-        });
-        baseMapMenu.add(baseMapOsmarenderMenuItem);
+		baceMapButtonGroup = new javax.swing.ButtonGroup();
+		
+		tileInfoList = this.app.getBaseMapInfo();
+		
+		//add base map choices
+		addBaseMapMenuItem(null);
+		if(tileInfoList != null) {
+			for(TileInfo tileInfo:tileInfoList) {
+				addBaseMapMenuItem(tileInfo);
+			}
+		}
 
         mapMenu.add(baseMapMenu);
 		menuBar.add(mapMenu);
@@ -686,6 +673,31 @@ public class TermiteGui extends javax.swing.JFrame {
         pack();
     }
 	
+	private void addBaseMapMenuItem(final TileInfo tileInfo) {
+		
+		String name;
+		boolean isSelected;
+		if(tileInfo != null) {
+			name = tileInfo.getName();
+			isSelected = false;
+		}
+		else {
+			name = HIDDEN_BASE_MAP_NAME;
+			isSelected = true;
+		}
+		
+		JRadioButtonMenuItem menuItem = new javax.swing.JRadioButtonMenuItem();
+		baceMapButtonGroup.add(menuItem);
+        menuItem.setSelected(isSelected);
+        menuItem.setText(name);
+		menuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectBaseMap(tileInfo);
+            }
+        });
+        baseMapMenu.add(menuItem);
+	}
+	
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="Internal Event Functions ans Classes">
@@ -705,13 +717,8 @@ public class TermiteGui extends javax.swing.JFrame {
 		}
 	}
 	
-	private void baseMapHideActionPerformed(java.awt.event.ActionEvent evt) {
-		baseMapLayer.setHidden(true);
-		mapPanel.repaint();
-	}
-	
-	private void baseMapOsmarenderActionPerformed(java.awt.event.ActionEvent evt) {
-		baseMapLayer.setHidden(false);
+	private void selectBaseMap(TileInfo tileInfo) {
+		baseMapLayer.setTileInfo(tileInfo);
 		mapPanel.repaint();
 	}
 	

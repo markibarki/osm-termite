@@ -6,6 +6,7 @@ import intransix.osm.termite.map.feature.FeatureInfoMap;
 import intransix.osm.termite.util.JsonIO;
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.gui.stdmode.*;
+import intransix.osm.termite.render.tile.TileInfo;
 import org.json.*;
 
 import java.util.*;
@@ -26,9 +27,11 @@ public class TermiteApp {
 	
 	private Theme theme;
 	private FeatureInfoMap featureInfoMap;
+	private List<TileInfo> tileInfoList;
 	
 	private SearchEditorMode searchEditorMode;
 	private List<EditorMode> editModes = new ArrayList<EditorMode>();
+	
 	
 	
 	//=====================
@@ -56,6 +59,10 @@ public class TermiteApp {
 	
 	public List<EditorMode> getEditModes() {
 		return editModes;
+	}
+	
+	public List<TileInfo> getBaseMapInfo() {
+		return tileInfoList;
 	}
 	
 	public Rectangle2D getInitialLatLonBounds() {
@@ -107,6 +114,7 @@ public class TermiteApp {
 		String themeFileName = "theme.json";
 		String featureInfoName = "featureInfo.json";
 		String modelFileName = "model2.json";
+		String baseMapFileName= "baseMapInfo.json";
 		
 		//load the theme
 		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
@@ -118,6 +126,9 @@ public class TermiteApp {
 		JSONObject modelJson = JsonIO.readJsonFile(modelFileName);
 		OsmModel.parse(modelJson);
 		OsmModel.featureInfoMap = featureInfoMap;
+		
+		JSONObject mapInfoJson = JsonIO.readJsonFile(baseMapFileName);
+		tileInfoList = TileInfo.parseInfoList(mapInfoJson);
 		
 		//create the gui
 		gui = new TermiteGui(this);
