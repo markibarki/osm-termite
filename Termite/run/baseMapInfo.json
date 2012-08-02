@@ -2,12 +2,36 @@
 {
 	"mapInfo":[
 		{
-			"name":"Osmarender",
+			"name":"MapQuest Aerial",
+			"maxZoom":18,
+			"minZoom":0,
+			"tileSize":256,
+			"requestType":"XYZ",
+			"urlTemplate":"http://oatile1.mqcdn.com/tiles/1.0.0/sat/%3$d/%1$d/%2$d.jpg"
+		},
+		{
+			"name":"MapQuest-OSM",
 			"maxZoom":18,
 			"minZoom":0,
 			"tileSize":256,
 			"requestType":"XYZ",
 			"urlTemplate":"http://otile1.mqcdn.com/tiles/1.0.0/osm/%3$d/%1$d/%2$d.jpg"
+		},
+		{
+			"name":"OpenStreetMap",
+			"maxZoom":18,
+			"minZoom":0,
+			"tileSize":256,
+			"requestType":"XYZ",
+			"urlTemplate":"http://a.tile.openstreetmap.org/%3$d/%1$d/%2$d.png"
+		},
+		{
+			"name":"Bing Aerial",
+			"maxZoom":19,
+			"minZoom":0,
+			"tileSize":256,
+			"requestType":"LatLonMinMax",
+			"urlTemplate":"http://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?mapArea=%1$.8f,%2$.8f,%3$.8f,%4$.8f&mapSize=256,256&key=Ai87HwhYsfWQUjKuR27pP80xO2Rde5If2k-AUGSi5ChVX8XHMdoIc8tKwJQ0uvb8"
 		}
 	]
 }

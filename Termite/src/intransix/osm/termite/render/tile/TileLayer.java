@@ -47,9 +47,16 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	public void setTileInfo(TileInfo tileInfo) {
 		this.tileInfo = tileInfo;
-		minZoom = tileInfo.getMinZoom();
-		maxZoom = tileInfo.getMaxZoom();
-		pixelsPerTile = tileInfo.getTileSize();
+		if(tileInfo != null) {
+			minZoom = tileInfo.getMinZoom();
+			maxZoom = tileInfo.getMaxZoom();
+			pixelsPerTile = tileInfo.getTileSize();
+		}
+		else {
+			minZoom = Integer.MIN_VALUE;
+			maxZoom = Integer.MAX_VALUE;
+			pixelsPerTile = 1;
+		}
 	}
 	
 	//--------------------------
