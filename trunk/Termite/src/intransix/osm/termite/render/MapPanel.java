@@ -144,6 +144,16 @@ this.resetLocalCoordinates();
 		layer.setMapPanel(this);
 	}
 	
+	public void addLayer(MapLayer layer, int index) {
+		if((index >= 0)&&(index < layers.size())) {
+			layers.add(index,layer);
+		}
+		else {
+			layers.add(layer);
+		}
+		layer.setMapPanel(this);
+	}
+	
 	public void removeLayer(MapLayer layer) {
 		this.layers.remove(layer);
 	}
