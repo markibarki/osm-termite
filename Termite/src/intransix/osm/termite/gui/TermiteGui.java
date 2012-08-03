@@ -16,6 +16,8 @@ import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.map.RenderLayer;
+
+import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
 /**
@@ -52,6 +54,7 @@ public class TermiteGui extends javax.swing.JFrame {
 	private TileLayer baseMapLayer;
 	private RenderLayer renderLayer;
 	private EditLayer editLayer;
+	private SourceLayer sourceLayer;
 	
 	//feature layer info
 	private FeatureInfoMap featureMap;
@@ -63,6 +66,9 @@ public class TermiteGui extends javax.swing.JFrame {
 	//selected level and feature
 	private OsmWay activeStructure;
 	private OsmRelation activeLevel;
+	
+	//this is used for keeping track of the workign directory
+	private java.io.File workingDirectory;
 	
 	//listeners
 	private java.util.List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
@@ -78,6 +84,8 @@ public class TermiteGui extends javax.swing.JFrame {
 	private javax.swing.JMenuItem undoItem;
 	private javax.swing.JMenuItem redoItem;
 	private javax.swing.JMenu mapMenu;
+	private javax.swing.JMenuItem openSourceMenuItem;
+	private javax.swing.JMenuItem closeSourceMenuItem;
 	
 	private javax.swing.JMenu baseMapMenu;
     private javax.swing.ButtonGroup baceMapButtonGroup;
@@ -377,6 +385,10 @@ public class TermiteGui extends javax.swing.JFrame {
 		return editLayer;
 	}
 	
+	public SourceLayer getSourceLayer() {
+		return sourceLayer;
+	}
+	
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="Initialize">
@@ -388,8 +400,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		loadEditModes();
 		
 		//MAP
-		initializeBaseMap();
-		initialzeMapEditLayers();
+		initializeMapLayers();
 		initializeView();
 		
 		//DATA PANEL
@@ -491,15 +502,15 @@ public class TermiteGui extends javax.swing.JFrame {
 		mapPanel.setViewBounds(mercBounds);
 	}
 	
-	private void initializeBaseMap() {
+	private void initializeMapLayers() {
 		baseMapLayer = new TileLayer();
 		baseMapLayer.setHidden(false);
-		
-		mapPanel.addLayer(baseMapLayer);
 		mapPanel.addMapListener(baseMapLayer);
-	}
+		
+		sourceLayer = new SourceLayer();
+		sourceLayer.setHidden(true);
+		sourceLayer.setOpacity(.3f);
 	
-	private void initialzeMapEditLayers() {
 		renderLayer = new RenderLayer();
 		Theme theme = app.getTheme();
 		renderLayer.setTheme(theme);
@@ -513,6 +524,8 @@ public class TermiteGui extends javax.swing.JFrame {
 		this.addFeatureLayerListener(editLayer);
 		this.addLevelSelectedListener(editLayer);
 		
+		mapPanel.addLayer(baseMapLayer);
+		mapPanel.addLayer(sourceLayer);
 		mapPanel.addLayer(renderLayer);
 		mapPanel.addLayer(editLayer);
 	}
@@ -565,6 +578,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		mapMenu = new javax.swing.JMenu();
 		mapMenu.setText("Map");
 		
+		//base map
 		baseMapMenu = new javax.swing.JMenu();
 		baseMapMenu.setText("Base Map");
 		baceMapButtonGroup = new javax.swing.ButtonGroup();
@@ -580,6 +594,28 @@ public class TermiteGui extends javax.swing.JFrame {
 		}
 
         mapMenu.add(baseMapMenu);
+		
+		//source map
+		openSourceMenuItem = new javax.swing.JMenuItem();
+		openSourceMenuItem.setText("Open Source...");
+		openSourceMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addMapSource();
+            }
+        });
+		
+		closeSourceMenuItem = new javax.swing.JMenuItem();
+		closeSourceMenuItem.setText("Hide Source");
+		closeSourceMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideSource();
+            }
+        });
+		closeSourceMenuItem.setVisible(false);
+		
+        mapMenu.add(openSourceMenuItem);
+		mapMenu.add(closeSourceMenuItem);
+		
 		menuBar.add(mapMenu);
 		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -719,6 +755,36 @@ public class TermiteGui extends javax.swing.JFrame {
 	
 	private void selectBaseMap(TileInfo tileInfo) {
 		baseMapLayer.setTileInfo(tileInfo);
+		mapPanel.repaint();
+	}
+	
+	private void addMapSource() {
+		//open image file
+		JFileChooser fc = new JFileChooser();
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		if(workingDirectory != null) fc.setCurrentDirectory(workingDirectory);
+		int returnVal = fc.showOpenDialog(this);
+		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			java.io.File file = fc.getSelectedFile();
+			workingDirectory = fc.getCurrentDirectory();
+			boolean success = sourceLayer.loadImage(file);
+			if(success) {
+				sourceLayer.setHidden(false);
+				sourceLayer.setLayerState(SourceLayer.LayerState.STATIC);
+				openSourceMenuItem.setVisible(false);
+				closeSourceMenuItem.setVisible(true);
+				mapPanel.repaint();
+			}
+			else {
+				JOptionPane.showMessageDialog(this,"There was an error loading the image.");
+			}
+		}
+	}
+	
+	private void hideSource() {
+		sourceLayer.setHidden(true);
+		openSourceMenuItem.setVisible(true);
+		closeSourceMenuItem.setVisible(false);
 		mapPanel.repaint();
 	}
 	
