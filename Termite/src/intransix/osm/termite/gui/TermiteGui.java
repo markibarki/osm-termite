@@ -18,6 +18,7 @@ import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.map.RenderLayer;
 
 import intransix.osm.termite.render.source.SourceLayer;
+import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
 /**
@@ -55,6 +56,7 @@ public class TermiteGui extends javax.swing.JFrame {
 	private RenderLayer renderLayer;
 	private EditLayer editLayer;
 	private SourceLayer sourceLayer;
+	private GeocodeLayer geocodeLayer;
 	
 	//feature layer info
 	private FeatureInfoMap featureMap;
@@ -389,6 +391,10 @@ public class TermiteGui extends javax.swing.JFrame {
 		return sourceLayer;
 	}
 	
+	public GeocodeLayer getGeocodeLayer() {
+		return geocodeLayer;
+	}
+	
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="Initialize">
@@ -510,6 +516,9 @@ public class TermiteGui extends javax.swing.JFrame {
 		sourceLayer = new SourceLayer();
 		sourceLayer.setHidden(true);
 		sourceLayer.setOpacity(.3f);
+		
+		geocodeLayer = new GeocodeLayer();
+		geocodeLayer.setHidden(true);
 	
 		renderLayer = new RenderLayer();
 		Theme theme = app.getTheme();
@@ -770,7 +779,6 @@ public class TermiteGui extends javax.swing.JFrame {
 			boolean success = sourceLayer.loadImage(file);
 			if(success) {
 				sourceLayer.setHidden(false);
-				sourceLayer.setLayerState(SourceLayer.LayerState.STATIC);
 				openSourceMenuItem.setVisible(false);
 				closeSourceMenuItem.setVisible(true);
 				mapPanel.repaint();
