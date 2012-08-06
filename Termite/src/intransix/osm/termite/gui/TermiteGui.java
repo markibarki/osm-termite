@@ -674,7 +674,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		//map panel
         mapPanel = new intransix.osm.termite.render.MapPanel();
 		mapPanel.setMinimumSize(new java.awt.Dimension(200, 200));
-        mapPanel.setPreferredSize(new java.awt.Dimension(600, 600));
+//        mapPanel.setPreferredSize(new java.awt.Dimension(600, 600));
 		this.addMapDataListener(mapPanel);
 		
 		//supplemental tabbed pane
@@ -683,15 +683,19 @@ public class TermiteGui extends javax.swing.JFrame {
 		//layout the content panes
 		jSplitPane1.setOrientation(javax.swing.JSplitPane.HORIZONTAL_SPLIT);
 		jSplitPane1.setDividerLocation(150);
+		jSplitPane1.setResizeWeight(.25);
 		
 		jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-		jSplitPane2.setDividerLocation(200);
+//		jSplitPane2.setDividerLocation(200);
+		jSplitPane3.setResizeWeight(.33);
         
         jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 		jSplitPane3.setDividerLocation(500);
+		jSplitPane3.setResizeWeight(.8);
 		
 		jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane4.setDividerLocation(200);
+//        jSplitPane4.setDividerLocation(200);
+		jSplitPane3.setResizeWeight(.5);
 		
 		jSplitPane1.setLeftComponent(jSplitPane2);
 		jSplitPane1.setRightComponent(jSplitPane3);
