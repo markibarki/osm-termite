@@ -14,6 +14,7 @@ public class GeocodeLayer extends MapLayer implements
 		MouseListener, MouseMotionListener, KeyListener, FocusListener {
 	
 	public enum LayerState {
+		INACTIVE,
 		SELECT,
 		PLACE_P0,
 		PLACE_P1,
@@ -74,13 +75,17 @@ public class GeocodeLayer extends MapLayer implements
 				
 				//get active data
 				imageToMerc = sourceLayer.getImageToMerc();
-				updateInverseTransform();
+				if(imageToMerc != null) {
+					updateInverseTransform();
+				}
 			}
 			else {
 				mapPanel.removeMouseListener(this);
 				mapPanel.removeMouseMotionListener(this);
 				mapPanel.removeKeyListener(this);
 				mapPanel.removeFocusListener(this);
+				
+				cleanUp();
 			}
 		}
 	}
@@ -90,7 +95,12 @@ public class GeocodeLayer extends MapLayer implements
 	}
 	
 	public void setLayerState(LayerState layerState) {
-		this.layerState = layerState;
+		if(imageToMerc != null) {
+			this.layerState = layerState;
+		}
+		else {
+			this.layerState = LayerState.INACTIVE;
+		}
 	}
 	
 	@Override
@@ -161,6 +171,8 @@ public class GeocodeLayer extends MapLayer implements
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
+		
+		if(layerState == LayerState.INACTIVE) return;
 	
 		boolean changed = false;
 		MapPanel mapPanel = getMapPanel();
@@ -449,6 +461,21 @@ if((length1 == 0)||(length2 == 0)) return;
 		catch(Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+	
+	private void cleanUp() {
+
+		layerState = LayerState.INACTIVE;
+		selection = INVALID_SELECTION;
+		inMove = false;
+		
+		for(AnchorPoint ap:anchorPoints) {
+			ap.reset();
+		}
+	
+	
+		imageToMerc = null;
+		mercToImage = null;
 	}
 	
 }
