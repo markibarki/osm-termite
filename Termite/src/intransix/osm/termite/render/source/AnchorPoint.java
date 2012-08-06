@@ -74,4 +74,10 @@ class AnchorPoint {
 			return false;
 		}
 	}
+	
+	public void reset() {
+		this.pointType = null;
+		this.mercPoint = null;
+		this.imagePoint = null;
+	}
 }
