@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
@@ -46,7 +42,6 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 	private final static int TWO_POINT = 0;
 	private final static int THREE_POINT_ORTHO = 1;
 	private final static int FREE_TRANSFORM = 2;
-	private final static int DEFAULT_TYPE = 0;
 	
 	private TermiteGui termiteGui;
 	
@@ -57,8 +52,9 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 	private JToggleButton selectButton;
 	private JToggleButton[] dynamicButtons;
 	private JToggleButton moveButton;
+	private ButtonGroup modeButtonGroup;
 	
-	private ButtonGroup buttonGroup;
+	private ButtonGroup typeButtonGroup;
 	private JRadioButton[] radioButtons;
 	
 	//====================
@@ -102,6 +98,7 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		GeocodeLayer geocodeLayer = termiteGui.getGeocodeLayer();
 		if(geocodeLayer != null) {
 			geocodeLayer.setActiveState(true);
+			geocodeLayer.setHidden(false);
 		}
 		
 		if(toolBar == null) {
@@ -125,6 +122,7 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		GeocodeLayer geocodeLayer = termiteGui.getGeocodeLayer();
 		if(geocodeLayer != null) {
 			geocodeLayer.setActiveState(false);
+			geocodeLayer.setHidden(true);
 		}
 		
 		if(toolBar != null) {
@@ -140,12 +138,15 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		
 		if(actionCommand.equals(GEOCODE_CMDS[0])) {
 			geocodeLayer.setGeocodeType(GeocodeLayer.GeocodeType.TWO_POINT);
+			this.setGeocodeType(TWO_POINT);
 		}
 		else if(actionCommand.equals(GEOCODE_CMDS[1])) {
 			geocodeLayer.setGeocodeType(GeocodeLayer.GeocodeType.THREE_POINT_ORTHO);
+			this.setGeocodeType(THREE_POINT_ORTHO);
 		}
 		else if(actionCommand.equals(GEOCODE_CMDS[2])) {
 			geocodeLayer.setGeocodeType(GeocodeLayer.GeocodeType.FREE_TRANSFORM);
+			this.setGeocodeType(FREE_TRANSFORM);
 		}
 		else if(actionCommand.equals(SELECT_CMD)) {
 			geocodeLayer.setLayerState(GeocodeLayer.LayerState.SELECT);
@@ -169,23 +170,25 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		toolBar.setFloatable(false);
 		
 		//geocode type choice
-		buttonGroup = new ButtonGroup();
+		typeButtonGroup = new ButtonGroup();
 		int cnt = GEOCODE_TYPE_NAMES.length;
 		radioButtons = new JRadioButton[cnt];
 		for(int i = 0; i < cnt; i++) {
 			JRadioButton radioButton = new JRadioButton();
-			radioButton.setText(GEOCODE_TYPE_NAMES[0]);
-			radioButton.setActionCommand(GEOCODE_CMDS[0]);
+			radioButton.setText(GEOCODE_TYPE_NAMES[i]);
+			radioButton.setActionCommand(GEOCODE_CMDS[i]);
 			radioButton.addActionListener(this);
-			buttonGroup.add(radioButton);
+			typeButtonGroup.add(radioButton);
 			toolBar.add(radioButton);
 			radioButtons[i] = radioButton;
 		}
 		
 		//mode choice
+		modeButtonGroup = new ButtonGroup();
 		selectButton = new JToggleButton("Transform Source");
 		selectButton.setActionCommand(SELECT_CMD);
 		selectButton.addActionListener(this);
+		modeButtonGroup.add(selectButton);
 		toolBar.add(selectButton);
 		
 		cnt = BUTTON_NAMES[0].length;
@@ -194,16 +197,26 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 			JToggleButton button = new JToggleButton();
 			button.addActionListener(this);
 			button.setActionCommand(BUTTON_CMDS[i]);
+			modeButtonGroup.add(button);
 			toolBar.add(button);
 			dynamicButtons[i] = button;
 		}
 		
-		moveButton = new JToggleButton("Transform Source");
+		moveButton = new JToggleButton("Move Anchor");
 		moveButton.setActionCommand(MOVE_CMD);
 		moveButton.addActionListener(this);
+		modeButtonGroup.add(moveButton);
 		toolBar.add(moveButton);
 		
-		//add action listeners
+		//set default geocode type
+		this.radioButtons[TWO_POINT].setSelected(true);
+		GeocodeLayer geocodeLayer = termiteGui.getGeocodeLayer();
+		geocodeLayer.setGeocodeType(GeocodeLayer.GeocodeType.TWO_POINT);
+		this.setGeocodeType(TWO_POINT);
+		
+//not implemented
+		this.radioButtons[FREE_TRANSFORM].setEnabled(false);
+		moveButton.setEnabled(false);
 		
 	}
 	
@@ -212,7 +225,14 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		String[] dynamicNames = BUTTON_NAMES[type];
 		int i = 0;
 		for(JToggleButton button:dynamicButtons) {
-			button.setText(dynamicNames[i++]);
+			String name = dynamicNames[i++];
+			if(name != null) {
+				button.setVisible(true);
+				button.setText(name);
+			}
+			else {
+				button.setVisible(false);
+			}
 		}
 	}
 }

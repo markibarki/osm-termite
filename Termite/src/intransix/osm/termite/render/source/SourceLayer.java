@@ -26,6 +26,14 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 		this.moveImageToMerc = moveImageToMerc;
 	}
 	
+	public AffineTransform getImageToMerc() {
+		return imageToMerc;
+	}
+	
+	public void setImageToMerc(AffineTransform imageToMerc) {
+		this.imageToMerc = imageToMerc;
+	}
+	
 	public boolean loadImage(File file) {
 		//reset the transform - we need to add a way to sace this
 		imageToMerc = null;

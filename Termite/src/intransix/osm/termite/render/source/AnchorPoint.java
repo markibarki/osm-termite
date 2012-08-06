@@ -41,13 +41,23 @@ class AnchorPoint {
 	private Point2D pixPoint = new Point2D.Double();
 	
 	public void renderPoint(Graphics2D g2,AffineTransform mercToPixels, 
-			boolean isSelected, boolean inMove) {
+			boolean isSelected, boolean inMove, AffineTransform moveImageToMerc) {
 		
 		if(pointType == null) return;
 		
 		Color color = isSelected ? SELECT_COLOR : pointType.getColor();
 		g2.setColor(color);
-		mercToPixels.transform(mercPoint,pixPoint);
+		
+		if(inMove) {
+			//if in move, transform from image to merc using the move transform
+			//then transform to pixels
+			moveImageToMerc.transform(imagePoint,pixPoint);
+			mercToPixels.transform(pixPoint,pixPoint);
+		}
+		else {
+			//not in move, transform straight from merc to pixels
+			mercToPixels.transform(mercPoint,pixPoint);
+		}
 		
 		int x = (int)pixPoint.getX();
 		int y = (int)pixPoint.getY();

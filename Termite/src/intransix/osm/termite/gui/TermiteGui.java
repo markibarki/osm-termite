@@ -519,6 +519,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		
 		geocodeLayer = new GeocodeLayer();
 		geocodeLayer.setHidden(true);
+		geocodeLayer.setSourceLayer(sourceLayer);
 	
 		renderLayer = new RenderLayer();
 		Theme theme = app.getTheme();
@@ -536,6 +537,7 @@ public class TermiteGui extends javax.swing.JFrame {
 		mapPanel.addLayer(baseMapLayer);
 		mapPanel.addLayer(sourceLayer);
 		mapPanel.addLayer(renderLayer);
+		mapPanel.addLayer(geocodeLayer);
 		mapPanel.addLayer(editLayer);
 	}
 	

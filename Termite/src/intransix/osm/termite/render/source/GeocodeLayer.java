@@ -34,10 +34,12 @@ public class GeocodeLayer extends MapLayer implements
 	private int selection = INVALID_SELECTION;
 	private boolean inMove = false;
 	
+	private SourceLayer sourceLayer;
+	
 	private AnchorPoint[] anchorPoints;
-	private AnchorPoint p0;
-	private AnchorPoint p1;
-	private AnchorPoint p2;
+	private AnchorPoint p0 = new AnchorPoint();
+	private AnchorPoint p1 = new AnchorPoint();
+	private AnchorPoint p2 = new AnchorPoint();
 	
 	private AffineTransform imageToMerc;
 	private AffineTransform mercToImage;
@@ -54,6 +56,10 @@ public class GeocodeLayer extends MapLayer implements
 		anchorPoints[2] = p2;
 	}
 	
+	public void setSourceLayer(SourceLayer sourceLayer) {
+		this.sourceLayer = sourceLayer;
+	}
+	
 	/** This mode sets the edit layer active. */
 	@Override
 	public void setActiveState(boolean isActive) {
@@ -65,6 +71,10 @@ public class GeocodeLayer extends MapLayer implements
 				mapPanel.addMouseMotionListener(this);
 				mapPanel.addKeyListener(this);
 				mapPanel.addFocusListener(this);
+				
+				//get active data
+				imageToMerc = sourceLayer.getImageToMerc();
+				updateInverseTransform();
 			}
 			else {
 				mapPanel.removeMouseListener(this);
@@ -104,7 +114,7 @@ public class GeocodeLayer extends MapLayer implements
 			ap = anchorPoints[i];
 			if(ap.mercPoint != null) {
 				isSelected = (selection == i);
-				ap.renderPoint(g2,mercToPixels,isSelected,inMove);
+				ap.renderPoint(g2,mercToPixels,isSelected,inMove,moveImageToMerc);
 			}
 		}
 		
@@ -144,6 +154,7 @@ public class GeocodeLayer extends MapLayer implements
 			pixelsToMercator.transform(movePix, moveMerc);
 			updateMoveTransform(moveMerc);
 			
+			sourceLayer.setMove(true, moveImageToMerc);
 			mapPanel.repaint();
 		}
 	}
@@ -163,6 +174,7 @@ public class GeocodeLayer extends MapLayer implements
 		if(layerState == LayerState.PLACE_P0) {
 			
 			p0.mercPoint = mouseMerc;
+			p0.imagePoint = new Point2D.Double();
 			mercToImage.transform(mouseMerc,p0.imagePoint);
 			
 			if(geocodeType == GeocodeType.FREE_TRANSFORM) {
@@ -177,12 +189,13 @@ public class GeocodeLayer extends MapLayer implements
 		else if(layerState == LayerState.PLACE_P1) {
 			
 			p1.mercPoint = mouseMerc;
+			p1.imagePoint = new Point2D.Double();
 			mercToImage.transform(mouseMerc,p1.imagePoint);
 			
 			if(geocodeType == GeocodeType.FREE_TRANSFORM) {
 				p1.pointType = AnchorPoint.PointType.FREE_TRANSFORM;
 			}
-			else if(geocodeType == GeocodeType.TWO_POINT) {
+			else {
 				setScalePointTypes();
 			}
 			
@@ -191,12 +204,13 @@ public class GeocodeLayer extends MapLayer implements
 		else if(layerState == LayerState.PLACE_P2) {
 			
 			p2.mercPoint = mouseMerc;
+			p2.imagePoint = new Point2D.Double();
 			mercToImage.transform(mouseMerc,p2.imagePoint);
 			
 			if(geocodeType == GeocodeType.FREE_TRANSFORM) {
 				p2.pointType = AnchorPoint.PointType.FREE_TRANSFORM;
 			}
-			else if(geocodeType == GeocodeType.TWO_POINT) {
+			else {
 				setScalePointTypes();
 			}
 			
@@ -254,10 +268,11 @@ public class GeocodeLayer extends MapLayer implements
 				inMove = true;
 				moveImageToMerc.setTransform(imageToMerc);
 				
-				changed = true;
 				Point2D mouseMerc = getMouseMerc();
 				updateMoveTransform(mouseMerc);
-				getMapPanel().repaint();
+				changed = true;
+				
+				sourceLayer.setMove(true, moveImageToMerc);
 			}
 		}
 		
@@ -417,10 +432,22 @@ if((length1 == 0)||(length2 == 0)) return;
 	private void completeMove() {
 		//copy transform
 		imageToMerc.setTransform(moveImageToMerc);
+		updateInverseTransform();
 		for(AnchorPoint ap:anchorPoints) {
 			if(ap.mercPoint != null) {
 				imageToMerc.transform(ap.imagePoint, ap.mercPoint);
 			}
+		}
+		sourceLayer.setMove(false,null);
+		sourceLayer.setImageToMerc(imageToMerc);
+	}
+	
+	private void updateInverseTransform() {
+		try {
+			mercToImage = imageToMerc.createInverse();
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 	
