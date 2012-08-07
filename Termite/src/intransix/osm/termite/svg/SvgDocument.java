@@ -1,52 +1,52 @@
 package intransix.osm.termite.svg;
 
-import intransix.osm.termite.map.feature.FeatureInfoMap;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.apache.batik.dom.svg.*;
-import org.w3c.dom.*;
-
-import java.awt.*;
+//import intransix.osm.termite.map.feature.FeatureInfoMap;
+//import java.awt.geom.Rectangle2D;
+//import java.util.ArrayList;
+//
+//import org.w3c.dom.Element;
+//import org.w3c.dom.Node;
+//import org.w3c.dom.NodeList;
+//
+//import org.apache.batik.dom.svg.*;
+//import org.w3c.dom.*;
+//
+//import java.awt.*;
 
 /**
  *
  * @author sutter
  */
 public class SvgDocument extends TransformManager {
-	
-	//======================================
-	// Private Fields
-	//======================================
-	private Rectangle2D docSize;
-	private ArrayList<SvgGeometry> geomList = new ArrayList<SvgGeometry>();
-
-	private final static String DISPLAY_TAG = "display";
-	private final static String DISPLAY_NONE = "none";
-	
-	//======================================
-	// Public Methods
-	//======================================
-	
-	public Rectangle2D getDocSize() { return docSize;}
-	
-	public void setDocSize(Rectangle2D docSize) {
-		this.docSize = docSize;
-	}
-	
-	public ArrayList<SvgGeometry> getObjectList() { return geomList;}
-	
-	public void addGeometry(SvgGeometry geom) {
-		geomList.add(geom);
-	}
-	
-	/** This method loads the SVG document. */
-	public void load(Document svgDocument) {
-		
+//	
+//	//======================================
+//	// Private Fields
+//	//======================================
+//	private Rectangle2D docSize;
+//	private ArrayList<SvgGeometry> geomList = new ArrayList<SvgGeometry>();
+//
+//	private final static String DISPLAY_TAG = "display";
+//	private final static String DISPLAY_NONE = "none";
+//	
+//	//======================================
+//	// Public Methods
+//	//======================================
+//	
+//	public Rectangle2D getDocSize() { return docSize;}
+//	
+//	public void setDocSize(Rectangle2D docSize) {
+//		this.docSize = docSize;
+//	}
+//	
+//	public ArrayList<SvgGeometry> getObjectList() { return geomList;}
+//	
+//	public void addGeometry(SvgGeometry geom) {
+//		geomList.add(geom);
+//	}
+//	
+//	/** This method loads the SVG document. */
+//	public void load(Document svgDocument) {
+//		
 //		Element element = svgDocument.getDocumentElement();
 //		if(!(element instanceof SVGOMSVGElement)) {
 //			throw new RuntimeException("Invalid format for SVG document.");
@@ -62,8 +62,8 @@ public class SvgDocument extends TransformManager {
 //		TransformManager transformManager = new TransformManager();
 //		NodeList children = element.getChildNodes();
 //		processChildren(children,transformManager);
-	}
-	
+//	}
+//	
 //	public Document create() {
 //		
 //		DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
