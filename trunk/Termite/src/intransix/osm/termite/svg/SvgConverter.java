@@ -1,20 +1,20 @@
 package intransix.osm.termite.svg;
 
-import java.io.IOException;
-import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
-import org.apache.batik.util.XMLResourceDescriptor;
-import org.w3c.dom.Document;
-import intransix.osm.termite.map.feature.FeatureInfoMap;
-import java.awt.geom.*;
-import java.awt.*;
-import java.io.PrintStream;
-import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import org.apache.batik.dom.svg.SVGDOMImplementation;
-import org.w3c.dom.DOMImplementation;
+//import java.io.IOException;
+//import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
+//import org.apache.batik.util.XMLResourceDescriptor;
+//import org.w3c.dom.Document;
+//import intransix.osm.termite.map.feature.FeatureInfoMap;
+//import java.awt.geom.*;
+//import java.awt.*;
+//import java.io.PrintStream;
+//import javax.xml.transform.Result;
+//import javax.xml.transform.Transformer;
+//import javax.xml.transform.TransformerFactory;
+//import javax.xml.transform.dom.DOMSource;
+//import javax.xml.transform.stream.StreamResult;
+//import org.apache.batik.dom.svg.SVGDOMImplementation;
+//import org.w3c.dom.DOMImplementation;
 
 /**
  * This method converts between a map level and an SVG document

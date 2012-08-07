@@ -1,16 +1,16 @@
 package intransix.osm.termite.svg;
 
-import intransix.osm.termite.map.feature.FeatureInfoMap;
-import intransix.osm.termite.map.feature.FeatureInfo;
-import java.util.HashMap;
-
-import org.apache.batik.dom.svg.*;
-import org.apache.batik.util.CSSConstants;
-import org.apache.batik.util.SVGConstants;
-import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
+//import intransix.osm.termite.map.feature.FeatureInfoMap;
+//import intransix.osm.termite.map.feature.FeatureInfo;
+//import java.util.HashMap;
+//
+//import org.apache.batik.dom.svg.*;
+//import org.apache.batik.util.CSSConstants;
+//import org.apache.batik.util.SVGConstants;
+//import java.awt.Shape;
+//import java.awt.geom.Ellipse2D;
+//import java.awt.geom.Path2D;
+//import java.awt.geom.Point2D;
 
 public class SvgGeometry {
 //

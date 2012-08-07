@@ -1,11 +1,11 @@
 package intransix.osm.termite.svg;
 
-import org.apache.batik.dom.svg.*;
-import org.w3c.dom.svg.*;
-import java.awt.*;
-import java.awt.geom.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.Document;
+//import org.apache.batik.dom.svg.*;
+//import org.w3c.dom.svg.*;
+//import java.awt.*;
+//import java.awt.geom.*;
+//import org.w3c.dom.Element;
+//import org.w3c.dom.Document;
 
 public class SvgCoordinateLoader {
 	
