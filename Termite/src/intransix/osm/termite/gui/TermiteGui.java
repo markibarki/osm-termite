@@ -21,6 +21,8 @@ import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
+import intransix.osm.termite.gui.dialog.CommitDialog;
+
 /**
  * This is the main UI class. It initializes the UI and it manages event flow.
  * 
@@ -81,6 +83,7 @@ public class TermiteGui extends javax.swing.JFrame {
 	//UI components
 	private javax.swing.JMenuBar menuBar;
 	private javax.swing.JMenu fileMenu;
+	private javax.swing.JMenuItem commitItem;
 	private javax.swing.JMenuItem quitItem;
 	private javax.swing.JMenu editMenu;
 	private javax.swing.JMenuItem undoItem;
@@ -556,6 +559,16 @@ public class TermiteGui extends javax.swing.JFrame {
 		
 		fileMenu = new javax.swing.JMenu();
 		fileMenu.setText("File");
+		
+		commitItem = new javax.swing.JMenuItem();
+        commitItem.setText("Commit");
+		commitItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                commitData();
+            }
+        });
+        fileMenu.add(commitItem);
+		
         quitItem = new javax.swing.JMenuItem();
         quitItem.setText("Quit");
 		quitItem.addActionListener(new java.awt.event.ActionListener() {
@@ -766,6 +779,11 @@ public class TermiteGui extends javax.swing.JFrame {
 		if(osmData != null) {
 			osmData.redo();
 		}
+	}
+	
+	private void commitData() {
+		CommitDialog commitDialog = new CommitDialog(this,osmData);
+		commitDialog.setVisible(true);
 	}
 	
 	private void selectBaseMap(TileInfo tileInfo) {
