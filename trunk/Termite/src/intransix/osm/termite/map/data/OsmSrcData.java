@@ -77,6 +77,28 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		}
 	}
 	
+	//------------------------------
+	// Commit Methods
+	//-----------------------------
+	
+	/** This method compares properties of the source data to properties in the edit data. */
+	protected boolean propertiesDifferent(OsmObject osmObject) {
+		int newCount = osmObject.getPropertyKeys().size();
+		if(newCount != properties.size()) return true;
+		
+		for(PropertyPair pp:properties) {
+			String value = osmObject.getProperty(pp.key);
+			if(value == null) {
+				if(pp.value != null) return true;
+			}
+			
+			if(!value.equals(pp.value)) return true;
+		}
+		
+		//properties match
+		return false;
+	}
+	
 	//=======================
 	// Package Methods
 	//=======================
@@ -98,6 +120,7 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		for(PropertyPair pp:properties) {
 			targetData.setProperty(pp.key,pp.value);
 		}
+		targetData.setIsLoaded(true);
 	}
 	
 	/** This method copies the src data to this object. */

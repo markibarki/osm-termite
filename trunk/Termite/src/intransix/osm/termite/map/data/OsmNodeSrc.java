@@ -58,6 +58,20 @@ public class OsmNodeSrc extends OsmSrcData<OsmNode> {
 		}
 	}
 	
+	//------------------------------
+	// Commit Methods
+	//-----------------------------
+	
+	public boolean isDifferent(OsmNode osmNode) {
+		//compare points
+//we might want to base this on a tolerence, not absolute match
+		Point2D point = osmNode.getPoint();
+		if((point.getX() != mxy.getX())||(point.getY() != mxy.getY())) {
+			return true;
+		}
+		else return propertiesDifferent(osmNode);
+	}
+	
 	//===================
 	// Package Methods
 	//===================

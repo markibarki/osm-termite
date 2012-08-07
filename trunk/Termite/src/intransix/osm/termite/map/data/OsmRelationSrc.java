@@ -62,6 +62,28 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 		}
 	}
 	
+	//------------------------------
+	// Commit Methods
+	//-----------------------------
+	
+	public boolean isDifferent(OsmRelation osmRelation) {
+		//compare node lists
+		List<OsmMember> osmMembers = osmRelation.getMembers();
+		int cnt = osmMembers.size();
+		if(cnt != members.size()) return true;
+		
+		Member m;
+		OsmMember om;
+		for(int i = 0; i < cnt; i++) {
+			m = members.get(i);
+			om = osmMembers.get(i);
+			if(m.isDifferent(om)) return true;
+		}
+
+		//compare properties
+		return propertiesDifferent(osmRelation);
+	}
+	
 	//=======================
 	// Package Methods
 	//=======================
@@ -115,6 +137,32 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 			this.memberId = memberId;
 			this.type = type;
 			this.role = role;
+		}
+		
+		public boolean isDifferent(OsmMember osmMember) {
+			//check object id and type
+			if(osmMember.osmObject == null) {
+				if(memberId != null) return true;
+			}
+			else {
+				if( (osmMember.osmObject.getId() != (long)memberId) ||
+						(!osmMember.osmObject.getObjectType().equals(type))) {
+					return true;
+				}
+			}
+			
+			//check role
+			if(osmMember.role == null) {
+				if(role != null) {
+					return true;
+				}
+				else if(!osmMember.role.equals(role)) {
+					return true;
+				}
+			}
+			
+			//no change
+			return false;
 		}
 	}
 	

@@ -50,6 +50,28 @@ public class OsmWaySrc extends OsmSrcData<OsmWay> {
 			nodeIds.add(ref);
 		}
 	}
+	
+	//------------------------------
+	// Commit Methods
+	//-----------------------------
+	
+	public boolean isDifferent(OsmWay osmWay) {
+		//compare node lists
+		List<OsmNode> nodes = osmWay.getNodes();
+		int cnt = nodes.size();
+		if(cnt != nodeIds.size()) return true;
+		
+		long id1;
+		long id2;
+		for(int i = 0; i < cnt; i++) {
+			id1 = nodeIds.get(i);
+			id2 = nodes.get(i).getId();
+			if(id1 != id2) return true;
+		}
+
+		//compare properties
+		return propertiesDifferent(osmWay);
+	}
 
 	//====================
 	// Package Methods
