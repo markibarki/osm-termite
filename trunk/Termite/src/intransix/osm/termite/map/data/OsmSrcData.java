@@ -41,6 +41,10 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		return type;
 	}
 	
+	public String getOsmObjectVersion() {
+		return version;
+	}
+	
 	/** This method adds a property to the src data. */
 	public void addProperty(String key, String value) {
 		properties.add(new PropertyPair(key,value));

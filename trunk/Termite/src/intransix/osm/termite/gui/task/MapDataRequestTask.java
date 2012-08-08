@@ -3,7 +3,7 @@ package intransix.osm.termite.gui.task;
 import intransix.osm.termite.map.data.MapDataRequest;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.gui.BlockerDialog;
-import intransix.osm.termite.net.XmlRequest;
+import intransix.osm.termite.net.NetRequest;
 import javax.swing.*;
 
 /**
@@ -36,7 +36,7 @@ public class MapDataRequestTask extends SwingWorker<Object,Object> {
 	public Object doInBackground() {
 		
 		try {
-			XmlRequest xmlRequest = new XmlRequest(mapDataRequest);
+			NetRequest xmlRequest = new NetRequest(mapDataRequest);
 			int responseCode = xmlRequest.doRequest();
 			if(responseCode == 200) {
 				success = true;

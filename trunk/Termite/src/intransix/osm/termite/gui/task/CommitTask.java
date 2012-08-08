@@ -5,7 +5,7 @@ import intransix.osm.termite.app.LoginManager;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.gui.BlockerDialog;
 import intransix.osm.termite.gui.dialog.CommitDialog;
-import intransix.osm.termite.net.XmlRequest;
+import intransix.osm.termite.net.NetRequest;
 import javax.swing.*;
 
 /**
@@ -79,19 +79,15 @@ public class CommitTask extends SwingWorker<Object,Object>{
 			changeSet.setMessage(message);
 			
 			//make network requests
-			XmlRequest xmlRequest;
+			NetRequest xmlRequest;
 			int responseCode;
 			
 			//open a change set
 			OpenChangeSetRequest openChangeSetRequest = new OpenChangeSetRequest(changeSet);
-			xmlRequest = new XmlRequest(openChangeSetRequest);
+			xmlRequest = new NetRequest(openChangeSetRequest);
 			xmlRequest.setCredentials(username, password);
 			responseCode = xmlRequest.doRequest();
-//end test
-if(true) {
-success = true;
-return null;
-}
+
 			if(responseCode == 200) {
 				//success
 				success = true;
@@ -99,6 +95,7 @@ return null;
 			else if(responseCode == 401) {
 				//unauthorized
 				errorMsg = "There username and password are not valid.";
+				loginManager.setCredentials(username,null);
 				success = false;
 				return null;
 			}
@@ -109,29 +106,32 @@ return null;
 			}
 			
 			//commit the data
-			CommitRequest commitRequest = new CommitRequest(changeSet);
-			xmlRequest = new XmlRequest(commitRequest);
-			responseCode = xmlRequest.doRequest();
-			
-			if(responseCode == 200) {
-				//success
-				success = true;
-			}
-			else if(responseCode == 401) {
-				//unauthorized
-				errorMsg = "There username and password are not valid.";
-				success = false;
-				return null;
-			}
-			else {
-				errorMsg = "Server error: response code " + responseCode;
-				success = false;
-				return null;
-			}
+//			CommitRequest commitRequest = new CommitRequest(changeSet);
+//			xmlRequest = new NetRequest(commitRequest);
+//			xmlRequest.setCredentials(username, password);
+//			responseCode = xmlRequest.doRequest();
+//			
+//			if(responseCode == 200) {
+//				//success
+//				success = true;
+//			}
+//			else if(responseCode == 401) {
+//				//unauthorized
+//				errorMsg = "There username and password are not valid.";
+//				loginManager.setCredentials(username,null);
+//				success = false;
+//				return null;
+//			}
+//			else {
+//				errorMsg = "Server error: response code " + responseCode;
+//				success = false;
+//				return null;
+//			}
 			
 			//close the change set
 			CloseChangeSetRequest closeChangeSetRequest = new CloseChangeSetRequest(changeSet);
-			xmlRequest = new XmlRequest(closeChangeSetRequest);
+			xmlRequest = new NetRequest(closeChangeSetRequest);
+			xmlRequest.setCredentials(username, password);
 			responseCode = xmlRequest.doRequest();
 			
 			if(responseCode == 200) {
@@ -141,6 +141,7 @@ return null;
 			else if(responseCode == 401) {
 				//unauthorized
 				errorMsg = "There username and password are not valid.";
+				loginManager.setCredentials(username,null);
 				success = false;
 				return null;
 			}

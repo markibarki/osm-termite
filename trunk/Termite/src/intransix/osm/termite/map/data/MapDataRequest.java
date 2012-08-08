@@ -3,13 +3,18 @@ package intransix.osm.termite.map.data;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import intransix.osm.termite.net.RequestSource;
+import java.io.InputStream;
+import java.io.OutputStream;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This class manages an OSM map data request.
  * 
  * @author sutter
  */
-public class MapDataRequest extends RequestSource {
+public class MapDataRequest extends DefaultHandler implements RequestSource {
 	
 	//==========================
 	// Properties
@@ -31,7 +36,7 @@ public class MapDataRequest extends RequestSource {
 		osmData = new OsmData();
 		
 		String path = String.format(OsmModel.DATA_REQUEST_PATH,minLat,minLon,maxLat,maxLon);
-		setUrl(OsmModel.OSM_SERVER + path);
+		url = OsmModel.OSM_SERVER + path;
 	}
 	
 	/** This method returns the loaded OsmData */
@@ -39,9 +44,37 @@ public class MapDataRequest extends RequestSource {
 		return osmData;
 	}
 	
-	/** This method should be called after parsing is complete. */
+	/** This method should return the url. */
 	@Override
-	public void parsingCompleted() {
+	public String getUrl() {
+		return url;
+	}
+	
+	/** This method returns the HTTP request method. */
+	@Override
+	public String getMethod() {
+		return "GET";
+	}
+	
+	/** This method should return true if there is a payload. */
+	@Override
+	public boolean getHasPayload() {
+		return false;
+	}
+	
+	/** This method should be implemented to write the XMl body, if there is a payload. */
+	@Override
+	public void writeRequestBody(OutputStream os) throws Exception {}
+	
+	/** This method will be called to red the response body. */
+	@Override
+	public void readResponseBody(InputStream is) throws Exception {
+		//parse xml
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser saxParser = factory.newSAXParser();	
+		saxParser.parse(is,this);
+		
+		//post-parsing actions
 		osmData.dataChanged(OsmData.INITIAL_DATA_VERSION);
 	}
 	
@@ -90,6 +123,7 @@ public class MapDataRequest extends RequestSource {
 	}
 
 	/** This is the SAX parser characters method. */
+	@Override
 	public void characters(char ch[], int start, int length) throws SAXException {
 	}
 	

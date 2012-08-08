@@ -296,7 +296,7 @@ loadedNodes++;
 				//compare and remove
 				srcNodeMap.remove(nodeSrc.getId());
 				if(nodeSrc.isDifferent(node)) {
-					changeSet.addUpdated(node);
+					changeSet.addUpdated(nodeSrc,node);
 				}
 			}
 			else {
@@ -320,7 +320,7 @@ loadedWays++;
 				//compare and remove
 				srcWayMap.remove(waySrc.getId());
 				if(waySrc.isDifferent(way)) {
-					changeSet.addUpdated(way);
+					changeSet.addUpdated(waySrc,way);
 				}
 			}
 			else {
@@ -343,7 +343,7 @@ loadedRel++;
 				//compare and remove
 				srcRelationMap.remove(relationSrc.getId());
 				if(relationSrc.isDifferent(relation)) {
-					changeSet.addUpdated(relation);
+					changeSet.addUpdated(relationSrc,relation);
 				}
 			}
 			else {
