@@ -1,5 +1,6 @@
 package intransix.osm.termite.map.data;
 
+import intransix.osm.termite.util.MercatorCoordinates;
 import java.util.*;
 import javax.xml.stream.XMLStreamWriter;
 import java.awt.geom.Point2D;
@@ -12,9 +13,9 @@ public class OsmChangeSet {
 	
 	private long id;
 	private String message;
-	private List<OsmObject> created = new ArrayList<OsmObject>();
-	private List<OsmObject> updated = new ArrayList<OsmObject>();
-	private List<OsmSrcData> deleted = new ArrayList<OsmSrcData>();
+	private List<ChangeObject> created = new ArrayList<ChangeObject>();
+	private List<ChangeObject> updated = new ArrayList<ChangeObject>();
+	private List<ChangeObject> deleted = new ArrayList<ChangeObject>();
 	
 	public void setId(long id) {
 		this.id = id;
@@ -33,28 +34,106 @@ public class OsmChangeSet {
 	}
 	
 	public void addCreated(OsmObject osmObject) {
-		created.add(osmObject);
+		created.add(new ChangeObject(null,osmObject));
 	}
 	
 	public void addUpdated(OsmSrcData osmSrcData, OsmObject osmObject) {
-		updated.add(osmObject);
+		updated.add(new ChangeObject(osmSrcData,osmObject));
 	}
 	
 	public void addDeleted(OsmSrcData osmSrcData) {
-		deleted.add(osmSrcData);
+		deleted.add(new ChangeObject(osmSrcData,null));
 	}
 	
 	public boolean isEmpty() {
 		return ((created.isEmpty())&&(updated.isEmpty())&&(deleted.isEmpty()));
 	}
 	
-	private class ChangeObject {
+	public void writeChangeSet(XMLStreamWriter xsw) throws Exception {
+		//sort the created objects so we don't use an object that is not yet creted.
+		Collections.sort(created);
+		
+		xsw.writeStartDocument();
+		
+		xsw.writeStartElement("osmChange");
+		xsw.writeAttribute("version","0.3");
+		xsw.writeAttribute("generator","Termite");
+		
+		if(!created.isEmpty()) {
+			xsw.writeStartElement("create");
+			xsw.writeAttribute("version","0.3");
+			xsw.writeAttribute("generator","Termite");
+			for(ChangeObject co:created) {
+				co.writeEntry(xsw, id);
+			}
+			xsw.writeEndElement();
+		}
+		
+		if(!updated.isEmpty()) {
+			xsw.writeStartElement("modify");
+			xsw.writeAttribute("version","0.3");
+			xsw.writeAttribute("generator","Termite");
+			for(ChangeObject co:updated) {
+				co.writeEntry(xsw, id);
+			}
+			xsw.writeEndElement();
+		}
+		
+		if(!deleted.isEmpty()) {
+			xsw.writeStartElement("delete");
+			xsw.writeAttribute("version","0.3");
+			xsw.writeAttribute("generator","Termite");
+			xsw.writeAttribute("if-unused","*");
+			for(ChangeObject co:deleted) {
+				co.writeEntry(xsw, id);
+			}
+			xsw.writeEndElement();
+		}
+		
+		xsw.writeEndElement();
+		xsw.writeEndDocument();
+	}
+	
+	private class ChangeObject implements Comparable<ChangeObject> {
 		private OsmSrcData osmSrcObject;
 		private OsmObject osmObject;
 		
 		public ChangeObject(OsmSrcData osmSrcObject, OsmObject osmObject) {
 			this.osmSrcObject = osmSrcObject;
 			this.osmObject = osmObject;
+		}
+		
+		/** This is used to order objects during creation, so it doesn't try to 
+		 * use an object that has not been created yet. */
+		public int compareTo(ChangeObject changeObject) {
+			//only rearrange if there is an osm object (don't both with deletes)
+			if((osmObject == null)||(changeObject.osmObject == null)) return 0;
+			
+			if(osmObject instanceof OsmNode) {
+				if(changeObject.osmObject instanceof OsmNode) return 0;
+				else return -1;
+			}
+			else if(osmObject instanceof OsmWay) {
+				if(changeObject.osmObject instanceof OsmNode) return 1;
+				else if(changeObject.osmObject instanceof OsmWay) return 0;
+				else return -1;
+			}
+			else if(osmObject instanceof OsmRelation) {
+				if(changeObject.osmObject instanceof OsmRelation) {
+//I should check if the relation contains a reference to a relation that
+//is also being created. If so update the order. If this can not be done
+//create an update instruction for it?
+					return 0;
+				}
+				else {
+					return 1;
+				}
+			}
+			else {
+				//this shouldn't happen
+				return 0;
+			}
+			
 		}
 		
 		public void writeEntry(XMLStreamWriter xsw, long changeSetId) throws Exception {
@@ -64,6 +143,7 @@ public class OsmChangeSet {
 			
 			List<OsmNode> nodes = null;
 			List<OsmMember> members = null;
+			Point2D point = null;
 			boolean isDelete;
 			boolean isCreate;
 			
@@ -84,9 +164,7 @@ public class OsmChangeSet {
 				
 				if(osmObject instanceof OsmNode) {
 					xsw.writeStartElement("node");
-					Point2D point = ((OsmNode)osmObject).getPoint();
-					xsw.writeAttribute("lat",String.valueOf(point.getY()));
-					xsw.writeAttribute("lon",String.valueOf(point.getX()));
+					point = ((OsmNode)osmObject).getPoint();
 				}
 				else if(osmObject instanceof OsmWay) {
 					xsw.writeStartElement("way");
@@ -106,9 +184,7 @@ public class OsmChangeSet {
 				isCreate = false;
 				if(osmSrcObject instanceof OsmNodeSrc) {
 					xsw.writeStartElement("node");
-					Point2D point = ((OsmNodeSrc)osmSrcObject).getPoint();
-					xsw.writeAttribute("lat",String.valueOf(point.getY()));
-					xsw.writeAttribute("lon",String.valueOf(point.getX()));
+					point = ((OsmNodeSrc)osmSrcObject).getPoint();
 				}
 				else if(osmSrcObject instanceof OsmWaySrc) {
 					xsw.writeStartElement("way");
@@ -124,6 +200,12 @@ public class OsmChangeSet {
 			
 			//add standard attributes
 			xsw.writeAttribute("id",String.valueOf(id));
+			if(point != null) {
+				double lat = Math.toDegrees(MercatorCoordinates.myToLatRad(point.getY()));
+				double lon = Math.toDegrees(MercatorCoordinates.mxToLonRad(point.getX()));
+				xsw.writeAttribute("lat",String.valueOf(lat));
+				xsw.writeAttribute("lon",String.valueOf(lon));
+			}
 			if(osmObjectVersion != null) {
 				xsw.writeAttribute("version",osmObjectVersion);
 			}
@@ -162,6 +244,10 @@ public class OsmChangeSet {
 					}
 				}
 			}
+			
+//			xsw.writeEmptyElement("tag");
+//			xsw.writeAttribute("k","created_by");
+//			xsw.writeAttribute("v","Termite");
 			
 			//finish element
 			xsw.writeEndElement();

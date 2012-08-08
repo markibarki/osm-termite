@@ -64,7 +64,7 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
 		XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(os);
 		
-//add content		
+		changeSet.writeChangeSet(xmlWriter);
 		
 		xmlWriter.flush();
 		xmlWriter.close();
