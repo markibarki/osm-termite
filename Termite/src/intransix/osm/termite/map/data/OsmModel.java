@@ -46,8 +46,9 @@ public class OsmModel {
 	//-----------------------------
 	// URLS
 	//-----------------------------
-	public static String OSM_SERVER = "http://api.openstreetmap.org";
-	
+//	public static String OSM_SERVER = "http://api.openstreetmap.org";
+public static String OSM_SERVER = "http://api06.dev.openstreetmap.org";
+
 	//data request, arguments: minLat, minLon,maxLat,maxLon
 	public static String DATA_REQUEST_PATH = "/api/0.6/map?bbox=%2$.8f,%1$.8f,%4$.8f,%3$.8f";
 	

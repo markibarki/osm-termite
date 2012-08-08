@@ -4,19 +4,28 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import intransix.osm.termite.net.RequestSource;
 import javax.xml.stream.XMLStreamWriter;
+import java.io.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.stream.XMLOutputFactory;
+
+import javax.xml.stream.XMLStreamWriter;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * This class manages on OSM commit request.
  * 
  * @author sutter
  */
-public class CommitRequest extends RequestSource {
+public class CommitRequest extends DefaultHandler implements RequestSource {
 	
 	//==========================
 	// Properties
 	//==========================
 	
 	private OsmChangeSet changeSet;
+	private String url;
 	
 	
 	//==========================
@@ -26,21 +35,52 @@ public class CommitRequest extends RequestSource {
 	/** Constructor. */
 	public CommitRequest(OsmChangeSet changeSet) {
 		this.changeSet = changeSet;
-		this.setMethod("POST");
-		this.setHasPayload(true);
 		
 		String path = String.format(OsmModel.COMMIT_REQUEST_PATH,changeSet.getId());
-		setUrl(OsmModel.OSM_SERVER + path);
+		url = OsmModel.OSM_SERVER + path;
+	}
+	
+	/** This method should return the url. */
+	@Override
+	public String getUrl() {
+		return url;
+	}
+	
+	/** This method returns the HTTP request method. */
+	@Override
+	public String getMethod() {
+		return "POST";
+	}
+	
+	/** This method should return true if there is a payload. */
+	@Override
+	public boolean getHasPayload() {
+		return true;
 	}
 	
 	/** This method should be implemented to write the XMl body, if there is a payload. */
 	@Override
-	public void writeXml(XMLStreamWriter xmlWriter) {
+	public void writeRequestBody(OutputStream os) throws Exception {
+		XMLOutputFactory factory = XMLOutputFactory.newInstance();
+		XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(os);
+		
+//add content		
+		
+		xmlWriter.flush();
+		xmlWriter.close();
 	}
 	
-	/** This method is called after the response is parsed. */
+	/** This method will be called to red the response body. */
 	@Override
-	public void parsingCompleted() {
+	public void readResponseBody(InputStream is) throws Exception {
+		//parse xml
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser saxParser = factory.newSAXParser();	
+		saxParser.parse(is,this);
+		
+		//post-parsing actions
+//add these
+		
 	}
 	
 	/** This is the SAX parser start element method. */
