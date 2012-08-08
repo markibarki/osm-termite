@@ -12,7 +12,7 @@ public class SaxUtils {
 	//==========================
 	
 	/** This method reads a boolean value from the attributes. */ 
-	protected static boolean getBoolean(Attributes attr, String key, boolean defaultValue) {
+	public static boolean getBoolean(Attributes attr, String key, boolean defaultValue) {
 		String value = attr.getValue(key);
 		if(value != null) {
 			//try to parse the string, on failure return default
@@ -27,7 +27,7 @@ public class SaxUtils {
 	}
 	
 	/** This method reads a long value from the attributes. */
-	protected static long getLong(Attributes attr, String key, long defaultValue) {
+	public static long getLong(Attributes attr, String key, long defaultValue) {
 		String value = attr.getValue(key);
 		if(value != null) {
 			//try to parse the string, on failure return default
@@ -42,7 +42,7 @@ public class SaxUtils {
 	}
 	
 	/** This method reads a double value from the attributes. */
-	protected static double getDouble(Attributes attr, String key, double defaultValue) {
+	public static double getDouble(Attributes attr, String key, double defaultValue) {
 		String value = attr.getValue(key);
 		if(value != null) {
 			//try to parse the string, on failure return default

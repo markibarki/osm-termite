@@ -106,7 +106,7 @@ public class CommitTask extends SwingWorker<Object,Object>{
 			}
 			
 			//commit the data
-			CommitRequest commitRequest = new CommitRequest(changeSet);
+			CommitRequest commitRequest = new CommitRequest(changeSet,osmData);
 			xmlRequest = new NetRequest(commitRequest);
 			xmlRequest.setCredentials(username, password);
 			responseCode = xmlRequest.doRequest();
@@ -174,9 +174,7 @@ public class CommitTask extends SwingWorker<Object,Object>{
 		}
 		
 		if(success) {
-			//for now just get rid of the data
-//update the map data
-this.gui.setMapData(null);
+			//no action needed
 		}
 		else {
 			JOptionPane.showMessageDialog(null,"There was an error: " + errorMsg);

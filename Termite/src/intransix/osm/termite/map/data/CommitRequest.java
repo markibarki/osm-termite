@@ -12,6 +12,8 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
+import java.util.*;
+import intransix.osm.termite.util.SaxUtils;
 
 /**
  * This class manages on OSM commit request.
@@ -24,17 +26,22 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 	// Properties
 	//==========================
 	
+	private OsmData osmData;
 	private OsmChangeSet changeSet;
 	private String url;
+	private List<UpdateInfo> updateList = new ArrayList<UpdateInfo>();
+	
+	private UpdateInfo activeObject;
 	
 	
 	//==========================
-	// Properties
+	// Public Methods
 	//==========================
 	
 	/** Constructor. */
-	public CommitRequest(OsmChangeSet changeSet) {
+	public CommitRequest(OsmChangeSet changeSet, OsmData osmData) {
 		this.changeSet = changeSet;
+		this.osmData = osmData;
 		
 		String path = String.format(OsmModel.COMMIT_REQUEST_PATH,changeSet.getId());
 		url = OsmModel.OSM_SERVER + path;
@@ -79,8 +86,7 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 		saxParser.parse(is,this);
 		
 		//post-parsing actions
-//add these
-		
+		processUpdateList();
 	}
 	
 	/** This is the SAX parser start element method. */
@@ -88,47 +94,146 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 	public void startElement(String uri, String localName, String name,
 			Attributes attributes) throws SAXException {
 		
-//		if(activeObject != null) {
-//			activeObject.startElement(name,attributes,osmData);
-//		}
-//		else if(name.equalsIgnoreCase("osm")) {
-//			String version = attributes.getValue("version");
-//			osmData.setVersion(version);
-//			String generator = attributes.getValue("generator");
-//			osmData.setGenerator(generator);
-//		}
-//		else {
-//			long osmId = getLong(attributes,"id",OsmData.INVALID_ID);
-//			if(osmId != OsmData.INVALID_ID) {
-//				//lookup or create object
-//				activeObject = osmData.createOsmSrcObject(osmId,name);
-//				if(activeObject != null) {
-//					//we are processing a new object
-//					activeObjectName = name;
-//					activeObject.startElement(name,attributes,osmData);
-//				}
-//			}
-//		}
+		if((name.equals("node"))||(name.equals("way"))||(name.equals("relation"))) {
+			UpdateInfo info = new UpdateInfo();
+			info.objectType = name;
+			info.oldId = SaxUtils.getLong(attributes, "old_id", OsmData.INVALID_ID);
+			info.newId = SaxUtils.getLong(attributes, "new_id", OsmData.INVALID_ID);
+			info.newVersion = attributes.getValue("new_version");
+			updateList.add(info);
+		}
 	}
 
 	/** This is the SAX parser end element method. */
 	@Override
 	public void endElement(String uri, String localName,
 			String name) throws SAXException {
-
-//		if(activeObjectName != null) {
-//			if(activeObjectName.equalsIgnoreCase(name)) {
-//				if(activeObject != null) {
-//					activeObject.endElement(osmData);
-//				}
-//				activeObject = null;
-//				activeObjectName = null;
-//			}
-//		}
 	}
 
 	/** This is the SAX parser characters method. */
+	@Override
 	public void characters(char ch[], int start, int length) throws SAXException {
+	}
+	
+	//=========================
+	// Private Methods
+	//=========================
+	
+	/** This method updates the OsmData to reflect the new ID and version numbers
+	 * after the commit. */
+	private void processUpdateList() {
+		//create the maps to look up the src objects
+		HashMap<Long,OsmNodeSrc> srcNodeMap = osmData.createNodeSrcMap();
+		HashMap<Long,OsmWaySrc> srcWayMap = osmData.createWaySrcMap();
+		HashMap<Long,OsmRelationSrc> srcRelationMap = osmData.createRelationSrcMap();
+		
+		OsmObject osmObject;
+		OsmSrcData osmSrcObject;
+		for(UpdateInfo info:updateList) {
+	
+
+			if(info.objectType.equals("node")) {
+				if(info.newId == OsmData.INVALID_ID) {
+					//delete - remove node src object, node already removed
+					osmSrcObject = srcNodeMap.get(info.oldId);
+					osmData.removeNodeSrc((OsmNodeSrc)osmSrcObject);
+					srcNodeMap.remove(info.oldId);
+					
+					osmObject = null;
+					osmSrcObject = null;
+				}
+				else {
+					//get copy of node
+					osmObject = osmData.getOsmNode(info.oldId);
+					
+					if(info.newId != info.oldId) {
+						//create node src
+						osmSrcObject = osmData.createNodeSrc((OsmNode)osmObject);
+					}
+					else {
+						//get copy of node src
+						osmSrcObject = srcNodeMap.get(info.oldId);
+						//update source object
+						osmSrcObject.copyFrom(osmObject);
+					}	
+				}
+			}
+			else if(info.objectType.equals("way")) {
+				if(info.newId == OsmData.INVALID_ID) {
+					//delete - remove way src, way already removed
+					osmSrcObject = srcWayMap.get(info.oldId);
+					osmData.removeWaySrc((OsmWaySrc)osmSrcObject);
+					srcWayMap.remove(info.oldId);
+					
+					osmObject = null;
+					osmSrcObject = null;
+				}
+				else {
+					//get copy of way
+					osmObject = osmData.getOsmWay(info.oldId);
+					
+					if(info.newId != info.oldId) {
+						//create way src
+						osmSrcObject = osmData.createWaySrc((OsmWay)osmObject);
+					}
+					else {
+						//lookup copy of way
+						osmSrcObject = srcWayMap.get(info.oldId);
+						//update source object
+						osmSrcObject.copyFrom(osmObject);
+					}	
+				}
+			}
+			else if(info.objectType.equals("relation")) {
+				if(info.newId == OsmData.INVALID_ID) {
+					//delete relation src, relation already deleted
+					osmSrcObject = srcRelationMap.get(info.oldId);
+					osmData.removeRelationSrc((OsmRelationSrc)osmSrcObject);
+					srcRelationMap.remove(info.oldId);
+					
+					osmObject = null;
+					osmSrcObject = null;
+				}
+				else {
+					//get copy of relation
+					osmObject = osmData.getOsmRelation(info.oldId);
+					
+					if(info.newId != info.oldId) {
+						//create relation src
+						osmSrcObject = osmData.createRelationSrc((OsmRelation)osmObject);
+					}
+					else {
+						//get copy of relation src
+						osmSrcObject = srcRelationMap.get(info.oldId);
+						//update source object
+						osmSrcObject.copyFrom(osmObject);
+					}	
+				}	
+			}
+			else {
+				continue;
+			}
+
+			
+			if(osmObject != null) {
+				//update version in source
+				if(info.newVersion != null) {
+					osmSrcObject.setOsmObjectVersion(info.newVersion);
+				}
+				
+				if(info.newId != info.oldId) {
+					osmObject.setId(info.newId);
+					osmSrcObject.setId(info.newId);
+				}
+			}	
+		}
+	}
+	
+	private class UpdateInfo {
+		String objectType;
+		long oldId;
+		long newId;
+		String newVersion;
 	}
 
 }
