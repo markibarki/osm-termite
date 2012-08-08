@@ -106,27 +106,27 @@ public class CommitTask extends SwingWorker<Object,Object>{
 			}
 			
 			//commit the data
-//			CommitRequest commitRequest = new CommitRequest(changeSet);
-//			xmlRequest = new NetRequest(commitRequest);
-//			xmlRequest.setCredentials(username, password);
-//			responseCode = xmlRequest.doRequest();
-//			
-//			if(responseCode == 200) {
-//				//success
-//				success = true;
-//			}
-//			else if(responseCode == 401) {
-//				//unauthorized
-//				errorMsg = "There username and password are not valid.";
-//				loginManager.setCredentials(username,null);
-//				success = false;
-//				return null;
-//			}
-//			else {
-//				errorMsg = "Server error: response code " + responseCode;
-//				success = false;
-//				return null;
-//			}
+			CommitRequest commitRequest = new CommitRequest(changeSet);
+			xmlRequest = new NetRequest(commitRequest);
+			xmlRequest.setCredentials(username, password);
+			responseCode = xmlRequest.doRequest();
+			
+			if(responseCode == 200) {
+				//success
+				success = true;
+			}
+			else if(responseCode == 401) {
+				//unauthorized
+				errorMsg = "There username and password are not valid.";
+				loginManager.setCredentials(username,null);
+				success = false;
+				return null;
+			}
+			else {
+				errorMsg = "Server error: response code " + responseCode;
+				success = false;
+				return null;
+			}
 			
 			//close the change set
 			CloseChangeSetRequest closeChangeSetRequest = new CloseChangeSetRequest(changeSet);

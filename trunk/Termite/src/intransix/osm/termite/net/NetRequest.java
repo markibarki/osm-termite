@@ -59,7 +59,7 @@ public class NetRequest {
 				conn.setDoOutput(true);
 				OutputStream os = conn.getOutputStream();
 				try {
-					requestSource.writeRequestBody(conn.getOutputStream());
+					requestSource.writeRequestBody(os);
 					os.flush();
 				}
 				finally {
@@ -69,7 +69,7 @@ public class NetRequest {
 			else {
 				conn.setDoOutput(false);
 			}
-
+			
 			int responseCode = conn.getResponseCode();
 			if(responseCode == HttpURLConnection.HTTP_OK) {
 				//parse response
