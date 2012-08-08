@@ -22,6 +22,7 @@ import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
 import intransix.osm.termite.gui.dialog.CommitDialog;
+import intransix.osm.termite.gui.task.CommitTask;
 
 /**
  * This is the main UI class. It initializes the UI and it manages event flow.
@@ -782,8 +783,8 @@ public class TermiteGui extends javax.swing.JFrame {
 	}
 	
 	private void commitData() {
-		CommitDialog commitDialog = new CommitDialog(this,osmData);
-		commitDialog.setVisible(true);
+		CommitTask commitTask = new CommitTask(this);
+		commitTask.execute();
 	}
 	
 	private void selectBaseMap(TileInfo tileInfo) {

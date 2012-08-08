@@ -1,20 +1,18 @@
 package intransix.osm.termite.gui.task;
 
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmModel;
-import intransix.osm.termite.map.data.OsmParser;
+import intransix.osm.termite.map.data.MapDataRequest;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.gui.BlockerDialog;
+import intransix.osm.termite.net.XmlRequest;
 import javax.swing.*;
 
 /**
  *
  * @author sutter
  */
-public class MapDataRequestTask extends SwingWorker<OsmData,Object> {
+public class MapDataRequestTask extends SwingWorker<Object,Object> {
 	
-	private String url;
-	private OsmData osmData;
+	private MapDataRequest mapDataRequest;
 	private TermiteGui gui;
 	private JDialog blocker;
 	
@@ -24,7 +22,7 @@ public class MapDataRequestTask extends SwingWorker<OsmData,Object> {
 	public MapDataRequestTask(TermiteGui gui, double minLat, double minLon, 
 			double maxLat, double maxLon) {
 		this.gui = gui;
-		this.url = OsmModel.getBBoxRequestUrl(minLat, minLon, maxLat, maxLon);
+		this.mapDataRequest = new MapDataRequest(minLat, minLon, maxLat, maxLon);
 	}
 	
 	public synchronized void blockUI() {
@@ -35,12 +33,18 @@ public class MapDataRequestTask extends SwingWorker<OsmData,Object> {
 	}
 	
 	@Override
-	public OsmData doInBackground() {
+	public Object doInBackground() {
 		
 		try {
-			OsmParser osmParser = new OsmParser();
-			osmData = osmParser.parse(url);
-			success = true;
+			XmlRequest xmlRequest = new XmlRequest(mapDataRequest);
+			int responseCode = xmlRequest.doRequest();
+			if(responseCode == 200) {
+				success = true;
+			}
+			else {
+				errorMsg = "Server error: response code " + responseCode;
+				success = false;
+			}
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
@@ -48,7 +52,7 @@ public class MapDataRequestTask extends SwingWorker<OsmData,Object> {
 			success = false;
 		}
 		
-		return osmData;
+		return "";
 	}
 	
 	@Override
@@ -59,7 +63,7 @@ public class MapDataRequestTask extends SwingWorker<OsmData,Object> {
 		}
 		
 		if(success) {
-			gui.setMapData(osmData);
+			gui.setMapData(mapDataRequest.getOsmData());
 		}
 		else {
 			JOptionPane.showMessageDialog(null,"There was an error: " + errorMsg);

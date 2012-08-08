@@ -43,24 +43,26 @@ public class OsmModel {
 	
 	public static HashSet<String> GEOMETRIC_KEYS = new HashSet<String>();
 	
-	//data request
-	public static String SERVER = "http://api.openstreetmap.org";
-	public static String PATH = "/api/0.6/map?bbox=";
+	//-----------------------------
+	// URLS
+	//-----------------------------
+	public static String OSM_SERVER = "http://api.openstreetmap.org";
 	
-	/** This method gets a URL for a data request for a bouding box. */
-	public static String getBBoxRequestUrl(double minLat, double minLon, double maxLat, double maxLon) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(SERVER);
-		sb.append(PATH);
-		sb.append(minLon);
-		sb.append(',');
-		sb.append(minLat);
-		sb.append(',');
-		sb.append(maxLon);
-		sb.append(',');
-		sb.append(maxLat);
-		return sb.toString();
-	}
+	//data request, arguments: minLat, minLon,maxLat,maxLon
+	public static String DATA_REQUEST_PATH = "/api/0.6/map?bbox=%2$.8f,%1$.8f,%4$.8f,%3$.8f";
+	
+	//open change set
+	public static String OPEN_CHANGESET_REQUEST_PATH = "/api/0.6/changeset/create";
+	
+	//commit, arugments: commit id
+	public static String COMMIT_REQUEST_PATH = "/api/0.6/changeset/%1$d/upload";
+	
+	//close change set, arugments: commit id
+	public static String CLOSE_CHANGESET_REQUEST_PATH = "/api/0.6/changeset/%1$d/close";
+	
+	//===============================
+	// Methods
+	//===============================
 	
 	/** This method parses a json file that holds model parameters. */
 	public static void parse(JSONObject json) throws Exception {
