@@ -12,15 +12,19 @@ import javax.swing.JOptionPane;
 public class CommitDialog extends javax.swing.JDialog {
 
 	private TermiteGui termiteGui;
-	private OsmData osmData;
+	private String message;
 	/**
 	 * Creates new form CommitDialog
 	 */
-	public CommitDialog(TermiteGui termiteGui, OsmData osmData) {
+	public CommitDialog(TermiteGui termiteGui) {
 		super(termiteGui, true);
 		initComponents();
 		this.termiteGui = termiteGui;
-		this.osmData = osmData;
+	}
+	
+	/** This gets the message entered by the user. */
+	public String getMessage() {
+		return message;
 	}
 
 	/**
@@ -105,18 +109,18 @@ public class CommitDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+		message = null;
 		setVisible(false);
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	private void commitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commitButtonActionPerformed
-		String message = this.msgTextArea.getText();
+		message = this.msgTextArea.getText();
 		if((message == null)||(message.length() == 0)) {
 			JOptionPane.showMessageDialog(null, "A commit message must be entered.");
+			message = null;
 			return;
 		}
-		
-		CommitTask commitTask = new CommitTask(termiteGui,osmData,message);
-		commitTask.execute();
+	
 		setVisible(false);
 	}//GEN-LAST:event_commitButtonActionPerformed
 

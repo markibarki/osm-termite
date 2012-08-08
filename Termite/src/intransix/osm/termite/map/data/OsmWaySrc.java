@@ -46,7 +46,7 @@ public class OsmWaySrc extends OsmSrcData<OsmWay> {
 			parseElementBase(name, attr);
 		}
 		else if(name.equalsIgnoreCase("nd")) {
-			long ref = OsmParser.getLong(attr,"ref",OsmData.INVALID_ID);
+			long ref = MapDataRequest.getLong(attr,"ref",OsmData.INVALID_ID);
 			nodeIds.add(ref);
 		}
 	}

@@ -56,7 +56,7 @@ public class OsmRelationSrc extends OsmSrcData<OsmRelation> {
 		}
 		else if(name.equalsIgnoreCase("member")) {
 			String type = attr.getValue("type");
-			long ref = OsmParser.getLong(attr,"ref",OsmData.INVALID_ID);
+			long ref = MapDataRequest.getLong(attr,"ref",OsmData.INVALID_ID);
 			String role = attr.getValue("role");
 			members.add(new Member(ref,type,role));
 		}

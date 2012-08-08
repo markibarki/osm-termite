@@ -138,7 +138,7 @@ public abstract class OsmSrcData<T extends OsmObject> {
 	void parseElementBase(String name, Attributes attr) {
 		user = attr.getValue("user");
 		uid = attr.getValue("uid");
-		visible = OsmParser.getBoolean(attr,"visible",true);
+		visible = MapDataRequest.getBoolean(attr,"visible",true);
 		version = attr.getValue("version");
 		changeset = attr.getValue("changeset");
 		timestamp = attr.getValue("timestamp");

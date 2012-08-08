@@ -24,6 +24,7 @@ public class TermiteApp {
 	//=====================
 	
 	private TermiteGui gui;
+	private LoginManager loginManager = new LoginManager();
 	
 	private Theme theme;
 	private FeatureInfoMap featureInfoMap;
@@ -43,6 +44,10 @@ public class TermiteApp {
 	
 	public TermiteGui getGui() {
 		return gui;
+	}
+	
+	public LoginManager getLoginManager() {
+		return loginManager;
 	}
 	
 	public Theme getTheme() {

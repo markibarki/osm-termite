@@ -50,8 +50,8 @@ public class OsmNodeSrc extends OsmSrcData<OsmNode> {
 			//parse common stuff
 			parseElementBase(name, attr);
 			//get local coordinates in meters
-			double lat = OsmParser.getDouble(attr,"lat",OsmNode.INVALID_ANGLE);
-			double lon = OsmParser.getDouble(attr,"lon",OsmNode.INVALID_ANGLE);
+			double lat = MapDataRequest.getDouble(attr,"lat",OsmNode.INVALID_ANGLE);
+			double lon = MapDataRequest.getDouble(attr,"lon",OsmNode.INVALID_ANGLE);
 			double mx = MercatorCoordinates.lonRadToMx(Math.toRadians(lon));
 			double my = MercatorCoordinates.latRadToMy(Math.toRadians(lat));
 			mxy.setLocation(mx, my);
