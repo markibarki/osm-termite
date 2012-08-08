@@ -260,37 +260,14 @@ public class OsmData {
 	/** This method loads the edit diff data intot the change set. */
 	public void loadChangeSet(OsmChangeSet changeSet) {
 		
-int unloadedNodes = 0;
-int loadedNodes = 0;
-int unloadedWays = 0;
-int loadedWays = 0;
-int unloadedRel = 0;
-int loadedRel = 0;
-		
 		//load the souce data maps
-		HashMap<Long,OsmNodeSrc> srcNodeMap = new HashMap<Long,OsmNodeSrc>();
-		HashMap<Long,OsmWaySrc> srcWayMap = new HashMap<Long,OsmWaySrc>();
-		HashMap<Long,OsmRelationSrc> srcRelationMap = new HashMap<Long,OsmRelationSrc>();
-		
-		for(OsmNodeSrc node:srcNodes) {
-			srcNodeMap.put(node.getId(),node);
-		}
-		for(OsmWaySrc way:srcWays) {
-			srcWayMap.put(way.getId(),way);
-		}
-		for(OsmRelationSrc relation:srcRelations) {
-			srcRelationMap.put(relation.getId(),relation);
-		}
+		HashMap<Long,OsmNodeSrc> srcNodeMap = createNodeSrcMap();
+		HashMap<Long,OsmWaySrc> srcWayMap = createWaySrcMap();
+		HashMap<Long,OsmRelationSrc> srcRelationMap = createRelationSrcMap();
 		
 		//look up existing data
 		//nodes
 		for(OsmNode node:nodeMap.values()) {
-			
-if(!node.getIsLoaded()) {
-	unloadedNodes++;
-	continue;
-}
-loadedNodes++;
 			OsmNodeSrc nodeSrc = srcNodeMap.get(node.getId());
 			if(nodeSrc != null) {
 				//compare and remove
@@ -308,13 +285,6 @@ loadedNodes++;
 		}
 		//ways
 		for(OsmWay way:wayMap.values()) {
-			
-if(!way.getIsLoaded()) {
-	unloadedWays++;
-	continue;
-}			
-loadedWays++;
-
 			OsmWaySrc waySrc = srcWayMap.get(way.getId());
 			if(waySrc != null) {
 				//compare and remove
@@ -331,13 +301,7 @@ loadedWays++;
 			changeSet.addDeleted(waySrc);
 		}
 		//relations
-		for(OsmRelation relation:relationMap.values()) {
-			
-if(!relation.getIsLoaded()) {
-	unloadedRel++;
-	continue;
-}		
-loadedRel++;			
+		for(OsmRelation relation:relationMap.values()) {		
 			OsmRelationSrc relationSrc = srcRelationMap.get(relation.getId());
 			if(relationSrc != null) {
 				//compare and remove
@@ -353,8 +317,64 @@ loadedRel++;
 		for(OsmRelationSrc nodeSrc:srcRelationMap.values()) {
 			changeSet.addDeleted(nodeSrc);
 		}
-		
-System.out.println("unload/load: " + unloadedNodes + " " + loadedNodes + " " + unloadedWays + " " + loadedWays + " " + unloadedRel + " " + loadedRel);		
+	}
+	
+	public HashMap<Long,OsmNodeSrc> createNodeSrcMap() {
+		//load the souce data maps
+		HashMap<Long,OsmNodeSrc> srcNodeMap = new HashMap<Long,OsmNodeSrc>();
+		for(OsmNodeSrc node:srcNodes) {
+			srcNodeMap.put(node.getId(),node);
+		}
+		return srcNodeMap;
+	}
+	
+	public HashMap<Long,OsmWaySrc> createWaySrcMap() {
+		HashMap<Long,OsmWaySrc> srcWayMap = new HashMap<Long,OsmWaySrc>();
+		for(OsmWaySrc way:srcWays) {
+			srcWayMap.put(way.getId(),way);
+		}
+		return srcWayMap;
+	}
+	
+	public HashMap<Long,OsmRelationSrc> createRelationSrcMap() {
+		HashMap<Long,OsmRelationSrc> srcRelationMap = new HashMap<Long,OsmRelationSrc>();
+		for(OsmRelationSrc relation:srcRelations) {
+			srcRelationMap.put(relation.getId(),relation);
+		}
+		return srcRelationMap;
+	}
+	
+	public OsmNodeSrc createNodeSrc(OsmNode node) {
+		OsmNodeSrc osmNodeSrc = new OsmNodeSrc();
+		osmNodeSrc.copyFrom(node);
+		srcNodes.add(osmNodeSrc);
+		return osmNodeSrc;
+	}
+	
+	public OsmWaySrc createWaySrc(OsmWay way) {
+		OsmWaySrc osmWaySrc = new OsmWaySrc();
+		osmWaySrc.copyFrom(way);
+		srcWays.add(osmWaySrc);
+		return osmWaySrc;
+	}
+	
+	public OsmRelationSrc createRelationSrc(OsmRelation relation) {
+		OsmRelationSrc osmRelationSrc = new OsmRelationSrc();
+		osmRelationSrc.copyFrom(relation);
+		srcRelations.add(osmRelationSrc);
+		return osmRelationSrc;
+	}
+	
+	public void removeNodeSrc(OsmNodeSrc osmNodeSrc) {
+		srcNodes.remove(osmNodeSrc);
+	}
+	
+	public void removeWaySrc(OsmWaySrc osmWaySrc) {
+		srcWays.remove(osmWaySrc);
+	}
+	
+	public void removeRelationSrc(OsmRelationSrc osmRelationSrc) {
+		srcRelations.remove(osmRelationSrc);
 	}
 	
 	//=============================
