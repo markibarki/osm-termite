@@ -173,6 +173,8 @@ public class GeocodeLayer extends MapLayer implements
 	public void mousePressed(MouseEvent e) {
 		
 		if(layerState == LayerState.INACTIVE) return;
+		
+		if(e.getButton() != MouseEvent.BUTTON1) return;
 	
 		boolean changed = false;
 		MapPanel mapPanel = getMapPanel();

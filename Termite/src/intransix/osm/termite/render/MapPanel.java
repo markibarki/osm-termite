@@ -270,7 +270,7 @@ this.resetLocalCoordinates();
 	}
 	
 	public void mousePressed(MouseEvent e) {
-		if(e.getButton() == MouseEvent.BUTTON2) {
+		if(e.getButton() == MouseEvent.BUTTON3) {
 			startPan(e.getX(),e.getY());
 		}
 	}
@@ -283,7 +283,7 @@ this.resetLocalCoordinates();
 	
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		
-		int rotation = e.getWheelRotation();
+		int rotation = -e.getWheelRotation();
 		double scaleFactor = Math.pow(ROTATION_SCALE_FACTOR,rotation);
 		double x = e.getX();
 		double y = e.getY();

@@ -29,13 +29,18 @@ import intransix.osm.termite.gui.task.CommitTask;
  * 
  * @author sutter
  */
-public class TermiteGui extends javax.swing.JFrame {
+public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedListener {
 	
 	//=====================
 	// Private Properties
 	//=====================
 	
 	private final static String HIDDEN_BASE_MAP_NAME = "Hidden";
+	
+	private final static String UNDO_ITEM_BASE = "Undo: ";
+	private final static String UNDO_ITEM_TEXT = "Undo";
+	private final static String REDO_ITEM_BASE = "Redo: ";
+	private final static String REDO_ITEM_TEXT = "Redo";
 	
 	// <editor-fold defaultstate="collapsed" desc="Properties">
 	
@@ -166,10 +171,17 @@ public class TermiteGui extends javax.swing.JFrame {
 			setToEditState();
 			//set the level to null (outdoor level)
 			this.setSelectedLevel(null, null);
+			
+			//become a listener for data changed events
+			osmData.addDataChangedListener(this);
 		}
 		else {
 			//put the app in the search state
 			setToSearchState();
+			
+			//update the menu
+			clearUndoItem();
+			clearRedoItem();
 		}
 	}
 	
@@ -418,6 +430,47 @@ public class TermiteGui extends javax.swing.JFrame {
 	}
 	// </editor-fold>
 	
+	// <editor-fold defaultstate="collapsed" desc="Event Handlers">
+	/** This method is called when the data has changed. It updates the undo
+	 * and redo actions.
+	 * 
+	 * @param editNumber	This is the data version that will be reflected in any data changed 
+	 *						by this edit action.
+	 */
+	@Override
+	public void osmDataChanged(int editNumber) {
+		if(osmData != null) {
+			String undoMessage = osmData.getUndoMessage();
+			if(undoMessage != null) {
+				undoItem.setText(UNDO_ITEM_BASE + undoMessage);
+				undoItem.setEnabled(true);
+			}
+			else {
+				clearUndoItem();
+			}
+			
+			String redoMessage = osmData.getRedoMessage();
+			if(redoMessage != null) {
+				redoItem.setText(REDO_ITEM_BASE + redoMessage);
+				redoItem.setEnabled(true);
+			}
+			else {
+				clearRedoItem();
+			}
+		}
+	}
+	
+	private void clearUndoItem() {
+		undoItem.setText(UNDO_ITEM_TEXT);
+		undoItem.setEnabled(false);
+	}
+	
+	private void clearRedoItem() {
+		redoItem.setText(REDO_ITEM_TEXT);
+		redoItem.setEnabled(false);
+	}
+	// </editor-fold>
+	
 	//================================
 	// Private Methods
 	//================================
@@ -428,12 +481,20 @@ public class TermiteGui extends javax.swing.JFrame {
 		this.setEditModesEnable(false);
 		this.setEditorMode(searchMode);
 		this.editModeButtonGroup.clearSelection();
+		
+		//disable some menu items
+		this.commitItem.setEnabled(false);
+		this.openSourceMenuItem.setEnabled(false);
 	}
 	
 	private void setToEditState() {
 		this.setEditModesEnable(true);
 		this.setEditorMode(defaultEditMode);
 		defaultEditModeButton.setSelected(true);
+		
+		//enable some menu items
+		this.commitItem.setEnabled(true);
+		this.openSourceMenuItem.setEnabled(true);
 	}
 	
 	private void loadEditModes() {
@@ -583,20 +644,24 @@ public class TermiteGui extends javax.swing.JFrame {
 		editMenu = new javax.swing.JMenu();
 		editMenu.setText("Edit");
         undoItem = new javax.swing.JMenuItem();
-        undoItem.setText("Undo");
+        undoItem.setText(UNDO_ITEM_TEXT);
+		undoItem.setEnabled(false);
 		undoItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 undoItemActionPerformed(evt);
             }
         });
+		undoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK));
         editMenu.add(undoItem);
 		redoItem = new javax.swing.JMenuItem();
-        redoItem.setText("Redo");
+        redoItem.setText(REDO_ITEM_TEXT);
+		redoItem.setEnabled(false);
 		redoItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 redoItemActionPerformed(evt);
             }
         });
+		redoItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_MASK));
         editMenu.add(redoItem);
         menuBar.add(editMenu);
 		

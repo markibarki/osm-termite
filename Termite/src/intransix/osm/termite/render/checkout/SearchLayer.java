@@ -92,15 +92,19 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 	}
 	
 	public void mousePressed(MouseEvent e) {
-		selection = null;
-		getMapPanel().repaint();
+		if(e.getButton() == MouseEvent.BUTTON1) {
+			selection = null;
+			getMapPanel().repaint();
+		}
 	}
 	
 	public void mouseReleased(MouseEvent e) {
-		Point2D point = getMercatorPoint(e.getX(),e.getY());
-		if(selection != null) {
-			selection.add(point);
-			getMapPanel().repaint();
+		if(e.getButton() == MouseEvent.BUTTON1) {
+			Point2D point = getMercatorPoint(e.getX(),e.getY());
+			if(selection != null) {
+				selection.add(point);
+				getMapPanel().repaint();
+			}
 		}
 	}
 	

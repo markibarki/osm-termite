@@ -69,7 +69,9 @@ public class OsmData {
 	
 	/** This adds a data changed listener. */
 	public void addDataChangedListener(OsmDataChangedListener listener) {
-		listeners.add(listener);
+		if(!listeners.contains(listener)) {
+			listeners.add(listener);
+		}
 	}
 	
 	/** This removes a data changed listener. */
@@ -217,8 +219,8 @@ public class OsmData {
 		if(nextAddIndex > 0) {
 			EditAction undoAction = actions.get(nextAddIndex - 1);
 			try {
-				undoAction.undoAction();
 				nextAddIndex--;
+				undoAction.undoAction();
 				return true;
 			}
 			catch(Exception ex) {
@@ -237,8 +239,8 @@ public class OsmData {
 		if(nextAddIndex < actions.size()) {
 			EditAction redoAction = actions.get(nextAddIndex);
 			try {
-				redoAction.doAction();
 				nextAddIndex++;
+				redoAction.doAction();
 				return true;
 			}
 			catch(Exception ex) {
