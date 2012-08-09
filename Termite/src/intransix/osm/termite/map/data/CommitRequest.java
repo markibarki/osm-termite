@@ -149,6 +149,10 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 					if(info.newId != info.oldId) {
 						//create node src
 						osmSrcObject = osmData.createNodeSrc((OsmNode)osmObject);
+						//add to the map, at the new id
+						srcNodeMap.put(info.newId,(OsmNodeSrc)osmSrcObject);
+						//move the relation object
+						osmData.nodeIdChanged(info.oldId,info.newId);
 					}
 					else {
 						//get copy of node src
@@ -175,6 +179,10 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 					if(info.newId != info.oldId) {
 						//create way src
 						osmSrcObject = osmData.createWaySrc((OsmWay)osmObject);
+						//add to the map, at the new id
+						srcWayMap.put(info.newId,(OsmWaySrc)osmSrcObject);
+						//move the way object
+						osmData.wayIdChanged(info.oldId,info.newId);
 					}
 					else {
 						//lookup copy of way
@@ -201,6 +209,10 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 					if(info.newId != info.oldId) {
 						//create relation src
 						osmSrcObject = osmData.createRelationSrc((OsmRelation)osmObject);
+						//add to the map, at the new id
+						srcRelationMap.put(info.newId,(OsmRelationSrc)osmSrcObject);
+						//move the relation object
+						osmData.relationIdChanged(info.oldId,info.newId);
 					}
 					else {
 						//get copy of relation src

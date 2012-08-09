@@ -377,6 +377,22 @@ public class OsmData {
 		srcRelations.remove(osmRelationSrc);
 	}
 	
+	public void nodeIdChanged(long id1, long id2) {
+		OsmNode node = nodeMap.remove(id1);
+		nodeMap.put(id2, node);
+	}
+	
+	public void wayIdChanged(long id1, long id2) {
+		OsmWay way = wayMap.remove(id1);
+		wayMap.put(id2, way);
+	}
+	
+	public void relationIdChanged(long id1, long id2) {
+		OsmRelation relation = relationMap.remove(id1);
+		relationMap.put(id2, relation);
+	}
+	
+	
 	//=============================
 	// Package Methods
 	//=============================
