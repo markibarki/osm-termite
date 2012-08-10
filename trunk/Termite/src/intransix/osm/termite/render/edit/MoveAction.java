@@ -110,11 +110,12 @@ public class MoveAction implements MouseEditAction {
 			MoveEdit me = new MoveEdit(osmData);
 			me.selectionMoved(selection,moveStartPoint,clickDestPoint);
 		}
-		//stay in move mode, but deselect
-		//user has to end move mode and restart it to move again
-		//but keep the selection but update the start point
-		//so the user can move this object again without reselecting it
-		editLayer.clearPending();
+//		//stay in move mode, but deselect
+//		//user has to end move mode and restart it to move again
+//		//but keep the selection but update the start point
+//		//so the user can move this object again without reselecting it
+//		editLayer.clearPending();
+		editLayer.exitMove();
 		editLayer.setSelectionPoint(clickDestPoint);
 
 	}

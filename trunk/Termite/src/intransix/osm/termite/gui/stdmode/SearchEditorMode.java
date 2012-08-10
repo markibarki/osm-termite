@@ -15,7 +15,7 @@ import intransix.osm.termite.gui.task.MapDataRequestTask;
  *
  * @author sutter
  */
-public class SearchEditorMode implements EditorMode, ActionListener {
+public class SearchEditorMode extends EditorMode implements ActionListener {
 	//====================
 	// Properties
 	//====================

@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class EditLayer extends MapLayer implements MapDataListener, 
 		FeatureLayerListener, LevelSelectedListener,
-		MouseListener, MouseMotionListener, KeyListener, FocusListener {
+		MouseListener, MouseMotionListener, KeyListener {
 	
 	//=========================
 	// Properties 
@@ -181,13 +181,11 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				mapPanel.addMouseListener(this);
 				mapPanel.addMouseMotionListener(this);
 				mapPanel.addKeyListener(this);
-				mapPanel.addFocusListener(this);
 			}
 			else {
 				mapPanel.removeMouseListener(this);
 				mapPanel.removeMouseMotionListener(this);
 				mapPanel.removeKeyListener(this);
-				mapPanel.removeFocusListener(this);
 			}
 		}
 	}
@@ -307,7 +305,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		this.getMapPanel().requestFocusInWindow();
 	}
 	
 	@Override
@@ -577,19 +574,10 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_M) {
-			if((mouseEditAction == null)&&(!selection.isEmpty())) {
-				
-				if(virtualNodeSelected) {
-					mouseEditAction = new VirtualNodeAction();
-					mouseEditAction.init(osmData,this);
-				}
-				else {
-					mouseEditAction = new MoveAction();
-					mouseEditAction.init(osmData,this);
-				}
-
-				changed = true;
-			}
+			changed = startMove();
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			changed = exitMove();
 		}
 		
 		if(changed) {
@@ -601,33 +589,9 @@ public class EditLayer extends MapLayer implements MapDataListener,
     /** Handle the key-released event from the text field. */
     @Override
 	public void keyReleased(KeyEvent e) {
-		if(e.getKeyCode() == KeyEvent.VK_M) {
-			if(inMove()) {
-				clearEditAction();
-				getMapPanel().repaint();
-			}
-		}
     }
 	
-	@Override
-	public void focusGained(FocusEvent e) {
-		//it would be nice if we could get the key state for any keys that are help down
-		//when focus is gained
-	}
-	
-	@Override
-	public void focusLost(FocusEvent e) {
-		if(inMove()) {
-			clearEditAction();
-			getMapPanel().repaint();
-		}
-	}
-	
 	// </editor-fold>
-	
-	//===========================
-	// Package Methods
-	//===========================
 	
 	/** This method sets the selection, called from the TermiteGui. This is 
 	 * called when this class sets the selection in the TermiteGui, so it must
@@ -667,6 +631,20 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	}
 	
 	//============================
+	// Package Methods
+	//============================
+	
+	boolean exitMove() {
+		if(inMove()) {
+			clearEditAction();
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	//============================
 	// Private Methods
 	//============================
 	
@@ -674,6 +652,25 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	private boolean inMove() {
 		return ((mouseEditAction instanceof MoveAction)||
 				(mouseEditAction instanceof VirtualNodeAction));
+	}
+	
+	private boolean startMove() {
+		if((mouseEditAction == null)&&(!selection.isEmpty())) {
+				
+			if(virtualNodeSelected) {
+				mouseEditAction = new VirtualNodeAction();
+				mouseEditAction.init(osmData,this);
+			}
+			else {
+				mouseEditAction = new MoveAction();
+				mouseEditAction.init(osmData,this);
+			}
+
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	
 	private void clearEditAction() {

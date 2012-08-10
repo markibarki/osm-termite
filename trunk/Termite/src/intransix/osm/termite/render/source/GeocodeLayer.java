@@ -5,13 +5,14 @@ import intransix.osm.termite.render.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.event.*;
+import java.util.*;
 
 /**
  *
  * @author sutter
  */
 public class GeocodeLayer extends MapLayer implements
-		MouseListener, MouseMotionListener, KeyListener, FocusListener {
+		MouseListener, MouseMotionListener, KeyListener {
 	
 	public enum LayerState {
 		INACTIVE,
@@ -33,7 +34,6 @@ public class GeocodeLayer extends MapLayer implements
 	private GeocodeType geocodeType = GeocodeType.TWO_POINT;
 	private LayerState layerState = LayerState.SELECT;
 	private int selection = INVALID_SELECTION;
-	private boolean inMove = false;
 	
 	private SourceLayer sourceLayer;
 	
@@ -50,6 +50,8 @@ public class GeocodeLayer extends MapLayer implements
 	private Point2D moveMerc = new Point2D.Double();
 	private Point2D movePix = new Point2D.Double();
 	
+	private java.util.List<GeocodeStateListener> stateListeners = new ArrayList<GeocodeStateListener>();
+	
 	public GeocodeLayer() {
 		anchorPoints = new AnchorPoint[3];
 		anchorPoints[0] = p0;
@@ -57,8 +59,18 @@ public class GeocodeLayer extends MapLayer implements
 		anchorPoints[2] = p2;
 	}
 	
-	public void setSourceLayer(SourceLayer sourceLayer) {
+	public void setSourceLayer(SourceLayer sourceLayer) {	
 		this.sourceLayer = sourceLayer;
+	}
+	
+	public void addGeocodeStateListener(GeocodeStateListener stateListener) {
+		if(!stateListeners.contains(stateListener)) {
+			stateListeners.add(stateListener);
+		}
+	}
+	
+	public void removeGeocodeStateListener(GeocodeStateListener stateListener) {
+		stateListeners.remove(stateListener);
 	}
 	
 	/** This mode sets the edit layer active. */
@@ -71,35 +83,63 @@ public class GeocodeLayer extends MapLayer implements
 				mapPanel.addMouseListener(this);
 				mapPanel.addMouseMotionListener(this);
 				mapPanel.addKeyListener(this);
-				mapPanel.addFocusListener(this);
 				
 				//get active data
 				imageToMerc = sourceLayer.getImageToMerc();
 				if(imageToMerc != null) {
 					updateInverseTransform();
 				}
+				
+				setGeocodeType(GeocodeType.TWO_POINT);
+				setLayerState(LayerState.SELECT);
 			}
 			else {
 				mapPanel.removeMouseListener(this);
 				mapPanel.removeMouseMotionListener(this);
 				mapPanel.removeKeyListener(this);
-				mapPanel.removeFocusListener(this);
 				
 				cleanUp();
+				
+				setLayerState(LayerState.INACTIVE);
 			}
 		}
 	}
 	
 	public void setGeocodeType(GeocodeType geocodeType) {
 		this.geocodeType = geocodeType;
+		for(GeocodeStateListener gsl:stateListeners) {
+			gsl.geocodeTypeChanged(this.geocodeType);
+		}
 	}
 	
 	public void setLayerState(LayerState layerState) {
 		if(imageToMerc != null) {
+			if(layerState == this.layerState) return;
+			
+			//clean up old state
+			if(this.layerState == LayerState.MOVE) {
+				//clean up after the move
+				exitMove();
+			}
+			
 			this.layerState = layerState;
+			
+			//initialization new state
+			if(this.layerState == LayerState.MOVE) {
+				if(this.selection == INVALID_SELECTION) {
+					//only allow move if we have a selection
+					this.layerState = LayerState.SELECT;
+				}
+				else {
+					initializeMove();
+				}
+			}
 		}
 		else {
 			this.layerState = LayerState.INACTIVE;
+		}
+		for(GeocodeStateListener gsl:stateListeners) {
+			gsl.geocodeModeChanged(this.layerState);
 		}
 	}
 	
@@ -120,6 +160,7 @@ public class GeocodeLayer extends MapLayer implements
 		//draw the points
 		AnchorPoint ap;
 		boolean isSelected;
+		boolean inMove = (layerState == LayerState.MOVE);
 		for(int i = 0; i < 3; i++) {
 			ap = anchorPoints[i];
 			if(ap.mercPoint != null) {
@@ -157,7 +198,7 @@ public class GeocodeLayer extends MapLayer implements
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		//read mouse location in global coordinates
-		if(inMove) {
+		if(layerState == LayerState.MOVE) {
 			MapPanel mapPanel = getMapPanel();
 			AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
 			movePix.setLocation(e.getX(),e.getY());
@@ -198,6 +239,9 @@ public class GeocodeLayer extends MapLayer implements
 				p0.pointType = AnchorPoint.PointType.TRANSLATE;
 			}
 			
+			//clear placement
+			setLayerState(LayerState.SELECT);
+			
 			changed = true;
 		}
 		else if(layerState == LayerState.PLACE_P1) {
@@ -212,6 +256,9 @@ public class GeocodeLayer extends MapLayer implements
 			else {
 				setScalePointTypes();
 			}
+			
+			//clear placement
+			setLayerState(LayerState.SELECT);
 			
 			changed = true;
 		}
@@ -228,19 +275,12 @@ public class GeocodeLayer extends MapLayer implements
 				setScalePointTypes();
 			}
 			
+			//clear placement
+			setLayerState(LayerState.SELECT);
+			
 			changed = true;
 		}
 		else if(layerState == LayerState.SELECT) {
-			if((inMove)&&(selection != INVALID_SELECTION)) {
-				
-				updateMoveTransform(mouseMerc);
-				completeMove();
-				changed = true;
-				
-				//clear selection
-				selection = INVALID_SELECTION;
-			}
-			else {
 				selection = INVALID_SELECTION;
 				
 				AnchorPoint ap;
@@ -252,8 +292,23 @@ public class GeocodeLayer extends MapLayer implements
 				}
 				
 				changed = true;
+			
+		}
+		else if(layerState == LayerState.MOVE) {
+			if(selection != INVALID_SELECTION) {
+				
+				updateMoveTransform(mouseMerc);
+				completeMove();
+				changed = true;
+				
+				//clear selection
+				selection = INVALID_SELECTION;
+				
+				//clear move
+				setLayerState(LayerState.SELECT);
 			}
 		}
+	
 		
 		if(changed) {
 			mapPanel.repaint();
@@ -266,7 +321,7 @@ public class GeocodeLayer extends MapLayer implements
 	
 	// </editor-fold>
 	
-	// <editor-fold defaultstate="collapsed" desc="Key Listener and Focus Listener">
+	// <editor-fold defaultstate="collapsed" desc="Key Listener">
 	
 	/** Handle the key typed event from the text field. */
     @Override
@@ -276,49 +331,29 @@ public class GeocodeLayer extends MapLayer implements
     /** Handle the key-pressed event from the text field. */
 	@Override
     public void keyPressed(KeyEvent e) {
-		boolean changed = false;
 		if(e.getKeyCode() == KeyEvent.VK_M) {
-			if(selection != INVALID_SELECTION) {
-				inMove = true;
-				moveImageToMerc.setTransform(imageToMerc);
-				
-				Point2D mouseMerc = getMouseMerc();
-				updateMoveTransform(mouseMerc);
-				changed = true;
-				
-				sourceLayer.setMove(true, moveImageToMerc);
-			}
+			this.setLayerState(LayerState.MOVE);
 		}
-		
-		if(changed) {
-			getMapPanel().repaint();
+		else if(e.getKeyCode() == KeyEvent.VK_1) {
+			this.setLayerState(LayerState.PLACE_P0);
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_2) {
+			this.setLayerState(LayerState.PLACE_P1);
+		}
+		else if((e.getKeyCode() == KeyEvent.VK_3)&&(geocodeType != GeocodeType.TWO_POINT)) {
+			this.setLayerState(LayerState.PLACE_P2);
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			if(layerState != LayerState.INACTIVE) {
+				this.setLayerState(LayerState.SELECT);
+			}
 		}
     }
 
     /** Handle the key-released event from the text field. */
     @Override
 	public void keyReleased(KeyEvent e) {
-		if(e.getKeyCode() == KeyEvent.VK_M) {
-			if(inMove) {
-				inMove = false;
-				getMapPanel().repaint();
-			}
-		}
     }
-	
-	@Override
-	public void focusGained(FocusEvent e) {
-		//it would be nice if we could get the key state for any keys that are help down
-		//when focus is gained
-	}
-	
-	@Override
-	public void focusLost(FocusEvent e) {
-		if(inMove) {
-			inMove = false;
-			getMapPanel().repaint();
-		}
-	}
 	
 	// </editor-fold>
 	
@@ -443,6 +478,21 @@ if((length1 == 0)||(length2 == 0)) return;
 		moveImageToMerc.translate(baseAnchorMerc.getX(),baseAnchorMerc.getY());
 	}
 	
+	private void initializeMove() {
+		moveImageToMerc.setTransform(imageToMerc);
+
+		Point2D mouseMerc = getMouseMerc();
+		updateMoveTransform(mouseMerc);
+
+		sourceLayer.setMove(true, moveImageToMerc);
+		getMapPanel().repaint();
+	}
+	
+	private void exitMove() {
+		sourceLayer.setMove(false,null);
+		getMapPanel().repaint();
+	}
+	
 	private void completeMove() {
 		//copy transform
 		imageToMerc.setTransform(moveImageToMerc);
@@ -454,6 +504,7 @@ if((length1 == 0)||(length2 == 0)) return;
 		}
 		sourceLayer.setMove(false,null);
 		sourceLayer.setImageToMerc(imageToMerc);
+		getMapPanel().repaint();
 	}
 	
 	private void updateInverseTransform() {
@@ -467,9 +518,8 @@ if((length1 == 0)||(length2 == 0)) return;
 	
 	private void cleanUp() {
 
-		layerState = LayerState.INACTIVE;
+		this.setLayerState(LayerState.INACTIVE);
 		selection = INVALID_SELECTION;
-		inMove = false;
 		
 		for(AnchorPoint ap:anchorPoints) {
 			ap.reset();

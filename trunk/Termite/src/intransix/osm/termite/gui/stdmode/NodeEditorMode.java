@@ -13,7 +13,7 @@ import javax.swing.JToolBar;
  *
  * @author sutter
  */
-public class NodeEditorMode implements EditorMode, ActionListener {
+public class NodeEditorMode extends EditorMode {
 	
 	//====================
 	// Properties
@@ -64,10 +64,10 @@ public class NodeEditorMode implements EditorMode, ActionListener {
 			editLayer.setMouseEditAction(new NodeToolAction());
 		}
 		
-		if(toolBar == null) {
-			createToolBar();
-		}
-		termiteGui.addToolBar(toolBar);
+//		if(toolBar == null) {
+//			createToolBar();
+//		}
+//		termiteGui.addToolBar(toolBar);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
@@ -84,24 +84,12 @@ public class NodeEditorMode implements EditorMode, ActionListener {
 			editLayer.setMouseEditAction(null);
 		}
 		
-		if(toolBar != null) {
-			termiteGui.removeToolBar(toolBar);
-		}
-	}
-	
-//TEST FUNCTION!!!
-	public void actionPerformed(ActionEvent ae) {
-		termiteGui.setMapData(null);
+//		if(toolBar != null) {
+//			termiteGui.removeToolBar(toolBar);
+//		}
 	}
 	
 	private void createToolBar() {	
-		toolBar = new JToolBar();
-		toolBar.setFloatable(false);
-		JButton testButton = new JButton("Discard Data");
-		toolBar.add(testButton);
-		
-		//add action listeners
-		testButton.setActionCommand("yyy");
-		testButton.addActionListener(this);
+		toolBar = null;
 	}
 }

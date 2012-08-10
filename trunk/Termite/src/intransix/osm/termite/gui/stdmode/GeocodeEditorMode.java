@@ -3,17 +3,17 @@ package intransix.osm.termite.gui.stdmode;
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.render.MapLayer;
-import intransix.osm.termite.render.source.GeocodeLayer;
-import intransix.osm.termite.render.source.SourceLayer;
+import intransix.osm.termite.render.source.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import javax.swing.*;
 
 /**
  *
  * @author sutter
  */
-public class GeocodeEditorMode implements EditorMode, ActionListener {
+public class GeocodeEditorMode extends EditorMode implements ActionListener, GeocodeStateListener {
 	//====================
 	// Properties
 	//====================
@@ -30,13 +30,15 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		"two","three","free"
 	}; 
 	private final static String[][] BUTTON_NAMES = {
-		{"Translate","Rotate/Scale",null},
-		{"Translate","Rotate/Scale 1","Rotate/Scale 2"},
-		{"Point 1","Point 2","Point 3"}
+		{"Translate [1]","Rotate/Scale [2]",null},
+		{"Translate [1]","Rotate/Scale A [2]","Rotate/Scale B [3]"},
+		{"Point 1 [1]","Point 2 [2]","Point 3 [3]"}
 	};
 	private final static String[] BUTTON_CMDS = {"b0","b1","b2"};
 						
+	private final static String SELECT_TEXT = "Select [esc]";
 	private final static String SELECT_CMD = "select";
+	private final static String MOVE_TEXT = "Move (m)";
 	private final static String MOVE_CMD = "move";
 	
 	private final static int TWO_POINT = 0;
@@ -44,6 +46,7 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 	private final static int FREE_TRANSFORM = 2;
 	
 	private TermiteGui termiteGui;
+	private GeocodeLayer geocodeLayer;
 	
 	private int geocodeType;
 	
@@ -63,6 +66,7 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 	
 	public GeocodeEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
+		createToolBar();
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -82,11 +86,78 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		return ICON_NAME;
 	}
 	
+	@Override
+	public void geocodeModeChanged(GeocodeLayer.LayerState layerState) {
+		switch(layerState) {
+			case INACTIVE:
+			case SELECT:
+				if(!selectButton.isSelected()) {
+					selectButton.setSelected(true);
+				}
+				break;
+				
+			case PLACE_P0:
+				if(!dynamicButtons[0].isSelected()) {
+					dynamicButtons[0].setSelected(true);
+				}
+				break;
+				
+			case PLACE_P1:
+				if(!dynamicButtons[1].isSelected()) {
+					dynamicButtons[1].setSelected(true);
+				}
+				break;
+				
+			case PLACE_P2:
+				if(!dynamicButtons[2].isSelected()) {
+					dynamicButtons[2].setSelected(true);
+				}
+				break;
+				
+			case MOVE:
+				if(!moveButton.isSelected()) {
+					moveButton.setSelected(true);
+				}
+				break;
+		}
+	}
+	
+	@Override
+	public void geocodeTypeChanged(GeocodeLayer.GeocodeType geocodeType) {
+		switch(geocodeType) {
+			case TWO_POINT:
+				if(!radioButtons[0].isSelected()) {
+					radioButtons[0].setSelected(true);
+					this.setGeocodeType(TWO_POINT);
+				}
+				break;
+				
+			case THREE_POINT_ORTHO:
+				if(!radioButtons[1].isSelected()) {
+					radioButtons[1].setSelected(true);
+					this.setGeocodeType(THREE_POINT_ORTHO);
+				}
+				break;
+				
+			case FREE_TRANSFORM:
+				if(!radioButtons[2].isSelected()) {
+					radioButtons[2].setSelected(true);
+					this.setGeocodeType(FREE_TRANSFORM);
+				}
+				break;
+		}
+	}
+	
 	
 	/** This method is called when the editor mode is turned on. 
 	 */
 	@Override
 	public void turnOn() {
+		if(geocodeLayer == null) {
+			geocodeLayer = termiteGui.getGeocodeLayer();
+			geocodeLayer.addGeocodeStateListener(this);
+		}
+		
 		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
@@ -95,15 +166,12 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		if(sourceLayer != null) {
 			sourceLayer.setActiveState(true);
 		}
-		GeocodeLayer geocodeLayer = termiteGui.getGeocodeLayer();
+
 		if(geocodeLayer != null) {
 			geocodeLayer.setActiveState(true);
 			geocodeLayer.setHidden(false);
 		}
-		
-		if(toolBar == null) {
-			createToolBar();
-		}
+	
 		termiteGui.addToolBar(toolBar);
 	}
 	
@@ -119,7 +187,7 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		if(sourceLayer != null) {
 			sourceLayer.setActiveState(false);
 		}
-		GeocodeLayer geocodeLayer = termiteGui.getGeocodeLayer();
+
 		if(geocodeLayer != null) {
 			geocodeLayer.setActiveState(false);
 			geocodeLayer.setHidden(true);
@@ -185,7 +253,7 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 		
 		//mode choice
 		modeButtonGroup = new ButtonGroup();
-		selectButton = new JToggleButton("Transform Source");
+		selectButton = new JToggleButton(SELECT_TEXT);
 		selectButton.setActionCommand(SELECT_CMD);
 		selectButton.addActionListener(this);
 		modeButtonGroup.add(selectButton);
@@ -202,21 +270,15 @@ public class GeocodeEditorMode implements EditorMode, ActionListener {
 			dynamicButtons[i] = button;
 		}
 		
-		moveButton = new JToggleButton("Move Anchor");
+		moveButton = new JToggleButton(MOVE_TEXT);
 		moveButton.setActionCommand(MOVE_CMD);
 		moveButton.addActionListener(this);
 		modeButtonGroup.add(moveButton);
 		toolBar.add(moveButton);
 		
-		//set default geocode type
-		this.radioButtons[TWO_POINT].setSelected(true);
-		GeocodeLayer geocodeLayer = termiteGui.getGeocodeLayer();
-		geocodeLayer.setGeocodeType(GeocodeLayer.GeocodeType.TWO_POINT);
-		this.setGeocodeType(TWO_POINT);
-		
 //not implemented
 		this.radioButtons[FREE_TRANSFORM].setEnabled(false);
-		moveButton.setEnabled(false);
+
 		
 	}
 	

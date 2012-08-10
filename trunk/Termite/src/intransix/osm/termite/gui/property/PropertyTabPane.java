@@ -45,7 +45,9 @@ public class PropertyTabPane extends JTabbedPane implements
 	 * @param mapData	The map data object
 	 */
 	public void onMapData(OsmData mapData) {
-		mapData.addDataChangedListener(this);
+		if(mapData != null) {
+			mapData.addDataChangedListener(this);
+		}
 	}
 	
 	/** This method is called when the data has changed.

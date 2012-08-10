@@ -29,7 +29,8 @@ import intransix.osm.termite.gui.task.CommitTask;
  * 
  * @author sutter
  */
-public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedListener {
+public class TermiteGui extends javax.swing.JFrame implements 
+		OsmDataChangedListener, KeyListener {
 	
 	//=====================
 	// Private Properties
@@ -41,6 +42,11 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 	private final static String UNDO_ITEM_TEXT = "Undo";
 	private final static String REDO_ITEM_BASE = "Redo: ";
 	private final static String REDO_ITEM_TEXT = "Redo";
+	
+	private final static int[] EDIT_MODE_SHORTCUTS = {KeyEvent.VK_A,
+		KeyEvent.VK_S,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_G,KeyEvent.VK_H,
+		KeyEvent.VK_J,KeyEvent.VK_K,KeyEvent.VK_L
+	};
 	
 	// <editor-fold defaultstate="collapsed" desc="Properties">
 	
@@ -56,6 +62,7 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 	private EditorMode activeMode = null; //the active editor mode
 	
 	//edit mode ui elements we need to change programmatically
+	private boolean editModesEnabled = false;
 	private ButtonGroup editModeButtonGroup;
 	private JToggleButton defaultEditModeButton;
 	
@@ -90,6 +97,7 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 	private javax.swing.JMenuBar menuBar;
 	private javax.swing.JMenu fileMenu;
 	private javax.swing.JMenuItem commitItem;
+	private javax.swing.JMenuItem clearDataItem;
 	private javax.swing.JMenuItem quitItem;
 	private javax.swing.JMenu editMenu;
 	private javax.swing.JMenuItem undoItem;
@@ -471,6 +479,38 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 	}
 	// </editor-fold>
 	
+		
+	// <editor-fold defaultstate="collapsed" desc="Key Listener">
+	
+	/** Handle the key typed event from the text field. */
+    @Override
+	public void keyTyped(KeyEvent e) {
+    }
+
+    /** Handle the key-pressed event from the text field. */
+	@Override
+    public void keyPressed(KeyEvent e) {
+		if(editModesEnabled) {
+			//select editor mode
+			for(EditorMode editMode:editModes) {
+				if(editMode.getUIShortcut() == e.getKeyCode()) {
+					JToggleButton button = editMode.getUIButton();
+					if(!button.isSelected()) {
+						button.setSelected(true);
+						this.setEditorMode(editMode);
+					}
+				}
+			}
+		}
+    }
+
+    /** Handle the key-released event from the text field. */
+    @Override
+	public void keyReleased(KeyEvent e) {
+    }
+	
+	// </editor-fold>
+	
 	//================================
 	// Private Methods
 	//================================
@@ -499,6 +539,7 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 	
 	private void loadEditModes() {
 		editModeButtonGroup = new ButtonGroup();
+		int i = 0;
 		for(EditorMode mode:editModes) {
 			
 			//initialize default edit mode
@@ -523,6 +564,12 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 			button.setToolTipText(name);
 			editModeButtonGroup.add(button);
 			modeToolBar.add(button);
+			
+			mode.setUIButton(button);
+			if(i < EDIT_MODE_SHORTCUTS.length) {
+				mode.setUIShortcut(EDIT_MODE_SHORTCUTS[i]);
+			}
+			i++;
 			
 			if(mode == defaultEditMode) {
 				defaultEditModeButton = button;
@@ -549,6 +596,7 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 	}
 	
 	private void setEditModesEnable(boolean enabled) {
+		editModesEnabled = enabled;
 		for(Component c:modeToolBar.getComponents()) {
 			c.setEnabled(enabled);
 		}
@@ -630,6 +678,15 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
             }
         });
         fileMenu.add(commitItem);
+		
+		clearDataItem = new javax.swing.JMenuItem();
+        clearDataItem.setText("Clear Data");
+		clearDataItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearData();
+            }
+        });
+        fileMenu.add(clearDataItem);
 		
         quitItem = new javax.swing.JMenuItem();
         quitItem.setText("Quit");
@@ -755,6 +812,7 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 		mapPanel.setMinimumSize(new java.awt.Dimension(200, 200));
 		mapPanel.setPreferredSize(new java.awt.Dimension(600,600));
 		this.addMapDataListener(mapPanel);
+		mapPanel.addKeyListener(this);
 		
 		//supplemental tabbed pane
         supplementalTabPane = new javax.swing.JTabbedPane();
@@ -833,6 +891,13 @@ public class TermiteGui extends javax.swing.JFrame implements OsmDataChangedList
 	// <editor-fold defaultstate="collapsed" desc="Internal Event Functions ans Classes">
 	private void quitItemActionPerformed(java.awt.event.ActionEvent evt) {
 		app.exit();
+	}
+	
+	private void clearData() {
+		int result = JOptionPane.showConfirmDialog(this,"Are you sure you want to discard the current map data?");
+		if(result == JOptionPane.OK_OPTION) {
+			this.setMapData(null);
+		}
 	}
 	
 	private void undoItemActionPerformed(java.awt.event.ActionEvent evt) {
