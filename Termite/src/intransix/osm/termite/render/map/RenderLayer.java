@@ -50,14 +50,6 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 		//make sure the level is sorted
 		java.util.List<OsmObject> objectList = mapData.getFeatureList();
 		
-		//set the opacity for the layer
-		Composite originalComposite = null;
-		Composite activeComposite = this.getComposite();
-		if(activeComposite != null) {
-			originalComposite = g2.getComposite();
-			g2.setComposite(activeComposite);
-		}
-		
 		g2.transform(localToPixels);		
 			
 		PathFeature pathFeature;
@@ -79,28 +71,6 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 				}
 				pointFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
 			}
-		}
-//		for(TermiteWay way:localLevel.getWays()) {
-//			//render geometry
-//			pathFeature = (PathFeature)way.getRenderData();
-//			if(pathFeature == null) {
-//				pathFeature = new PathFeature(way);
-//				way.setRenderData(pathFeature);
-//			}
-//			pathFeature.render(g2,zoomScale,localTheme,localLevel);
-//		}
-//		PointFeature pointFeature;
-//		for(TermiteNode node:localLevel.getNodes()) {
-//			pointFeature = (PointFeature)node.getRenderData();
-//			if(pointFeature == null) {
-//				pointFeature = new PointFeature(node);
-//				node.setRenderData(pointFeature);
-//			}
-//			pointFeature.render(g2,zoomScale,localTheme,localLevel);
-//		}
-		
-		if(originalComposite != null) {
-			g2.setComposite(originalComposite);
 		}
 	}
 	

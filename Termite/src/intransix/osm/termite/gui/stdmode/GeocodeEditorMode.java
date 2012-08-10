@@ -166,10 +166,6 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
 		}
-		SourceLayer sourceLayer = termiteGui.getSourceLayer();
-		if(sourceLayer != null) {
-			sourceLayer.setActiveState(true);
-		}
 
 		if(geocodeLayer != null) {
 			geocodeLayer.setActiveState(true);
@@ -186,10 +182,6 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(false);
-		}
-		SourceLayer sourceLayer = termiteGui.getSourceLayer();
-		if(sourceLayer != null) {
-			sourceLayer.setActiveState(false);
 		}
 
 		if(geocodeLayer != null) {

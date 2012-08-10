@@ -57,6 +57,8 @@ public class GeocodeLayer extends MapLayer implements
 		anchorPoints[0] = p0;
 		anchorPoints[1] = p1;
 		anchorPoints[2] = p2;
+		
+		this.setName("Geocode Layer");
 	}
 	
 	public void setSourceLayer(SourceLayer sourceLayer) {	
@@ -145,15 +147,6 @@ public class GeocodeLayer extends MapLayer implements
 	
 	@Override
 	public void render(Graphics2D g2) {
-				
-		//set the opacity for the layer
-		Composite originalComposite = null;
-		Composite activeComposite = this.getComposite();
-		if(activeComposite != null) {
-			originalComposite = g2.getComposite();
-			g2.setComposite(activeComposite);
-		}
-		
 		MapPanel mapPanel = getMapPanel();
 		AffineTransform mercToPixels = mapPanel.getMercatorToPixels();
 		
@@ -167,10 +160,6 @@ public class GeocodeLayer extends MapLayer implements
 				isSelected = (selection == i);
 				ap.renderPoint(g2,mercToPixels,isSelected,inMove,moveImageToMerc);
 			}
-		}
-		
-		if(originalComposite != null) {
-			g2.setComposite(originalComposite);
 		}
 	}
 	

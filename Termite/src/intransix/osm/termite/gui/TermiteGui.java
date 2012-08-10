@@ -16,6 +16,7 @@ import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.map.RenderLayer;
+import intransix.osm.termite.render.checkout.SearchLayer;
 
 import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.render.source.GeocodeLayer;
@@ -75,6 +76,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private EditLayer editLayer;
 	private SourceLayer sourceLayer;
 	private GeocodeLayer geocodeLayer;
+	private SearchLayer searchLayer;
 	
 	//feature layer info
 	private FeatureInfoMap featureMap;
@@ -129,6 +131,7 @@ public class TermiteGui extends javax.swing.JFrame implements
     private intransix.osm.termite.render.MapPanel mapPanel;
 	private javax.swing.JTabbedPane supplementalTabPane;
 	
+	private intransix.osm.termite.gui.maplayer.LayerManager layerManager;
 	// </editor-fold>
 	
 	//=====================
@@ -422,6 +425,10 @@ public class TermiteGui extends javax.swing.JFrame implements
 		return geocodeLayer;
 	}
 	
+	public SearchLayer getSearchLayer() {
+		return searchLayer;
+	}
+	
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="Initialize">
@@ -626,35 +633,41 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	private void initializeMapLayers() {
 		baseMapLayer = new TileLayer();
-		baseMapLayer.setHidden(false);
+baseMapLayer.setOpacity(.5f);
 		mapPanel.addMapListener(baseMapLayer);
 		
 		sourceLayer = new SourceLayer();
-		sourceLayer.setHidden(true);
-		sourceLayer.setOpacity(.3f);
 		
 		geocodeLayer = new GeocodeLayer();
-		geocodeLayer.setHidden(true);
 		geocodeLayer.setSourceLayer(sourceLayer);
 	
 		renderLayer = new RenderLayer();
 		Theme theme = app.getTheme();
 		renderLayer.setTheme(theme);
-		renderLayer.setActiveState(false);
+
 		this.addMapDataListener(renderLayer);
 		mapPanel.addLocalCoordinateListener(renderLayer);
 		
 		editLayer = new EditLayer(this);
-		editLayer.setActiveState(false);
 		this.addMapDataListener(editLayer);
 		this.addFeatureLayerListener(editLayer);
 		this.addLevelSelectedListener(editLayer);
+		
+		searchLayer = new SearchLayer();
 		
 		mapPanel.addLayer(baseMapLayer);
 		mapPanel.addLayer(sourceLayer);
 		mapPanel.addLayer(renderLayer);
 		mapPanel.addLayer(geocodeLayer);
 		mapPanel.addLayer(editLayer);
+		mapPanel.addLayer(searchLayer);
+		
+		//initialize layers
+		//basemap and source layer are always active, thorugh hidden if they have no map
+		baseMapLayer.setActiveState(true);
+		sourceLayer.setActiveState(true);
+		
+		//others are inactive until a mode enables them
 	}
 	
 
@@ -865,10 +878,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 		//create standard supplemental tabs
 		
 		//supplemental tab
-//		mapLayerTab = new intransix.osm.termite.gui.maplayer.MapLayerManagerPane();
-//		mapPanel.setMapLayerManager(mapLayerTab);
-//		mapLayerTab.setMapPanel(mapPanel);
-//		this.addSupplementalTab("Map Layers", mapLayerTab);
+		layerManager = new intransix.osm.termite.gui.maplayer.LayerManager();
+		mapPanel.addLayerListener(layerManager);
+		this.addSupplementalTab("Map Layers", layerManager);
 		
 		this.add(menuBar);
 		this.add(toolBarPanel);
@@ -935,6 +947,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	private void selectBaseMap(TileInfo tileInfo) {
 		baseMapLayer.setTileInfo(tileInfo);
+		baseMapLayer.setHidden( (tileInfo != null) ? false : true);
 		mapPanel.repaint();
 	}
 	

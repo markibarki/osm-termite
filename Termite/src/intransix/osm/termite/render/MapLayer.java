@@ -11,12 +11,11 @@ import java.awt.Composite;
 public abstract class MapLayer {
 	
 	private String name;
-	private boolean active;
-	private boolean hidden;
+	private boolean active = false;
+	private boolean hidden = false;
 	private MapPanel mapPanel;
-	private float alpha;
-	private Composite composite;
-	
+	private float alpha = 1;
+	private Composite composite;	
 	
 	public void setMapPanel(MapPanel mapPanel) {
 		this.mapPanel = mapPanel;
@@ -34,8 +33,16 @@ public abstract class MapLayer {
 		return name;
 	}
 	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
 	public void setActiveState(boolean active) {
 		this.active = active;
+		if(mapPanel != null) {
+			mapPanel.layerStateChanged(this);
+		}
 	}
 	
 	public final boolean getActiveState() {
@@ -69,6 +76,9 @@ public abstract class MapLayer {
 	
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+		if(mapPanel != null) {
+			mapPanel.layerStateChanged(this);
+		}
 	}
 	
 	public boolean getHidden() {
@@ -87,7 +97,7 @@ public abstract class MapLayer {
 	// Protected Methods
 	//==================
 	
-	protected Composite getComposite() {
+	Composite getComposite() {
 		return composite;
 	}
 }
