@@ -28,14 +28,13 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	private JToolBar toolBar = null;	
 	private JTextField searchField;
 	
-	private SearchLayer searchLayer;
-	
 	//====================
 	// Public Methods
 	//====================
 	
 	public SearchEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
+		createToolBar();
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -58,27 +57,17 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
-		MapPanel mapPanel = termiteGui.getMapPanel();
-		searchLayer = new SearchLayer();
-		mapPanel.addLayer(searchLayer);
-		
-		if(toolBar == null) {
-			createToolBar();
-		}
+		SearchLayer searchLayer = termiteGui.getSearchLayer();
+		searchLayer.setActiveState(true);
 		termiteGui.addToolBar(toolBar);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
-		MapPanel mapPanel = termiteGui.getMapPanel();
-		mapPanel.removeLayer(searchLayer);
-		mapPanel.removeMouseListener(searchLayer);
-		mapPanel.removeMouseMotionListener(searchLayer);
-		
+		SearchLayer searchLayer = termiteGui.getSearchLayer();
+		searchLayer.setActiveState(false);
 		termiteGui.removeToolBar(toolBar);
-		
-		searchLayer = null;	
 	}	
 	
 	public void actionPerformed(ActionEvent ae) {
@@ -91,6 +80,7 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	}
 	
 	private void doDownload() {
+		SearchLayer searchLayer = termiteGui.getSearchLayer();
 		Rectangle2D selection = searchLayer.getSelectionMercator();
 		if(selection == null) {
 			JOptionPane.showMessageDialog(null, "You must select a bounding box to download.");

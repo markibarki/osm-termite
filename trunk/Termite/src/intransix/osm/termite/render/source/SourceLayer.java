@@ -19,7 +19,10 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	private AffineTransform moveImageToMerc = new AffineTransform();
 	private boolean inMove = false;
 	
-	private AffineTransform workingTransform = new AffineTransform();
+	public SourceLayer() {
+		this.setName("Source Layer");
+		this.setHidden(true);
+	}
 	
 	public void setMove(boolean inMove, AffineTransform moveImageToMerc) {
 		this.inMove = inMove;
@@ -40,12 +43,20 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 		
 		try {
 			sourceImage = java.awt.Toolkit.getDefaultToolkit().createImage(file.getAbsolutePath());
+			this.setHidden(false);
 			return true;
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
+			this.setHidden(false);
 			return false;
 		}
+	}
+	
+	public void clearImage() {
+		sourceImage = null;
+		imageToMerc = null;
+		this.setHidden(true);
 	}
 
 	
@@ -62,13 +73,7 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 			Rectangle visibleRect = mapPanel.getVisibleRect();
 			imageToMerc = new AffineTransform(pixelsToMerc);
 		}
-		
-		//set the opacity for the layer
-		Composite activeComposite = this.getComposite();
-		if(activeComposite != null) {
-			g2.setComposite(activeComposite);
-		}
-		
+
 		//transform to tile coordinates
 		g2.transform(mercToPixels);
 		

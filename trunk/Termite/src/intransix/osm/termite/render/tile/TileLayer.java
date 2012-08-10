@@ -41,8 +41,8 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	//=========================
 	
 	public TileLayer() {
-
 		this.setName("Base Map");
+		this.setHidden(true);
 	}
 	
 	public void setTileInfo(TileInfo tileInfo) {
@@ -51,11 +51,13 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 			minZoom = tileInfo.getMinZoom();
 			maxZoom = tileInfo.getMaxZoom();
 			pixelsPerTile = tileInfo.getTileSize();
+			this.setHidden(false);
 		}
 		else {
 			minZoom = Integer.MIN_VALUE;
 			maxZoom = Integer.MAX_VALUE;
 			pixelsPerTile = 1;
+			this.setHidden(true);
 		}
 	}
 	
@@ -65,16 +67,6 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	public void reset() {
 		tileZoom = INVALID_ZOOM;
-	}
-	
-	@Override
-	public boolean getHidden() {
-		if(tileInfo == null) {
-			return false;
-		}
-		else {
-			return super.getHidden();
-		}
 	}
 	
 	@Override
@@ -103,14 +95,6 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 		updateRange(visibleRect.x+visibleRect.width,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
 		updateRange(visibleRect.x,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
 		
-		//set the opacity for the layer
-		Composite originalComposite = null;
-		Composite activeComposite = this.getComposite();
-		if(activeComposite != null) {
-			originalComposite = g2.getComposite();
-			g2.setComposite(activeComposite);
-		}
-		
 		//transform to tile coordinates
 		g2.transform(mercToPixels);
 		
@@ -137,10 +121,6 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 					tileRequested = true;
 				}
 			}
-		}
-		
-		if(originalComposite != null) {
-			g2.setComposite(originalComposite);
 		}
 	}
 	

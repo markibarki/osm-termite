@@ -43,6 +43,7 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	
 	private java.util.List<MapListener> mapListeners = new ArrayList<MapListener>();
 	private java.util.List<LocalCoordinateListener> localCoordinateListeners = new ArrayList<LocalCoordinateListener>();
+	private java.util.List<LayerStateListener> layerListeners = new ArrayList<LayerStateListener>();
 	
 	
 	private boolean panOn = false;
@@ -172,6 +173,7 @@ this.resetLocalCoordinates();
 	public void addLayer(MapLayer layer) {
 		this.layers.add(layer);
 		layer.setMapPanel(this);
+		notifyLayerListeners(layer);
 	}
 	
 	public void addLayer(MapLayer layer, int index) {
@@ -182,10 +184,12 @@ this.resetLocalCoordinates();
 			layers.add(layer);
 		}
 		layer.setMapPanel(this);
+		notifyLayerListeners(layer);
 	}
 	
 	public void removeLayer(MapLayer layer) {
 		this.layers.remove(layer);
+		notifyLayerListeners(layer);
 	}
 	
 	public java.util.List<MapLayer> getLayers() {
@@ -210,6 +214,17 @@ this.resetLocalCoordinates();
 	
 	public void removeLocalCoordinateListener(LocalCoordinateListener listener) {
 		this.localCoordinateListeners.remove(listener);
+	}
+	
+	public void addLayerListener(LayerStateListener listener) {
+		if(!layerListeners.contains(listener)) {
+			this.layerListeners.add(listener);
+		}
+		listener.layerStateChanged(null, layers);
+	}
+	
+	public void removeLayerListener(LayerStateListener listener) {
+		this.layerListeners.remove(listener);
 	}
 	
 	// </editor-fold>
@@ -246,12 +261,25 @@ this.resetLocalCoordinates();
 		}
 			
 		AffineTransform originalTransform = g2.getTransform();
+		Composite originalComposite = g2.getComposite();
+		Composite activeComposite;
 		for(MapLayer layer:layers) {
-			if(!layer.getHidden()) {
+			if((layer.getActiveState())&&(!layer.getHidden())) {
+				//set the opacity for the layer
+				activeComposite = layer.getComposite();
+				if(activeComposite == null) {
+					activeComposite = originalComposite;
+				}
+				g2.setComposite(activeComposite);
+				
+				//render
 				layer.render(g2);
+				
+				//reset the transform
 				g2.setTransform(originalTransform);
 			}
 		}
+		g2.setComposite(originalComposite);
 	}
 	
 	/** This method is called when the map data is set of cleared. It will be called 
@@ -426,6 +454,23 @@ this.resetLocalCoordinates();
 	//=================================
 	// Private Methods
 	//=================================
+	
+	/** MapLayers call this when their state changes. */
+	void layerStateChanged(MapLayer layer) {
+		//notify listeners that the layer state changed
+		notifyLayerListeners(layer);
+	}
+	
+	//=================================
+	// Private Methods
+	//=================================
+
+	/** This method notifies listeners of any layer state changes. */
+	private void notifyLayerListeners(MapLayer layer) {
+		for(LayerStateListener listener:layerListeners) {
+			listener.layerStateChanged(layer,layers);
+		}
+	}
 	
 	/** This method takes should be called with the transforms mercatorToPixels
 	 * and mercatorToLocal set. It calculates the rest of the matrices. */

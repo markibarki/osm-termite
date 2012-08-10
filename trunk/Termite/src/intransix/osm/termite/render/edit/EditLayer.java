@@ -204,14 +204,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	@Override
 	public void render(Graphics2D g2) {
 		
-		//set the opacity for the layer
-		Composite originalComposite = null;
-		Composite activeComposite = this.getComposite();
-		if(activeComposite != null) {
-			originalComposite = g2.getComposite();
-			g2.setComposite(activeComposite);
-		}
-		
 		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();		
 		
 		//render hover
@@ -253,10 +245,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				EditDrawable.renderPoint(g2, mercatorToPixels,((VirtualNode)selectObject).point,
 						styleInfo.RADIUS_PIXELS);
 			}
-		}
-		
-		if(originalComposite != null) {
-			g2.setComposite(originalComposite);
 		}
 	}
 	

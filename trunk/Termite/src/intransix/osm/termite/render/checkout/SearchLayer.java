@@ -43,14 +43,7 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 	public void render(Graphics2D g2) {
 		
 		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();
-		if(selection != null) {
-//			g2.transform(localToPixels);
-//			
-//			float zoomScale = (float)mapPanel.getZoomScalePixelsPerMeter();
-//			if(strokeScale != zoomScale) {
-//				stroke = new BasicStroke(STROKE_WIDTH/zoomScale);
-//				strokeScale = zoomScale;
-//			}
+		if(selection != null) {	
 			Shape shape = mercatorToPixels.createTransformedShape(selection);
 			
 			g2.setPaint(FILL_COLOR);
@@ -58,6 +51,23 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 			g2.setStroke(stroke);
 			g2.setColor(STROKE_COLOR);
 			g2.draw(shape);
+		}
+	}
+	
+	/** This mode sets the edit layer active. */
+	@Override
+	public void setActiveState(boolean isActive) {
+		super.setActiveState(isActive);
+		MapPanel mapPanel = this.getMapPanel();
+		if(mapPanel != null) {
+			if(isActive) {
+				mapPanel.addMouseListener(this);
+				mapPanel.addMouseMotionListener(this);
+			}
+			else {
+				mapPanel.removeMouseListener(this);
+				mapPanel.removeMouseMotionListener(this);
+			}
 		}
 	}
 	
