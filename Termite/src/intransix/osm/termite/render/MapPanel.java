@@ -8,6 +8,8 @@ import java.awt.event.*;
 import intransix.osm.termite.map.data.OsmDataChangedListener;
 import intransix.osm.termite.gui.MapDataListener;
 import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.render.edit.MoveAction;
+import intransix.osm.termite.render.edit.VirtualNodeAction;
 
 /**
  *
@@ -230,7 +232,9 @@ this.resetLocalCoordinates();
 	 * @param mapData	The map data object
 	 */
 	public void onMapData(OsmData mapData) {
-		mapData.addDataChangedListener(this);
+		if(mapData != null) {
+			mapData.addDataChangedListener(this);
+		}
 	}
 	
 	/** This method is called when the data has changed.
@@ -244,8 +248,10 @@ this.resetLocalCoordinates();
 	}
 	
 	//-------------------------
-	// Mouse Events
+	// UI Events
 	//-------------------------
+	
+	// <editor-fold defaultstate="collapsed" desc="Mouse Listeners">
 	
 	public void mouseClicked(MouseEvent e) {
 	}
@@ -257,6 +263,8 @@ this.resetLocalCoordinates();
 	}
 	
 	public void mouseEntered(MouseEvent e) {
+		//so we can get key events
+		this.requestFocusInWindow();
 	}
 	
 	public void mouseExited(MouseEvent e) {
@@ -290,6 +298,8 @@ this.resetLocalCoordinates();
 		
 		zoom(scaleFactor,x,y);
 	}
+	
+	// </editor-fold>
 	
 	public void zoom(double zoomFactor, double x, double y) {
 		AffineTransform zt = new AffineTransform();

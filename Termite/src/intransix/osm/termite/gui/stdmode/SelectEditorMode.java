@@ -16,7 +16,7 @@ import javax.swing.*;
  *
  * @author sutter
  */
-public class SelectEditorMode implements EditorMode, ActionListener,
+public class SelectEditorMode extends EditorMode implements ActionListener,
 		FeatureSelectedListener {
 	//====================
 	// Properties
@@ -24,7 +24,6 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 	private final static String MODE_NAME = "Select Tool";
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/selectMode.png";
 	
-	private final static String DISCARD_DATA_CMD = "discard";
 	private final static String DELETE_CMD = "delete";
 	private final static String REMOVE_NODE_CMD = "remove";
 	private final static String CHANGE_FEATURE_TYPE_CMD = "changeFeatureType";
@@ -34,7 +33,6 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 	
 	private JToolBar toolBar = null;
 	
-	private JButton discardButton;
 	private JButton deleteButton;
 	private JButton removeNodeButton;
 	private JButton changeFeatureTypeButton;
@@ -121,9 +119,7 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 	public void onFeatureSelected(List<Object> selection, SelectionType selectionType,
 			List<Integer> wayNodeSelection, WayNodeType wayNodeType) {
 		
-		//determine which buttons are active
-		boolean discardEnabled = true;
-		
+		//determine which buttons are active	
 		boolean deleteEnabled = false;
 		boolean removeEnabled = false;
 		boolean featureTypeEnabled = false;
@@ -154,7 +150,6 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 				break;
 		}
 				
-		discardButton.setEnabled(discardEnabled);
 		deleteButton.setEnabled(deleteEnabled);
 		removeNodeButton.setEnabled(removeEnabled);
 		changeFeatureTypeButton.setEnabled(featureTypeEnabled);
@@ -163,11 +158,7 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		if(DISCARD_DATA_CMD.equals(ae.getActionCommand())) {
-			//clear the data
-			termiteGui.setMapData(null);
-		}
-		else if(DELETE_CMD.equals(ae.getActionCommand())) {
+		if(DELETE_CMD.equals(ae.getActionCommand())) {
 			//works on a node or way or a collection of nodes and ways
 			List<Object> selection = termiteGui.getSelection();
 			OsmData osmData = termiteGui.getMapData();
@@ -202,11 +193,6 @@ public class SelectEditorMode implements EditorMode, ActionListener,
 	private void createToolBar() {	
 		toolBar = new JToolBar();
 		toolBar.setFloatable(false);
-		
-		discardButton = new JButton("Discard Data");
-		discardButton.setActionCommand(DISCARD_DATA_CMD);
-		discardButton.addActionListener(this);
-		toolBar.add(discardButton);
 		
 		deleteButton = new JButton("Delete");
 		deleteButton.setActionCommand(DELETE_CMD);
