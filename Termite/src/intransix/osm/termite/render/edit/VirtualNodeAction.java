@@ -26,7 +26,7 @@ public class VirtualNodeAction implements MouseEditAction {
 		this.editLayer = editLayer;
 		
 		this.activeLevel = editLayer.getActiveLevel();
-		Point2D mouseMerc = editLayer.getMousePoint();
+		Point2D mouseMerc = editLayer.getMapPanel().getMousePointMerc();
 		
 		editLayer.clearPending();
 		

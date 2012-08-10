@@ -10,16 +10,19 @@ import intransix.osm.termite.gui.MapDataListener;
 import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.render.edit.MoveAction;
 import intransix.osm.termite.render.edit.VirtualNodeAction;
+import intransix.osm.termite.render.source.GeocodeLayer;
 
 /**
  *
  * @author sutter
  */
 public class MapPanel extends JPanel implements OsmDataChangedListener,
-		MouseListener, MouseMotionListener, MouseWheelListener, MapDataListener {
+		MouseListener, MouseMotionListener, MouseWheelListener, MapDataListener,
+		KeyListener {
 	
 	//zoom factor for a mouse wheel click
 	private final static double ROTATION_SCALE_FACTOR = 1.1;
+	private final static double KEY_SCALE_FACTOR = 1.1;
 	
 	//max zoom before redefining local coordinates
 	private final static double LOCAL_COORD_RESET_ZOOM = 2;
@@ -51,6 +54,7 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addMouseWheelListener(this);
+		this.addKeyListener(this);
 		this.setBackground(Color.WHITE);
     }
 	
@@ -138,6 +142,30 @@ this.resetLocalCoordinates();
 	}
 	
 	// </editor-fold>
+	
+	/** This method gets the location of the mouse in Mercator coordinates. It should
+	 * be used if the mouse is needed outside of a mouse event. */
+	public Point2D getMousePointMerc() {
+		//get the current mouse location and update the nodes that move with the mouse
+		java.awt.Point mouseInApp = MouseInfo.getPointerInfo().getLocation();
+		java.awt.Point mapPanelInApp = getLocationOnScreen();
+		Point2D mousePix = new Point2D.Double(mouseInApp.x - mapPanelInApp.x,mouseInApp.y - mapPanelInApp.y);
+		Point2D mouseMerc = new Point2D.Double(); 
+		pixelsToMercator.transform(mousePix,mouseMerc);
+		
+		return mouseMerc;
+	}
+	
+	/** This method gets the location of the mouse in Pixel coordinates. It should
+	 * be used if the mouse is needed outside of a mouse event. */
+	public Point2D getMousePointPix() {
+		//get the current mouse location and update the nodes that move with the mouse
+		java.awt.Point mouseInApp = MouseInfo.getPointerInfo().getLocation();
+		java.awt.Point mapPanelInApp = getLocationOnScreen();
+		Point2D mousePix = new Point2D.Double(mouseInApp.x - mapPanelInApp.x,mouseInApp.y - mapPanelInApp.y);
+		
+		return mousePix;
+	}
 	
 	//map layers///////////////////////////
 	
@@ -300,7 +328,63 @@ this.resetLocalCoordinates();
 	}
 	
 	// </editor-fold>
+		
+	// <editor-fold defaultstate="collapsed" desc="Key Listener">
 	
+	/** Handle the key typed event from the text field. */
+    @Override
+	public void keyTyped(KeyEvent e) {
+    }
+
+    /** Handle the key-pressed event from the text field. */
+	@Override
+    public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_UP) {
+			Point2D point = getMousePointPix();
+			if(onScreen(point)) {
+				//zoom at mouse location
+				zoom(KEY_SCALE_FACTOR,point.getX(),point.getY());
+			}
+			else {
+				//mouse off screen - zoom at center
+				zoom(KEY_SCALE_FACTOR);
+			}
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+			Point2D point = getMousePointPix();
+			if(onScreen(point)) {
+				//zoom at mouse location
+				zoom(1/KEY_SCALE_FACTOR,point.getX(),point.getY());
+			}
+			else {
+				//mouse off screen - zoom at center
+				zoom(1/KEY_SCALE_FACTOR);
+			}
+		}
+    }
+	
+	private boolean onScreen(Point2D point) {
+		double x = point.getX();
+		double y = point.getY();
+		return ((x >= 0)&&(y >= 0)&&(x <= getWidth())&&(y <= getHeight()));
+			
+	}
+
+    /** Handle the key-released event from the text field. */
+    @Override
+	public void keyReleased(KeyEvent e) {
+    }
+	
+	// </editor-fold>
+	
+	/** This method zooms the specified amount about the center of the screen. */
+	public void zoom(double zoomFactor) {
+		int x = this.getWidth()/2;
+		int y = this.getHeight()/2;
+		zoom(zoomFactor,x,y);
+	}
+	
+	/** This method zooms the specified amount about the specified point. */
 	public void zoom(double zoomFactor, double x, double y) {
 		AffineTransform zt = new AffineTransform();
 		zt.translate((1-zoomFactor)*x, (1-zoomFactor)*y);

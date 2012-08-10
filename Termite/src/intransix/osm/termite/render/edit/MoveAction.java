@@ -29,7 +29,7 @@ public class MoveAction implements MouseEditAction {
 		this.editLayer = editLayer;
 	
 		this.moveStartPoint = editLayer.getSelectionPoint();
-		Point2D mouseMerc = editLayer.getMousePoint();
+		Point2D mouseMerc = editLayer.getMapPanel().getMousePointMerc();
 		
 		//these are the objects that will move
 		List<Object> selection = editLayer.getSelection();
@@ -110,12 +110,10 @@ public class MoveAction implements MouseEditAction {
 			MoveEdit me = new MoveEdit(osmData);
 			me.selectionMoved(selection,moveStartPoint,clickDestPoint);
 		}
-//		//stay in move mode, but deselect
-//		//user has to end move mode and restart it to move again
-//		//but keep the selection but update the start point
-//		//so the user can move this object again without reselecting it
-//		editLayer.clearPending();
+		//exit move mode
 		editLayer.exitMove();
+		
+		//update select point
 		editLayer.setSelectionPoint(clickDestPoint);
 
 	}

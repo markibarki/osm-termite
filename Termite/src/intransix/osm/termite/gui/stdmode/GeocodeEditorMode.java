@@ -6,7 +6,7 @@ import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.source.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.Dimension;
 import javax.swing.*;
 
 /**
@@ -22,9 +22,9 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	
 	
 	private final static String[] GEOCODE_TYPE_NAMES = {
-		"Two Point",
-		"Three Point Orthoganol",
-		"Free Geocode"
+		"2 Point",
+		"3 Pnt Ortho",
+		"3 Pnt Free"
 	};
 	private final static String[] GEOCODE_CMDS = {
 		"two","three","free"
@@ -38,12 +38,16 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 						
 	private final static String SELECT_TEXT = "Select [esc]";
 	private final static String SELECT_CMD = "select";
-	private final static String MOVE_TEXT = "Move (m)";
+	private final static String MOVE_TEXT = "Move [m]";
 	private final static String MOVE_CMD = "move";
+	private final static String ANCHOR_LABEL = "Place Anchors: ";
 	
 	private final static int TWO_POINT = 0;
 	private final static int THREE_POINT_ORTHO = 1;
 	private final static int FREE_TRANSFORM = 2;
+	
+	private final static int SPACE_X = 8;
+	private final static int SPACE_Y = 8;
 	
 	private TermiteGui termiteGui;
 	private GeocodeLayer geocodeLayer;
@@ -259,6 +263,19 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		modeButtonGroup.add(selectButton);
 		toolBar.add(selectButton);
 		
+		moveButton = new JToggleButton(MOVE_TEXT);
+		moveButton.setActionCommand(MOVE_CMD);
+		moveButton.addActionListener(this);
+		modeButtonGroup.add(moveButton);
+		toolBar.add(moveButton);
+		
+		Box.Filler space1 = new Box.Filler(new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y));
+		toolBar.add(space1);
+		
+		JLabel anchorLabel = new JLabel();
+        anchorLabel.setText(ANCHOR_LABEL);
+		toolBar.add(anchorLabel);
+		
 		cnt = BUTTON_NAMES[0].length;
 		dynamicButtons = new JToggleButton[cnt];
 		for(int i = 0; i < cnt; i++) {
@@ -270,11 +287,7 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 			dynamicButtons[i] = button;
 		}
 		
-		moveButton = new JToggleButton(MOVE_TEXT);
-		moveButton.setActionCommand(MOVE_CMD);
-		moveButton.addActionListener(this);
-		modeButtonGroup.add(moveButton);
-		toolBar.add(moveButton);
+		
 		
 //not implemented
 		this.radioButtons[FREE_TRANSFORM].setEnabled(false);
