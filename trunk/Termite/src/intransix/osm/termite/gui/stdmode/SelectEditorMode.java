@@ -5,10 +5,12 @@ import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.gui.FeatureSelectedListener;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.edit.EditLayer;
+import intransix.osm.termite.render.edit.EditStateListener;
 import intransix.osm.termite.map.data.edit.*;
 import intransix.osm.termite.map.data.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Dimension;
 import java.util.List;
 import javax.swing.*;
 
@@ -17,21 +19,34 @@ import javax.swing.*;
  * @author sutter
  */
 public class SelectEditorMode extends EditorMode implements ActionListener,
-		FeatureSelectedListener {
+		FeatureSelectedListener,EditStateListener {
 	//====================
 	// Properties
 	//====================
 	private final static String MODE_NAME = "Select Tool";
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/selectMode.png";
 	
+	private final static String SELECT_TEXT = "Select [esc]";
+	private final static String MOVE_TEXT = "Move [m]";
+	
+	private final static String SELECT_CMD = "select";
+	private final static String MOVE_CMD = "move";
 	private final static String DELETE_CMD = "delete";
 	private final static String REMOVE_NODE_CMD = "remove";
 	private final static String CHANGE_FEATURE_TYPE_CMD = "changeFeatureType";
 	private final static String CREATE_LEVEL_CMD = "createLevel";
 	
+	private final static int SPACE_X = 8;
+	private final static int SPACE_Y = 8;
+	
 	private TermiteGui termiteGui;
+	private EditLayer editLayer;
 	
 	private JToolBar toolBar = null;
+	
+	private ButtonGroup modeButtonGroup;
+	private JToggleButton selectButton;
+	private JToggleButton moveButton;
 	
 	private JButton deleteButton;
 	private JButton removeNodeButton;
@@ -44,6 +59,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	
 	public SelectEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
+		createToolBar();
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -69,19 +85,23 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	 */
 	@Override
 	public void turnOn() {
+		if(editLayer == null) {
+			editLayer = termiteGui.getEditLayer();
+			editLayer.addGeocodeStateListener(this);
+		}
+		
 		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
 		}
-		EditLayer editLayer = termiteGui.getEditLayer();
 		if(editLayer != null) {
 			editLayer.setActiveState(true);
 			editLayer.setMouseEditAction(null);
+			
+			//update the edit mode
+			this.editModeChanged(editLayer.inMove());
 		}
 		
-		if(toolBar == null) {
-			createToolBar();
-		}
 		termiteGui.addToolBar(toolBar);
 		termiteGui.addFeatureSelectedListener(this);
 	}
@@ -94,7 +114,6 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 		if(renderLayer != null) {
 			renderLayer.setActiveState(false);
 		}
-		MapLayer editLayer = termiteGui.getEditLayer();
 		if(editLayer != null) {
 			editLayer.setActiveState(false);
 		}
@@ -105,7 +124,23 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 		termiteGui.removeFeatureSelectedListener(this);
 	}
 	
-		/** This method is called when a map feature is selected. The arguments selectionType
+	
+	/** This method is called when the edit state changes. */
+	@Override
+	public void editModeChanged(boolean inMove) {
+		if(inMove) {
+			if(!moveButton.isSelected()) {
+				moveButton.setSelected(true);
+			}
+		}
+		else {
+			if(!selectButton.isSelected()) {
+				selectButton.setSelected(true);
+			}
+		}
+	}
+	
+	/** This method is called when a map feature is selected. The arguments selectionType
 	 * and wayNodeType indicate the type of selection made. The list objects may be null
 	 * if there is no selection for the list. 
 	 * 
@@ -158,29 +193,21 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		if(DELETE_CMD.equals(ae.getActionCommand())) {
-			//works on a node or way or a collection of nodes and ways
-			List<Object> selection = termiteGui.getSelection();
-			OsmData osmData = termiteGui.getMapData();
-			if((selection != null)&&(osmData != null)) {
-				DeleteSelection ds = new DeleteSelection(osmData);
-				ds.deleteSelection(selection);
+		if(SELECT_CMD.equals(ae.getActionCommand())) {
+			editLayer.exitMove();
+		}
+		else if(MOVE_CMD.equals(ae.getActionCommand())) {
+			boolean success = editLayer.startMove();
+			if(!success) {
+				//update the edit mode to be the active 
+				this.editModeChanged(editLayer.inMove());
 			}
 		}
+		else if(DELETE_CMD.equals(ae.getActionCommand())) {
+			editLayer.deleteSelection();
+		}
 		else if(REMOVE_NODE_CMD.equals(ae.getActionCommand())) {
-			//works on a node selected within a way
-			List<Object> selection = termiteGui.getSelection();
-			List<Integer> selectedNodes = termiteGui.getWayNodeSelection();
-			OsmData osmData = termiteGui.getMapData();
-			if((selection != null)&&(selectedNodes != null)&&(osmData != null)) {
-				if(!selection.isEmpty()) {
-					Object obj = selection.get(0);
-					if(obj instanceof OsmWay) {
-						RemoveWayNodeEdit rwne = new RemoveWayNodeEdit(osmData);
-						rwne.removeNodesFromWay((OsmWay)obj,selectedNodes);
-					}
-				}
-			}
+			editLayer.removeNodeFromWay();
 		}
 		else if(CHANGE_FEATURE_TYPE_CMD.equals(ae.getActionCommand())) {
 			//works on a node or way or collection of nodes and ways
@@ -193,6 +220,22 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	private void createToolBar() {	
 		toolBar = new JToolBar();
 		toolBar.setFloatable(false);
+		
+		modeButtonGroup = new ButtonGroup();
+		selectButton = new JToggleButton(SELECT_TEXT);
+		selectButton.setActionCommand(SELECT_CMD);
+		selectButton.addActionListener(this);
+		modeButtonGroup.add(selectButton);
+		toolBar.add(selectButton);
+		
+		moveButton = new JToggleButton(MOVE_TEXT);
+		moveButton.setActionCommand(MOVE_CMD);
+		moveButton.addActionListener(this);
+		modeButtonGroup.add(moveButton);
+		toolBar.add(moveButton);
+		
+		Box.Filler space1 = new Box.Filler(new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y));
+		toolBar.add(space1);
 		
 		deleteButton = new JButton("Delete");
 		deleteButton.setActionCommand(DELETE_CMD);

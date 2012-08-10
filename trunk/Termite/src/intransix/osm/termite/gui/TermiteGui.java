@@ -48,6 +48,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 		KeyEvent.VK_J,KeyEvent.VK_K,KeyEvent.VK_L
 	};
 	
+	private final static int SPACE_X = 8;
+	private final static int SPACE_Y = 8;
+	
 	// <editor-fold defaultstate="collapsed" desc="Properties">
 	
 	private TermiteApp app;
@@ -778,6 +781,19 @@ public class TermiteGui extends javax.swing.JFrame implements
 		modeToolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
 		
 		toolBarPanel.add(modeToolBar);
+		
+		Box.Filler space = new javax.swing.Box.Filler(new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y));
+		toolBarPanel.add(space);
+		
+		JSeparator separator = new javax.swing.JSeparator();
+		separator.setOrientation(javax.swing.SwingConstants.VERTICAL);
+		int px = separator.getPreferredSize().width;
+		int mxy = separator.getMaximumSize().height;
+		separator.setMaximumSize(new Dimension(px,mxy));
+		toolBarPanel.add(separator);
+		
+		space = new javax.swing.Box.Filler(new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y));
+		toolBarPanel.add(space);
 
 		//create meta data panels
         jSplitPane1 = new javax.swing.JSplitPane();

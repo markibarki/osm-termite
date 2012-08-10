@@ -2,8 +2,6 @@ package intransix.osm.termite.render.edit;
 
 import java.util.*;
 import java.awt.Graphics2D;
-import java.awt.Color;
-import java.awt.BasicStroke;
 import java.awt.geom.*;
 import java.awt.event.*;
 
@@ -35,6 +33,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	public final static double SNAP_RADIUS_PIXELS = 3;
 	
 	private TermiteGui termiteGui;
+	private List<EditStateListener> stateListeners = new ArrayList<EditStateListener>();
 	
 	private OsmData osmData;
 	private StyleInfo styleInfo = new StyleInfo();
@@ -117,7 +116,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		getMapPanel().repaint();
 	}
 	
-		/** This method clears all data in the pending state. */
+	public void clearWayNodesSelection() {
+		selectedWayNodes.clear();
+		virtualNodeSelected = false;
+		clearPending();
+		getMapPanel().repaint();
+	}
+	
+	/** This method clears all data in the pending state. */
 	public void clearPending() {
 		pendingObjects.clear();
 		pendingSnapSegments.clear();
@@ -144,20 +150,20 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		return featureInfo;
 	}
 	
-	/** This method gets the location of the mouse in Mercator coordinates. It should
-	 * be used if the mouse is needed outside of a mouse event. */
-	public Point2D getMousePoint() {
-		//get the current mouse location and update the nodes that move with the mouse
-		MapPanel mapPanel = getMapPanel();
-		AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
-		java.awt.Point mouseInApp = MouseInfo.getPointerInfo().getLocation();
-		java.awt.Point mapPanelInApp = mapPanel.getLocationOnScreen();
-		Point2D mousePix = new Point2D.Double(mouseInApp.x - mapPanelInApp.x,mouseInApp.y - mapPanelInApp.y);
-		Point2D mouseMerc = new Point2D.Double(); 
-		pixelsToMercator.transform(mousePix,mouseMerc);
-		
-		return mouseMerc;
-	}
+//	/** This method gets the location of the mouse in Mercator coordinates. It should
+//	 * be used if the mouse is needed outside of a mouse event. */
+//	public Point2D getMousePoint() {
+//		//get the current mouse location and update the nodes that move with the mouse
+//		MapPanel mapPanel = getMapPanel();
+//		AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
+//		java.awt.Point mouseInApp = MouseInfo.getPointerInfo().getLocation();
+//		java.awt.Point mapPanelInApp = mapPanel.getLocationOnScreen();
+//		Point2D mousePix = new Point2D.Double(mouseInApp.x - mapPanelInApp.x,mouseInApp.y - mapPanelInApp.y);
+//		Point2D mouseMerc = new Point2D.Double(); 
+//		pixelsToMercator.transform(mousePix,mouseMerc);
+//		
+//		return mouseMerc;
+//	}
 	
 	/** This method sets the edit mode. */
 	public void setMouseEditAction(MouseEditAction mouseEditAction) {
@@ -559,14 +565,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	@Override
     public void keyPressed(KeyEvent e) {
 		boolean changed = false;
-		if((e.getKeyCode() == KeyEvent.VK_LEFT)||(e.getKeyCode() == KeyEvent.VK_UP)) {
+		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
 			if(!snapObjects.isEmpty()) {
 				activeSnapObject--;
 				if(activeSnapObject < -1) activeSnapObject = snapObjects.size() - 1;
 				changed = true;
 			}
 		}
-		else if((e.getKeyCode() == KeyEvent.VK_RIGHT)||(e.getKeyCode() == KeyEvent.VK_DOWN)) {
+		else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
 			if(!snapObjects.isEmpty()) {
 				activeSnapObject++;
 				if(activeSnapObject >= snapObjects.size()) activeSnapObject = -1;
@@ -574,10 +580,13 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			}
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_M) {
-			changed = startMove();
+			startMove();
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			changed = exitMove();
+			exitMove();
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_DELETE) {
+			deleteSelection();
 		}
 		
 		if(changed) {
@@ -630,31 +639,25 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 	}
 	
-	//============================
-	// Package Methods
-	//============================
+	// <editor-fold defaultstate="collapsed" desc="Move Mode Control">
 	
-	boolean exitMove() {
-		if(inMove()) {
-			clearEditAction();
-			return true;
-		}
-		else {
-			return false;
+	public void addGeocodeStateListener(EditStateListener stateListener) {
+		if(!stateListeners.contains(stateListener)) {
+			stateListeners.add(stateListener);
 		}
 	}
 	
-	//============================
-	// Private Methods
-	//============================
+	public void removeGeocodeStateListener(EditStateListener stateListener) {
+		stateListeners.remove(stateListener);
+	}
 	
 	/** This method returns true if a move mode is active. */
-	private boolean inMove() {
+	public boolean inMove() {
 		return ((mouseEditAction instanceof MoveAction)||
 				(mouseEditAction instanceof VirtualNodeAction));
 	}
 	
-	private boolean startMove() {
+	public boolean startMove() {
 		if((mouseEditAction == null)&&(!selection.isEmpty())) {
 				
 			if(virtualNodeSelected) {
@@ -665,13 +668,81 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				mouseEditAction = new MoveAction();
 				mouseEditAction.init(osmData,this);
 			}
+			
+			//notify listeners
+			for(EditStateListener esl:stateListeners) {
+				esl.editModeChanged(true);
+			}
 
+			getMapPanel().repaint();
+			
 			return true;
 		}
 		else {
 			return false;
 		}
 	}
+	
+	public boolean exitMove() {
+		if(inMove()) {
+			clearEditAction();
+			
+			//notify listeners
+			for(EditStateListener esl:stateListeners) {
+				esl.editModeChanged(false);
+			}
+			
+			getMapPanel().repaint();
+			
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	// </editor-fold>
+	
+	// <editor-fold defaultstate="collapsed" desc="Edit Actions">
+	
+	public void deleteSelection() {
+		//works on a node or way or a collection of nodes and ways
+		if((!selection.isEmpty())&&(osmData != null)) {
+			DeleteSelection ds = new DeleteSelection(osmData);
+			ds.deleteSelection(selection);
+			
+			//clear the selection
+			clearSelection();
+		}
+	}
+	
+	public void removeNodeFromWay() {
+		//works on a node selected within a way
+		if(osmData != null) {
+			if((!selection.isEmpty())&&(!selectedWayNodes.isEmpty())) {
+				Object obj = selection.get(0);
+				if(obj instanceof OsmWay) {
+					RemoveWayNodeEdit rwne = new RemoveWayNodeEdit(osmData);
+					rwne.removeNodesFromWay((OsmWay)obj,selectedWayNodes);
+				}
+				
+				clearWayNodesSelection();
+			}
+		}
+	}
+	
+	public void createLevel() {
+		
+	}
+	
+	public void changeSelectionFeatureType() {
+		
+	}
+	
+	// </editor-fold>
+	
+	//============================
+	// Private Methods
+	//============================
 	
 	private void clearEditAction() {
 		mouseEditAction = null;
