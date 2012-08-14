@@ -208,21 +208,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		
 		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();		
 		
-		//render hover
-		if((activeSnapObject != -1)&&(activeSnapObject < snapObjects.size())) {
-//System.out.println(("cnt = " + snapObjects.size() + "; active = " + activeSnapObject));
-			g2.setColor(styleInfo.HOVER_PRESELECT_COLOR);
-			SnapObject snapObject = snapObjects.get(activeSnapObject);
-//System.out.println(snapObject);
-			snapObject.render(g2, mercatorToPixels,styleInfo);
-		}
-		
-		//render pending objects
-		g2.setColor(styleInfo.PENDING_COLOR);
-		for(EditObject editObject:pendingObjects) {
-			editObject.render(g2, mercatorToPixels, styleInfo);
-		}
-		
 		//render selection
 		g2.setColor(styleInfo.SELECT_COLOR);
 		for(Object selectObject:selection) {
@@ -247,6 +232,21 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				EditDrawable.renderPoint(g2, mercatorToPixels,((VirtualNode)selectObject).point,
 						styleInfo.RADIUS_PIXELS);
 			}
+		}
+		
+		//render hover
+		if((activeSnapObject != -1)&&(activeSnapObject < snapObjects.size())) {
+//System.out.println(("cnt = " + snapObjects.size() + "; active = " + activeSnapObject));
+			g2.setColor(styleInfo.HOVER_PRESELECT_COLOR);
+			SnapObject snapObject = snapObjects.get(activeSnapObject);
+//System.out.println(snapObject);
+			snapObject.render(g2, mercatorToPixels,styleInfo);
+		}
+		
+		//render pending objects
+		g2.setColor(styleInfo.PENDING_COLOR);
+		for(EditObject editObject:pendingObjects) {
+			editObject.render(g2, mercatorToPixels, styleInfo);
 		}
 	}
 	
@@ -573,7 +573,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			startMove();
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			exitMove();
+			if(inMove())  {
+				exitMove();
+			}
+			else if(mouseEditAction instanceof WayToolAction) {
+				resetWayEdit();
+			}
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_DELETE) {
 			deleteSelection();
@@ -769,6 +774,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		activeSnapObject = -1;
 		getMapPanel().repaint();
 	}	
+	
+	/** This method ends the current way edit and starts a new one. */
+	private void resetWayEdit() {
+		//clear old working data
+		clearSelection();
+		//overwrite old way edit action with a new one
+		setMouseEditAction(new WayToolAction());
+	}
 	
 	/** This method returns the current edit destination point based on the
 	 * currently selected hover node or segment. 
