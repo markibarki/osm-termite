@@ -151,20 +151,4 @@ public abstract class OsmSrcData<T extends OsmObject> {
 		changeset = attr.getValue("changeset");
 		timestamp = attr.getValue("timestamp");
 	}
-	
-	//=========================
-	// Internal Classes
-	//=========================
-	
-	public static class PropertyPair {
-		
-		public PropertyPair(String key, String value) {
-			this.key = key;
-			this.value = value;
-		}
-		
-		public String key;
-		public String value;
-	}
-	
 }

@@ -76,5 +76,10 @@ public class VirtualNodeAction implements MouseEditAction {
 		editLayer.clearPending();
 		editLayer.clearSelection();
 	}
+	
+	@Override
+	public void featureLayerUpdated(FeatureInfo featureInfo) {
+		//no action
+	}
 		
 }

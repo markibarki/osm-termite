@@ -19,16 +19,11 @@ public class NodeToolAction implements MouseEditAction {
 	
 	private OsmData osmData;
 	private EditLayer editLayer;
-	private FeatureInfo featureInfo;
-	private OsmRelation activeLevel;
 	private EditNode editNode;
 	
 	public void init(OsmData osmData, EditLayer editLayer) {
 		this.osmData = osmData;
 		this.editLayer = editLayer;
-
-		this.activeLevel = editLayer.getActiveLevel();
-		this.featureInfo = editLayer.getFeatureInfo();
 		
 		editLayer.clearSelection();
 		
@@ -46,6 +41,9 @@ public class NodeToolAction implements MouseEditAction {
 	
 	@Override
 	public void mousePressed(EditDestPoint clickDestPoint) {
+		FeatureInfo featureInfo = editLayer.getFeatureInfo();
+		OsmRelation activeLevel = editLayer.getActiveLevel();
+	
 		//execute a node addition
 		NodeCreateEdit nce = new NodeCreateEdit(osmData);
 		OsmNode node = nce.nodeToolClicked(clickDestPoint,featureInfo,activeLevel);
@@ -54,12 +52,21 @@ public class NodeToolAction implements MouseEditAction {
 		setPendingData(clickDestPoint.point);
 	}
 	
+	@Override
+	public void featureLayerUpdated(FeatureInfo featureInfo) {
+		if(editNode != null) {
+			editNode.featureInfo = featureInfo;
+		}
+	}
+	
 	private void setPendingData(Point2D pendingPoint) {
 		editLayer.clearPending();
 		
 		//these lists are to display the move preview
 		List<EditObject> pendingObjects = editLayer.getPendingObjects();
 		List<EditNode> movingNodes = editLayer.getMovingNodes();
+		
+		FeatureInfo featureInfo = editLayer.getFeatureInfo();
 		
 		editNode = new EditNode(pendingPoint,featureInfo);
 		movingNodes.add(editNode);

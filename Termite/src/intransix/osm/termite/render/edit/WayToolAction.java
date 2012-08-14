@@ -87,6 +87,11 @@ public class WayToolAction implements MouseEditAction {
 		}
 	}
 	
+	@Override
+	public void featureLayerUpdated(FeatureInfo featureInfo) {
+		//no action
+	}
+	
 	private void setPendingData(Point2D pendingPoint) {
 		editLayer.clearPending();
 		
