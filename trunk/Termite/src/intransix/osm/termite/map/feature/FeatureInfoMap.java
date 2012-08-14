@@ -3,6 +3,9 @@ package intransix.osm.termite.map.feature;
 import intransix.osm.termite.map.proptree.PropertyNode;
 import intransix.osm.termite.map.proptree.KeyNode;
 import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.map.data.PropertyPair;
+import java.util.List;
+import java.util.ArrayList;
 import org.json.*;
 
 /**
@@ -58,32 +61,80 @@ public class FeatureInfoMap {
 //		return newClassifyingProp.getData();
 //	}
 	
-	
-	/** This method looks up a PropertyNode for a given input color. */
-	private PropertyNode<Object,FeatureInfo> getColorProperty(
-			PropertyNode<Object,FeatureInfo> prop, String colorString) {
+	public List<PropertyPair> getFeatureProperties(FeatureInfo featureInfo) {
 		
-		//get the input color for this property
-		String propColor = null;
-		FeatureInfo fp = prop.getData();
-		if(fp != null) {
-			propColor = fp.getInputColor();
-		}
+		//get the property node for this feature info
+		PropertyNode<Object,FeatureInfo> propNode = getFeatureInfoProperty(treeRoot,featureInfo);
 		
-		//check this object for a match
-		if((propColor != null)&&(colorString.equalsIgnoreCase(propColor))) return prop;
-		
-		//check children for a match
-		PropertyNode<Object,FeatureInfo> resultProp = null;
-		for(KeyNode<Object,FeatureInfo> key:prop.getKeys()) {
-			for(PropertyNode<Object,FeatureInfo> childProp:key.getValues()) {
-				resultProp = getColorProperty(childProp,colorString);
-				if(resultProp != null) return resultProp;
+		//load the properties for this node, tracing back to the tree root
+		List<PropertyPair> properties = new ArrayList<PropertyPair>();
+		if(propNode != null) {
+			PropertyPair property;
+			KeyNode<Object,FeatureInfo> keyNode = propNode.getParentKey();
+			while(keyNode != null) {
+				property = new PropertyPair(keyNode.getName(),propNode.getName());
+				properties.add(property);
+				propNode = keyNode.getParentValue();
+				if(propNode != null) {
+					keyNode = propNode.getParentKey();
+				}
+				else {
+					keyNode = null;
+				}
 			}
 		}
-		//if we get here, it wasn't found
+		
+		return properties;
+	}
+	
+	/** This method looks up a PropertyNode for a given input color. */
+	private PropertyNode<Object,FeatureInfo> getFeatureInfoProperty(
+			PropertyNode<Object,FeatureInfo> prop, FeatureInfo featureInfo) {
+		
+		//check if this property is the correct property
+		if(prop.getData() == featureInfo) {
+			return prop;
+		}
+		else {
+			//recursively search children
+			PropertyNode<Object,FeatureInfo> resultProp = null;
+			for(KeyNode<Object,FeatureInfo> key:prop.getKeys()) {
+				for(PropertyNode<Object,FeatureInfo> childProp:key.getValues()) {
+					resultProp = getFeatureInfoProperty(childProp,featureInfo);
+					if(resultProp != null) return resultProp;
+				}
+			}
+		}
+		
+		//not found
 		return null;
 	}
+	
+//	/** This method looks up a PropertyNode for a given input color. */
+//	private PropertyNode<Object,FeatureInfo> getColorProperty(
+//			PropertyNode<Object,FeatureInfo> prop, String colorString) {
+//		
+//		//get the input color for this property
+//		String propColor = null;
+//		FeatureInfo fp = prop.getData();
+//		if(fp != null) {
+//			propColor = fp.getInputColor();
+//		}
+//		
+//		//check this object for a match
+//		if((propColor != null)&&(colorString.equalsIgnoreCase(propColor))) return prop;
+//		
+//		//check children for a match
+//		PropertyNode<Object,FeatureInfo> resultProp = null;
+//		for(KeyNode<Object,FeatureInfo> key:prop.getKeys()) {
+//			for(PropertyNode<Object,FeatureInfo> childProp:key.getValues()) {
+//				resultProp = getColorProperty(childProp,colorString);
+//				if(resultProp != null) return resultProp;
+//			}
+//		}
+//		//if we get here, it wasn't found
+//		return null;
+//	}
 	
 //	/** This method adds all the keys and values associated with the given 
 //	 * classifying property. */

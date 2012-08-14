@@ -3,6 +3,7 @@ package intransix.osm.termite.map.data.edit;
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import javax.swing.JOptionPane;
+import java.util.List;
 
 /**
  *
@@ -28,7 +29,13 @@ if(destPoint.snapNode != null) {
 		try {
 			OsmNodeSrc nodeSrc = new OsmNodeSrc();
 			nodeSrc.setPosition(destPoint.point.getX(),destPoint.point.getY());
-//need to add properties!!!
+
+			//get the properties
+			List<PropertyPair> properties = OsmModel.featureInfoMap.getFeatureProperties(featureInfo);
+			for(PropertyPair pp:properties) {
+				nodeSrc.addProperty(pp.key,pp.value);
+			}
+			
 			EditInstruction instr = new CreateInstruction(nodeSrc,getOsmData());
 			action.addInstruction(instr);
 			long nodeId = nodeSrc.getId();

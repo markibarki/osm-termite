@@ -85,11 +85,17 @@ System.out.println("Insert node into way");
 		Long startNodeId = createOrUseExistingNode(action,dest,currentLevel);
 		
 		OsmWaySrc waySrc = new OsmWaySrc();
-//need to add properties!!!
 		if(startNodeId != null) {
 			List<Long> nodeIds = waySrc.getNodeIds();
 			nodeIds.add(startNodeId);
 		}
+		
+		//get the properties
+		List<PropertyPair> properties = OsmModel.featureInfoMap.getFeatureProperties(featureInfo);
+		for(PropertyPair pp:properties) {
+			waySrc.addProperty(pp.key,pp.value);
+		}
+			
 		EditInstruction instr = new CreateInstruction(waySrc,getOsmData());
 		action.addInstruction(instr);
 		

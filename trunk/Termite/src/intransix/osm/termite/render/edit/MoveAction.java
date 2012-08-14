@@ -4,6 +4,7 @@ package intransix.osm.termite.render.edit;
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.data.edit.MoveEdit;
 import intransix.osm.termite.map.data.edit.EditDestPoint;
+import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +117,11 @@ public class MoveAction implements MouseEditAction {
 		//update select point
 		editLayer.setSelectionPoint(clickDestPoint);
 
+	}
+	
+	@Override
+	public void featureLayerUpdated(FeatureInfo featureInfo) {
+		//no action
 	}
 
 	private EditNode getEditNode(OsmNode node) {
