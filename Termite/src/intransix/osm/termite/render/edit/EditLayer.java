@@ -737,7 +737,13 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	}
 	
 	public void changeSelectionFeatureType() {
-		
+		if(!selection.isEmpty()) {
+			TypeChangeEdit tce = new TypeChangeEdit(osmData);
+			tce.modifyType(selection,featureInfo);
+		}
+		else {
+			JOptionPane.showMessageDialog(null,"An object must be selected.");
+		}
 	}
 	
 	// </editor-fold>

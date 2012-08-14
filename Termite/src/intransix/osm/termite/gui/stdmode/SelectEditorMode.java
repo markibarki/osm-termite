@@ -210,7 +210,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 			editLayer.removeNodeFromWay();
 		}
 		else if(CHANGE_FEATURE_TYPE_CMD.equals(ae.getActionCommand())) {
-			//works on a node or way or collection of nodes and ways
+			editLayer.changeSelectionFeatureType();
 		}
 		else if(CREATE_LEVEL_CMD.equals(ae.getActionCommand())) {
 			editLayer.createLevel();
