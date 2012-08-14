@@ -15,8 +15,6 @@ public class WayToolAction implements MouseEditAction {
 	
 	private OsmData osmData;
 	private EditLayer editLayer;
-	private FeatureInfo featureInfo;
-	private OsmRelation activeLevel;
 	private OsmWay activeWay;
 	private boolean addToWayStart;
 	private EditNode editNode;
@@ -24,10 +22,8 @@ public class WayToolAction implements MouseEditAction {
 	public void init(OsmData osmData, EditLayer editLayer) {
 		this.osmData = osmData;
 		this.editLayer = editLayer;
-
-		this.activeLevel = editLayer.getActiveLevel();
 		this.activeWay = editLayer.getActiveWay();
-		this.featureInfo = editLayer.getFeatureInfo();
+		
 		
 		//clear selection only if there is not an active way
 		//otherwise the selection is the active way
@@ -58,6 +54,9 @@ public class WayToolAction implements MouseEditAction {
 	
 	@Override
 	public void mousePressed(EditDestPoint clickDestPoint) {
+	
+		FeatureInfo featureInfo = editLayer.getFeatureInfo();
+		OsmRelation activeLevel = editLayer.getActiveLevel();
 	
 		//execute a way node addition
 		WayNodeEdit wne = new WayNodeEdit(osmData);
@@ -112,10 +111,20 @@ public class WayToolAction implements MouseEditAction {
 				int nodeIndex = this.addToWayStart ? 0 : nodes.size() - 1;
 				OsmNode activeNode = nodes.get(nodeIndex);
 				EditNode en2 = new EditNode(activeNode);
+				
 				EditSegment es = new EditSegment(null,editNode,en2);
 				pendingObjects.add(en2);
 				pendingObjects.add(es);
 				pendingSnapSegments.add(es);
+				
+				//get a segment to close the way
+				if(nodes.size() > 2) {
+					nodeIndex = (nodes.size() - 1) - nodeIndex;
+					activeNode = nodes.get(nodeIndex);
+					EditNode enClose = new EditNode(activeNode);
+					EditSegment esClose = new EditSegment(null,editNode,enClose);
+					pendingSnapSegments.add(esClose);
+				}
 			}
 		}
 	}

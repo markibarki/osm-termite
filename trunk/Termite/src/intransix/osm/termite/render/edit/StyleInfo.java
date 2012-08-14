@@ -9,17 +9,17 @@ import java.awt.Color;
  */
 public class StyleInfo {
 	public double RADIUS_PIXELS = 3; 
-	public float SELECT_WIDTH = 3;
-	public float HOVER_PRESELECT_WIDTH = 2;
-	public float HOVER_EXTENSION_WIDTH = 2;
-	public float HOVER_OTHER_WIDTH = 2;
+	public float SELECT_WIDTH = 1;
+	public float HOVER_PRESELECT_WIDTH = 1;
+	public float HOVER_EXTENSION_WIDTH = 1;
+	public float HOVER_OTHER_WIDTH = 1;
 	public float PENDING_WIDTH = 1;
 	public float MITER_LIMIT = 5f;
 	
 	public Color SELECT_COLOR = Color.RED;
 	public Color HOVER_PRESELECT_COLOR = Color.MAGENTA;
 	public Color HOVER_OTHER_COLOR = Color.PINK;
-	public Color PENDING_COLOR = Color.BLACK;
+	public Color PENDING_COLOR = Color.BLUE;
 	
 	public float[] DASH_SPACING = {3f};
 	public float DASH_PHASE = 0f;
