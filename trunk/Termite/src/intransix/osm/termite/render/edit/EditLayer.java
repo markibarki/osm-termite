@@ -13,6 +13,8 @@ import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.gui.*;
 import java.awt.*;
 import java.util.List;
+import intransix.osm.termite.gui.dialog.CreateLevelDialog;
+import javax.swing.JOptionPane;
 
 /**
  * This layer controls the user interaction with the active map data. It is designed
@@ -719,7 +721,19 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	}
 	
 	public void createLevel() {
-		
+		if(selection.size() == 1) {
+			Object parent = selection.get(0);
+			if(parent instanceof OsmObject) {
+				CreateLevelDialog cld = new CreateLevelDialog(null,osmData,(OsmObject)parent);
+				cld.setVisible(true);
+			}
+			else {
+				JOptionPane.showMessageDialog(null,"Invalid object type for creating a level.");
+			}
+		}
+		else {
+			JOptionPane.showMessageDialog(null,"A single object must be selected to create a level.");
+		}
 	}
 	
 	public void changeSelectionFeatureType() {

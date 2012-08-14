@@ -213,7 +213,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 			//works on a node or way or collection of nodes and ways
 		}
 		else if(CREATE_LEVEL_CMD.equals(ae.getActionCommand())) {
-			//works on a single way (or node?)
+			editLayer.createLevel();
 		}
 	}
 	

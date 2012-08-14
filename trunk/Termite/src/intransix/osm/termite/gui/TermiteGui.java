@@ -476,6 +476,10 @@ public class TermiteGui extends javax.swing.JFrame implements
 				clearRedoItem();
 			}
 		}
+		
+		if(contentTree != null) {
+			contentTree.mapDataUpdated();
+		}
 	}
 	
 	private void clearUndoItem() {
