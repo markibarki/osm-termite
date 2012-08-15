@@ -23,8 +23,52 @@ You need to following to get started with Termite:
 
 _give instructions for starting program on different platforms_
 
-= Running the Program =
 
+= Using the Program =
+
+=== Check Out Data ===
+When you start the program, the map will be empty. (There is currently no saving of the editor state.) The program is in checkout search mode, which lets you find a region on the map where you download data form the OSM database to edit.
+
+From the map menu, you can select "Base Map" to open a background map.
+
+Then you can navigate using pan and zoom to find the region you would like to open. *NOTE - the search to help find a location is not implemented.*
+
+When you find the area you want to check out, select a rectangle window and then press "download data" to check out map data. 
+
+=== Editing ===
+
+Once you check out data a toolbar is enabled that controls the edit mode. The modes are:
+
+===== Select Mode =====
+In Select Mode use the mouse to select objects. A secondary toolbar shows a list of commands that con be done with the selected data.
+
+*NOTE - Generally, dragging the mouse is not used for editing. Actions are done by single clicking the mouse.*
+
+Select -   
+
+
+
+= User Interface =
+
+The following are the UI elements:
+
+=== Menus ===
+ * File
+  ** Commit - Commit the current changes to the server
+  ** Clear Data - Discard and edits and downloaded data
+  ** Quit - Exit the program
+
+ * Edit
+  ** Undo - Undo the last map edit. NOTE there are some things that are not controlled in undo/redo, for example geocoding a source image.
+  ** Redo - Redo the last map edit
+
+ * Map
+  ** Base Map - This opens a base map for the, such as aerial imagery.
+  ** Open Source - This is used to open a reference image that can be geocoded and traced.
+
+=== Toolbars ===
+
+--------------------------------
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
   * Headings, paragraphs, and lists
