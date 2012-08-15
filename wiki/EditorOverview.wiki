@@ -1,0 +1,31 @@
+#summary This is a brief overview of the Termite Editor.
+
+= Overview =
+
+Termite is an OpenStreetMap editor that is designed for indoor maps. It is a fully functional editor that can edit outdoor data also.
+
+First a few disclaimers:
+
+*Termite is currently in early testing.* Any feedback is appreciated to improve it. And, patience may be required in using it.
+
+*OpenStreetMap currently does not have a standard for making indoor maps.* Termite uses one of the proposed mapping standards. It is also designed so the underlying model used can be changed.
+
+*Termite as currently shipped is NOT connected to the live database. It is connected to a dev database. This database currently has little data. In many cases you will be starting from scratch.
+
+= Getting Started =
+ 
+You need to following to get started with Termite:
+ * the java application file (jar)
+ * configuration files needed for the program
+ * java 6 or later runtime (JRE)
+ * a username and password to edit OSM data *on the server http://api06.dev.openstreetmap.org/*
+  ** This is the dev server. You can create an account from the URL.
+
+_give instructions for starting program on different platforms_
+
+= Running the Program =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
