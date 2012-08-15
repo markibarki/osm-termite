@@ -37,6 +37,17 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 		this.imageToMerc = imageToMerc;
 	}
 	
+	public double getAngleRad() {
+		if(imageToMerc == null) return 0;
+		
+		double[] matrix = new double[6];
+		imageToMerc.getMatrix(matrix);
+		
+		//this will only give good results for a rotation, not a skew
+		double ang1 = Math.atan2(matrix[1],matrix[0]);
+		return ang1;
+	}
+	
 	public boolean loadImage(File file) {
 		//reset the transform - we need to add a way to sace this
 		imageToMerc = null;
