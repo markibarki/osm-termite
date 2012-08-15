@@ -641,6 +641,7 @@ baseMapLayer.setOpacity(.5f);
 		mapPanel.addMapListener(baseMapLayer);
 		
 		sourceLayer = new SourceLayer();
+mapPanel.setSouceLayer(sourceLayer);
 		
 		geocodeLayer = new GeocodeLayer();
 		geocodeLayer.setSourceLayer(sourceLayer);

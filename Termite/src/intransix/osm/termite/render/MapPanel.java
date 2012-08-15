@@ -8,9 +8,7 @@ import java.awt.event.*;
 import intransix.osm.termite.map.data.OsmDataChangedListener;
 import intransix.osm.termite.gui.MapDataListener;
 import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.render.edit.MoveAction;
-import intransix.osm.termite.render.edit.VirtualNodeAction;
-import intransix.osm.termite.render.source.GeocodeLayer;
+import intransix.osm.termite.render.source.SourceLayer;
 
 /**
  *
@@ -23,9 +21,14 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	//zoom factor for a mouse wheel click
 	private final static double ROTATION_SCALE_FACTOR = 1.1;
 	private final static double KEY_SCALE_FACTOR = 1.1;
+	private final static double BUTTON_SCALE_FACTOR = 1.5;
 	
 	//max zoom before redefining local coordinates
 	private final static double LOCAL_COORD_RESET_ZOOM = 2;
+	
+	private final static int BUTTON_X = 20;
+	private final static int BUTTON_Y = 20;
+	private final static int BUTTON_SPACING = 20;
 	
 	//transforms
 	private AffineTransform localToPixels = new AffineTransform();
@@ -45,10 +48,13 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	private java.util.List<LocalCoordinateListener> localCoordinateListeners = new ArrayList<LocalCoordinateListener>();
 	private java.util.List<LayerStateListener> layerListeners = new ArrayList<LayerStateListener>();
 	
-	
 	private boolean panOn = false;
 	private double lastX;
 	private double lastY;
+	
+	private JComboBox frameSelector;
+	private JButton zoomInButton;
+	private JButton zoomOutButton;
 	
 	public MapPanel() {
         setBorder(BorderFactory.createLineBorder(Color.black));
@@ -57,6 +63,8 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		this.addMouseWheelListener(this);
 		this.addKeyListener(this);
 		this.setBackground(Color.WHITE);
+		
+		initComponents();
     }
 	
 	// <editor-fold defaultstate="collapsed" desc="Transform Methods">
@@ -130,6 +138,47 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 		mercatorToPixels.transform(pMin, pMin);
 		mercatorToPixels.transform(pMax, pMax);
 		
+		//define the local coordinate system to match the pizel coordinates for starters
+		mercatorToLocal = new AffineTransform(mercatorToPixels);
+		
+		updateTransforms();
+//teset to reset every zoom
+this.resetLocalCoordinates();
+		
+		//notify local coordinate change event
+		oldLocalToNewLocal.preConcatenate(mercatorToLocal);
+		dispatchLocalCoordinateChangeEvent(oldLocalToNewLocal);
+	}
+	
+	/** This method sets the base rotation angle. Setting angleRad = 0 radians
+	 * means north up.
+	 * 
+	 * @param angleRad	The rotation angle in radians.
+	 */
+	public void setRotation(double angleRad) {
+		AffineTransform oldLocalToNewLocal = new AffineTransform(localToMercator);
+		
+		double scale = Math.sqrt(mercatorToPixels.getDeterminant());
+		
+		Rectangle bounds = this.getVisibleRect();
+		Point2D centerPix = new Point2D.Double(bounds.getCenterX(),bounds.getCenterY());
+		Point2D centerMerc = new Point2D.Double();
+		pixelsToMercator.transform(centerPix, centerMerc);
+		
+		//rotate and scale matrix
+		mercatorToPixels = new AffineTransform();
+		mercatorToPixels.setToRotation(angleRad);
+		mercatorToPixels.scale(scale, scale);
+		
+		//correct so we have the right center point in pixels.
+		Point2D centerPix2 = new Point2D.Double();
+		mercatorToPixels.transform(centerMerc, centerPix2);
+		double[] matrix = new double[6];
+		mercatorToPixels.getMatrix(matrix);
+		matrix[4] += centerPix.getX() - centerPix2.getX();
+		matrix[5] += centerPix.getY() - centerPix2.getY();
+		mercatorToPixels.setTransform(matrix[0],matrix[1],matrix[2],matrix[3],matrix[4],matrix[5]);
+		 
 		//define the local coordinate system to match the pizel coordinates for starters
 		mercatorToLocal = new AffineTransform(mercatorToPixels);
 		
@@ -522,5 +571,82 @@ this.resetLocalCoordinates();
 			localCoordinateListener.onLocalCoordinateChange(this, oldLocalToNewLocal);
 		}
 	}
+	
+	/** This method initializes some overlay controls for the map panel. */
+	private void initComponents() {
+		//layout - manual
+		setLayout(null);
+		Insets insets = this.getInsets();
+		Font font = new Font(null,1,18);
+		
+		//zoom in and out buttons
+		zoomInButton = new JButton();
+		zoomInButton.setText("+");
+		zoomInButton.setFont(font);
+		zoomInButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zoom(BUTTON_SCALE_FACTOR);
+            }
+        });
+		Dimension zoomInSize = zoomInButton.getPreferredSize();
+		
+		zoomOutButton = new JButton();
+		zoomOutButton.setText("-");
+		zoomOutButton.setFont(font);
+		zoomOutButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zoom(1/BUTTON_SCALE_FACTOR);
+            }
+        });
+		Dimension zoomOutSize = zoomOutButton.getPreferredSize();
+		
+		//layout buttons
+		int buttonWidth = zoomInSize.width > zoomOutSize.width ? zoomInSize.width : zoomOutSize.width;
+		int buttonHeight = zoomInSize.height > zoomOutSize.height ? zoomInSize.height : zoomOutSize.height;
+		
+		this.add(zoomInButton);
+		int xIn = insets.left + BUTTON_X;
+		int yIn = insets.right + BUTTON_Y;
+		zoomInButton.setBounds(xIn,yIn,buttonWidth,buttonHeight);
+		
+		this.add(zoomOutButton);
+		
+		int xOut = xIn;
+		int yOut = yIn + zoomInSize.height + BUTTON_SPACING;
+		zoomOutButton.setBounds(xOut,yOut,buttonWidth,buttonHeight);
+		
+		//frame selection
+		frameSelector = new JComboBox();
+		frameSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+				Object selection = frameSelector.getSelectedItem();
+				if(selection instanceof SourceLayer) {
+					double angleRad = ((SourceLayer)selection).getAngleRad();
+					setRotation(-angleRad);
+				}
+				else {
+					//when north up is selected
+					setRotation(0);
+				}
+				repaint();
+            }
+        });
+		
+		//layout frame select
+		this.add(frameSelector);
+		int xSel = xIn + buttonWidth + BUTTON_SPACING;
+		int ySel = yIn;
+		frameSelector.setLocation(xSel,ySel);
+//		frameSelector.setVisible(false);
+		
+		//this is test population nubmers
+		frameSelector.addItem("North Up");
+		Dimension selSize = frameSelector.getPreferredSize();
+		frameSelector.setSize(selSize);
+	}
+	
+public void setSouceLayer(SourceLayer sourceLayer) {
+	frameSelector.addItem(sourceLayer);
+}
 
 }
