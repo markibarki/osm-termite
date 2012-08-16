@@ -45,8 +45,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private final static String REDO_ITEM_TEXT = "Redo";
 	
 	private final static int[] EDIT_MODE_SHORTCUTS = {KeyEvent.VK_A,
-		KeyEvent.VK_S,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_G,KeyEvent.VK_H,
-		KeyEvent.VK_J,KeyEvent.VK_K,KeyEvent.VK_L
+		KeyEvent.VK_S,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_G,KeyEvent.VK_H
 	};
 	
 	private final static int SPACE_X = 8;
