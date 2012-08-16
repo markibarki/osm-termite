@@ -23,8 +23,7 @@ You need to following to get started with Termite:
 
 _give instructions for starting program on different platforms_
 
-
-= Using the Program =
+= Program Basics =
 
 === UI Elements ===
  * Menu Bar
@@ -87,26 +86,11 @@ If you want to add points to an existing way, go to Select Mode and select the w
 
 If you draw a way with the wrong feature type, you can change the feature type by selecting the object and pressing the "Change Feature Type" button in the toolbar. This will set the feature type to the type selected in the feature type tree.
 
-= User Interface =
+=== Saving Data ===
 
-The following are the UI elements:
+To save data, go to the "File" menu and select "Commit". This will open a dialog to commit that data. If you have not logged in, a login screen will let you enter your username and password (for the dev server, in this case). Then you must enter a commit message that briefly describes the changes you have made. The data will then be saved to the OpenStreetMap server.
 
-=== Menus ===
- * File
-  ** Commit - Commit the current changes to the server
-  ** Clear Data - Discard and edits and downloaded data
-  ** Quit - Exit the program
-
- * Edit
-  ** Undo - Undo the last map edit. NOTE there are some things that are not controlled in undo/redo, for example geocoding a source image.
-  ** Redo - Redo the last map edit
-
- * Map
-  ** Base Map - This opens a base map for the, such as aerial imagery.
-  ** Open Source - This is used to open a reference image that can be geocoded and traced.
-
-=== Toolbars ===
-
+You can discard your data by going to the "File" menu and selecting "Discard Data". This will clear the downloaded data and discard any edits.
 --------------------------------
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
