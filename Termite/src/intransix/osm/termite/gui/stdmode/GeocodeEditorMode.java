@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Dimension;
 import javax.swing.*;
+import java.util.List;
 
 /**
  *
@@ -20,6 +21,8 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	private final static String MODE_NAME = "Geocode";
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/globe25.png";
 	
+	
+	private final static String SOURCE_SELECT_CMD = "source";
 	
 	private final static String[] GEOCODE_TYPE_NAMES = {
 		"2 Point",
@@ -56,9 +59,13 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	
 	private JToolBar toolBar = null;
 	
+	private JComboBox sourceSelector;
+	
 	private JToggleButton selectButton;
-	private JToggleButton[] dynamicButtons;
 	private JToggleButton moveButton;
+	
+	private JToggleButton[] dynamicButtons;
+
 	private ButtonGroup modeButtonGroup;
 	
 	private ButtonGroup typeButtonGroup;
@@ -200,7 +207,10 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		String actionCommand = ae.getActionCommand();
 		if(actionCommand == null) return;
 		
-		if(actionCommand.equals(GEOCODE_CMDS[0])) {
+		if(actionCommand.equals(SOURCE_SELECT_CMD)) {
+			selectSource();
+		}
+		else if(actionCommand.equals(GEOCODE_CMDS[0])) {
 			geocodeLayer.setGeocodeType(GeocodeLayer.GeocodeType.TWO_POINT);
 			this.setGeocodeType(TWO_POINT);
 		}
@@ -232,6 +242,11 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	private void createToolBar() {	
 		toolBar = new JToolBar();
 		toolBar.setFloatable(false);
+		
+		sourceSelector = new JComboBox();
+		sourceSelector.setActionCommand(SOURCE_SELECT_CMD);
+		sourceSelector.addActionListener(this);
+		toolBar.add(sourceSelector);
 		
 		//geocode type choice
 		typeButtonGroup = new ButtonGroup();
@@ -279,11 +294,8 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 			dynamicButtons[i] = button;
 		}
 		
-		
-		
-//not implemented
-		this.radioButtons[FREE_TRANSFORM].setEnabled(false);
-
+		//disable all buttons for now
+		enableButtons(false);
 		
 	}
 	
@@ -301,5 +313,31 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 				button.setVisible(false);
 			}
 		}
+	}
+	
+	private void selectSource() {
+		SourceLayer layer = (SourceLayer)sourceSelector.getSelectedItem();
+		if(layer != null) {
+			geocodeLayer.setSourceLayer(layer);
+			enableButtons(true);
+		}
+		else {
+			geocodeLayer.setSourceLayer(null);
+			enableButtons(false);
+		}
+	}
+	
+	private void enableButtons(boolean enable) {
+		selectButton.setEnabled(enable);
+		moveButton.setEnabled(enable);
+		for(JToggleButton button:dynamicButtons) {
+			button.setEnabled(enable);
+		}
+		for(JRadioButton button:radioButtons) {
+//free transform is disabled
+if(button == radioButtons[FREE_TRANSFORM]) continue;
+
+			button.setEnabled(enable);
+		}		
 	}
 }

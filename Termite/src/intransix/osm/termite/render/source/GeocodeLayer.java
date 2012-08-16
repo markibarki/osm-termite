@@ -63,6 +63,12 @@ public class GeocodeLayer extends MapLayer implements
 	
 	public void setSourceLayer(SourceLayer sourceLayer) {	
 		this.sourceLayer = sourceLayer;
+		if(sourceLayer != null) {
+			imageToMerc = sourceLayer.getImageToMerc();
+			if(imageToMerc != null) {
+				updateInverseTransform();
+			}
+		}
 	}
 	
 	public void addGeocodeStateListener(GeocodeStateListener stateListener) {
@@ -86,10 +92,9 @@ public class GeocodeLayer extends MapLayer implements
 				mapPanel.addMouseMotionListener(this);
 				mapPanel.addKeyListener(this);
 				
-				//get active data
-				imageToMerc = sourceLayer.getImageToMerc();
-				if(imageToMerc != null) {
-					updateInverseTransform();
+				//update source layer, just in case.
+				if(sourceLayer != null) {
+					this.setSourceLayer(sourceLayer);
 				}
 				
 				setGeocodeType(GeocodeType.TWO_POINT);
