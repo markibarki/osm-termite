@@ -23,6 +23,7 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 	private Stroke stroke = new BasicStroke(STROKE_WIDTH);
 	
 	private Rectangle2D selection = null;
+	private Point2D startPoint = null;
 	
 	public Rectangle2D getSelectionMercator() {
 		return selection;
@@ -82,10 +83,28 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 		if((e.getModifiers() & (MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON1_DOWN_MASK)) != 0) {
 			Point2D point = getMercatorPoint(e.getX(),e.getY());
 			if(selection == null) {
+				startPoint = point;
 				selection = new Rectangle2D.Double(point.getX(),point.getY(),0,0);
 			} 
 			else {
-				selection.add(point);
+				double x,y,w,h;
+				if(point.getX() < startPoint.getX()) {
+					x = point.getX();
+					w = startPoint.getX() - x;
+				}
+				else {
+					x = startPoint.getX();
+					w = point.getX() - x;
+				}
+				if(point.getY() < startPoint.getY()) {
+					y = point.getY();
+					h = startPoint.getY() - y;
+				}
+				else {
+					y = startPoint.getY();
+					h = point.getY() - y;
+				}
+				selection.setRect(x, y, w, h);
 			}
 			getMapPanel().repaint();
 		}
