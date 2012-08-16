@@ -4,7 +4,7 @@
 
 Termite is an OpenStreetMap editor that is designed for indoor maps. It is a fully functional editor that can edit outdoor data also.
 
-First a few disclaimers:
+=== A Few Disclaimers ===
 
 *Termite is currently in early testing.* Any feedback is appreciated to improve it. And, patience may be required in using it.
 
