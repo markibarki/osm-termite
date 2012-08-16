@@ -555,14 +555,14 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	@Override
     public void keyPressed(KeyEvent e) {
 		boolean changed = false;
-		if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+		if(e.getKeyCode() == KeyEvent.VK_COMMA) {
 			if(!snapObjects.isEmpty()) {
 				activeSnapObject--;
 				if(activeSnapObject < -1) activeSnapObject = snapObjects.size() - 1;
 				changed = true;
 			}
 		}
-		else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+		else if(e.getKeyCode() == KeyEvent.VK_PERIOD) {
 			if(!snapObjects.isEmpty()) {
 				activeSnapObject++;
 				if(activeSnapObject >= snapObjects.size()) activeSnapObject = -1;
