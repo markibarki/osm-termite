@@ -118,7 +118,7 @@ public class TermiteApp {
 		//load the initialization files
 		String themeFileName = "theme.json";
 		String featureInfoName = "featureInfo.json";
-		String modelFileName = "model2.json";
+		String modelFileName = "model.json";
 		String baseMapFileName= "baseMapInfo.json";
 		
 		//load the theme

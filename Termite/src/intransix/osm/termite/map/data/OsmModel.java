@@ -16,8 +16,6 @@ public class OsmModel {
 	
 	public static FeatureInfoMap featureInfoMap;
 	
-	public static boolean doNodeLevelLabels = false;
-	
 	public static String TYPE_STRUCTURE = "structure";
 	public static String TYPE_LEVEL = "level";
 	public static String ROLE_PARENT = "structure";
@@ -84,8 +82,7 @@ public static String OSM_SERVER = "http://api06.dev.openstreetmap.org";
 			KEY_REF_SCOPE_RELATION = nameDefs.optString("refScopeRelKey",KEY_REF_SCOPE_RELATION);
 		}
 		
-		String levelSpec = json.optString("levelSpec",null);
-		doNodeLevelLabels = levelSpec.equalsIgnoreCase("nodes");
+		OSM_SERVER = json.optString("osmServer",OSM_SERVER);
 		
 		JSONArray geometricKeys = json.optJSONArray("geometricKeys");
 		if(geometricKeys != null) {

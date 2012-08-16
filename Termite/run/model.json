@@ -1,15 +1,15 @@
 {
-	"levelSpec":"relation",
+	"levelSpec":"nodes",
 	"nameDefs":{
 		"structureType":"building",
-		"parentRole":"parent",
+		"parentRole":"structure",
 		"levelRole":"level",
 		"shellRole":"shell",
 		"featureRole":"buildingpart",
 		"anchorRole":"anchor",
 		"levelType":"level",
-		"zlevelKey":"level",
-		"zcontextKey":"stucture",
+		"zlevelKey":"zlevel",
+		"zcontextKey":"zcontext",
 		"refKeyKey":"ref:key",
 		"refKey":"ref",
 		"refScopeGeomKey":"ref:scope:geom",
@@ -17,5 +17,8 @@
 	},
 	"geometricKeys":[
 		"level","structure","ele"
-	]
+	],
+	
+	"osmServer":"http://api06.dev.openstreetmap.org",
+	"_osmServer":"http://api.openstreetmap.org"
 }
