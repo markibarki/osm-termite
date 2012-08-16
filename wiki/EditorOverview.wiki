@@ -25,7 +25,7 @@ _give instructions for starting program on different platforms_
 
 = Program Basics =
 
-=== UI Elements ===
+== UI Elements ==
  * Menu Bar
  * Toolbar
  * Left Panel
@@ -36,16 +36,16 @@ _give instructions for starting program on different platforms_
  * Supplemental Panel - This contains tabs with additional functionality.
   ** Map Layers Tab - This tab lets you control the opacity of the different visible layers, which is useful when tracing objects.
 
-===== Controlling the Map =====
+=== Controlling the Map ===
 
 add instructions for panning and zooming
 
-===== Feature Type =====
+=== Feature Type ===
 In OpenStreetMap objects have key-value pair properties. The object type, such as "highway=primary" is stored in the properties. In Termite, it is possible to set the type by using the feature level tree. If you select an object in the tree, the next node or way you draw will inherit the necessary properties to make it that type of object. 
 
 If you want to add an object that is not in the tree, you can set the feature type to be the root of the tree, "object". Then, you can add your own properties using the property panel. 
 
-=== Checking Out Data ===
+== Checking Out Data ==
 When you start the program, the map will be empty. (There is currently no saving of the editor state.) The program is in checkout search mode, which lets you find a region on the map where you download data form the OSM database to edit.
 
 From the map menu, you can select "Base Map" to open a background map.
@@ -54,31 +54,34 @@ Then you can navigate using pan and zoom to find the region you would like to op
 
 When you find the area you want to check out, select a rectangle window and then press "download data" to check out map data. 
 
-=== Editing ===
+== Editing ==
 
 Once you check out data a toolbar is enabled that controls the edit mode. The modes are:
 
-===== Select Mode =====
+=== Select Mode ===
 In Select Mode use the mouse to select objects. A secondary toolbar shows a list of commands that con be done with the selected data.
 
 *NOTE - Generally, dragging the mouse is not used for editing. Actions are done by single clicking the mouse.*
 
-Toggle Buttons:
+==== Toggle Buttons ====
  * Select - lets you select a way or a node
  * Move - Let's you move the selected object, to the location of the next mouse click. *SHORTCUT* - press the keyboard 'm' key instead of using the toolbar button.
 
-Actions on Selected Object
+==== Actions on Selected Object ====
  * Delete - Deletes the selected object(s)
  * Remove Node - If you select a way, you can select nodes within the way. These nodes can be removed by pressing the remove node button.
  * Change Feature Type - This sets the feature type of the object to be the selected feature type (such as 'wall').
  * Create Level - This should be done on objects in the outdoors. It creates an indoor level for the associated outdoor object, usually a building. See below for more information on creating a level.
 
-===== Node Tool =====
+==== Editing Properties ====
+When an object is selected the properties of the object can be edited in the property panel.
+
+=== Node Tool ===
 This mode allows you to create a node object. The node object is created with a feature type given by the selected feature type in the feature type tree.
 
 The node will appear as a small circle.
 
-===== Way Tool =====
+=== Way Tool ===
 The way tool allows you to create a way object. Clicking the map will add a node at the given location. Or, if a node is clicked, that node will be added to the way. The feature type for the way is given by the selected feature type in the feature type tree.
 
 Each time the map is clicked, a node is added to the active way. The active way can be ended the following ways:
@@ -90,7 +93,7 @@ If you want to add points to an existing way, go to Select Mode and select the w
 
 If you draw a way with the wrong feature type, you can change the feature type by selecting the object and pressing the "Change Feature Type" button in the toolbar. This will set the feature type to the type selected in the feature type tree.
 
-=== Saving Data ===
+== Saving Data ==
 
 To save data, go to the "File" menu and select "Commit". This will open a dialog to commit that data. If you have not logged in, a login screen will let you enter your username and password (for the dev server, in this case). Then you must enter a commit message that briefly describes the changes you have made. The data will then be saved to the OpenStreetMap server.
 
@@ -105,17 +108,17 @@ To create a level, go to the outdoors. Select a building object and then press t
 
 Once the level is created, it will appear in the content tree. To edit the level, just select the level in the content tree.
 
-=== Source Data ===
+== Source Data ==
 Indoor maps are often created by copying source images. The following process is used:
 
  * Load a source image into the editor
  * Geocode the image using Geocode Mode
  * Add ways and nodes to the desired level
 
-===== Loading a Source Image =====
+=== Loading a Source Image ===
 From the "Map" menu item, select "Open Source...". This will bring up a file dialog to open an image file. The file will then appear on the map.
 
-===== Geocode an Image =====
+=== Geocode an Image ===
 Once an image is loaded, switch to Geocode Mode. There are three different kinds of geocode which can be done:
  * Two Point - This allows you to translate, rotate and scale the image. It requires 2 points.
  * Three Point Orthoganal - This allows you to translate, rotate and scale the image separately in the X and Y directions.
@@ -127,7 +130,8 @@ Once the geocode method is selected, place anchor points on the map by pressing 
 
 After placing the anchor, click on the anchor in SELECT mode and then enter MOVE mode (or use the 'm' shortcut key) click the map to move to the image. 
 
-The different anchors have different effects:
+==== Geocode Anchor Types ====
+The different anchors have different effects. The types of anchors available depend on the type of geocode done.
 
  * Translate Anchor - translates the entire image (Two Point and Three Point Ortho Geocode)
  * Rotate/Scale - Moves the image by rotating and scaling while holding the translate anchor fixed. (Two Point Geocode) 
@@ -137,13 +141,17 @@ The different anchors have different effects:
 
 Once the image is in the desired location, it can be traced.
 
-*Map Layer Tab* - In the supplemental panel there is a "Map Layer" tab which controls the opacity of the different layers. This is helpful for geocoding and tracing.  
+==== Changing Layer Opacity - Map Layer Tab ====
+In the supplemental panel there is a "Map Layer" tab which controls the opacity of the different layers. This is helpful for geocoding and tracing.  
 
-===== Editing a Level =====
+=== Editing a Level ===
 To edit the level, select the level in the content tree. If necessary, see the section above for information on creating a level.
 
 When the level is selected, that level is displayed. Any nodes or ways added are automatically added to that level.
 
 To add data, use the way tool or node tool and trace from the source imagery.
 
-_add info on dropdown box to set the frame - source or north up_
+==== Frame of Reference - North Up or Source ====
+It is often easier to trace source data in the reference frame of the source data. This is because it is easier to draw horizontal and vertical lines, particularly with snap to horizontal and vertical.
+
+When a source image is loaded, there is a drop down selection on the map panel that allows you to select the map reference. The default reference is north up. Alternatively you can select to display the map with the orientation of the source imagery, to make copying easier.
