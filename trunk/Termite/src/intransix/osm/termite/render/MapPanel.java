@@ -23,6 +23,8 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	private final static double KEY_SCALE_FACTOR = 1.1;
 	private final static double BUTTON_SCALE_FACTOR = 1.5;
 	
+	private final static double KEY_TRANSLATE_FRACTION = .25;
+	
 	//max zoom before redefining local coordinates
 	private final static double LOCAL_COORD_RESET_ZOOM = 2;
 	
@@ -278,26 +280,6 @@ this.resetLocalCoordinates();
 	
 	// </editor-fold>
 	
-//	public void resetLocalAnchor(double mx, double my) {
-//		double newAnchorXInOldLocal = LocalCoordinates.mercToLocalX(mx);
-//		double newAnchorYInOldLocal = LocalCoordinates.mercToLocalY(my);
-//		double oldScale = LocalCoordinates.getMetersPerMerc();
-//		
-//		LocalCoordinates.setLocalAnchor(mx, my);
-//		
-//		double newScale = LocalCoordinates.getMetersPerMerc();
-//		double zoomChange = oldScale/newScale;
-//		
-//		localToPixels.translate(newAnchorXInOldLocal,newAnchorYInOldLocal);
-//		localToPixels.scale(zoomChange, zoomChange);
-//		updateTransforms();
-//	}
-	
-//	@Override
-//	public Dimension getPreferredSize() {
-//        return new Dimension(250,200);
-//    }
-	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -416,7 +398,7 @@ this.resetLocalCoordinates();
     /** Handle the key-pressed event from the text field. */
 	@Override
     public void keyPressed(KeyEvent e) {
-		if(e.getKeyCode() == KeyEvent.VK_UP) {
+		if(e.getKeyCode() == KeyEvent.VK_PAGE_UP) {
 			Point2D point = getMousePointPix();
 			if(onScreen(point)) {
 				//zoom at mouse location
@@ -427,7 +409,7 @@ this.resetLocalCoordinates();
 				zoom(KEY_SCALE_FACTOR);
 			}
 		}
-		else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+		else if(e.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
 			Point2D point = getMousePointPix();
 			if(onScreen(point)) {
 				//zoom at mouse location
@@ -438,6 +420,23 @@ this.resetLocalCoordinates();
 				zoom(1/KEY_SCALE_FACTOR);
 			}
 		}
+		else if(e.getKeyCode() == KeyEvent.VK_UP) {
+			int deltaY = (int)(KEY_TRANSLATE_FRACTION * this.getWidth());
+			translate(0,deltaY);
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+			int deltaY = (int)(KEY_TRANSLATE_FRACTION * this.getWidth());
+			translate(0,-deltaY);
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+			int deltaX = (int)(KEY_TRANSLATE_FRACTION * this.getWidth());
+			translate(-deltaX,0);
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+			int deltaX = (int)(KEY_TRANSLATE_FRACTION * this.getWidth());
+			translate(deltaX,0);
+		}
+		
     }
 	
 	private boolean onScreen(Point2D point) {
