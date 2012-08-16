@@ -52,6 +52,9 @@ public class OsmChangeSet {
 	public void writeChangeSet(XMLStreamWriter xsw) throws Exception {
 		//sort the created objects so we don't use an object that is not yet creted.
 		Collections.sort(created);
+		//sort deleted objects in opposite order
+		Collections.sort(deleted);
+		Collections.reverse(deleted);
 		
 		xsw.writeStartDocument();
 		
