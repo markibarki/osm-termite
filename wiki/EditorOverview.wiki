@@ -36,6 +36,10 @@ _give instructions for starting program on different platforms_
  * Supplemental Panel - This contains tabs with additional functionality.
   ** Map Layers Tab - This tab lets you control the opacity of the different visible layers, which is useful when tracing objects.
 
+===== Controlling the Map =====
+
+add instructions for panning and zooming
+
 ===== Feature Type =====
 In OpenStreetMap objects have key-value pair properties. The object type, such as "highway=primary" is stored in the properties. In Termite, it is possible to set the type by using the feature level tree. If you select an object in the tree, the next node or way you draw will inherit the necessary properties to make it that type of object. 
 
@@ -91,6 +95,51 @@ If you draw a way with the wrong feature type, you can change the feature type b
 To save data, go to the "File" menu and select "Commit". This will open a dialog to commit that data. If you have not logged in, a login screen will let you enter your username and password (for the dev server, in this case). Then you must enter a commit message that briefly describes the changes you have made. The data will then be saved to the OpenStreetMap server.
 
 You can discard your data by going to the "File" menu and selecting "Discard Data". This will clear the downloaded data and discard any edits.
+
+= Adding Indoor Data =
+The content tree has an entry for the outdoors and entries for buildings and levels. When the outdoor entry is selected data is added to the outdoors. When an level is selected, data is added to that level.
+
+To create a level, go to the outdoors. Select a building object and then press the "Create Level" toolbar button. This brings up a dialog to enter the needed information.
+ * Zlevel - This is an integer that identifies the level programmatically. This is *NOT* intended for people. The ground level should be 0. Levels above the ground level should be positive integers. Levels below the ground level should be negative integers. 
+ * Display Name - This is the name of the level that people will use. It is often the name you would see on an elevator button for the floor. It may be "1" for the ground level (even though the zlevel is 0). It may also be something like "B1" or "Mezzanine", or "M". This can be any string value.
+
+Once the level is created, it will appear in the content tree. To edit the level, just select the level in the content tree.
+
+=== Source Data ===
+Indoor maps are often created by copying source images. The following process is used:
+
+ * Load a source image into the editor
+ * Geocode the image using Geocode Mode
+ * Add ways and nodes to the desired level
+
+===== Loading a Source Image =====
+From the "Map" menu item, select "Open Source...". This will bring up a file dialog to open an image file. The file will then appear on the map.
+
+===== Geocode an Image =====
+Once an image is loaded, switch to Geocode Mode. There are three different kinds of geocode which can be done:
+ * Two Point - This allows you to translate, rotate and scale the image. It requires 2 points.
+ * Three Point Orthoganal - This allows you to translate, rotate and scale the image separately in the X and Y directions.
+ * Three Point Free - This allows you to place three point arbitrarily. It allows translation, rotation, scale and skew. (NOT IMPLEMENTED)
+
+When geocoding, a Two Point geocode should be tried first. If this does not work, a Three Point Orthogonal geocode should be done. Only a last resort should a Three Point Free geocode be done.
+
+Once the geocode method is selected, place anchor points on the map by pressing the associated toolbar buttons and clicking the map. 
+
+After placing the anchor, click on the anchor in SELECT mode and then enter MOVE mode (or use the 'm' shortcut key) click the map to move to the image. 
+
+The different anchors have different effects:
+
+ * Translate Anchor - translates the entire image (Two Point and Three Point Ortho Geocode)
+ * Rotate/Scale - Moves the image by rotating and scaling while holding the translate anchor fixed. (Two Point Geocode) 
+ * Rotate/Scale X - Moves the image by rotating and scaling the X direction of the image while holding the translate anchor fixed. (Three Point Ortho Geocode)
+ * Rotate/Scale Y - Moves the image by rotating and scaling the Y dimension of the image while holding the translate anchor fixed. (Three Point Ortho Geocode)
+ * Free Anchor - This moves a point to the specified location without moving the other anchors (3 Point Free Geocode) 
+
+Once the image is in the desired location, it can be traced.
+
+*Map Layer Tab* - In the supplemental panel there is a "Map Layer" tab which controls the opacity of the different layers. This is helpful for geocoding and tracing.  
+
+
 --------------------------------
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
