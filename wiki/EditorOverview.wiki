@@ -139,9 +139,11 @@ Once the image is in the desired location, it can be traced.
 
 *Map Layer Tab* - In the supplemental panel there is a "Map Layer" tab which controls the opacity of the different layers. This is helpful for geocoding and tracing.  
 
+===== Editing a Level =====
+To edit the level, select the level in the content tree. If necessary, see the section above for information on creating a level.
 
---------------------------------
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+When the level is selected, that level is displayed. Any nodes or ways added are automatically added to that level.
+
+To add data, use the way tool or node tool and trace from the source imagery.
+
+_add info on dropdown box to set the frame - source or north up_
