@@ -29,13 +29,10 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 		return selection;
 	}
 	
-	public SearchLayer() {
+	public SearchLayer(MapPanel mapPanel) {
+		super(mapPanel);
 		this.setName("Checkout Search Layer");
-	}
-	
-	@Override 
-	public void setMapPanel(MapPanel mapPanel) {
-		super.setMapPanel(mapPanel);
+		//add listeners
 		mapPanel.addMouseListener(this);
 		mapPanel.addMouseMotionListener(this);
 	}

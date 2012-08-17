@@ -3,6 +3,7 @@ package intransix.osm.termite.gui.stdmode;
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.gui.FeatureSelectedListener;
+import intransix.osm.termite.gui.maplayer.MapLayerManager;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.edit.EditStateListener;
@@ -40,6 +41,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	private final static int SPACE_Y = 8;
 	
 	private TermiteGui termiteGui;
+	private MapLayer renderLayer;
 	private EditLayer editLayer;
 	
 	private JToolBar toolBar = null;
@@ -60,6 +62,13 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	public SelectEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
 		createToolBar();
+	}
+	
+	/** This method will be called to set needed map layers. */
+	@Override
+	public void setLayers(MapLayerManager mapLayerManager) {
+		editLayer = mapLayerManager.getEditLayer();
+		renderLayer = mapLayerManager.getRenderLayer();
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -85,12 +94,6 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	 */
 	@Override
 	public void turnOn() {
-		if(editLayer == null) {
-			editLayer = termiteGui.getEditLayer();
-			editLayer.addGeocodeStateListener(this);
-		}
-		
-		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
 		}
@@ -110,7 +113,6 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	 */
 	@Override
 	public void turnOff() {
-		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(false);
 		}

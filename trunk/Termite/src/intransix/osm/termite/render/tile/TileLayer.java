@@ -40,9 +40,12 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	// Public Methods
 	//=========================
 	
-	public TileLayer() {
+	public TileLayer(MapPanel mapPanel) {
+		super(mapPanel);
 		this.setName("Base Map");
 		this.setHidden(true);
+		
+		mapPanel.addMapListener(this);
 	}
 	
 	public void setTileInfo(TileInfo tileInfo) {

@@ -30,11 +30,6 @@ public class TermiteApp {
 	private FeatureInfoMap featureInfoMap;
 	private List<TileInfo> tileInfoList;
 	
-	private SearchEditorMode searchEditorMode;
-	private List<EditorMode> editModes = new ArrayList<EditorMode>();
-	
-	
-	
 	//=====================
 	//
 	//=====================
@@ -56,14 +51,6 @@ public class TermiteApp {
 	
 	public FeatureInfoMap getFeatureInfoMap() {
 		return featureInfoMap;
-	}
-	
-	public EditorMode getSearchMode() {
-		return searchEditorMode;
-	}
-	
-	public List<EditorMode> getEditModes() {
-		return editModes;
 	}
 	
 	public List<TileInfo> getBaseMapInfo() {
@@ -137,14 +124,6 @@ public class TermiteApp {
 		
 		//create the gui
 		gui = new TermiteGui(this);
-		
-		//create the editor modes
-		searchEditorMode = new SearchEditorMode(gui);
-		editModes.add(new SelectEditorMode(gui));
-		editModes.add(new NodeEditorMode(gui));
-		editModes.add(new WayEditorMode(gui));
-		editModes.add(new GeocodeEditorMode(gui));
-
 		gui.initialize();
 	}
 }

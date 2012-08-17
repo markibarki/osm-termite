@@ -62,7 +62,7 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	private JButton zoomOutButton;
 	
 	public MapPanel() {
-        setBorder(BorderFactory.createLineBorder(Color.black));
+//        setBorder(BorderFactory.createLineBorder(Color.black));
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addMouseWheelListener(this);
@@ -222,35 +222,42 @@ this.resetLocalCoordinates();
 		return mousePix;
 	}
 	
-	//map layers///////////////////////////
+	// <editor-fold defaultstate="collapsed" desc="Map Layers">
 	
-	public void addLayer(MapLayer layer) {
-		this.layers.add(layer);
-		layer.setMapPanel(this);
-		notifyLayerListeners(layer);
+	public void updateMapLayers(java.util.List<MapLayer> layers) {
+		this.layers = layers;
+		this.repaint();
 	}
 	
-	public void addLayer(MapLayer layer, int index) {
-		if((index >= 0)&&(index < layers.size())) {
-			layers.add(index,layer);
+	/** This should be called with a list of active layers when the source layers
+	 * are updated. 
+	 * 
+	 * @param sourceLayers	A list of active source layers
+	 */
+	public void updateSourceLayers(java.util.List<SourceLayer> sourceLayers) {
+		Object selected = frameSelector.getSelectedItem();
+		frameSelector.removeAllItems();
+		if(sourceLayers.isEmpty()) {
+			//hide selector
+			frameSelector.setVisible(false);
 		}
 		else {
-			layers.add(layer);
+			//update contents
+			frameSelector.setVisible(true);
+			frameSelector.addItem(NORTH_UP_ITEM);
+			for(SourceLayer layer:sourceLayers) {
+				frameSelector.addItem(layer);
+			}
+			if((selected != null)&&(sourceLayers.contains(selected))) {
+				frameSelector.setSelectedItem(selected);
+			}
+			else {
+				frameSelector.setSelectedItem(NORTH_UP_ITEM);
+			}
 		}
-		layer.setMapPanel(this);
-		notifyLayerListeners(layer);
 	}
 	
-	public void removeLayer(MapLayer layer) {
-		this.layers.remove(layer);
-		notifyLayerListeners(layer);
-	}
-	
-	public java.util.List<MapLayer> getLayers() {
-		return this.layers;
-	}
-	
-	//end map layers/////////////////////////////
+	// </editor-fold>
 	
 	// <editor-fold defaultstate="collapsed" desc="Listeners">
 	
@@ -645,52 +652,6 @@ this.resetLocalCoordinates();
 		frameSelector.addItem(NORTH_UP_ITEM);
 		Dimension selSize = frameSelector.getPreferredSize();
 		frameSelector.setSize(selSize);
-	}
-	
-	/** This should be called with a list of active layers when the source layers
-	 * are updated. 
-	 * 
-	 * @param sourceLayers	A list of active source layers
-	 */
-	public void updateSourceLayers(java.util.List<SourceLayer> sourceLayers) {
-		Object selected = frameSelector.getSelectedItem();
-		frameSelector.removeAllItems();
-		if(sourceLayers.isEmpty()) {
-			//hide selector
-			frameSelector.setVisible(false);
-		}
-		else {
-			//update contents
-			frameSelector.setVisible(true);
-			frameSelector.addItem(NORTH_UP_ITEM);
-			for(SourceLayer layer:sourceLayers) {
-				frameSelector.addItem(layer);
-			}
-			if((selected != null)&&(sourceLayers.contains(selected))) {
-				frameSelector.setSelectedItem(selected);
-			}
-			else {
-				frameSelector.setSelectedItem(NORTH_UP_ITEM);
-			}
-		}
-	}
-	
-	public void addSourceLayer(SourceLayer sourceLayer) {
-		frameSelector.addItem(sourceLayer);
-		if(!frameSelector.isVisible()) {
-			frameSelector.setVisible(true);
-		}
-		
-	}
-
-	public void removeSourceLayer(SourceLayer sourceLayer) {
-		if(frameSelector.getSelectedItem() == sourceLayer) {
-			frameSelector.setSelectedItem(NORTH_UP_ITEM);
-		}
-		frameSelector.removeItem(sourceLayer);
-		if(frameSelector.getItemCount() > 1) {
-			frameSelector.setVisible(false);
-		}
 	}
 
 

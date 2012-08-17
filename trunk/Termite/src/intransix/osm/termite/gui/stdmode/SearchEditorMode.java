@@ -2,6 +2,7 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.gui.maplayer.MapLayerManager;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.checkout.SearchLayer;
 import javax.swing.*;
@@ -25,6 +26,7 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	private final static String DOWNLOAD_CMD = "download";
 
 	private TermiteGui termiteGui;
+	private SearchLayer searchLayer;
 	private JToolBar toolBar = null;	
 	private JTextField searchField;
 	
@@ -35,6 +37,12 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	public SearchEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
 		createToolBar();
+	}
+	
+	/** This method will be called to set needed map layers. */
+	@Override
+	public void setLayers(MapLayerManager mapLayerManager) {
+		searchLayer = mapLayerManager.getSearchLayer();
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -57,7 +65,6 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
-		SearchLayer searchLayer = termiteGui.getSearchLayer();
 		searchLayer.setActiveState(true);
 		termiteGui.addToolBar(toolBar);
 	}
@@ -65,7 +72,6 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
-		SearchLayer searchLayer = termiteGui.getSearchLayer();
 		searchLayer.setActiveState(false);
 		termiteGui.removeToolBar(toolBar);
 	}	
@@ -80,7 +86,6 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	}
 	
 	private void doDownload() {
-		SearchLayer searchLayer = termiteGui.getSearchLayer();
 		Rectangle2D selection = searchLayer.getSelectionMercator();
 		if(selection == null) {
 			JOptionPane.showMessageDialog(null, "You must select a bounding box to download.");
