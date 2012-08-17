@@ -1,5 +1,6 @@
-package intransix.osm.termite.gui.maplayer;
+package intransix.osm.termite.render;
 
+import intransix.osm.termite.render.LayerManagerPanel;
 import java.util.*;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.render.source.SourceLayer;
@@ -18,6 +19,10 @@ import intransix.osm.termite.render.tile.TileLayer;
  */
 public class MapLayerManager {
 	
+	//======================
+	// Properties
+	//======================
+	
 	//standard map layers
 	private TileLayer baseMapLayer;
 	private RenderLayer renderLayer;
@@ -30,6 +35,24 @@ public class MapLayerManager {
 	
 	private GeocodeEditorMode geocodeMode;
 	private MapPanel mapPanel;
+	
+	private LayerManagerPanel layerManagerPanel;
+	
+	//======================
+	// Public Methods
+	//======================
+	
+	public MapPanel getMapPanel() {
+		return mapPanel;
+	}
+	
+	public LayerManagerPanel getLayerManagerPanel() {
+		if(layerManagerPanel == null) {
+			layerManagerPanel = new LayerManagerPanel();
+			layerManagerPanel.layerStateChanged(layers);
+		}
+		return layerManagerPanel;
+	}
 	
 	public TileLayer getBaseMapLayer() {
 		return baseMapLayer;
@@ -59,29 +82,29 @@ public class MapLayerManager {
 		this.mapPanel = mapPanel;
 		
 		//base layer
-		baseMapLayer = new TileLayer(mapPanel);
+		baseMapLayer = new TileLayer(this);
 		layers.add(baseMapLayer);
 		
 		//geocode layer
-		geocodeLayer = new GeocodeLayer(mapPanel);
+		geocodeLayer = new GeocodeLayer(this);
 		layers.add(geocodeLayer);
 	
 		//map render layer
-		renderLayer = new RenderLayer(mapPanel);
+		renderLayer = new RenderLayer(this);
 		renderLayer.setTheme(theme);
 		layers.add(renderLayer);
 
 		gui.addMapDataListener(renderLayer);
 		
 		//edit layer
-		editLayer = new EditLayer(gui,mapPanel);
+		editLayer = new EditLayer(this,gui);
 		gui.addMapDataListener(editLayer);
 		gui.addFeatureLayerListener(editLayer);
 		gui.addLevelSelectedListener(editLayer);
 		layers.add(editLayer);
 		
 		//checkout search layer
-		searchLayer = new SearchLayer(mapPanel);
+		searchLayer = new SearchLayer(this);
 		layers.add(searchLayer);
 		
 		//initialize layers
@@ -91,6 +114,9 @@ public class MapLayerManager {
 		
 	}
 	
+	public List<SourceLayer> getSourceLayers() {
+		return sourceLayers;
+	}
 	
 	public void addSourceLayer(SourceLayer sourceLayer) {
 		//add to source layers
@@ -103,6 +129,19 @@ public class MapLayerManager {
 		sourceLayers.remove(sourceLayer);
 		updateLayers();
 	}
+	
+	//======================
+	// Package Methods
+	//======================
+	
+	/** MapLayers call this when their state changes. */
+	void layerStateChanged(MapLayer layer) {
+		updateLayers();
+	}
+	
+	//======================
+	// Private Methods
+	//======================
 	
 	private void updateLayers() {
 		//update map layers
@@ -123,6 +162,9 @@ public class MapLayerManager {
 		if(mapPanel != null) {
 			mapPanel.updateSourceLayers(sourceLayers);
 			mapPanel.updateMapLayers(layers);
+		}
+		if(layerManagerPanel != null) {
+			layerManagerPanel.layerStateChanged(layers);
 		}
 	}
 	

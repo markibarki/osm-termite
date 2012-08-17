@@ -1,6 +1,7 @@
 package intransix.osm.termite.render.tile;
 
 import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.MapLayerManager;
 import intransix.osm.termite.render.MapListener;
 import intransix.osm.termite.render.MapPanel;
 import java.awt.*;
@@ -40,11 +41,12 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	// Public Methods
 	//=========================
 	
-	public TileLayer(MapPanel mapPanel) {
-		super(mapPanel);
+	public TileLayer(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		this.setName("Base Map");
-		this.setHidden(true);
+		this.setVisible(false);
 		
+		MapPanel mapPanel = getMapPanel();
 		mapPanel.addMapListener(this);
 	}
 	
@@ -54,13 +56,13 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 			minZoom = tileInfo.getMinZoom();
 			maxZoom = tileInfo.getMaxZoom();
 			pixelsPerTile = tileInfo.getTileSize();
-			this.setHidden(false);
+			this.setVisible(true);
 		}
 		else {
 			minZoom = Integer.MIN_VALUE;
 			maxZoom = Integer.MAX_VALUE;
 			pixelsPerTile = 1;
-			this.setHidden(true);
+			this.setVisible(false);
 		}
 	}
 	

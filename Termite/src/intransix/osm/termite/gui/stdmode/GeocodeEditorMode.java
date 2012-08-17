@@ -2,7 +2,7 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
-import intransix.osm.termite.gui.maplayer.MapLayerManager;
+import intransix.osm.termite.render.MapLayerManager;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.source.*;
 import java.awt.event.ActionEvent;
@@ -174,7 +174,9 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		Object selection = sourceSelector.getSelectedItem();
 		sourceSelector.removeAllItems();
 		for(SourceLayer layer:sourceLayers) {
-			sourceSelector.addItem(layer);
+			if(layer.isVisible()) {
+				sourceSelector.addItem(layer);
+			}
 		}
 		if((selection != null)&&(sourceLayers.contains(selection))) {
 			sourceSelector.setSelectedItem(selection);
@@ -192,7 +194,7 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 
 		if(geocodeLayer != null) {
 			geocodeLayer.setActiveState(true);
-			geocodeLayer.setHidden(false);
+			geocodeLayer.setVisible(true);
 		}
 	
 		termiteGui.addToolBar(toolBar);
@@ -208,7 +210,7 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 
 		if(geocodeLayer != null) {
 			geocodeLayer.setActiveState(false);
-			geocodeLayer.setHidden(true);
+			geocodeLayer.setVisible(false);
 		}
 		
 		if(toolBar != null) {

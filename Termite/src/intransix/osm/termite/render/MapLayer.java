@@ -12,13 +12,15 @@ public abstract class MapLayer {
 	
 	private String name;
 	private boolean active = false;
-	private boolean hidden = false;
+	private boolean visible = true;
 	private MapPanel mapPanel;
+	private MapLayerManager mapLayerManager;
 	private float alpha = 1;
 	private Composite composite;	
 	
-	public MapLayer(MapPanel mapPanel) {
-		this.mapPanel = mapPanel;
+	public MapLayer(MapLayerManager mapLayerManager) {
+		this.mapLayerManager = mapLayerManager;
+		this.mapPanel = mapLayerManager.getMapPanel();
 	}
 	
 	public final MapPanel getMapPanel() {
@@ -27,6 +29,7 @@ public abstract class MapLayer {
 	
 	public void setName(String name) {
 		this.name = name;
+		mapLayerManager.layerStateChanged(this);
 	}
 	
 	public String getName() {
@@ -40,9 +43,7 @@ public abstract class MapLayer {
 	
 	public void setActiveState(boolean active) {
 		this.active = active;
-		if(mapPanel != null) {
-			mapPanel.layerStateChanged(this);
-		}
+		mapLayerManager.layerStateChanged(this);
 	}
 	
 	public final boolean getActiveState() {
@@ -66,32 +67,14 @@ public abstract class MapLayer {
 	
 	public abstract void render(Graphics2D g2);
 	
-	public boolean canDelete () {
-		return false;
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+		mapLayerManager.layerStateChanged(this);
 	}
 	
-	public boolean canHide() {
-		return true;
+	public boolean isVisible() {
+		return visible;
 	}
-	
-	public void setHidden(boolean hidden) {
-		this.hidden = hidden;
-		if(mapPanel != null) {
-			mapPanel.layerStateChanged(this);
-		}
-	}
-	
-	public boolean getHidden() {
-		return hidden;
-	}
-	
-	public boolean hasSettings() {
-		return false;
-	}
-	
-	public void showSettings() {
-	}
-		
 	
 	//==================
 	// Protected Methods

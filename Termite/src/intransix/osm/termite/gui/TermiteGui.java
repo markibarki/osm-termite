@@ -22,8 +22,8 @@ import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
-import intransix.osm.termite.gui.maplayer.MapLayerManager;
-import intransix.osm.termite.gui.maplayer.SourceLayerDialog;
+import intransix.osm.termite.render.MapLayerManager;
+import intransix.osm.termite.gui.dialog.SourceLayerDialog;
 import intransix.osm.termite.gui.dialog.CommitDialog;
 import intransix.osm.termite.gui.stdmode.*;
 import intransix.osm.termite.gui.task.CommitTask;
@@ -130,7 +130,7 @@ public class TermiteGui extends javax.swing.JFrame implements
     private intransix.osm.termite.render.MapPanel mapPanel;
 	private javax.swing.JTabbedPane supplementalTabPane;
 	
-	private intransix.osm.termite.gui.maplayer.LayerManagerPanel layerManagerPanel;
+	private intransix.osm.termite.render.LayerManagerPanel layerManagerPanel;
 	// </editor-fold>
 	
 	//=====================
@@ -392,6 +392,10 @@ public class TermiteGui extends javax.swing.JFrame implements
 		//map layers
 		Theme theme = app.getTheme();
 		mapLayerManager.init(this, mapPanel, theme);
+		//add the layer manager tab
+		addSupplementalTab("Map Layers", mapLayerManager.getLayerManagerPanel());
+
+		//get layers we need copies of
 		editLayer = mapLayerManager.getEditLayer();
 		baseMapLayer = mapLayerManager.getBaseMapLayer();
 		
@@ -811,11 +815,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		//create standard supplemental tabs
 		
-		//supplemental tab
-		layerManagerPanel = new intransix.osm.termite.gui.maplayer.LayerManagerPanel();
-		mapPanel.addLayerListener(layerManagerPanel);
-		this.addSupplementalTab("Map Layers", layerManagerPanel);
-		
 		this.add(menuBar);
 		this.add(toolBarPanel);
 		this.add(jSplitPane1);
@@ -881,7 +880,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	private void selectBaseMap(TileInfo tileInfo) {
 		baseMapLayer.setTileInfo(tileInfo);
-		baseMapLayer.setHidden( (tileInfo != null) ? false : true);
+		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
 		mapPanel.repaint();
 	}
 	

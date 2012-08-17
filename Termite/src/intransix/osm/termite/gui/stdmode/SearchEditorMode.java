@@ -2,7 +2,7 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
-import intransix.osm.termite.gui.maplayer.MapLayerManager;
+import intransix.osm.termite.render.MapLayerManager;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.checkout.SearchLayer;
 import javax.swing.*;

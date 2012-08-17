@@ -1,7 +1,7 @@
 package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.*;
-import intransix.osm.termite.gui.maplayer.MapLayerManager;
+import intransix.osm.termite.render.MapLayerManager;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.edit.NodeToolAction;

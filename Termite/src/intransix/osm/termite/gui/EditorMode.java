@@ -1,6 +1,6 @@
 package intransix.osm.termite.gui;
 
-import intransix.osm.termite.gui.maplayer.MapLayerManager;
+import intransix.osm.termite.render.MapLayerManager;
 
 /**
  * This is the base class for an editor mode. The editor mode controls what the 
