@@ -15,16 +15,9 @@ import intransix.osm.termite.render.*;
 import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.map.RenderLayer;
-import intransix.osm.termite.render.checkout.SearchLayer;
-
-import intransix.osm.termite.render.source.SourceLayer;
-import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
-
 import intransix.osm.termite.render.MapLayerManager;
 import intransix.osm.termite.gui.dialog.SourceLayerDialog;
-import intransix.osm.termite.gui.dialog.CommitDialog;
 import intransix.osm.termite.gui.stdmode.*;
 import intransix.osm.termite.gui.task.CommitTask;
 import java.io.File;
