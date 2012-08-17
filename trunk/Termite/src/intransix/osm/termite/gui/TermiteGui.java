@@ -23,10 +23,11 @@ import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
 import intransix.osm.termite.gui.maplayer.MapLayerManager;
-
+import intransix.osm.termite.gui.maplayer.SourceLayerDialog;
 import intransix.osm.termite.gui.dialog.CommitDialog;
 import intransix.osm.termite.gui.stdmode.*;
 import intransix.osm.termite.gui.task.CommitTask;
+import java.io.File;
 
 /**
  * This is the main UI class. It initializes the UI and it manages event flow.
@@ -89,7 +90,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private OsmRelation activeLevel;
 	
 	//this is used for keeping track of the workign directory
-	private java.io.File workingDirectory;
+	private File workingDirectory;
 	
 	//listeners
 	private java.util.List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
@@ -108,7 +109,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private javax.swing.JMenuItem redoItem;
 	private javax.swing.JMenu mapMenu;
 	private javax.swing.JMenuItem openSourceMenuItem;
-	private javax.swing.JMenuItem closeSourceMenuItem;
 	
 	private javax.swing.JMenu baseMapMenu;
     private javax.swing.ButtonGroup baceMapButtonGroup;
@@ -149,6 +149,14 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	public TermiteApp getTermiteApp() {
 		return app;
+	}
+	
+	public File getWorkingDirectory() {
+		return workingDirectory;
+	}
+	
+	public void setWorkingDirectory(File workingDirectory) {
+		this.workingDirectory = workingDirectory;
 	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Map Data Methods and Events">
@@ -696,24 +704,14 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		//source map
 		openSourceMenuItem = new javax.swing.JMenuItem();
-		openSourceMenuItem.setText("Open Source...");
+		openSourceMenuItem.setText("Source Images...");
 		openSourceMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addMapSource();
+                manageSourceLayers();
             }
         });
-		
-		closeSourceMenuItem = new javax.swing.JMenuItem();
-		closeSourceMenuItem.setText("Hide Source");
-		closeSourceMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                hideSource();
-            }
-        });
-		closeSourceMenuItem.setVisible(false);
 		
         mapMenu.add(openSourceMenuItem);
-		mapMenu.add(closeSourceMenuItem);
 		
 		menuBar.add(mapMenu);
 		
@@ -887,35 +885,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 		mapPanel.repaint();
 	}
 	
-	private void addMapSource() {
-		//open image file
-		JFileChooser fc = new JFileChooser();
-		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		if(workingDirectory != null) fc.setCurrentDirectory(workingDirectory);
-		int returnVal = fc.showOpenDialog(this);
-		if(returnVal == JFileChooser.APPROVE_OPTION) {
-			SourceLayer sourceLayer = new SourceLayer(mapPanel);
-			java.io.File file = fc.getSelectedFile();
-			workingDirectory = fc.getCurrentDirectory();
-			boolean success = sourceLayer.loadImage(file);
-			if(success) {
-				sourceLayer.setActiveState(true);
-				mapLayerManager.addSourceLayer(sourceLayer);
-//				openSourceMenuItem.setVisible(false);
-//				closeSourceMenuItem.setVisible(true);
-				mapPanel.repaint();
-			}
-			else {
-				JOptionPane.showMessageDialog(this,"There was an error loading the image.");
-			}
-		}
-	}
-	
-	private void hideSource() {
-//		sourceLayer.setHidden(true);
-//		openSourceMenuItem.setVisible(true);
-//		closeSourceMenuItem.setVisible(false);
-//		mapPanel.repaint();
+	private void manageSourceLayers() {
+		SourceLayerDialog sourceLayerDialog = new SourceLayerDialog(this,mapLayerManager);
+		sourceLayerDialog.setVisible(true);
 	}
 	
 	/** This is a listener for the mode buttons. */

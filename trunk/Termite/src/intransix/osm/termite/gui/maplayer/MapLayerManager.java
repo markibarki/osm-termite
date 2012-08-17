@@ -95,6 +95,16 @@ public class MapLayerManager {
 	public void addSourceLayer(SourceLayer sourceLayer) {
 		//add to source layers
 		sourceLayers.add(sourceLayer);
+		updateLayers();
+	}
+	
+	public void removeSourceLayer(SourceLayer sourceLayer) {
+		//add to source layers
+		sourceLayers.remove(sourceLayer);
+		updateLayers();
+	}
+	
+	private void updateLayers() {
 		//update map layers
 		layers.clear();
 		layers.add(baseMapLayer);
