@@ -522,7 +522,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		//disable some menu items
 		this.commitItem.setEnabled(false);
-		this.openSourceMenuItem.setEnabled(false);
 	}
 	
 	private void setToEditState() {
@@ -532,7 +531,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		//enable some menu items
 		this.commitItem.setEnabled(true);
-		this.openSourceMenuItem.setEnabled(true);
 	}
 	
 	private void loadEditModes() {
@@ -628,8 +626,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		//create ment
 		menuBar = new javax.swing.JMenuBar();
 		menuBar.setAlignmentX(Component.LEFT_ALIGNMENT);
-		menuBar.setMinimumSize(new Dimension(0,0));
-		menuBar.setMaximumSize(new Dimension(999999,100));
 		
 		fileMenu = new javax.swing.JMenu();
 		fileMenu.setText("File");
@@ -718,6 +714,13 @@ public class TermiteGui extends javax.swing.JFrame implements
         mapMenu.add(openSourceMenuItem);
 		
 		menuBar.add(mapMenu);
+		
+		//hold the height fixed, let the width vary...
+		Dimension d = menuBar.getPreferredSize();
+		Dimension dMin = new Dimension(d);
+		menuBar.setMinimumSize(dMin);
+		Dimension dMax = new Dimension(99999999,d.height);
+		menuBar.setMaximumSize(dMax);
 		
 		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 		

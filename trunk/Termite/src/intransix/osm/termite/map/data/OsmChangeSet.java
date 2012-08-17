@@ -147,21 +147,16 @@ public class OsmChangeSet {
 			List<OsmNode> nodes = null;
 			List<OsmMember> members = null;
 			Point2D point = null;
-			boolean isDelete;
-			boolean isCreate;
 			
 			//create start element
 			if(osmObject != null) {
 				
 				id = osmObject.getId();
 				
-				isDelete = false;
 				if(osmSrcObject != null) {
-					isCreate = false;
 					osmObjectVersion = osmSrcObject.getOsmObjectVersion();
 				}
 				else {
-					isCreate = true;
 					osmObjectVersion = null;
 				}
 				
@@ -183,8 +178,6 @@ public class OsmChangeSet {
 				id = osmSrcObject.getId();
 				osmObjectVersion = osmSrcObject.getOsmObjectVersion();
 				
-				isDelete = true;
-				isCreate = false;
 				if(osmSrcObject instanceof OsmNodeSrc) {
 					xsw.writeStartElement("node");
 					point = ((OsmNodeSrc)osmSrcObject).getPoint();
