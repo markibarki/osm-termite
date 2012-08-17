@@ -76,7 +76,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	// Public Methods
 	//=========================
 	
-	public EditLayer(TermiteGui termiteGui) {
+	public EditLayer(TermiteGui termiteGui, MapPanel mapPanel) {
+		super(mapPanel);
 		this.termiteGui = termiteGui;
 
 		this.setName("Edit Layer");

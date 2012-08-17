@@ -2,6 +2,7 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.gui.maplayer.MapLayerManager;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.source.*;
 import java.awt.event.ActionEvent;
@@ -54,6 +55,7 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	
 	private TermiteGui termiteGui;
 	private GeocodeLayer geocodeLayer;
+	private MapLayer renderLayer;
 	
 	private int geocodeType;
 	
@@ -78,6 +80,14 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	public GeocodeEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
 		createToolBar();
+	}
+	
+	/** This method will be called to set needed map layers. */
+	@Override
+	public void setLayers(MapLayerManager mapLayerManager) {
+		geocodeLayer = mapLayerManager.getGeocodeLayer();
+		geocodeLayer.addGeocodeStateListener(this);
+		renderLayer = mapLayerManager.getRenderLayer();
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -159,17 +169,23 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		}
 	}
 	
+	/** This method is called when the source layers are updated. */
+	public void updateSourceLayers(java.util.List<SourceLayer> sourceLayers) {
+		Object selection = sourceSelector.getSelectedItem();
+		sourceSelector.removeAllItems();
+		for(SourceLayer layer:sourceLayers) {
+			sourceSelector.addItem(layer);
+		}
+		if((selection != null)&&(sourceLayers.contains(selection))) {
+			sourceSelector.setSelectedItem(selection);
+		} 
+	}
+	
 	
 	/** This method is called when the editor mode is turned on. 
 	 */
 	@Override
 	public void turnOn() {
-		if(geocodeLayer == null) {
-			geocodeLayer = termiteGui.getGeocodeLayer();
-			geocodeLayer.addGeocodeStateListener(this);
-		}
-		
-		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
 		}
@@ -186,7 +202,6 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	 */
 	@Override
 	public void turnOff() {
-		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(false);
 		}
@@ -203,7 +218,6 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		GeocodeLayer geocodeLayer = termiteGui.getGeocodeLayer();
 		String actionCommand = ae.getActionCommand();
 		if(actionCommand == null) return;
 		

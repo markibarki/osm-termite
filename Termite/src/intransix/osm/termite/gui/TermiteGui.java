@@ -22,7 +22,10 @@ import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.util.MercatorCoordinates;
 
+import intransix.osm.termite.gui.maplayer.MapLayerManager;
+
 import intransix.osm.termite.gui.dialog.CommitDialog;
+import intransix.osm.termite.gui.stdmode.*;
 import intransix.osm.termite.gui.task.CommitTask;
 
 /**
@@ -69,17 +72,14 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private ButtonGroup editModeButtonGroup;
 	private JToggleButton defaultEditModeButton;
 	
-	//standard map layers
-	private TileLayer baseMapLayer;
-	private RenderLayer renderLayer;
-	private EditLayer editLayer;
-	private SourceLayer sourceLayer;
-	private GeocodeLayer geocodeLayer;
-	private SearchLayer searchLayer;
-	
 	//feature layer info
 	private FeatureInfoMap featureMap;
 	private FeatureInfo activeFeatureLayer;
+	
+	//source manager
+	private MapLayerManager mapLayerManager = new MapLayerManager(); 
+	private EditLayer editLayer;
+	private TileLayer baseMapLayer;
 	
 	//base map options
 	private java.util.List<TileInfo> tileInfoList;
@@ -130,7 +130,7 @@ public class TermiteGui extends javax.swing.JFrame implements
     private intransix.osm.termite.render.MapPanel mapPanel;
 	private javax.swing.JTabbedPane supplementalTabPane;
 	
-	private intransix.osm.termite.gui.maplayer.LayerManager layerManager;
+	private intransix.osm.termite.gui.maplayer.LayerManagerPanel layerManagerPanel;
 	// </editor-fold>
 	
 	//=====================
@@ -195,26 +195,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 			//update the menu
 			clearUndoItem();
 			clearRedoItem();
-		}
-	}
-	
-	/** This method returns the selected features. */
-	public java.util.List<Object> getSelection() {
-		if(editLayer != null) {
-			return editLayer.getSelection();
-		}
-		else {
-			return null;
-		}
-	}
-	
-	/** This method returns the selected way nodes. */
-	public java.util.List<Integer> getWayNodeSelection() {
-		if(editLayer != null) {
-			return editLayer.getSelectedWayNodes();
-		}
-		else {
-			return null;
 		}
 	}
 	
@@ -395,54 +375,47 @@ public class TermiteGui extends javax.swing.JFrame implements
 	public MapPanel getMapPanel() {
 		return mapPanel;
 	}
-
-	public void addMapLayer(MapLayer mapLayer) {
-		mapPanel.addLayer(mapLayer);
-	}
-	
-	public void removeMapLayer(MapLayer mapLayer) {
-		mapPanel.removeLayer(mapLayer);
-	}
-	
-	public TileLayer getBaseMapLayer() {
-		return baseMapLayer;
-	}
-	
-	public RenderLayer getRenderLayer() {
-		return renderLayer;
-	}
-	
-	public EditLayer getEditLayer() {
-		return editLayer;
-	}
-	
-	public SourceLayer getSourceLayer() {
-		return sourceLayer;
-	}
-	
-	public GeocodeLayer getGeocodeLayer() {
-		return geocodeLayer;
-	}
-	
-	public SearchLayer getSearchLayer() {
-		return searchLayer;
-	}
 	
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="Initialize">
 	public void initialize() {
 		
-		//MODES
-		searchMode = app.getSearchMode();
-		editModes = app.getEditModes();
+		//map layers
+		Theme theme = app.getTheme();
+		mapLayerManager.init(this, mapPanel, theme);
+		editLayer = mapLayerManager.getEditLayer();
+		baseMapLayer = mapLayerManager.getBaseMapLayer();
+		
+		//editor modes
+				
+		//create the editor modes
+		searchMode = new SearchEditorMode(this);
+		
+		SelectEditorMode selectMode = new SelectEditorMode(this);
+		NodeEditorMode nodeMode = new NodeEditorMode(this);
+		WayEditorMode wayMode = new WayEditorMode(this);
+		GeocodeEditorMode geocodeMode = new GeocodeEditorMode(this);
+		
+		editModes = new ArrayList<EditorMode>();
+		editModes.add(selectMode);
+		editModes.add(nodeMode);
+		editModes.add(wayMode);
+		editModes.add(geocodeMode);
+		searchMode.setLayers(mapLayerManager);
+		
+		for(EditorMode editMode:editModes) {
+			editMode.setLayers(mapLayerManager);
+		}
+		
 		loadEditModes();
 		
-		//MAP
-		initializeMapLayers();
+		mapLayerManager.setGeocodeMode(geocodeMode);
+		
+		//map view
 		initializeView();
 		
-		//DATA PANEL
+		//set initial mode
 		setToSearchState();
 	}
 	// </editor-fold>
@@ -633,47 +606,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		Rectangle2D mercBounds = new Rectangle2D.Double(minMX,minMY,maxMX - minMX,maxMY - minMY);
 		mapPanel.setViewBounds(mercBounds);
 	}
-	
-	private void initializeMapLayers() {
-		baseMapLayer = new TileLayer();
-baseMapLayer.setOpacity(.5f);
-		mapPanel.addMapListener(baseMapLayer);
-		
-		sourceLayer = new SourceLayer();
-mapPanel.addSourceLayer(sourceLayer);
-		
-		geocodeLayer = new GeocodeLayer();
-		geocodeLayer.setSourceLayer(sourceLayer);
-	
-		renderLayer = new RenderLayer();
-		Theme theme = app.getTheme();
-		renderLayer.setTheme(theme);
-
-		this.addMapDataListener(renderLayer);
-		mapPanel.addLocalCoordinateListener(renderLayer);
-		
-		editLayer = new EditLayer(this);
-		this.addMapDataListener(editLayer);
-		this.addFeatureLayerListener(editLayer);
-		this.addLevelSelectedListener(editLayer);
-		
-		searchLayer = new SearchLayer();
-		
-		mapPanel.addLayer(baseMapLayer);
-		mapPanel.addLayer(sourceLayer);
-		mapPanel.addLayer(renderLayer);
-		mapPanel.addLayer(geocodeLayer);
-		mapPanel.addLayer(editLayer);
-		mapPanel.addLayer(searchLayer);
-		
-		//initialize layers
-		//basemap and source layer are always active, thorugh hidden if they have no map
-		baseMapLayer.setActiveState(true);
-		sourceLayer.setActiveState(true);
-		
-		//others are inactive until a mode enables them
-	}
-	
 
 	@SuppressWarnings("unchecked")
     private void initComponents() {
@@ -882,9 +814,9 @@ mapPanel.addSourceLayer(sourceLayer);
 		//create standard supplemental tabs
 		
 		//supplemental tab
-		layerManager = new intransix.osm.termite.gui.maplayer.LayerManager();
-		mapPanel.addLayerListener(layerManager);
-		this.addSupplementalTab("Map Layers", layerManager);
+		layerManagerPanel = new intransix.osm.termite.gui.maplayer.LayerManagerPanel();
+		mapPanel.addLayerListener(layerManagerPanel);
+		this.addSupplementalTab("Map Layers", layerManagerPanel);
 		
 		this.add(menuBar);
 		this.add(toolBarPanel);
@@ -962,13 +894,15 @@ mapPanel.addSourceLayer(sourceLayer);
 		if(workingDirectory != null) fc.setCurrentDirectory(workingDirectory);
 		int returnVal = fc.showOpenDialog(this);
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
+			SourceLayer sourceLayer = new SourceLayer(mapPanel);
 			java.io.File file = fc.getSelectedFile();
 			workingDirectory = fc.getCurrentDirectory();
 			boolean success = sourceLayer.loadImage(file);
 			if(success) {
-				sourceLayer.setHidden(false);
-				openSourceMenuItem.setVisible(false);
-				closeSourceMenuItem.setVisible(true);
+				sourceLayer.setActiveState(true);
+				mapLayerManager.addSourceLayer(sourceLayer);
+//				openSourceMenuItem.setVisible(false);
+//				closeSourceMenuItem.setVisible(true);
 				mapPanel.repaint();
 			}
 			else {
@@ -978,10 +912,10 @@ mapPanel.addSourceLayer(sourceLayer);
 	}
 	
 	private void hideSource() {
-		sourceLayer.setHidden(true);
-		openSourceMenuItem.setVisible(true);
-		closeSourceMenuItem.setVisible(false);
-		mapPanel.repaint();
+//		sourceLayer.setHidden(true);
+//		openSourceMenuItem.setVisible(true);
+//		closeSourceMenuItem.setVisible(false);
+//		mapPanel.repaint();
 	}
 	
 	/** This is a listener for the mode buttons. */

@@ -1,5 +1,7 @@
 package intransix.osm.termite.gui;
 
+import intransix.osm.termite.gui.maplayer.MapLayerManager;
+
 /**
  * This is the base class for an editor mode. The editor mode controls what the 
  * editor does.
@@ -28,6 +30,10 @@ public abstract class EditorMode {
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public abstract void turnOff();
+	
+	/** This method can be overwritten to set any needed map layers. */
+	public void setLayers(MapLayerManager mapLayerManager) {
+	}
 	
 	//---------------------
 	// Management fucntions

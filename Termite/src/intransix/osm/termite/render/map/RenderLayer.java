@@ -23,8 +23,11 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 	private OsmData mapData;
 	private Theme theme;
 	
-	public RenderLayer() {
+	public RenderLayer(MapPanel mapPanel) {
+		super(mapPanel);
 		this.setName("Render Layer");
+		
+		mapPanel.addLocalCoordinateListener(this);
 	}
 	
 	public void onMapData(OsmData mapData) {

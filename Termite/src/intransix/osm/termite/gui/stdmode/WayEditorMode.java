@@ -6,6 +6,7 @@ package intransix.osm.termite.gui.stdmode;
 
 import intransix.osm.termite.gui.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.gui.maplayer.MapLayerManager;
 import intransix.osm.termite.render.MapLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.edit.WayToolAction;
@@ -26,6 +27,8 @@ public class WayEditorMode extends EditorMode {
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/wayMode.png";
 	
 	private TermiteGui termiteGui;
+	private MapLayer renderLayer;
+	private EditLayer editLayer;
 	private JToolBar toolBar = null;
 	
 	//====================
@@ -34,6 +37,13 @@ public class WayEditorMode extends EditorMode {
 	
 	public WayEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
+	}
+	
+	/** This method will be called to set needed map layers. */
+	@Override
+	public void setLayers(MapLayerManager mapLayerManager) {
+		editLayer = mapLayerManager.getEditLayer();
+		renderLayer = mapLayerManager.getRenderLayer();
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -58,39 +68,26 @@ public class WayEditorMode extends EditorMode {
 	 */
 	@Override
 	public void turnOn() {
-		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(true);
 		}
-		EditLayer editLayer = termiteGui.getEditLayer();
 		if(editLayer != null) {
 			editLayer.setActiveState(true);
 			editLayer.setMouseEditAction(new WayToolAction());
 		}
-		
-//		if(toolBar == null) {
-//			createToolBar();
-//		}
-//		termiteGui.addToolBar(toolBar);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
 	@Override
 	public void turnOff() {
-		MapLayer renderLayer = termiteGui.getRenderLayer();
 		if(renderLayer != null) {
 			renderLayer.setActiveState(false);
 		}
-		EditLayer editLayer = termiteGui.getEditLayer();
 		if(editLayer != null) {
 			editLayer.setActiveState(false);
 			editLayer.setMouseEditAction(null);
 		}
-		
-//		if(toolBar != null) {
-//			termiteGui.removeToolBar(toolBar);
-//		}
 	}
 	
 	private void createToolBar() {	

@@ -17,7 +17,7 @@ public abstract class MapLayer {
 	private float alpha = 1;
 	private Composite composite;	
 	
-	public void setMapPanel(MapPanel mapPanel) {
+	public MapLayer(MapPanel mapPanel) {
 		this.mapPanel = mapPanel;
 	}
 	

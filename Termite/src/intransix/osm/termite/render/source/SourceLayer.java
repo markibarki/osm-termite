@@ -19,7 +19,8 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	private AffineTransform moveImageToMerc = new AffineTransform();
 	private boolean inMove = false;
 	
-	public SourceLayer() {
+	public SourceLayer(MapPanel mapPanel) {
+		super(mapPanel);
 		this.setName("Source Layer");
 		this.setHidden(true);
 	}

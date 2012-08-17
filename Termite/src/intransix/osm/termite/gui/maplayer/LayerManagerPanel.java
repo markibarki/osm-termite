@@ -14,7 +14,7 @@ import java.awt.Component;
  *
  * @author sutter
  */
-public class LayerManager extends JPanel implements LayerStateListener {
+public class LayerManagerPanel extends JPanel implements LayerStateListener {
 	
 	private final static int LAYER_COLUMN = 0;
 	private final static int OPACITY_COLUMN = 1;
@@ -22,7 +22,7 @@ public class LayerManager extends JPanel implements LayerStateListener {
 	/**
 	 * Creates new form LayerManager
 	 */
-	public LayerManager() {
+	public LayerManagerPanel() {
 		initComponents();
 		OpacityRenderer or = new OpacityRenderer();
 		jTable1.setRowHeight(or.getPreferredSize().height);
