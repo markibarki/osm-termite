@@ -255,6 +255,12 @@ public class OsmData {
 		}
 	}
 	
+	/** This method clears the command queue. */
+	public void clearCommandQueue() {
+		actions.clear();
+		nextAddIndex = 0;
+	}
+	
 	//-----------------------------
 	// Commit Actions
 	//-----------------------------

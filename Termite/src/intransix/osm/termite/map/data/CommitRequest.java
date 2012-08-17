@@ -31,9 +31,6 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 	private String url;
 	private List<UpdateInfo> updateList = new ArrayList<UpdateInfo>();
 	
-	private UpdateInfo activeObject;
-	
-	
 	//==========================
 	// Public Methods
 	//==========================
@@ -122,6 +119,11 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 	/** This method updates the OsmData to reflect the new ID and version numbers
 	 * after the commit. */
 	private void processUpdateList() {
+		//before we process the updates, we must flush the old command queue, since
+		//it may contain old ids
+		//alternatively, we could update the command queue ids
+		osmData.clearCommandQueue();
+		
 		//create the maps to look up the src objects
 		HashMap<Long,OsmNodeSrc> srcNodeMap = osmData.createNodeSrcMap();
 		HashMap<Long,OsmWaySrc> srcWayMap = osmData.createWaySrcMap();
