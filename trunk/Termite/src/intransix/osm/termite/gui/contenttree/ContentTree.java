@@ -151,8 +151,29 @@ public class ContentTree extends javax.swing.JTree
 	 * @return					True if the UI tree element should be updated.
 	 */
 	private boolean doTreeMapUpdate(TreeMap<OsmWay,List<OsmRelation>> newTreeMap) {
-//implement this - for now just always redraw the tree.
-return true;
+		if(activeTreeMap == null) return true;
+		
+		//check the way count matches
+		Set<OsmWay> activeWays = activeTreeMap.keySet();
+		Set<OsmWay> newWays = newTreeMap.keySet();
+		if(activeWays.size() != newWays.size()) return true;
+		
+		//check all way levels in new list match way levels in active list
+		List<OsmRelation> activeList;
+		List<OsmRelation> newList;
+		for(OsmWay way:newTreeMap.keySet()) {
+			activeList = activeTreeMap.get(way);
+			if(activeList == null) return true;
+			newList = newTreeMap.get(way);
+			if(newList.size() != activeList.size()) return true;
+			
+			for(int i = 0; i < newList.size(); i++) {
+				if(activeList.get(i) != newList.get(i)) return true;
+			}
+		}
+		
+		//lists match
+		return false;
 	}
 	
 	/** This method updates the UI tree to match the passed data. 
