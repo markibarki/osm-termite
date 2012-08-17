@@ -51,8 +51,7 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	
 	private java.util.List<MapListener> mapListeners = new ArrayList<MapListener>();
 	private java.util.List<LocalCoordinateListener> localCoordinateListeners = new ArrayList<LocalCoordinateListener>();
-	private java.util.List<LayerStateListener> layerListeners = new ArrayList<LayerStateListener>();
-	
+
 	private boolean panOn = false;
 	private double lastX;
 	private double lastY;
@@ -277,17 +276,6 @@ this.resetLocalCoordinates();
 		this.localCoordinateListeners.remove(listener);
 	}
 	
-	public void addLayerListener(LayerStateListener listener) {
-		if(!layerListeners.contains(listener)) {
-			this.layerListeners.add(listener);
-		}
-		listener.layerStateChanged(null, layers);
-	}
-	
-	public void removeLayerListener(LayerStateListener listener) {
-		this.layerListeners.remove(listener);
-	}
-	
 	// </editor-fold>
 	
 	@Override
@@ -305,7 +293,7 @@ this.resetLocalCoordinates();
 		Composite originalComposite = g2.getComposite();
 		Composite activeComposite;
 		for(MapLayer layer:layers) {
-			if((layer.getActiveState())&&(!layer.getHidden())) {
+			if((layer.getActiveState())&&(layer.isVisible())) {
 				//set the opacity for the layer
 				activeComposite = layer.getComposite();
 				if(activeComposite == null) {
@@ -509,27 +497,12 @@ this.resetLocalCoordinates();
 		this.repaint();
 	}
 	
-	//=================================
-	// Private Methods
-	//=================================
-	
-	/** MapLayers call this when their state changes. */
-	void layerStateChanged(MapLayer layer) {
-		//notify listeners that the layer state changed
-		notifyLayerListeners(layer);
-	}
 	
 	//=================================
 	// Private Methods
 	//=================================
 
-	/** This method notifies listeners of any layer state changes. */
-	private void notifyLayerListeners(MapLayer layer) {
-		for(LayerStateListener listener:layerListeners) {
-			listener.layerStateChanged(layer,layers);
-		}
-	}
-	
+
 	/** This method takes should be called with the transforms mercatorToPixels
 	 * and mercatorToLocal set. It calculates the rest of the matrices. */
 	private void updateTransforms() {

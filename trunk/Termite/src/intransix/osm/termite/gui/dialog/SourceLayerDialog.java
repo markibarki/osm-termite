@@ -1,22 +1,26 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package intransix.osm.termite.gui.maplayer;
+package intransix.osm.termite.gui.dialog;
 
 import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.render.MapLayerManager;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.table.*;
+import javax.swing.event.*;
+import java.util.List;
 
 /**
  *
  * @author sutter
  */
-public class SourceLayerDialog extends javax.swing.JDialog {
+public class SourceLayerDialog extends javax.swing.JDialog implements TableModelListener {
+	
+	private final static int LAYER_COLUMN = 0;
+	private final static int VISIBLE_COLUMN = 1;
 
 	private TermiteGui gui;
 	private MapLayerManager mapLayerManager;
+	private DefaultTableModel model;
 	
 	/**
 	 * Creates new form SourceLayerDialog
@@ -26,12 +30,44 @@ public class SourceLayerDialog extends javax.swing.JDialog {
 		this.gui = gui;
 		this.mapLayerManager = mapLayerManager;
 		initComponents();
-		
-//		TableModel model = sourceTable.getModel();
-//		
-//		if(selectedSourceLayer == null) {
-//			deleteButton.setEnabled(false);
-//		}
+				
+		model = (DefaultTableModel)sourceTable.getModel();
+		model.addTableModelListener(this);
+		Object[] row = new Object[2];
+		for(SourceLayer layer:mapLayerManager.getSourceLayers()) {
+			row[0] = layer.getName();
+			row[1] = layer.isVisible();
+			model.addRow(row);
+		}
+	}	
+	
+	
+	public void tableChanged(TableModelEvent e) {
+		if(e.getType() == TableModelEvent.UPDATE) {
+			int row = e.getFirstRow();
+			
+			//this shouldn't happen - return with no action
+			int lastRow = e.getLastRow();
+			if(lastRow != row) {
+				System.out.println("Unknown error - multi row edit");
+				return;
+			}
+			
+			
+			int column = e.getColumn();
+			SourceLayer layer = mapLayerManager.getSourceLayers().get(row);
+			Object value = model.getValueAt(row, column);
+			
+			if(column == LAYER_COLUMN) {
+				layer.setName((String)value);
+			}
+			else if(column == VISIBLE_COLUMN) {
+				layer.setVisible((Boolean)value);
+			}
+			else {
+				return;
+			}
+		}
 	}
 
 	/**
@@ -58,10 +94,17 @@ public class SourceLayerDialog extends javax.swing.JDialog {
             new String [] {
                 "Source Image", "Enabled"
             }
-        ));
-        sourceTable.setColumnSelectionAllowed(true);
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Boolean.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        sourceTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(sourceTable);
-        sourceTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
         closeButton.setText("Close");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -130,15 +173,29 @@ public class SourceLayerDialog extends javax.swing.JDialog {
 		SourceLayer sourceLayer = openSourceLayer();
 		if(sourceLayer != null) {
 			mapLayerManager.addSourceLayer(sourceLayer);
+			Object[] row = new Object[2];
+			row[0] = sourceLayer.getName();
+			row[1] = sourceLayer.isVisible();
+			model.addRow(row);
 		}
 	}//GEN-LAST:event_newButtonActionPerformed
 
 	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
 		int index = sourceTable.getSelectedRow();
 		if(index > -1) {
-			
+			List<SourceLayer> layers = mapLayerManager.getSourceLayers();
+			if(layers.size() > index) {
+				SourceLayer layer = layers.get(index);
+				mapLayerManager.removeSourceLayer(layer);
+				model.removeRow(index);
+			}
+			else {
+				JOptionPane.showMessageDialog(this,"Unknown error in delete.");
+			}
 		}
-//		mapLayerManager.removeSourceLayer(selectedSourceLayer);
+		else {
+			JOptionPane.showMessageDialog(this,"You must select a row to delete.");
+		}
 	}//GEN-LAST:event_deleteButtonActionPerformed
 
 
@@ -158,7 +215,7 @@ public class SourceLayerDialog extends javax.swing.JDialog {
 		if(workingDirectory != null) fc.setCurrentDirectory(workingDirectory);
 		int returnVal = fc.showOpenDialog(this);
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
-			SourceLayer sourceLayer = new SourceLayer(gui.getMapPanel());
+			SourceLayer sourceLayer = new SourceLayer(mapLayerManager);
 			java.io.File file = fc.getSelectedFile();
 			gui.setWorkingDirectory(fc.getCurrentDirectory());
 			boolean success = sourceLayer.loadImage(file);

@@ -1,11 +1,10 @@
-package intransix.osm.termite.gui.maplayer;
+package intransix.osm.termite.render;
 
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import intransix.osm.termite.render.LayerStateListener;
 import intransix.osm.termite.render.MapLayer;
 import java.util.*;
 import java.awt.Component;
@@ -14,7 +13,7 @@ import java.awt.Component;
  *
  * @author sutter
  */
-public class LayerManagerPanel extends JPanel implements LayerStateListener {
+public class LayerManagerPanel extends JPanel {
 	
 	private final static int LAYER_COLUMN = 0;
 	private final static int OPACITY_COLUMN = 1;
@@ -36,14 +35,13 @@ public class LayerManagerPanel extends JPanel implements LayerStateListener {
 	 * @param layer		The layer that changed.
 	 * @param layers	The list of all layers.
 	 */
-	@Override
-	public void layerStateChanged(MapLayer layer, List<MapLayer> layers) {
+	public void layerStateChanged(List<MapLayer> layers) {
 
 		DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
 		model.setRowCount(0);
 		Object[] row = new Object[2];
 		for(MapLayer ml:layers) {
-			if((ml.getActiveState())&&(!ml.getHidden())) {
+			if((ml.getActiveState())&&(ml.isVisible())) {
 				row[LAYER_COLUMN] = ml;
 				row[OPACITY_COLUMN] = ml.getOpacity();
 				model.addRow(row);
@@ -63,6 +61,8 @@ public class LayerManagerPanel extends JPanel implements LayerStateListener {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+
+        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -91,16 +91,7 @@ public class LayerManagerPanel extends JPanel implements LayerStateListener {
         jTable1.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(jTable1);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-        );
+        add(jScrollPane1);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
@@ -111,7 +102,7 @@ public class LayerManagerPanel extends JPanel implements LayerStateListener {
 	// edit and render classes
 	//==================
 	
-	public class OpacityRenderer extends JSlider
+	public static class OpacityRenderer extends JSlider
                            implements TableCellRenderer, TableCellEditor,
 						   ChangeListener {
 		
@@ -212,6 +203,5 @@ public class LayerManagerPanel extends JPanel implements LayerStateListener {
 				activeLayer.getMapPanel().repaint();
 			}
 		}
-		
 	}
 }

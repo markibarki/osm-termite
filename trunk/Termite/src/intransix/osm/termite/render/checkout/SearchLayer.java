@@ -2,6 +2,7 @@ package intransix.osm.termite.render.checkout;
 
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.MapLayerManager;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -29,10 +30,11 @@ public class SearchLayer extends MapLayer implements MouseListener, MouseMotionL
 		return selection;
 	}
 	
-	public SearchLayer(MapPanel mapPanel) {
-		super(mapPanel);
+	public SearchLayer(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		this.setName("Checkout Search Layer");
 		//add listeners
+		MapPanel mapPanel = getMapPanel();
 		mapPanel.addMouseListener(this);
 		mapPanel.addMouseMotionListener(this);
 	}

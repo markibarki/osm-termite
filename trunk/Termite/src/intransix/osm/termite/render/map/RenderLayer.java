@@ -4,8 +4,7 @@ import intransix.osm.termite.map.data.OsmObject;
 import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.data.OsmNode;
 import intransix.osm.termite.map.data.OsmWay;
-import intransix.osm.termite.render.MapLayer;
-import intransix.osm.termite.render.MapPanel;
+import intransix.osm.termite.render.*;
 import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.gui.MapDataListener;
 import intransix.osm.termite.render.LocalCoordinateListener;
@@ -23,10 +22,11 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 	private OsmData mapData;
 	private Theme theme;
 	
-	public RenderLayer(MapPanel mapPanel) {
-		super(mapPanel);
+	public RenderLayer(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		this.setName("Render Layer");
 		
+		MapPanel mapPanel = getMapPanel();
 		mapPanel.addLocalCoordinateListener(this);
 	}
 	

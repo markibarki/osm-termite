@@ -19,10 +19,10 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	private AffineTransform moveImageToMerc = new AffineTransform();
 	private boolean inMove = false;
 	
-	public SourceLayer(MapPanel mapPanel) {
-		super(mapPanel);
+	public SourceLayer(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		this.setName("Source Layer");
-		this.setHidden(true);
+		this.setVisible(false);
 	}
 	
 	public void setMove(boolean inMove, AffineTransform moveImageToMerc) {
@@ -55,12 +55,12 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 		
 		try {
 			sourceImage = java.awt.Toolkit.getDefaultToolkit().createImage(file.getAbsolutePath());
-			this.setHidden(false);
+			this.setVisible(true);
 			return true;
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
-			this.setHidden(false);
+			this.setVisible(false);
 			return false;
 		}
 	}
@@ -68,7 +68,7 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	public void clearImage() {
 		sourceImage = null;
 		imageToMerc = null;
-		this.setHidden(true);
+		this.setVisible(false);
 	}
 
 	

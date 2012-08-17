@@ -52,8 +52,8 @@ public class GeocodeLayer extends MapLayer implements
 	
 	private java.util.List<GeocodeStateListener> stateListeners = new ArrayList<GeocodeStateListener>();
 	
-	public GeocodeLayer(MapPanel mapPanel) {
-		super(mapPanel);
+	public GeocodeLayer(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		anchorPoints = new AnchorPoint[3];
 		anchorPoints[0] = p0;
 		anchorPoints[1] = p1;

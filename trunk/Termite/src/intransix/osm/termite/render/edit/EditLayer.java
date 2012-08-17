@@ -14,6 +14,7 @@ import intransix.osm.termite.gui.*;
 import java.awt.*;
 import java.util.List;
 import intransix.osm.termite.gui.dialog.CreateLevelDialog;
+import intransix.osm.termite.render.MapLayerManager;
 import javax.swing.JOptionPane;
 
 /**
@@ -76,8 +77,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	// Public Methods
 	//=========================
 	
-	public EditLayer(TermiteGui termiteGui, MapPanel mapPanel) {
-		super(mapPanel);
+	public EditLayer(MapLayerManager mapLayerManager, TermiteGui termiteGui) {
+		super(mapLayerManager);
 		this.termiteGui = termiteGui;
 
 		this.setName("Edit Layer");
