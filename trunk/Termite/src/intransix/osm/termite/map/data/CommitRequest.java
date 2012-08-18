@@ -241,6 +241,12 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 				}
 			}	
 		}
+		
+		//notify of a change to the data
+		//the data does change, but the main reason I do this is to notify the UI
+		//that the undo/redo commands changed. That may be cludgey.
+		int editNumber = osmData.getNextEditNumber();
+		osmData.dataChanged(editNumber);
 	}
 	
 	private class UpdateInfo {
