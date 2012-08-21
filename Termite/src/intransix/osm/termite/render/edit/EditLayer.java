@@ -648,13 +648,13 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	// <editor-fold defaultstate="collapsed" desc="Move Mode Control">
 	
-	public void addGeocodeStateListener(EditStateListener stateListener) {
+	public void addEditStateListener(EditStateListener stateListener) {
 		if(!stateListeners.contains(stateListener)) {
 			stateListeners.add(stateListener);
 		}
 	}
 	
-	public void removeGeocodeStateListener(EditStateListener stateListener) {
+	public void removeEditStateListener(EditStateListener stateListener) {
 		stateListeners.remove(stateListener);
 	}
 	
