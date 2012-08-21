@@ -7,6 +7,7 @@ import intransix.osm.termite.map.data.edit.WayNodeEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -65,7 +66,7 @@ public class VirtualNodeAction implements MouseEditAction {
 	}
 	
 	@Override
-	public void mousePressed(EditDestPoint clickDestPoint) {
+	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
 		if(virtualNode == null) return;
 		
 		WayNodeEdit wne = new WayNodeEdit(osmData);

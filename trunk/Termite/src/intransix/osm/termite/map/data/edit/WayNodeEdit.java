@@ -216,7 +216,7 @@ System.out.println("Insert node into way");
 			}
 			//legal if the two copies of the node are at either end
 			boolean closedWay = (((insertIndex == nodes.size())&&(existingIndex == 0)) ||
-					((insertIndex == 0)&&(existingIndex == nodes.size())));
+					((insertIndex == 0)&&(existingIndex == nodes.size()-1)));
 			
 			if(closedWay) endWay = true;
 			return closedWay;

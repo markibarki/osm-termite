@@ -6,6 +6,7 @@ import intransix.osm.termite.map.data.edit.WayNodeEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -24,25 +25,35 @@ public class WayToolAction implements MouseEditAction {
 		this.editLayer = editLayer;
 		this.activeWay = editLayer.getActiveWay();
 		
+		//if the way is closed, de-select it (below)
 		
-		//clear selection only if there is not an active way
-		//otherwise the selection is the active way
+		
+		//initialize active way
+		if(activeWay != null) {
+			if(activeWay.isClosed()) {
+				//don't allow adding to a closed way
+				activeWay = null;
+			}
+			else {
+				//figure out which end to add to
+				List<Integer> selectedWayNodes = editLayer.getSelectedWayNodes();
+				if(selectedWayNodes.size() == 1) {
+					int selectedIndex = selectedWayNodes.get(0);
+					addToWayStart = (selectedIndex == 0);
+				}
+				else {
+					addToWayStart = false;
+				}
+			}
+		}
+		
+		//if there is no active way, clear the selection
 		if(activeWay == null) {
 			editLayer.clearSelection();
 		}
-		else {
-			List<Integer> selectedWayNodes = editLayer.getSelectedWayNodes();
-			if(selectedWayNodes.size() == 1) {
-				int selectedIndex = selectedWayNodes.get(0);
-				addToWayStart = (selectedIndex == 0);
-			}
-			else {
-				addToWayStart = false;
-			}
-		}
 		
-		//initialize virtual node with a dummy point - it will get updated on a mouse move
-		setPendingData(new Point2D.Double());
+		//get the mouse location
+		setPendingData(editLayer.getMapPanel().getMousePointMerc());
 	}
 	
 	@Override
@@ -53,8 +64,15 @@ public class WayToolAction implements MouseEditAction {
 	}
 	
 	@Override
-	public void mousePressed(EditDestPoint clickDestPoint) {
+	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
+		
+		//on double click end the way and return
+		if(e.getClickCount() > 1) {
+			editLayer.resetWayEdit();
+			return;
+		}
 	
+		//process normal click
 		FeatureInfo featureInfo = editLayer.getFeatureInfo();
 		OsmRelation activeLevel = editLayer.getActiveLevel();
 	
