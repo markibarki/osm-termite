@@ -71,10 +71,8 @@ public class VirtualNodeAction implements MouseEditAction {
 		WayNodeEdit wne = new WayNodeEdit(osmData);
 		wne.nodeInserted(virtualNode.segment,clickDestPoint,activeLevel);
 
-		//clear selection. user has to reselect to move again
-		//but move mode is still active because it is controlled elsewhere
-		editLayer.clearPending();
-		editLayer.clearSelection();
+		//clear the move edit
+		editLayer.clearMoveEdit();
 	}
 	
 	@Override

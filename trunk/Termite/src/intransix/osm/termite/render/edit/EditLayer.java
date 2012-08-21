@@ -134,6 +134,20 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		movingNodes.clear();
 	}
 	
+	/** This method ends the current way edit and starts a new one. */
+	public void resetWayEdit() {
+		//clear old working data
+		clearSelection();
+		//overwrite old way edit action with a new one
+		setMouseEditAction(new WayToolAction());
+	}
+	
+	/** This will end a move edit. */
+	public void clearMoveEdit() {
+		clearSelection();
+		setMouseEditAction(null);
+	}
+	
 	public OsmWay getActiveStructure() {
 		return activeStructure;
 	}
@@ -776,14 +790,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		activeSnapObject = -1;
 		getMapPanel().repaint();
 	}	
-	
-	/** This method ends the current way edit and starts a new one. */
-	private void resetWayEdit() {
-		//clear old working data
-		clearSelection();
-		//overwrite old way edit action with a new one
-		setMouseEditAction(new WayToolAction());
-	}
 	
 	/** This method returns the current edit destination point based on the
 	 * currently selected hover node or segment. 

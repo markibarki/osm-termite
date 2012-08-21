@@ -4,6 +4,7 @@ import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -11,11 +12,21 @@ import java.util.List;
  */
 public class WayNodeEdit extends EditOperation {
 	
+	private boolean endWay = false;
+	
 	public WayNodeEdit(OsmData osmData) {
 		super(osmData);
 	}
 	
+	/** After a call to wayToolClicked, this method should be called to check 
+	 * if the way should be ended. It will return yes if the way was closed by 
+	 * the latest action. */
+	public boolean getEndWay() {
+		return endWay;
+	}
 	
+	
+	/** This method executes the edit associated with clicking the way tool. */
 	public OsmWay wayToolClicked(OsmWay activeWay, boolean isEnd, 
 			EditDestPoint destPoint, FeatureInfo featureInfo, OsmRelation currentLevel) {
 		
@@ -33,6 +44,8 @@ System.out.println("Add a node to a way");
 		}
 	}
 	
+	/** This method executes the edit associated with dragging a virtual node to add
+	 * a node to a way. */
 	public OsmNode nodeInserted(OsmSegment segment, EditDestPoint dest, OsmRelation currentLevel) {
 		
 System.out.println("Insert node into way");
@@ -41,6 +54,23 @@ System.out.println("Insert node into way");
 		EditAction action = new EditAction(getOsmData(),"Insert Node into Way");
 			
 		try {
+			
+			if(dest.snapNode != null) {
+				//make sure this node can be added to all the ways containing this segment
+				for(OsmWay way:segment.getOsmWays()) {
+					
+					int segmentIndex = way.getSegments().indexOf(segment);
+					if(segmentIndex >= 0) {
+						//check if this node can be added at the corresponding index
+						if(checkIfAddNodeIsValid(way,dest.snapNode,segmentIndex + 1) == false) {
+							JOptionPane.showMessageDialog(null,"That node can no be added to the current segment.");
+							return null;
+						}
+					}
+				}
+			}
+			
+			
 			//create node, if needed
 			Long nodeId = createOrUseExistingNode(action,dest,currentLevel);
 
@@ -120,6 +150,14 @@ System.out.println("Insert node into way");
 	private boolean addNodeToWay(OsmWay way, EditDestPoint dest, int insertIndex, OsmRelation currentLevel) {
 		EditAction action = new EditAction(getOsmData(),"Add node to way");
 		
+		if(dest.snapNode != null) {
+			//make sure this node can be added
+			if(checkIfAddNodeIsValid(way,dest.snapNode,insertIndex) == false) {
+				JOptionPane.showMessageDialog(null,"That node can no be added to the current way.");
+				return false;
+			}
+		}
+		
 		Long addNodeId = createOrUseExistingNode(action,dest,currentLevel);
 		insertNodeIntoWay(action,way,addNodeId,insertIndex);
 		
@@ -163,6 +201,32 @@ System.out.println("Insert node into way");
 		}
 		
 		return startNodeId;
+	}
+	
+	/** This method checks if the given node can be used to add to this way. */
+	private boolean checkIfAddNodeIsValid(OsmWay way, OsmNode node, int insertIndex) {
+		if(node.getWays().contains(way)) {
+			int existingIndex = -1;
+			List<OsmNode> nodes = way.getNodes();
+			for(int i = 0; i < nodes.size(); i++) {
+				if(nodes.get(i) == node) {
+					existingIndex = i;
+					break;
+				}
+			}
+			//legal if the two copies of the node are at either end
+			boolean closedWay = (((insertIndex == nodes.size())&&(existingIndex == 0)) ||
+					((insertIndex == 0)&&(existingIndex == nodes.size())));
+			
+			if(closedWay) endWay = true;
+			return closedWay;
+			
+		}
+		else {
+			//legal if node is not already in the way
+			return true;
+		}
+		
 	}
 	
 }

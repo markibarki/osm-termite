@@ -61,7 +61,9 @@ public class WayToolAction implements MouseEditAction {
 		//execute a way node addition
 		WayNodeEdit wne = new WayNodeEdit(osmData);
 		activeWay = wne.wayToolClicked(activeWay,!addToWayStart,clickDestPoint,featureInfo,activeLevel);
-
+		//check if we should terminate the way
+		boolean endWay = wne.getEndWay();
+		
 		if(activeWay != null) {
 			//make sure this is selected
 			List<Object> selection = editLayer.getSelection();
@@ -78,7 +80,13 @@ public class WayToolAction implements MouseEditAction {
 				selectedWayNodes.add(activeWayNodeIndex);
 			}
 			//prepare for next
-			setPendingData(clickDestPoint.point);
+			if(endWay) {
+				editLayer.resetWayEdit();
+			}
+			else {
+				setPendingData(clickDestPoint.point);
+			}
+			
 		}
 		else {
 			//something wrong happened - clean up
