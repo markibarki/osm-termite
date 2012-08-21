@@ -109,14 +109,22 @@ public class MoveAction implements MouseEditAction {
 		if(!selection.isEmpty()) {
 			//execute the move
 			MoveEdit me = new MoveEdit(osmData);
-			me.selectionMoved(selection,moveStartPoint,clickDestPoint);
+			boolean success = me.selectionMoved(selection,moveStartPoint,clickDestPoint);
+			
+			if(success) {
+				//if the move caused a node to be deleted, clear the selection
+				//so we don't have the invalid object stroed there
+				boolean nodeDeleted = me.getNodeDeleted();
+				if(nodeDeleted) {
+					editLayer.clearSelection();
+				}
+				
+				//update select point
+				editLayer.setSelectionPoint(clickDestPoint);
+			}
 		}
 		//exit move mode
 		editLayer.exitMove();
-		
-		//update select point
-		editLayer.setSelectionPoint(clickDestPoint);
-
 	}
 	
 	@Override

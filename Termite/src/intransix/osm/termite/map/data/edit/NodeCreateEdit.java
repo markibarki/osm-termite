@@ -22,7 +22,7 @@ System.out.println("Create a node");
 		EditAction action = new EditAction(getOsmData(),"Create Node");
 
 if(destPoint.snapNode != null) {
-	JOptionPane.showMessageDialog(null,"Creating a node on another node not currently supported");
+	JOptionPane.showMessageDialog(null,"Creating a node feature on an existing node not currently supported");
 	return null;
 }
 
