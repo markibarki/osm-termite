@@ -465,7 +465,7 @@ this.resetLocalCoordinates();
 		zt.scale(zoomFactor, zoomFactor);
 		mercatorToPixels.preConcatenate(zt);
 		updateTransforms();
-//teset to reset every zoom
+//test to reset every zoom
 this.resetLocalCoordinates();
 		dispatchZoomEvent();
 		this.repaint();
