@@ -49,10 +49,8 @@ public class SnapWay extends SnapObject {
 	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
 			StyleInfo styleInfo) {
 
-		g2.setStroke(styleInfo.HOVER_PRESELECT_STROKE);
-
-		//render
-		renderWay(g2,mercatorToPixels,way);
+		Style style = this.getHoverStyle(styleInfo);
+		renderWay(g2,mercatorToPixels,way,style);
 	}
 	
 	/** This method looks up an select object for this snap object.  . 

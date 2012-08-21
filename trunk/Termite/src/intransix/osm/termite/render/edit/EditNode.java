@@ -25,8 +25,8 @@ public class EditNode extends EditObject {
 	@Override
 	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
 			StyleInfo styleInfo) {
-
-		renderPoint(g2,mercatorToPixels,point,styleInfo.RADIUS_PIXELS);
+		Style style = styleInfo.PENDING_STYLE;
+		renderPoint(g2,mercatorToPixels,point,style);
 	}
 
 	

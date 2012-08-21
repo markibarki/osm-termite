@@ -23,8 +23,6 @@ public class SnapSegment extends SnapObject {
 	public Point2D p1;
 	//display line end
 	public Point2D p2;
-	//type
-	public SnapType snapType;
 	
 	//=======================
 	// Public Methods
@@ -62,13 +60,8 @@ public class SnapSegment extends SnapObject {
 	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
 			StyleInfo styleInfo) {
 		
-		if(snapType == SnapObject.SnapType.SEGMENT_INT) {
-			g2.setStroke(styleInfo.HOVER_PRESELECT_STROKE);
-		}
-		else {
-			g2.setStroke(styleInfo.HOVER_EXTENSION_STROKE);
-		}
-		renderSegment(g2,mercatorToPixels,p1,p2);
+		Style style = this.getHoverStyle(styleInfo);
+		renderSegment(g2,mercatorToPixels,p1,p2,style);
 	}
 	
 	/** This method looks up an select object for this snap object.  . There is
@@ -129,7 +122,7 @@ public class SnapSegment extends SnapObject {
 			ss.p1 = new Point2D.Double(segPt1.getX(),segPt1.getY());
 			ss.p2 = ss.snapPoint;
 			//fill in proper snap type
-			ss.snapType = SnapObject.SnapType.UNKNOWN;
+			ss.snapType = SnapObject.SnapType.SEGMENT_EXT;
 		}
 		else if(fraction < 0) {
 			//snap to extension from point 1
