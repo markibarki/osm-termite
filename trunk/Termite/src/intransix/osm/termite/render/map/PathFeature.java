@@ -1,11 +1,6 @@
 package intransix.osm.termite.render.map;
 
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmNode;
-import intransix.osm.termite.map.data.OsmModel;
-import intransix.osm.termite.map.data.OsmWay;
-import intransix.osm.termite.map.data.OsmRelation;
-import intransix.osm.termite.map.data.OsmMember;
+import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
@@ -15,8 +10,10 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.util.*;
+import java.awt.BasicStroke;
 
 /**
  *
@@ -27,11 +24,18 @@ public class PathFeature implements Feature {
 	// Private Proeprties
 	//====================
 	
+	//virtual node hard coded specs - update this!!!
+	private final static int RADIUS_PIX = 3;
+	private final static Color virtualColor = Color.LIGHT_GRAY;
+	private final static Stroke virtualStroke = new BasicStroke(1);
+	
 	private int localVersion = OsmData.INVALID_DATA_VERSION;
 	private OsmWay osmWay;
 	private Shape shape;
 	private boolean isArea;
 	private Style style;
+	
+	private List<Rectangle2D> virtualNodes = new ArrayList<Rectangle2D>();
 	
 	public PathFeature(OsmWay osmWay) {
 		this.osmWay = osmWay;
@@ -88,9 +92,14 @@ public class PathFeature implements Feature {
 				g2.setStroke(stroke);
 				g2.setColor(strokeColor);
 				g2.draw(shape);
-			}
-			
-			
+			}			
+		}
+		
+		//draw virtual nodes
+		g2.setColor(virtualColor);
+		g2.setStroke(virtualStroke);
+		for(Rectangle2D rect:virtualNodes) {
+			g2.draw(rect);
 		}
 	}
 	
@@ -98,6 +107,15 @@ public class PathFeature implements Feature {
 	public void transform(AffineTransform oldLocalToNewLocal) {
 		if(this.shape != null) {
 			shape = oldLocalToNewLocal.createTransformedShape(shape);
+		}
+		
+		if(this.virtualNodes != null) {
+			Point2D point = new Point2D.Double();
+			for(Rectangle2D rect:virtualNodes) {
+				point.setLocation(rect.getCenterX(),rect.getCenterY());
+				oldLocalToNewLocal.transform(point, point);
+				rect.setFrame(point.getX()-RADIUS_PIX,point.getY()-RADIUS_PIX,2*RADIUS_PIX,2*RADIUS_PIX);
+			}
 		}
 	}
 	
@@ -112,6 +130,12 @@ public class PathFeature implements Feature {
 			}
 		}
 		
+		
+		//create the path object for the shape
+		Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
+		//clear the virtual nodes
+		virtualNodes.clear();
+		
 		if(multipoly != null) {
 			//-----------------
 			// Multipoly Case
@@ -122,7 +146,6 @@ public class PathFeature implements Feature {
 				//main way
 				
 				this.isArea = osmWay.getIsArea();
-				Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
 				for(OsmMember member:members) {
 					if(member.osmObject instanceof OsmWay) {
@@ -144,9 +167,6 @@ public class PathFeature implements Feature {
 			
 			//update this object
 			this.isArea = osmWay.getIsArea();
-		
-			//create the paths
-			Path2D path = new Path2D.Double(Path2D.WIND_EVEN_ODD);
 
 			addWayToPath(path,osmWay,isArea, mercatorToLocal);
 			
@@ -154,20 +174,45 @@ public class PathFeature implements Feature {
 		}
 	}
 	
-	static void addWayToPath(Path2D path, OsmWay way, boolean isArea, AffineTransform mercatorToLocal) {
+	//======================
+	// Private Methods
+	//======================
+	
+	private void addWayToPath(Path2D path, OsmWay way, boolean isArea, AffineTransform mercatorToLocal) {
+		
+		//path working variables
 		boolean started = false;
 		Point2D temp = new Point2D.Double();
+		
+		//virtual node working variables
+		double oldX = 0;
+		double oldY = 0;
+		double middleX;
+		double middleY;
+		
 		for(OsmNode node:way.getNodes()) {
 			if(true /* check if node is visible here */) {
 				mercatorToLocal.transform(node.getPoint(),temp);
 				
 				if(started) {
+					//path lineto instruction
 					path.lineTo(temp.getX(),temp.getY());
+					
+					//create the virtual node
+					middleX = (temp.getX() + oldX)/2;
+					middleY = (temp.getY() + oldY)/2;
+					addVirtualNode(middleX,middleY);
+					
 				}
 				else {
+					//move instructione
 					path.moveTo(temp.getX(),temp.getY());
 					started = true;
 				}
+				
+				//store for virtual nodes
+				oldX = temp.getX();
+				oldY = temp.getY();
 			}
 			else {
 				//if we go out of the level:
@@ -184,8 +229,9 @@ public class PathFeature implements Feature {
 		}
 	}
 	
-	//======================
-	// Private Methods
-	//======================
+	/** This method adds a virtual node. */
+	private void addVirtualNode(double x, double y) {
+		virtualNodes.add(new Rectangle2D.Double(x-RADIUS_PIX,y-RADIUS_PIX,2*RADIUS_PIX,2*RADIUS_PIX));
+	}
 	
 }
