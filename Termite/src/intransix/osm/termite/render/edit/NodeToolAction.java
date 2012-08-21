@@ -10,6 +10,7 @@ import intransix.osm.termite.map.data.edit.NodeCreateEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -40,7 +41,14 @@ public class NodeToolAction implements MouseEditAction {
 	}
 	
 	@Override
-	public void mousePressed(EditDestPoint clickDestPoint) {
+	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
+		
+		//ignore any multi click
+		if(e.getClickCount() > 1) {
+			return;
+		}
+		
+		//process normal click
 		FeatureInfo featureInfo = editLayer.getFeatureInfo();
 		OsmRelation activeLevel = editLayer.getActiveLevel();
 	

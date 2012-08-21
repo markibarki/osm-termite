@@ -454,7 +454,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			
 			if(mouseEditAction != null) {
 				//let the mouse edit action handle the press
-				mouseEditAction.mousePressed(dest);
+				mouseEditAction.mousePressed(dest,e);
 			}
 			else {
 				//do a selection with the press

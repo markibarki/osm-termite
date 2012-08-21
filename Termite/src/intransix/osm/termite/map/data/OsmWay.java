@@ -37,6 +37,12 @@ public class OsmWay extends OsmObject {
 	public boolean getIsArea() {
 		return isArea;
 	}
+	
+	/** This method returns true if the way forms a closed loop (first node equals last)
+	 * This is not an indication of whether or not the objct is an area. */ 
+	public boolean isClosed() {
+		return ((nodes.size() > 2)&&(nodes.get(0) == nodes.get(nodes.size()-1)));
+	}
 
 	//====================
 	// Package Methods

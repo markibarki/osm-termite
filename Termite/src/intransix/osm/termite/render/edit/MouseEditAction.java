@@ -4,6 +4,7 @@ import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.data.edit.EditDestPoint;
 import java.awt.geom.Point2D;
 import intransix.osm.termite.map.feature.FeatureInfo;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -15,7 +16,7 @@ public interface MouseEditAction {
 	
 	public void updateMovingNodes(Point2D mouseMerc);
 	
-	public void mousePressed(EditDestPoint clickDestPoint);
+	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e);
 	
 	public void featureLayerUpdated(FeatureInfo featureInfo);
 	

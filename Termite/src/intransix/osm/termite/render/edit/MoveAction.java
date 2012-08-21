@@ -8,6 +8,7 @@ import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.List;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -102,7 +103,7 @@ public class MoveAction implements MouseEditAction {
 	}
 	
 	@Override
-	public void mousePressed(EditDestPoint clickDestPoint) {
+	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
 		
 		List<Object> selection = editLayer.getSelection();
 		
