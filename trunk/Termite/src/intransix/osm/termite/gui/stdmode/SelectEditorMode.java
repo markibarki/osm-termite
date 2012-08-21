@@ -68,6 +68,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	@Override
 	public void setLayers(MapLayerManager mapLayerManager) {
 		editLayer = mapLayerManager.getEditLayer();
+		editLayer.addEditStateListener(this);
 		renderLayer = mapLayerManager.getRenderLayer();
 	}
 	
