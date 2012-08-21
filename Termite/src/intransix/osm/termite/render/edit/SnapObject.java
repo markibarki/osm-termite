@@ -67,6 +67,27 @@ public abstract class SnapObject extends EditDrawable implements Comparable<Snap
 		this.snapType = snapType;
 	}
 	
+	/** This gets the render style for hovering. */
+	public Style getHoverStyle(StyleInfo styleInfo) {
+		switch(snapType) {
+			case NODE:
+			case VIRTUAL_NODE:
+			case WAY:
+			case INTERSECTION:
+			case SEGMENT_INT:
+				return styleInfo.HOVER_SEGMENT_STYLE;
+
+			case SEGMENT_EXT:
+			case SEGMENT_PERP:
+			case HORIZONTAL:
+			case VERTICAL:
+				return styleInfo.HOVER_EXTENSION_STYLE;
+
+			default:
+				return styleInfo.HOVER_SEGMENT_STYLE;
+		}
+	}
+	
 	@Override
 	public int compareTo(SnapObject obj) {
 		//order the snap objects first based on the order of the snap operation

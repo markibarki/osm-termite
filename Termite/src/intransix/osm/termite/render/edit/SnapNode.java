@@ -50,7 +50,8 @@ public class SnapNode extends SnapObject {
 	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
 			StyleInfo styleInfo) {
 
-		renderPoint(g2,mercatorToPixels,node.getPoint(),styleInfo.RADIUS_PIXELS);
+		Style style = this.getHoverStyle(styleInfo);
+		renderPoint(g2,mercatorToPixels,node.getPoint(),style);
 	}
 	
 	/** This method looks up an select object for this snap object. 

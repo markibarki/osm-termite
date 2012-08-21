@@ -89,23 +89,13 @@ public class SnapIntersection extends SnapObject {
 	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
 			StyleInfo styleInfo) {
 		
-		g2.setColor(styleInfo.HOVER_PRESELECT_COLOR);
+		Style style;
+		
+		style = s1.getHoverStyle(styleInfo);
+		renderSegment(g2,mercatorToPixels,s1.p1,s1.p2,style);
 
-		if(s1.snapType == SnapObject.SnapType.SEGMENT_INT) {
-			g2.setStroke(styleInfo.HOVER_PRESELECT_STROKE);
-		}
-		else {
-			g2.setStroke(styleInfo.HOVER_EXTENSION_STROKE);
-		}
-		renderSegment(g2,mercatorToPixels,s1.p1,s1.p2);
-
-		if(s2.snapType == SnapObject.SnapType.SEGMENT_INT) {
-			g2.setStroke(styleInfo.HOVER_PRESELECT_STROKE);
-		}
-		else {
-			g2.setStroke(styleInfo.HOVER_EXTENSION_STROKE);
-		}
-		renderSegment(g2,mercatorToPixels,s2.p1,s2.p2);
+		style = s2.getHoverStyle(styleInfo);
+		renderSegment(g2,mercatorToPixels,s2.p1,s2.p2,style);
 	}
 	
 	/** This method looks up an select object for this snap object.  . There is no

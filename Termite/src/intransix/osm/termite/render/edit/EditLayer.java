@@ -222,45 +222,41 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	@Override
 	public void render(Graphics2D g2) {
 		
-		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();		
+		AffineTransform mercatorToPixels = getMapPanel().getMercatorToPixels();	
+		Style style;
 		
 		//render selection
-		g2.setColor(styleInfo.SELECT_COLOR);
+		style = styleInfo.SELECT_STYLE;
 		for(Object selectObject:selection) {
 			if(selectObject instanceof OsmNode) {
-				EditDrawable.renderPoint(g2, mercatorToPixels, ((OsmNode)selectObject).getPoint(),
-						styleInfo.RADIUS_PIXELS);
+				EditDrawable.renderPoint(g2, mercatorToPixels, ((OsmNode)selectObject).getPoint(),style);
 			}
 			else if(selectObject instanceof OsmWay) {
-				EditDrawable.renderWay(g2, mercatorToPixels,(OsmWay)selectObject);
+				EditDrawable.renderWay(g2, mercatorToPixels,(OsmWay)selectObject,style);
 				
 				if(selectObject == activeWay) {
 					for(Integer index:selectedWayNodes) {
 						if((index > -1)&&(index < activeWay.getNodes().size())) {
 							OsmNode node = activeWay.getNodes().get(index);
-							EditDrawable.renderPoint(g2, mercatorToPixels, node.getPoint(),
-							styleInfo.RADIUS_PIXELS);
+							EditDrawable.renderPoint(g2, mercatorToPixels, node.getPoint(),style);
 						}
 					}
 				}
 			}
 			else if(selectObject instanceof VirtualNode) {
-				EditDrawable.renderPoint(g2, mercatorToPixels,((VirtualNode)selectObject).point,
-						styleInfo.RADIUS_PIXELS);
+				EditDrawable.renderPoint(g2, mercatorToPixels,((VirtualNode)selectObject).point,style);
 			}
 		}
 		
 		//render hover
 		if((activeSnapObject != -1)&&(activeSnapObject < snapObjects.size())) {
 //System.out.println(("cnt = " + snapObjects.size() + "; active = " + activeSnapObject));
-			g2.setColor(styleInfo.HOVER_PRESELECT_COLOR);
 			SnapObject snapObject = snapObjects.get(activeSnapObject);
 //System.out.println(snapObject);
 			snapObject.render(g2, mercatorToPixels,styleInfo);
 		}
 		
 		//render pending objects
-		g2.setColor(styleInfo.PENDING_COLOR);
 		for(EditObject editObject:pendingObjects) {
 			editObject.render(g2, mercatorToPixels, styleInfo);
 		}

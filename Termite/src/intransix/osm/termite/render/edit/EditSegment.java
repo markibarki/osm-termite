@@ -22,9 +22,9 @@ public class EditSegment extends EditObject {
 	@Override
 	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
 			StyleInfo styleInfo) {
-		
-		g2.setStroke(styleInfo.SELECT_STROKE);
-		renderSegment(g2,mercatorToPixels,en1.point,en2.point);
+
+		Style style = styleInfo.PENDING_STYLE;
+		renderSegment(g2,mercatorToPixels,en1.point,en2.point,style);
 	}
 	
 	//=======================
