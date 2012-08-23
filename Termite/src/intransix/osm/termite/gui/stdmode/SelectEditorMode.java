@@ -107,7 +107,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 		}
 		
 		termiteGui.addToolBar(toolBar);
-		termiteGui.addFeatureSelectedListener(this);
+		editLayer.addFeatureSelectedListener(this);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
@@ -124,7 +124,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 		if(toolBar != null) {
 			termiteGui.removeToolBar(toolBar);
 		}
-		termiteGui.removeFeatureSelectedListener(this);
+		editLayer.removeFeatureSelectedListener(this);
 	}
 	
 	

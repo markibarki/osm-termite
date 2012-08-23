@@ -127,11 +127,6 @@ public class MoveAction implements MouseEditAction {
 		//exit move mode
 		editLayer.exitMove();
 	}
-	
-	@Override
-	public void featureLayerUpdated(FeatureInfo featureInfo) {
-		//no action
-	}
 
 	private EditNode getEditNode(OsmNode node) {
 		EditObject editObject = editMap.get(node);

@@ -6,6 +6,7 @@ import intransix.osm.termite.map.data.edit.WayNodeEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.util.ArrayList;
 import java.awt.event.MouseEvent;
 
 /**
@@ -17,43 +18,54 @@ public class WayToolAction implements MouseEditAction {
 	private OsmData osmData;
 	private EditLayer editLayer;
 	private OsmWay activeWay;
-	private boolean addToWayStart;
+	private OsmNode activeNode;
+	private int insertIndex;
+	
 	private EditNode editNode;
 	
+	@Override
 	public void init(OsmData osmData, EditLayer editLayer) {
 		this.osmData = osmData;
 		this.editLayer = editLayer;
-		this.activeWay = editLayer.getActiveWay();
-		
-		//if the way is closed, de-select it (below)
-		
-		
-		//initialize active way
-		if(activeWay != null) {
+		this.activeWay = editLayer.getWaySelection();
+		if(activeWay != null) {		
 			if(activeWay.isClosed()) {
 				//don't allow adding to a closed way
 				activeWay = null;
+				activeNode = null;
 			}
 			else {
+				List<OsmNode> nodes = activeWay.getNodes();
 				//figure out which end to add to
 				List<Integer> selectedWayNodes = editLayer.getSelectedWayNodes();
+				int activeIndex = -1;
 				if(selectedWayNodes.size() == 1) {
-					int selectedIndex = selectedWayNodes.get(0);
-					addToWayStart = (selectedIndex == 0);
+					activeIndex = selectedWayNodes.get(0);
+					
+				}
+				//if the start is not selected, use the end
+				if(activeIndex == 0) {
+					activeNode = nodes.get(0);
+					insertIndex = 0;
 				}
 				else {
-					addToWayStart = false;
+					activeNode = nodes.get(nodes.size()-1);
+					insertIndex = nodes.size();
 				}
 			}
 		}
+		else {
+			activeNode = editLayer.getNodeSelection();
+		}
 		
-		//if there is no active way, clear the selection
-		if(activeWay == null) {
+		//if there is no valid selection, clear the existing selection
+		if((activeNode == null)&&(activeWay == null)) {
 			editLayer.clearSelection();
 		}
 		
 		//get the mouse location
-		setPendingData(editLayer.getMapPanel().getMousePointMerc());
+		Point2D mercPoint = editLayer.getMapPanel().getMousePointMerc();
+		setPendingData(mercPoint);
 	}
 	
 	@Override
@@ -78,43 +90,59 @@ public class WayToolAction implements MouseEditAction {
 	
 		//execute a way node addition
 		WayNodeEdit wne = new WayNodeEdit(osmData);
-		activeWay = wne.wayToolClicked(activeWay,!addToWayStart,clickDestPoint,featureInfo,activeLevel);
-		//check if we should terminate the way
-		boolean endWay = wne.getEndWay();
+		boolean success = wne.wayToolClicked(clickDestPoint,activeWay,insertIndex,activeNode,featureInfo,activeLevel);
 		
-		if(activeWay != null) {
-			//make sure this is selected
-			List<Object> selection = editLayer.getSelection();
-			List<Integer> selectedWayNodes = editLayer.getSelectedWayNodes();
+		if(success) {
+			//update the selection/pending state
+			activeWay = wne.getActiveWay();
+			activeNode = wne.getActiveNode();
+			int activeIndex = -1;
 			
-			if(selection.isEmpty()) {
+			if(activeWay != null) {
+				
+				if(activeWay.isClosed()) {
+					activeWay = null;
+					activeNode = null;
+					editLayer.resetWayEdit();
+				}
+				else {
+					//make sure this is selected
+
+					activeIndex = activeWay.getNodes().indexOf(activeNode);
+					if(activeIndex == 0) {
+						//insert at start
+						insertIndex = 0;
+					}
+					else {
+						//insert at end
+						insertIndex = activeIndex+1;
+					}
+				}
+			}
+			
+			//update selection
+			List<Object> selection = new ArrayList<Object>();
+			List<Integer> wayNodeSelection = null;
+			if(activeWay != null) {
 				selection.add(activeWay);
+				if(activeIndex != -1) {
+					wayNodeSelection = new ArrayList<Integer>();
+					wayNodeSelection.add(activeIndex);
+				}
 			}
-			//update the active node
-			int activeWayNodeIndex;
-			if(!addToWayStart) {
-				activeWayNodeIndex = activeWay.getNodes().size()-1;
-				selectedWayNodes.clear();
-				selectedWayNodes.add(activeWayNodeIndex);
+			else if(activeNode != null) {
+				selection.add(activeNode);
 			}
-			//prepare for next
-			if(endWay) {
-				editLayer.resetWayEdit();
-			}
-			else {
-				setPendingData(clickDestPoint.point);
-			}
+			editLayer.setSelection(selection, wayNodeSelection);
+
+			//update the click location
+			setPendingData(clickDestPoint.point);
 			
 		}
 		else {
 			//something wrong happened - clean up
-			editLayer.clearSelection();
+//			editLayer.clearSelection();
 		}
-	}
-	
-	@Override
-	public void featureLayerUpdated(FeatureInfo featureInfo) {
-		//no action
 	}
 	
 	private void setPendingData(Point2D pendingPoint) {
@@ -130,24 +158,22 @@ public class WayToolAction implements MouseEditAction {
 		movingNodes.add(editNode);
 		pendingObjects.add(editNode);
 		//get the segment from the previous node
-		if(activeWay != null) {
-			List<OsmNode> nodes = activeWay.getNodes();
+		if(activeNode != null) {
+
+			EditNode en2 = new EditNode(activeNode);
+
+			EditSegment es = new EditSegment(null,editNode,en2);
+			pendingObjects.add(en2);
+			pendingObjects.add(es);
+			pendingSnapSegments.add(es);
 			
-			if(!nodes.isEmpty()) {
-				int nodeIndex = this.addToWayStart ? 0 : nodes.size() - 1;
-				OsmNode activeNode = nodes.get(nodeIndex);
-				EditNode en2 = new EditNode(activeNode);
-				
-				EditSegment es = new EditSegment(null,editNode,en2);
-				pendingObjects.add(en2);
-				pendingObjects.add(es);
-				pendingSnapSegments.add(es);
-				
+			if(activeWay != null) {
+				List<OsmNode> nodes = activeWay.getNodes();
 				//get a segment to close the way
 				if(nodes.size() > 2) {
-					nodeIndex = (nodes.size() - 1) - nodeIndex;
-					activeNode = nodes.get(nodeIndex);
-					EditNode enClose = new EditNode(activeNode);
+					int endIndex = nodes.size() - 1 - nodes.indexOf(activeNode);
+					OsmNode endNode = nodes.get(endIndex);
+					EditNode enClose = new EditNode(endNode);
 					EditSegment esClose = new EditSegment(null,editNode,enClose);
 					pendingSnapSegments.add(esClose);
 				}

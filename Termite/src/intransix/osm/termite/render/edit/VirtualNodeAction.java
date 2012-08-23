@@ -75,10 +75,5 @@ public class VirtualNodeAction implements MouseEditAction {
 		//clear the move edit
 		editLayer.clearMoveEdit();
 	}
-	
-	@Override
-	public void featureLayerUpdated(FeatureInfo featureInfo) {
-		//no action
-	}
 		
 }
