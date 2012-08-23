@@ -2,6 +2,7 @@ package intransix.osm.termite.map.data.edit;
 
 import intransix.osm.termite.map.data.*;
 import java.util.*;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -72,6 +73,12 @@ public class DeleteSelection extends EditOperation {
 			// rmove external references as needed
 			//--------------------
 			
+			//we need to check if we leave a way or relation with 0 members,
+			//in which case we must delete it
+			//also, we want to check if we leave a way with only 1 node, in which
+			//case we will delete it.
+			List<OsmObject> lowRefObjects = new ArrayList<OsmObject>();
+			
 			HashMap<OsmRelation,List<Integer>> relationRemovalMap = new HashMap<OsmRelation,List<Integer>>();
 			HashMap<OsmWay,List<Integer>> wayRemovalMap = new HashMap<OsmWay,List<Integer>>(); 
 			
@@ -98,6 +105,12 @@ public class DeleteSelection extends EditOperation {
 			List<Integer> indices;
 			for(OsmRelation relation:relationRemovalMap.keySet()) {
 				indices = relationRemovalMap.get(relation);
+				
+				//check that there is at least one reference
+				if(relation.getMembers().size() == indices.size()) {
+					lowRefObjects.add(relation);
+				}
+				
 				//sort - we must remove in reverse order to use this set of indices
 				Collections.sort(indices);
 				for(int i = indices.size() - 1; i >= 0; i--) {
@@ -108,11 +121,28 @@ public class DeleteSelection extends EditOperation {
 			
 			for(OsmWay way:wayRemovalMap.keySet()) {
 				indices = wayRemovalMap.get(way);
+				
+				//check that there is at least one reference
+				if(indices.size() >= way.getNodes().size()-1) {
+					lowRefObjects.add(way);
+				}
+				
 				//sort - we must remove in reverse order to use this set of indices
 				Collections.sort(indices);
 				for(int i = indices.size() - 1; i >= 0; i--) {
 					UpdateRemoveNode urn = new UpdateRemoveNode(indices.get(i));
 					action.addInstruction(new UpdateInstruction(way,urn));
+				}
+			}
+			
+			//if there are ways or relations with to few references, query the user for delete
+			if(!lowRefObjects.isEmpty()) {
+				int result = JOptionPane.showConfirmDialog(null,"There are relations or ways with two few references which must be deleted. Delete them or cancel the entire operation?","",JOptionPane.OK_CANCEL_OPTION);
+				if(result == JOptionPane.OK_OPTION) {
+					return redoDeleteWithExtras(selection, lowRefObjects);
+				}
+				else {
+					return false;
 				}
 			}
 			
@@ -187,6 +217,14 @@ public class DeleteSelection extends EditOperation {
 			index++;
 		}
 	
+	}
+	
+	/** This method retries the deletion adding some additional objects to the selection. */
+	private boolean redoDeleteWithExtras(List<Object> selection, List<OsmObject> extras) {
+		List<Object> newSelection = new ArrayList<Object>();
+		newSelection.addAll(selection);
+		newSelection.addAll(extras);
+		return this.deleteSelection(newSelection);
 	}
 	
 }

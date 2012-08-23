@@ -2,6 +2,7 @@ package intransix.osm.termite.map.data.edit;
 
 import intransix.osm.termite.map.data.*;
 import java.util.*;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -13,6 +14,14 @@ public class RemoveWayNodeEdit extends EditOperation {
 		super(osmData);
 	}
 	
+	/** This method removes the nodes represented by the list of node indices from the
+	 * way. Note that if the node is the start and end node (for a closed way) removing
+	 * it will remove that node whether of not both index values are included in the list. 
+	 * 
+	 * @param way				The way from which to remove nodes
+	 * @param removalIndices	The nodes to remove, in terms of order within the way.
+	 * @return					true or false for success or failure
+	 */
 	public boolean removeNodesFromWay(OsmWay way, List<Integer> removalIndices) {
 		System.out.println("Remove nodes from way");
 		
@@ -24,24 +33,59 @@ public class RemoveWayNodeEdit extends EditOperation {
 		EditAction action = new EditAction(getOsmData(),"Remove nodes from way");
 		
 		try {
+			
+			List<OsmNode> wayNodes = way.getNodes();
 		
+			//do not allow remove if this leaves too few nodes
+			if(removalIndices.size() >= wayNodes.size()-1) {
+				JOptionPane.showMessageDialog(null,"The remove can not be done because this leaves"
+						+ " too few nodes in the way.");
+				return false;
+			}
+			
 			//--------------------
 			//add instructions to remove nodes from ways
 			//---------------------
+			
+			//we need to check fro repeats and remove the repeats (for now)
+			boolean wayOpened = false;
+			if(way.isClosed()) {
+				int endIndex = way.getNodes().size()-1;
+				boolean containsStart = removalIndices.contains(0);
+				boolean containsEnd = removalIndices.contains(endIndex);
+				if(containsStart && !containsEnd) removalIndices.add(endIndex);
+				else if(!containsStart && containsEnd) removalIndices.add(0);
+				wayOpened = true;
+			}
 			
 			//sort the indices so we can remove last first, avoids problems with index values changing
 			Collections.sort(removalIndices);
 			//also retrieve the nodes
 			HashSet<OsmNode> removedNodes = new HashSet<OsmNode>();
-			List<OsmNode> wayNodes = way.getNodes();
 			for(int i = removalIndices.size() - 1; i >= 0; i--) {
 				//get nodes
 				int index = removalIndices.get(i);
-				removedNodes.add(wayNodes.get(index));
+				OsmNode node = wayNodes.get(index);
+				removedNodes.add(node);
 
 				//add remove instruction
 				UpdateRemoveNode urn = new UpdateRemoveNode(index);
 				action.addInstruction(new UpdateInstruction(way,urn));
+			}
+			
+			//if the way was closed, we need to reclose it if 
+			if(wayOpened) {
+				//fined the largest remaining index
+				int lri;
+				for(lri = wayNodes.size()-1; lri >= 0; lri--) {
+					if(!removalIndices.contains(lri)) {
+						break;
+					}
+				}
+				//add this node at the start to reclose the loop
+				OsmNode node = wayNodes.get(lri);
+				UpdateInsertNode uin = new UpdateInsertNode(node.getId(),0);
+				action.addInstruction(new UpdateInstruction(way,uin));
 			}
 			
 			//-------------------
