@@ -17,7 +17,4 @@ public interface MouseEditAction {
 	public void updateMovingNodes(Point2D mouseMerc);
 	
 	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e);
-	
-	public void featureLayerUpdated(FeatureInfo featureInfo);
-	
 }

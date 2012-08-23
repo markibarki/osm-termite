@@ -12,35 +12,96 @@ import javax.swing.JOptionPane;
  */
 public class WayNodeEdit extends EditOperation {
 	
-	private boolean endWay = false;
+	private OsmWay activeWay;
+	private OsmNode activeNode;
+	
 	
 	public WayNodeEdit(OsmData osmData) {
 		super(osmData);
 	}
 	
-	/** After a call to wayToolClicked, this method should be called to check 
-	 * if the way should be ended. It will return yes if the way was closed by 
-	 * the latest action. */
-	public boolean getEndWay() {
-		return endWay;
+	public OsmWay getActiveWay() {
+		return activeWay;
+	}
+	
+	public OsmNode getActiveNode() {
+		return activeNode;
 	}
 	
 	
 	/** This method executes the edit associated with clicking the way tool. */
-	public OsmWay wayToolClicked(OsmWay activeWay, boolean isEnd, 
-			EditDestPoint destPoint, FeatureInfo featureInfo, OsmRelation currentLevel) {
+	public boolean wayToolClicked(EditDestPoint dest, OsmWay way, int insertIndex,  
+			OsmNode node, FeatureInfo featureInfo, OsmRelation currentLevel) {
 		
-System.out.println("Add a node to a way");
+		this.activeWay = way;
+		
+System.out.println("Add a node to a way");		
 
-		if(activeWay == null) {
-			return createWay(destPoint,featureInfo, currentLevel);
+		EditAction action = new EditAction(getOsmData(),"Add node to way");
+		
+		if(dest.snapNode != null) {
+			//make sure this node can be added
+			if(checkIfAddNodeIsValid(way,dest.snapNode,insertIndex) == false) {
+				JOptionPane.showMessageDialog(null,"That node can no be added to the current way.");
+				return false;
+			}
 		}
-		else {
-			int insertIndex;
-			if(isEnd) insertIndex = activeWay.getNodes().size();
-			else insertIndex = 0;
-			addNodeToWay(activeWay,destPoint,insertIndex,currentLevel);
-			return activeWay;
+		
+		//create a node
+		Long addNodeId = createOrUseExistingNode(action,dest,currentLevel);
+		Long addWayId = null;
+		
+		if((way == null)&&(node != null)) {
+			//create a way extending the initial node
+			
+			OsmWaySrc waySrc = new OsmWaySrc();
+			if(addNodeId != null) {
+				List<Long> nodeIds = waySrc.getNodeIds();
+				//add starter node
+				nodeIds.add(node.getId());
+				//add created node
+				nodeIds.add(addNodeId);
+			}
+
+			//get the properties
+			List<PropertyPair> properties = OsmModel.featureInfoMap.getFeatureProperties(featureInfo);
+			for(PropertyPair pp:properties) {
+				waySrc.addProperty(pp.key,pp.value);
+			}
+
+			EditInstruction instr = new CreateInstruction(waySrc,getOsmData());
+			action.addInstruction(instr);
+			addWayId = waySrc.getId();
+		}
+		else if(way != null) {
+			//add new node to the active way
+			
+			UpdateInsertNode uin = new UpdateInsertNode(addNodeId,insertIndex);
+			EditInstruction instr = new UpdateInstruction(way,uin);
+			action.addInstruction(instr);
+		}
+		
+		try {
+			boolean success = action.doAction();
+			if(success) {
+				if((way == null)&&(addWayId != null)) {
+					activeWay = getOsmData().getOsmWay(addWayId);
+				}
+				if(addNodeId != null) {
+					activeNode = getOsmData().getOsmNode(addNodeId);
+				}	
+			}
+			else {
+				reportError(action.getDesc());
+				activeWay = null;
+				activeNode = null;
+			}
+			return success;
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			reportFatalError(action.getDesc(),ex.getMessage());
+			return false;
 		}
 	}
 	
@@ -87,7 +148,10 @@ System.out.println("Insert node into way");
 				}
 				if(!found) continue;
 
-				insertNodeIntoWay(action,way,nodeId,insertIndex);
+				//add node to way
+				UpdateInsertNode uin = new UpdateInsertNode(nodeId,insertIndex);
+				EditInstruction instr = new UpdateInstruction(way,uin);
+				action.addInstruction(instr);
 			}
 
 			//execute action
@@ -106,77 +170,6 @@ System.out.println("Insert node into way");
 			reportFatalError(action.getDesc(),ex.getMessage());
 			return null;
 		}
-	}
-	
-	
-	private OsmWay createWay(EditDestPoint dest, FeatureInfo featureInfo, OsmRelation currentLevel) {
-		EditAction action = new EditAction(getOsmData(),"Create Way");
-		
-		Long startNodeId = createOrUseExistingNode(action,dest,currentLevel);
-		
-		OsmWaySrc waySrc = new OsmWaySrc();
-		if(startNodeId != null) {
-			List<Long> nodeIds = waySrc.getNodeIds();
-			nodeIds.add(startNodeId);
-		}
-		
-		//get the properties
-		List<PropertyPair> properties = OsmModel.featureInfoMap.getFeatureProperties(featureInfo);
-		for(PropertyPair pp:properties) {
-			waySrc.addProperty(pp.key,pp.value);
-		}
-			
-		EditInstruction instr = new CreateInstruction(waySrc,getOsmData());
-		action.addInstruction(instr);
-		
-		try {
-			boolean success = action.doAction();
-			if(success) {
-				long id = waySrc.getId();
-				return getOsmData().getOsmWay(id);
-			}
-			else {
-				reportError(action.getDesc());
-				return null;
-			}
-		}
-		catch(Exception ex) {
-			ex.printStackTrace();
-			reportFatalError(action.getDesc(),ex.getMessage());
-			return null;
-		}
-	}
-	
-	private boolean addNodeToWay(OsmWay way, EditDestPoint dest, int insertIndex, OsmRelation currentLevel) {
-		EditAction action = new EditAction(getOsmData(),"Add node to way");
-		
-		if(dest.snapNode != null) {
-			//make sure this node can be added
-			if(checkIfAddNodeIsValid(way,dest.snapNode,insertIndex) == false) {
-				JOptionPane.showMessageDialog(null,"That node can no be added to the current way.");
-				return false;
-			}
-		}
-		
-		Long addNodeId = createOrUseExistingNode(action,dest,currentLevel);
-		insertNodeIntoWay(action,way,addNodeId,insertIndex);
-		
-		try {
-			boolean success = action.doAction();
-			if(!success) reportError(action.getDesc());
-			return success;
-		}
-		catch(Exception ex) {
-			ex.printStackTrace();
-			reportFatalError(action.getDesc(),ex.getMessage());
-			return false;
-		}
-	}
-	
-	private void insertNodeIntoWay(EditAction action, OsmWay way, long nodeId, int index) {
-		UpdateInsertNode uin = new UpdateInsertNode(nodeId,index);
-		EditInstruction instr = new UpdateInstruction(way,uin);
-		action.addInstruction(instr);
 	}
 	
 	private Long createOrUseExistingNode(EditAction action, EditDestPoint dest, OsmRelation currentLevel) {
@@ -218,7 +211,6 @@ System.out.println("Insert node into way");
 			boolean closedWay = (((insertIndex == nodes.size())&&(existingIndex == 0)) ||
 					((insertIndex == 0)&&(existingIndex == nodes.size()-1)));
 			
-			if(closedWay) endWay = true;
 			return closedWay;
 			
 		}

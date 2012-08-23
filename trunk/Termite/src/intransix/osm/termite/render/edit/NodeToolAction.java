@@ -60,13 +60,6 @@ public class NodeToolAction implements MouseEditAction {
 		setPendingData(clickDestPoint.point);
 	}
 	
-	@Override
-	public void featureLayerUpdated(FeatureInfo featureInfo) {
-		if(editNode != null) {
-			editNode.featureInfo = featureInfo;
-		}
-	}
-	
 	private void setPendingData(Point2D pendingPoint) {
 		editLayer.clearPending();
 		

@@ -87,7 +87,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	//listeners
 	private java.util.List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
-	private java.util.List<FeatureSelectedListener> featureSelectedListeners = new ArrayList<FeatureSelectedListener>();
 	private java.util.List<LevelSelectedListener> levelSelectedListeners = new ArrayList<LevelSelectedListener>();
 	private java.util.List<FeatureLayerListener> featureTypeListeners = new ArrayList<FeatureLayerListener>();
 	
@@ -198,81 +197,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 			clearRedoItem();
 		}
 	}
-	
-	/** This adds a feature selected listener. */
-	public void addFeatureSelectedListener(FeatureSelectedListener listener) {
-		featureSelectedListeners.add(listener);
-	}
-	
-	/** This removes a feature selected listener. */
-	public void removeFeatureSelectedListener(FeatureSelectedListener listener) {
-		featureSelectedListeners.remove(listener);
-	}
-	
-	/** This method will dispatch a feature selected event. It should be called
-	 * when a feature is selected to notify all interested objects. */
-	public void setSelection(java.util.List<Object> selection,
-			java.util.List<Integer> wayNodeSelection) {
-		
-		//set the selection in the edit layer
-		editLayer.setSelection(selection,wayNodeSelection);
-		
-		//find the selection type
-		FeatureSelectedListener.SelectionType selectionType;
-		FeatureSelectedListener.WayNodeType wayNodeType;
-		if((selection != null)||(selection.size() > 0)) {
 
-			if(selection.size() == 1) {
-				Object selectObject = selection.get(0);
-				if(selectObject instanceof OsmWay) {
-					selectionType = FeatureSelectedListener.SelectionType.WAY;
-				}
-				else if(selectObject instanceof OsmNode) {
-					selectionType = FeatureSelectedListener.SelectionType.NODE;
-				}
-				else if(selectObject instanceof intransix.osm.termite.render.edit.VirtualNode) {
-					selectionType = FeatureSelectedListener.SelectionType.VIRTUAL_NODE;
-				}
-				else {
-					selection = null;
-					selectionType = FeatureSelectedListener.SelectionType.NONE;
-				}
-			}
-			else if(selection.size() > 1) {
-				selectionType = FeatureSelectedListener.SelectionType.COLLECTION;
-			}
-			else {
-				selectionType = FeatureSelectedListener.SelectionType.NONE;
-			}
-		}
-		else {
-			selectionType = FeatureSelectedListener.SelectionType.NONE;
-		}
-		
-		//get the way node selection, if applicable
-		if((wayNodeSelection != null)&&(selectionType == FeatureSelectedListener.SelectionType.WAY)) {
-			//check way node selection
-			int count = wayNodeSelection.size();
-			if(count == 0) {
-				wayNodeType = FeatureSelectedListener.WayNodeType.NONE;
-			}
-			else if(count == 1) {
-				wayNodeType = FeatureSelectedListener.WayNodeType.SINGLE;
-			}
-			else {
-				wayNodeType = FeatureSelectedListener.WayNodeType.MULTIPLE;
-			}
-		}
-		else {
-			//no way nodes selected
-			wayNodeType = FeatureSelectedListener.WayNodeType.NONE;
-		}
-		
-		for(FeatureSelectedListener listener:featureSelectedListeners) {
-			listener.onFeatureSelected(selection,selectionType,wayNodeSelection,wayNodeType);
-		}
-	}
-	
 	/** This method returns the active structure. */
 	public OsmWay getActiveStructure() {
 		return activeStructure;
@@ -392,6 +317,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 		editLayer = mapLayerManager.getEditLayer();
 		baseMapLayer = mapLayerManager.getBaseMapLayer();
 		
+		//add the feature selected listeners to the edit layer
+		editLayer.addFeatureSelectedListener(propertyTabPane);
+		
 		//editor modes
 				
 		//create the editor modes
@@ -414,7 +342,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		}
 		
 		loadEditModes();
-		
 		mapLayerManager.setGeocodeMode(geocodeMode);
 		
 		//map view
@@ -766,7 +693,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		//property tabbed pane
 		propertyTabPane = new intransix.osm.termite.gui.property.PropertyTabPane(this);
-		this.addFeatureSelectedListener(propertyTabPane);
 		this.addLevelSelectedListener(propertyTabPane);
 		this.addMapDataListener(propertyTabPane);
         

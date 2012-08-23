@@ -37,6 +37,8 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	private TermiteGui termiteGui;
 	private List<EditStateListener> stateListeners = new ArrayList<EditStateListener>();
+	private List<FeatureSelectedListener> featureSelectedListeners = new ArrayList<FeatureSelectedListener>();
+
 	
 	private OsmData osmData;
 	private StyleInfo styleInfo = new StyleInfo();
@@ -54,7 +56,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	//this holds the active selection
 	private List<Object> selection = new ArrayList<Object>();
 	private boolean virtualNodeSelected = false;
-	private OsmWay activeWay = null;
 	private List<Integer> selectedWayNodes = new ArrayList<Integer>();
 	private EditDestPoint selectionPoint;
 	
@@ -86,6 +87,102 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	// <editor-fold defaultstate="collapsed" desc="Accessors">
 	
+		
+	/** This adds a feature selected listener. */
+	public void addFeatureSelectedListener(FeatureSelectedListener listener) {
+		featureSelectedListeners.add(listener);
+	}
+	
+	/** This removes a feature selected listener. */
+	public void removeFeatureSelectedListener(FeatureSelectedListener listener) {
+		featureSelectedListeners.remove(listener);
+	}
+	
+	/** This method will dispatch a feature selected event. It should be called
+	 * when a feature is selected to notify all interested objects. */
+	public void setSelection(java.util.List<Object> objectSelection,
+			java.util.List<Integer> wayNodeSelection) {
+		
+		//copy to the local list
+		if(objectSelection != null) {
+			if(objectSelection != this.selection) {
+				clearSelection();
+				for(Object selectObject:objectSelection) {
+					this.selection.add(selectObject);
+				}
+			}
+			if(wayNodeSelection != null) {
+				if(wayNodeSelection != this.selectedWayNodes) {
+					this.selectedWayNodes.clear();
+					for(Integer index:wayNodeSelection) {
+						this.selectedWayNodes.add(index);
+					}
+				}
+			}
+		}
+		else {
+			if(!this.selection.isEmpty()) {
+				clearSelection();
+			}
+		}
+		
+		//find the selection type
+		FeatureSelectedListener.SelectionType selectionType;
+		FeatureSelectedListener.WayNodeType wayNodeType;
+		if((selection != null)||(selection.size() > 0)) {
+
+			if(selection.size() == 1) {
+				Object selectObject = selection.get(0);
+				if(selectObject instanceof OsmWay) {
+					selectionType = FeatureSelectedListener.SelectionType.WAY;
+				}
+				else if(selectObject instanceof OsmNode) {
+					selectionType = FeatureSelectedListener.SelectionType.NODE;
+				}
+				else if(selectObject instanceof intransix.osm.termite.render.edit.VirtualNode) {
+					selectionType = FeatureSelectedListener.SelectionType.VIRTUAL_NODE;
+				}
+				else {
+					selection = null;
+					selectionType = FeatureSelectedListener.SelectionType.NONE;
+				}
+			}
+			else if(selection.size() > 1) {
+				selectionType = FeatureSelectedListener.SelectionType.COLLECTION;
+			}
+			else {
+				selectionType = FeatureSelectedListener.SelectionType.NONE;
+			}
+		}
+		else {
+			selectionType = FeatureSelectedListener.SelectionType.NONE;
+		}
+		
+		//get the way node selection, if applicable
+		if((wayNodeSelection != null)&&(selectionType == FeatureSelectedListener.SelectionType.WAY)) {
+			//check way node selection
+			int count = wayNodeSelection.size();
+			if(count == 0) {
+				wayNodeType = FeatureSelectedListener.WayNodeType.NONE;
+			}
+			else if(count == 1) {
+				wayNodeType = FeatureSelectedListener.WayNodeType.SINGLE;
+			}
+			else {
+				wayNodeType = FeatureSelectedListener.WayNodeType.MULTIPLE;
+			}
+		}
+		else {
+			//no way nodes selected
+			wayNodeType = FeatureSelectedListener.WayNodeType.NONE;
+		}
+		
+		for(FeatureSelectedListener listener:featureSelectedListeners) {
+			listener.onFeatureSelected(selection,selectionType,wayNodeSelection,wayNodeType);
+		}
+	}
+	
+	
 	public List<Object> getSelection() {
 		return selection;
 	}
@@ -94,8 +191,32 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		return this.selectedWayNodes;
 	}
 	
-	public OsmWay getActiveWay() {
-		return activeWay;
+	/** This method returns a way if the selection is a single way. Otherwise
+	 * it returns null. 
+	 * 
+	 * @return 
+	 */
+	public OsmWay getWaySelection() {
+		if(selection.size() == 1) {
+			Object selected = selection.get(0);
+			if(selected instanceof OsmWay) return (OsmWay)selected;
+		}
+		//if we get here there is not a single selected way
+		return null;
+	}
+	
+	/** This method returns a node if the selection is a single node. Otherwise
+	 * it returns null. 
+	 * 
+	 * @return 
+	 */
+	public OsmNode getNodeSelection() {
+		if(selection.size() == 1) {
+			Object selected = selection.get(0);
+			if(selected instanceof OsmNode) return (OsmNode)selected;
+		}
+		//if we get here there is not a single selected node
+		return null;
 	}
 	
 	public List<EditObject> getPendingObjects() {
@@ -114,7 +235,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	public void clearSelection() {
 		selection.clear();
 		selectedWayNodes.clear();
-		activeWay = null;
 		virtualNodeSelected = false;
 		clearPending();
 		getMapPanel().repaint();
@@ -168,21 +288,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
 		return featureInfo;
 	}
 	
-//	/** This method gets the location of the mouse in Mercator coordinates. It should
-//	 * be used if the mouse is needed outside of a mouse event. */
-//	public Point2D getMousePoint() {
-//		//get the current mouse location and update the nodes that move with the mouse
-//		MapPanel mapPanel = getMapPanel();
-//		AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
-//		java.awt.Point mouseInApp = MouseInfo.getPointerInfo().getLocation();
-//		java.awt.Point mapPanelInApp = mapPanel.getLocationOnScreen();
-//		Point2D mousePix = new Point2D.Double(mouseInApp.x - mapPanelInApp.x,mouseInApp.y - mapPanelInApp.y);
-//		Point2D mouseMerc = new Point2D.Double(); 
-//		pixelsToMercator.transform(mousePix,mouseMerc);
-//		
-//		return mouseMerc;
-//	}
-	
 	/** This method sets the edit mode. */
 	public void setMouseEditAction(MouseEditAction mouseEditAction) {
 		if(mouseEditAction != null) {
@@ -234,10 +339,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 			else if(selectObject instanceof OsmWay) {
 				EditDrawable.renderWay(g2, mercatorToPixels,(OsmWay)selectObject,style);
 				
-				if(selectObject == activeWay) {
+				//if this is a unique selected way, plot the selected nodes in the way
+				if(selection.size() == 1) {
+					OsmWay way = (OsmWay)selectObject;
 					for(Integer index:selectedWayNodes) {
-						if((index > -1)&&(index < activeWay.getNodes().size())) {
-							OsmNode node = activeWay.getNodes().get(index);
+						if((index > -1)&&(index < way.getNodes().size())) {
+							OsmNode node = way.getNodes().get(index);
 							EditDrawable.renderPoint(g2, mercatorToPixels, node.getPoint(),style);
 						}
 					}
@@ -485,11 +592,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 				//handle selection
 
 				//check normal select or select node in a way
-				if((activeWay != null)&&(selectObject instanceof OsmNode)&&
-						(activeWay.getNodes().contains((OsmNode)selectObject))) {
+				OsmWay selectWay = getWaySelection();
+				if((selectWay != null)&&(selectObject instanceof OsmNode)&&
+						(selectWay.getNodes().contains((OsmNode)selectObject))) {
 
 					//select a node within a way
-					int selectedIndex = activeWay.getNodes().indexOf((OsmNode)selectObject);
+					int selectedIndex = selectWay.getNodes().indexOf((OsmNode)selectObject);
 					if(e.isShiftDown()) {
 						if(!selectedWayNodes.contains(selectedIndex)) {
 							selectedWayNodes.add(selectedIndex);
@@ -530,20 +638,12 @@ public class EditLayer extends MapLayer implements MapDataListener,
 
 					//make sure selected nodes cleared
 					this.selectedWayNodes.clear();
-
-					//update the active way
-					if((selectObject instanceof OsmWay)&&(selection.size() == 1)) {
-						activeWay = (OsmWay)selectObject;
-					}
-					else {
-						activeWay = null;
-					}
 				}
 
 				virtualNodeSelected = isVirtualNode;
 
 				//report selection
-				termiteGui.setSelection(selection, selectedWayNodes);
+				setSelection(selection, selectedWayNodes);
 				this.getMapPanel().repaint();
 				
 			}
@@ -608,43 +708,6 @@ public class EditLayer extends MapLayer implements MapDataListener,
     }
 	
 	// </editor-fold>
-	
-	/** This method sets the selection, called from the TermiteGui. This is 
-	 * called when this class sets the selection in the TermiteGui, so it must
-	 * gracefully handle that state. This method should not be called by classes 
-	 * trying to update the selection. the method should be called in TermiteGui.
-	 * 
-	 * @param selection			The selected objects
-	 * @param wayNodeSelection	Any selected nodes in the way, if the selection
-	 *							is a single way.
-	 */
-	public void setSelection(java.util.List<Object> selection,
-			java.util.List<Integer> wayNodeSelection) {
-		
-		//see if the selection needs to be updated
-		if(selection != null) {
-			if(selection != this.selection) {
-				clearSelection();
-				for(Object selectObject:selection) {
-					selection.add(selectObject);
-				}
-			}
-			if(wayNodeSelection != null) {
-				if(wayNodeSelection != this.selectedWayNodes) {
-					this.selectedWayNodes.clear();
-					for(Integer index:wayNodeSelection) {
-						this.selectedWayNodes.add(index);
-					}
-				}
-			}
-		}
-		else {
-			if(!this.selection.isEmpty()) {
-				clearSelection();
-			}
-		}
-		
-	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Move Mode Control">
 	

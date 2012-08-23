@@ -22,6 +22,8 @@ public class DeleteSelection extends EditOperation {
 		//delete nodes in the ways if:
 		// - they are not in any ways not included in the selection
 		// - they have no properties
+		//If the delete results with any way having 1 or 0 nodes, delete the way (verify with user?)
+		//If the delete results with any relation having no members, delete the relation(verify with user?)
 
 // There is something to be careful of - if you delete multiple objects from 
 //a relation (or nodes from a way), the index of the second delete should be the
