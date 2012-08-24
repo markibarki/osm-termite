@@ -26,15 +26,20 @@ _give instructions for starting program on different platforms_
 = Program Basics =
 
 == UI Elements ==
- * Menu Bar
+
+ * Menu Bar - Holds the menus
  * Toolbar
+  ** Mode Toolbar - Hold buttons to select the edit mode
+  ** Submode Toolbar - Additional controls specific to the selected mode.
  * Left Panel
   ** Content Tree - This lets you select the map area to view, which may be the outdoors or a building level.
-  ** Feature Type Tree - This lets you select the feature type. The feature type tells the type of object. For example, the feature type may be "highway=primary". See more on the feature type below.
+  ** Feature Layer Panel - This lets you select the feature type. The feature type tells the type of object. For example, the feature type may be "highway=primary". See more on the feature type below.
   ** Property Panel - This shows properties of the selected object. The properties can be edited from here.
  * Map Panel - This holds the map.
  * Supplemental Panel - This contains tabs with additional functionality.
   ** Map Layers Tab - This tab lets you control the opacity of the different visible layers, which is useful when tracing objects.
+
+http://wiki.openstreetmap.org/w/images/2/21/Termite_UI_v0.png
 
 === Controlling the Map ===
 
