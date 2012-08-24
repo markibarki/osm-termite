@@ -43,12 +43,35 @@ http://wiki.openstreetmap.org/w/images/2/21/Termite_UI_v0.png
 
 === Controlling the Map ===
 
-add instructions for panning and zooming
+The basic operations for controlling the map display are the following:
+
+PAN - Options:
+ * Right click and drag the screen
+ * Arrow keys
+
+Zoom - Note that the screen will zoom about the mouse position if the mouse is in the map display. Otherwise it zooms about the center. Options:
+ * Graphical buttons + and - on the display
+ * Page Up and Page Down keys
+ * Mouse wheel
+
+===== Hover, Preview and Snapping =====
+Before a select, the item to be selected is highlighted. Likewise, before and edit action is executed (such as a node being added to a way using the way tool) the UI displays a preview of the action. The edit action will snap to nearby nodes, lines and extensions.
+
+In many cases, there are multiple options for the object that can be selected or the object to which an edit action can snap. The following key strokes can be used to change the hover or preview item.
+ * Greater Than key - Toggles to the next choice of hover/preview
+ * Less Than key - Toggles to the previous choice of hover/select
+(Note: these keys may be keyboard specific. The actual key tested is Period instead of greater than and Comma instead of less than.)
+
+For example, Two objects often share a boundary, such as a room and a wall, or two neighboring rooms. If you hover over this boundary, one room may highlight. If you click the mouse this room will be selected. If you press the 'Greater Than' key, the other room will highlight. If the mouse is pressed now the other room will be selected.
+
+This feature is important because of the overlay of objects.
 
 === Feature Type ===
-In OpenStreetMap objects have key-value pair properties. The object type, such as "highway=primary" is stored in the properties. In Termite, it is possible to set the type by using the feature level tree. If you select an object in the tree, the next node or way you draw will inherit the necessary properties to make it that type of object. 
+In OpenStreetMap all objects store meta data as key-value pair properties. The feature type, such as "highway=primary" is stored in the properties. In Termite, the recommended usage is to select the desired feature type in the feature layer panel prior to drawing an object. When the object is drawn, whether it is a node or a way, the necessary properties will automatically be added to the object.
 
-If you want to add an object that is not in the tree, you can set the feature type to be the root of the tree, "object". Then, you can add your own properties using the property panel. 
+It is also possible to change the feature type using the feature layer panel. If you select the object and then press the button "Change Feature Type" this will set the feature type to be the one currently selected in the feature layer panel.
+
+If you want to add an object that is not in the tree, you can set the feature type to be the root of the tree, "object". Then, you can add your own properties using the property panel. (This can done regardless of whether the feature type appears in the feature layer panel.)
 
 == Checking Out Data ==
 When you start the program, the map will be empty. (There is currently no saving of the editor state.) The program is in checkout search mode, which lets you find a region on the map where you download data form the OSM database to edit.
@@ -64,7 +87,7 @@ When you find the area you want to check out, select a rectangle window and then
 Once you check out data a toolbar is enabled that controls the edit mode. The modes are:
 
 === Select Mode ===
-In Select Mode use the mouse to select objects. A secondary toolbar shows a list of commands that con be done with the selected data.
+In Select Mode use the mouse to select objects. A secondary toolbar shows a list of commands that can be done with the selected data.
 
 *NOTE - Generally, dragging the mouse is not used for editing. Actions are done by single clicking the mouse.*
 
@@ -90,9 +113,9 @@ The node will appear as a small circle.
 The way tool allows you to create a way object. Clicking the map will add a node at the given location. Or, if a node is clicked, that node will be added to the way. The feature type for the way is given by the selected feature type in the feature type tree.
 
 Each time the map is clicked, a node is added to the active way. The active way can be ended the following ways:
- * double click (NOT IMPLEMENTED)
- * press the ESC key (CURRENTLY THE ONLY METHOD)
- * close a way (NOT IMPLEMENTED)
+ * double click
+ * press the ESC key
+ * close a way
 
 If you want to add points to an existing way, go to Select Mode and select the way. By default points will be added to the end of the way. However, you can select one of the end nodes within the way (either the first or the last) and then switch to the Way Tool. Now, nodes drawn will be added to the selected end of the way.
 
@@ -105,7 +128,7 @@ To save data, go to the "File" menu and select "Commit". This will open a dialog
 You can discard your data by going to the "File" menu and selecting "Discard Data". This will clear the downloaded data and discard any edits.
 
 = Adding Indoor Data =
-The content tree has an entry for the outdoors and entries for buildings and levels. When the outdoor entry is selected data is added to the outdoors. When an level is selected, data is added to that level.
+The content tree has an entry for the outdoors and entries for buildings and levels. When the outdoor entry is selected any drawn data is added to the outdoors. When an level is selected, data is added to that level.
 
 To create a level, go to the outdoors. Select a building object and then press the "Create Level" toolbar button. This brings up a dialog to enter the needed information.
  * Zlevel - This is an integer that identifies the level programmatically. This is *NOT* intended for people. The ground level should be 0. Levels above the ground level should be positive integers. Levels below the ground level should be negative integers. 
@@ -157,6 +180,6 @@ When the level is selected, that level is displayed. Any nodes or ways added are
 To add data, use the way tool or node tool and trace from the source imagery.
 
 ==== Frame of Reference - North Up or Source ====
-It is often easier to trace source data in the reference frame of the source data. This is because it is easier to draw horizontal and vertical lines, particularly with snap to horizontal and vertical.
+It is often easier to trace source data in the reference frame of the source data. This is because then many lines are horizontal or vertical. It is easier to draw horizontal and vertical lines, particularly with snap to horizontal and vertical.
 
 When a source image is loaded, there is a drop down selection on the map panel that allows you to select the map reference. The default reference is north up. Alternatively you can select to display the map with the orientation of the source imagery, to make copying easier.
