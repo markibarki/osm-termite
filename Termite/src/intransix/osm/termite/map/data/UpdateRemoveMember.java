@@ -43,7 +43,11 @@ public class UpdateRemoveMember extends EditData<OsmRelation> {
 		
 		//get the undo command
 		List<OsmMember> members = relation.getMembers();
-		if((index < 0)||(index >= members.size())) {
+		if(index == -1) {
+			//remove the last one
+			index = relation.getMembers().size() - 1;
+		}
+		else if((index < 0)||(index >= members.size())) {
 			throw new UnchangedException("Invalid index for relation: " + index);
 		}
 		OsmMember member = members.get(index);
