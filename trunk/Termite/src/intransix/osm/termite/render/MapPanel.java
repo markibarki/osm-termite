@@ -23,7 +23,7 @@ public class MapPanel extends JPanel implements OsmDataChangedListener,
 	private final static double KEY_SCALE_FACTOR = 1.1;
 	private final static double BUTTON_SCALE_FACTOR = 1.5;
 	
-	private final static double KEY_TRANSLATE_FRACTION = .25;
+	private final static double KEY_TRANSLATE_FRACTION = .1;
 	
 	//max zoom before redefining local coordinates
 	private final static double LOCAL_COORD_RESET_ZOOM = 2;
