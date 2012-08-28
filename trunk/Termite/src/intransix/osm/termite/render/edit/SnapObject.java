@@ -1,8 +1,6 @@
 package intransix.osm.termite.render.edit;
 
 import java.awt.geom.Point2D;
-import java.util.HashMap;
-import intransix.osm.termite.map.data.OsmObject;
 /**
  *
  * @author sutter
@@ -89,13 +87,19 @@ public abstract class SnapObject extends EditDrawable implements Comparable<Snap
 	}
 	
 	@Override
+	/** This is used to order the snap object in a hover so the most important comes first. */
 	public int compareTo(SnapObject obj) {
 		//order the snap objects first based on the order of the snap operation
 		int order = this.snapType.getOrder() - obj.snapType.getOrder();
 		if(order != 0) return order;
 		
-		//if that is equal, choose the smaller error
-		return (int)Math.signum(this.err2 - obj.err2);
+		//if that is equal, choose the smaller tiebreaker value
+		return (int)Math.signum(this.compareTiebreaker() - obj.compareTiebreaker());
+	}
+	
+	/** This value is used by compareTo to differentiate matching object types. */
+	protected double compareTiebreaker() {
+		return this.err2;
 	}
 	
 	/** This method looks up an select object for this snap object. 

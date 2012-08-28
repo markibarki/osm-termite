@@ -11,6 +11,10 @@ import java.util.List;
  */
 public class SnapIntersection extends SnapObject {
 	
+public String toString() {
+	return "intersection: " + s1.snapType.name() + " + " + s2.snapType.name();
+}	
+	
 	//this is the limit for ignoring pairs of lines for intersecting
 	private final static double ALMOST_PARALLEL_SIN_THETA = .1; //5.7 degrees
 
@@ -107,5 +111,12 @@ public class SnapIntersection extends SnapObject {
 	public Object getSelectObject() {
 		//no select object for intersection
 		return null;
+	}
+	
+	/** This value is used by compareTo to differentiate matching object types. */
+	@Override
+	protected double compareTiebreaker() {
+		//for intersections, find the smaller sum or segment types
+		return s1.snapType.getOrder() + s2.snapType.getOrder();
 	}
 }
