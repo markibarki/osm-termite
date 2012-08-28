@@ -72,6 +72,7 @@ public class ContentTree extends javax.swing.JTree
 		if(mapData != null) {
 			TreeMap<OsmWay,List<OsmRelation>> newTreeMap = new TreeMap<OsmWay,List<OsmRelation>>(new WayComparator());
 			//create a new data sturcture for levels,outdoor
+			boolean added = false;
 			for(OsmRelation relation:mapData.getOsmRelations()) {
 				if(OsmModel.TYPE_LEVEL.equalsIgnoreCase(relation.getRelationType())) {
 					for(OsmMember member:relation.getMembers()) {
@@ -79,7 +80,13 @@ public class ContentTree extends javax.swing.JTree
 								(member.osmObject instanceof OsmWay)) {
 							OsmWay structure = (OsmWay)member.osmObject;
 							addToMap(newTreeMap,structure,relation);
+							added = true;
+							break;
 						}
+					}
+					if(!added) {
+						//handle levels that have no parent here!!!
+System.out.println("Warning! There is a level with no parent object.");
 					}
 				}
 			}
