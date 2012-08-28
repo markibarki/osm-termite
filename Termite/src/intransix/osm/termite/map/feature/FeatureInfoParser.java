@@ -29,7 +29,11 @@ public class FeatureInfoParser extends DataParser<Object,FeatureInfo> {
 			}
 			
 			String valueName = json.optString("value","");
-			JSONObject dataJson = json.getJSONObject("data");
+			JSONObject dataJson = json.optJSONObject("data");
+			if(dataJson == null) {
+				//we should handle this better...
+				dataJson = new JSONObject();
+			}
 			return FeatureInfo.parse(keyName,valueName,dataJson,parentData);
 		}
 		catch(Exception ex) {

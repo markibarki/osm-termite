@@ -92,7 +92,11 @@ public class FeatureInfoMap {
 			PropertyNode<Object,FeatureInfo> prop, FeatureInfo featureInfo) {
 		
 		//check if this property is the correct property
-		if(prop.getData() == featureInfo) {
+		if(featureInfo == null) {
+			//if no feature info is specified, use tree root
+			return treeRoot;
+		}
+		else if(prop.getData() == featureInfo) {
 			return prop;
 		}
 		else {
