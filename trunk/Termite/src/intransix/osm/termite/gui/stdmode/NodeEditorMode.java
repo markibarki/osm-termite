@@ -3,8 +3,10 @@ package intransix.osm.termite.gui.stdmode;
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.render.MapLayerManager;
 import intransix.osm.termite.render.MapLayer;
+import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.edit.NodeToolAction;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -72,6 +74,8 @@ public class NodeEditorMode extends EditorMode {
 			editLayer.setActiveState(true);
 			editLayer.setMouseEditAction(new NodeToolAction());
 		}
+		MapPanel mapPanel = termiteGui.getMapPanel();
+		mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	}
 	
 	/** This method is called when the editor mode is turned off. 
@@ -85,10 +89,8 @@ public class NodeEditorMode extends EditorMode {
 			editLayer.setActiveState(false);
 			editLayer.setMouseEditAction(null);
 		}
-		
-//		if(toolBar != null) {
-//			termiteGui.removeToolBar(toolBar);
-//		}
+		MapPanel mapPanel = termiteGui.getMapPanel();
+		mapPanel.setCursor(Cursor.getDefaultCursor());
 	}
 	
 	private void createToolBar() {	
