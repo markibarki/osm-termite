@@ -160,13 +160,29 @@
 						"allowedtypes":4,
 						"defaultpath":2
 					}
-				}
+				},
+				{
+					"value":"bed",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"nightstand",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
 			]
 		}
 	],
 	"data":{
 		"zorder":4,
 		"allowedtypes":7,
-		"defaultpath":2
+		"defaultpath":1
 	},
 }
