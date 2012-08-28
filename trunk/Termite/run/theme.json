@@ -2,6 +2,19 @@
 	"value":"standard",
 	"keys":[
 		{
+			"key":"building",
+			"style":{
+				"body":"#a0a0c0",
+				"outline":"#404040",
+				"width":1
+			},
+			"values":[
+				{
+					"value":"yes"
+				}
+			]
+		},
+		{
 			"key":"buildingpart",
 			"style":{
 				"body":"#d0d0d0",

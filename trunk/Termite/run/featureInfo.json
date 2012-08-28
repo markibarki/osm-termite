@@ -2,6 +2,19 @@
 	"value":"object",
 	"keys":[
 		{
+			"key":"building",
+			"values":[
+				{
+					"value":"yes",
+					"data":{
+						"zorder":1,
+						"allowedtypes":4,
+						"defaultpath":2,
+					}
+				}
+			]
+		},
+		{
 			"key":"buildingpart",
 			"values":[
 				{
@@ -9,8 +22,7 @@
 					"data":{
 						"zorder":1,
 						"allowedtypes":4,
-						"defaultpath":2,
-						"inputcolor":"#ffc0c0"
+						"defaultpath":2
 					},
 				},
 				{
@@ -18,8 +30,7 @@
 					"data":{
 						"zorder":1,
 						"allowedtypes":4,
-						"defaultpath":2,
-						"inputcolor":"#ffc0c0"
+						"defaultpath":2
 					},
 					"keys":[
 						{
@@ -27,27 +38,15 @@
 							"values":[
 								{
 									"value":"yes",
-									"data":{
-										"inputcolor":"#e0e080"
-									}
 								},
 								{
 									"value":"male",
-									"data":{
-										"inputcolor":"#e0d090"
-									}
 								},
 								{
 									"value":"female",
-									"data":{
-										"inputcolor":"#e0c0a0"
-									}
 								},
 								{
 									"value":"unisex",
-									"data":{
-										"inputcolor":"#e0b0b0"
-									}
 								}
 							]
 						}
@@ -58,8 +57,7 @@
 					"data":{
 						"zorder":2,
 						"allowedtypes":5,
-						"defaultpath":1,
-						"inputcolor":"#404080"
+						"defaultpath":1
 					}
 				},
 				{
@@ -67,8 +65,7 @@
 					"data":{
 						"zorder":1,
 						"allowedtypes":4,
-						"defaultpath":2,
-						"inputcolor":"#e0e0e0"
+						"defaultpath":2
 					}
 				},
 				{
@@ -76,8 +73,7 @@
 					"data":{
 						"zorder":3,
 						"allowedtypes":7,
-						"defaultpath":1,
-						"inputcolor":"#800080"
+						"defaultpath":1
 					}
 				},
 				{
@@ -85,8 +81,7 @@
 					"data":{
 						"zorder":3,
 						"allowedtypes":7,
-						"defaultpath":1,
-						"inputcolor":"#008080"
+						"defaultpath":1
 					}
 				},
 				{
@@ -94,8 +89,7 @@
 					"data":{
 						"zorder":2,
 						"allowedtypes":5,
-						"defaultpath":2,
-						"inputcolor":"#d0c0c0"
+						"defaultpath":2
 					}
 				},
 				{
@@ -103,8 +97,7 @@
 					"data":{
 						"zorder":2,
 						"allowedtypes":5,
-						"defaultpath":2,
-						"inputcolor":"#c0d0d0"
+						"defaultpath":2
 					}
 				},
 				{
@@ -112,34 +105,21 @@
 					"data":{
 						"zorder":2,
 						"allowedtypes":5,
-						"defaultpath":2,
-						"inputcolor":"#b0b0b0",
+						"defaultpath":2
 					},
 					"keys":[
 						{"key":"direction","values":[
 							{
 								"value":"both",
-								"data":{
-									"inputcolor":"#b0c0a0"
-								}
 							},
 							{
 								"value":"up",
-								"data":{
-									"inputcolor":"#b0d090"
-								}
 							},
 							{
 								"value":"down",
-								"data":{
-									"inputcolor":"#b0e080"
-								}
 							},
 							{
 								"value":"arrriving",
-								"data":{
-									"inputcolor":"#b0f070"
-								}
 							},
 						]}
 					]
@@ -154,8 +134,7 @@
 					"data":{
 						"zorder":3,
 						"allowedtypes":4,
-						"defaultpath":2,
-						"inputcolor":"#88b8b8"
+						"defaultpath":2
 					}
 				},
 				{
@@ -163,8 +142,7 @@
 					"data":{
 						"zorder":3,
 						"allowedtypes":4,
-						"defaultpath":2,
-						"inputcolor":"#88c8a8"
+						"defaultpath":2
 					}
 				},
 				{
@@ -172,8 +150,7 @@
 					"data":{
 						"zorder":3,
 						"allowedtypes":4,
-						"defaultpath":2,
-						"inputcolor":"#88d898"
+						"defaultpath":2
 					}
 				},
 				{
@@ -181,8 +158,7 @@
 					"data":{
 						"zorder":3,
 						"allowedtypes":4,
-						"defaultpath":2,
-						"inputcolor":"#88e888"
+						"defaultpath":2
 					}
 				}
 			]
@@ -191,7 +167,6 @@
 	"data":{
 		"zorder":4,
 		"allowedtypes":7,
-		"defaultpath":1,
-		"inputcolor":"#808080"
+		"defaultpath":1
 	},
 }
