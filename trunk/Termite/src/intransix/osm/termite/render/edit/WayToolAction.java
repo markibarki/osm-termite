@@ -55,11 +55,6 @@ public class WayToolAction implements MouseEditAction {
 			}
 		}
 		else {
-			activeNode = editLayer.getNodeSelection();
-		}
-		
-		//if there is no valid selection, clear the existing selection
-		if((activeNode == null)&&(activeWay == null)) {
 			editLayer.clearSelection();
 		}
 		
