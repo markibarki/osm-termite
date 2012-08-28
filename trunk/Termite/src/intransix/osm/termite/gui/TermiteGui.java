@@ -101,6 +101,8 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private javax.swing.JMenuItem redoItem;
 	private javax.swing.JMenu mapMenu;
 	private javax.swing.JMenuItem openSourceMenuItem;
+	private javax.swing.JMenu helpMenu;
+	private javax.swing.JMenuItem aboutItem;
 	
 	private javax.swing.JMenu baseMapMenu;
     private javax.swing.ButtonGroup baceMapButtonGroup;
@@ -634,6 +636,20 @@ public class TermiteGui extends javax.swing.JFrame implements
         mapMenu.add(openSourceMenuItem);
 		
 		menuBar.add(mapMenu);
+		
+		//about button
+		helpMenu = new javax.swing.JMenu();
+		helpMenu.setText("Help");
+		aboutItem = new javax.swing.JMenuItem();
+		aboutItem.setText("About...");
+		aboutItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+				String versionInfo = "Version: " + app.getVersion();
+                JOptionPane.showMessageDialog(null,versionInfo);
+            }
+        });
+		helpMenu.add(aboutItem);
+		menuBar.add(helpMenu);
 		
 		//hold the height fixed, let the width vary...
 		Dimension d = menuBar.getPreferredSize();

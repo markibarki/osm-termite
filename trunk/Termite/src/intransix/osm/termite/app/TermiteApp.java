@@ -23,6 +23,8 @@ public class TermiteApp {
 	// Private Properties
 	//=====================
 	
+	private final static String VERSION = "0.01";
+	
 	private TermiteGui gui;
 	private LoginManager loginManager = new LoginManager();
 	
@@ -39,6 +41,10 @@ public class TermiteApp {
 	
 	public TermiteGui getGui() {
 		return gui;
+	}
+	
+	public String getVersion() {
+		return VERSION;
 	}
 	
 	public LoginManager getLoginManager() {
