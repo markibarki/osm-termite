@@ -4,9 +4,9 @@
 		{
 			"key":"building",
 			"style":{
-				"body":"#a0a0c0",
-				"outline":"#404040",
-				"width":1
+				"body":"#73a2db",
+				"outline":"#132d90",
+				"width":2
 			},
 			"values":[
 				{
@@ -25,17 +25,17 @@
 				{
 					"value":"unit",
 					"style":{
-						"body":"#ffc0c0",
-						"outline":"#808080",
+						"body":"#98b2d3",
+						"outline":"#132d90",
 						"width":2
 					}
 				},
 				{
 					"value":"room",
 					"style":{
-						"body":"#ffc0c0",
+						"body":"#b9d1ed",
 						"outline":"#808080",
-						"width":2
+						"width":1
 					},
 					"keys":[
 						{

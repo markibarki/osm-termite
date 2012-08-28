@@ -10,8 +10,8 @@ import java.awt.Color;
 public class StyleInfo { 
 	private float SELECT_WIDTH = 1;
 	private float SELECT_RADIUS = 3;
-	private float HOVER_SEGMENT_WIDTH = 1;
-	private float HOVER_EXTENSION_WIDTH = 1;
+	private float HOVER_SEGMENT_WIDTH = 2;
+	private float HOVER_EXTENSION_WIDTH = 2;
 	private float PRESELECT_RADIUS = 5;
 	private float PENDING_WIDTH = 1;
 	private float PENDING_RADIUS = 3;
