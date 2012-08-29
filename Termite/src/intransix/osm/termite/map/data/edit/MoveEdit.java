@@ -28,6 +28,8 @@ public class MoveEdit extends EditOperation {
 		
 System.out.println("Move the selection");
 
+System.out.println("start: " + start.point + "; end: " + dest.point);
+
 		EditAction action = new EditAction(getOsmData(),"Move selection");
 		try {
 
