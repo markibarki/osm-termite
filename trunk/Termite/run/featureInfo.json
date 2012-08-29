@@ -177,6 +177,71 @@
 						"defaultpath":2
 					}
 				},
+				
+				{
+					"value":"bathtub",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"shower",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"sink",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"toilet",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"stove",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"refrigerator",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"counter",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
+				{
+					"value":"cabinet",
+					"data":{
+						"zorder":3,
+						"allowedtypes":4,
+						"defaultpath":2
+					}
+				},
 			]
 		}
 	],
