@@ -100,6 +100,10 @@ public class SnapSegment extends SnapObject {
 	 */
 	private static SnapSegment getSnapSegment(Point2D segPt1, Point2D segPt2, 
 			Point2D inPoint, boolean segmentIsVirtual, double mercRadSq) {
+		
+//quick check for 0 length segments
+if(segPt1.distanceSq(segPt2) == 0) return null;		
+		
 		//check for a hit
 		if(Line2D.ptLineDistSq(segPt1.getX(),segPt1.getY(),segPt2.getX(),segPt2.getY(),inPoint.getX(),inPoint.getY()) >= mercRadSq) {
 			//no hit for this segment
