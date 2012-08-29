@@ -33,7 +33,7 @@ public class EditLayer extends MapLayer implements MapDataListener,
 	
 	// <editor-fold defaultstate="collapsed" desc="Properties">
 	
-	public final static double SNAP_RADIUS_PIXELS = 3;
+	public final static double SNAP_RADIUS_PIXELS = 4;
 	
 	private TermiteGui termiteGui;
 	private List<EditStateListener> stateListeners = new ArrayList<EditStateListener>();
