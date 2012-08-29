@@ -16,15 +16,11 @@ public class OsmModel {
 	
 	public static FeatureInfoMap featureInfoMap;
 	
-	public static String TYPE_STRUCTURE = "structure";
 	public static String TYPE_LEVEL = "level";
 	public static String ROLE_PARENT = "structure";
-	public static String ROLE_LEVEL = "level";
-	public static String ROLE_SHELL = "shell";
 	public static String ROLE_ANCHOR = "anchor";
-	public static String ROLE_FEATURE = "feature";
+	public static String ROLE_NODE = "node";
 	public static String KEY_ZLEVEL = "zlevel";
-	public static String KEY_ZCONTEXT = "structure";
 	public static String KEY_REF_KEY = "ref:key";
 	public static String KEY_REF = "ref";
 	public static String KEY_REF_SCOPE_GEOM = "ref:scope:geom";
@@ -67,15 +63,11 @@ public static String OSM_SERVER = "http://api06.dev.openstreetmap.org";
 	public static void parse(JSONObject json) throws Exception {
 		JSONObject nameDefs = json.optJSONObject("nameDefs");
 		if(nameDefs != null) {
-			TYPE_STRUCTURE = nameDefs.optString("structureType",TYPE_STRUCTURE);
 			TYPE_LEVEL = nameDefs.optString("levelType",TYPE_LEVEL);
 			ROLE_PARENT = nameDefs.optString("parentRole",ROLE_PARENT);
-			ROLE_LEVEL = nameDefs.optString("levelRole",ROLE_LEVEL);
-			ROLE_SHELL = nameDefs.optString("shellRole",ROLE_SHELL);
-			ROLE_FEATURE = nameDefs.optString("featureRole",ROLE_FEATURE);
+			ROLE_NODE = nameDefs.optString("nodeRole",ROLE_NODE);
 			ROLE_ANCHOR = nameDefs.optString("anchorRole",ROLE_ANCHOR);
 			KEY_ZLEVEL = nameDefs.optString("zlevelKey",KEY_ZLEVEL);
-			KEY_ZCONTEXT = nameDefs.optString("zcontextKey",KEY_ZCONTEXT);
 			KEY_REF_KEY = nameDefs.optString("refKeyKey",KEY_REF_KEY);
 			KEY_REF = nameDefs.optString("refKey",KEY_REF);
 			KEY_REF_SCOPE_GEOM = nameDefs.optString("refScopeGeomKey",KEY_REF_SCOPE_GEOM);

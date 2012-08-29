@@ -42,7 +42,7 @@ if(destPoint.snapNode != null) {
 			
 			if(currentLevel != null) {
 				//place node on the current level
-				UpdateInsertMember uim = new UpdateInsertMember(nodeId,OsmModel.TYPE_NODE,OsmModel.ROLE_FEATURE);
+				UpdateInsertMember uim = new UpdateInsertMember(nodeId,OsmModel.TYPE_NODE,OsmModel.ROLE_NODE);
 				instr = new UpdateInstruction(currentLevel,uim);
 				action.addInstruction(instr);
 			}

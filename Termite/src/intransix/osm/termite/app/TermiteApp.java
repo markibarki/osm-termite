@@ -23,7 +23,7 @@ public class TermiteApp {
 	// Private Properties
 	//=====================
 	
-	private final static String VERSION = "0.01";
+	private final static String VERSION = "0.02";
 	
 	private TermiteGui gui;
 	private LoginManager loginManager = new LoginManager();
@@ -64,8 +64,7 @@ public class TermiteApp {
 	}
 	
 	public Rectangle2D getInitialLatLonBounds() {
-		return new Rectangle2D.Double(-117.116,40.376,.01,.01);
-//		return new Rectangle2D.Double(-140,-40,280,100);
+		return new Rectangle2D.Double(-117.126,40.366,.03,.03);
 	}
 	
 	public void startup() {

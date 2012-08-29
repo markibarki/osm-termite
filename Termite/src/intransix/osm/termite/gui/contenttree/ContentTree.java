@@ -21,8 +21,8 @@ public class ContentTree extends javax.swing.JTree
 	// Private Properties
 	//====================
 	
-	private final static String ROOT_NAME = "Content";
-	private final static String OUTDOORS_NAME = "Outdoors";
+//	private final static String ROOT_NAME = "Map Data";
+	private final static String OUTDOORS_NAME = "Map Data";
 	
 	private TermiteGui gui;
 	private OsmData mapData;
@@ -37,7 +37,7 @@ public class ContentTree extends javax.swing.JTree
 	 */
 	public ContentTree(TermiteGui gui) {
 		this.gui = gui;
-		this.setRootVisible(false);
+		this.setRootVisible(true);
 		this.addTreeSelectionListener(this);
 		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		this.setCellRenderer(new ContentTreeRenderer());
@@ -135,7 +135,7 @@ System.out.println("Warning! There is a level with no parent object.");
 	/** This method clears the tree, taking away all the levels and the outdoor
 	 * icon too. */
 	private void clearTree() {
-		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(ROOT_NAME);
+		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
 		this.setModel(new DefaultTreeModel(rootNode));
 	}
 	
@@ -189,10 +189,10 @@ System.out.println("Warning! There is a level with no parent object.");
 	 */
 	private void updateTree(TreeMap<OsmWay,List<OsmRelation>> newTreeMap) {
 		//create the root node
-		DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode(ROOT_NAME);
-		//create the outdoor node
-		DefaultMutableTreeNode outdoorNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
-		rootTreeNode.add(outdoorNode);
+		DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
+//		//create the outdoor node
+//		DefaultMutableTreeNode outdoorNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
+//		rootTreeNode.add(outdoorNode);
 		//add the nodes for the structures
 		populateStructures(rootTreeNode,newTreeMap);
 		//update the tree
