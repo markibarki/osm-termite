@@ -91,3 +91,62 @@ As you move the mouse, a blue line appears, this is the line the will be created
  * You can use CTRL-Z and CTRL-Y to undo and redo.
   * NOTE - There can be stray highlights after an undo, such as the higlight for a selected object or one of the other highlights. These highlights may cover the object that was undone.
    * If some highlights remain after a undo/redo, go to select mode and clear the selected objects by clicking at an empty spot on the screen.
+
+=== Adding an Indoor Map ===
+
+==== Loading the Image ====
+
+ * Get a image for a floor plan. We will copy this image in the editor.
+ * For now the image should be an overhead image, properly to scale.
+ * Using one of the base maps (Mapquest OSM is recommended), navigate the map to the location of the building you want to enter.
+  * The search feature is not implemented so you must manually pan there.
+ * Download data for the location you want. 
+  * Since this is the dev DB, there is a good chance there will be no data there.
+ * Import Source Image
+  * Go to the menu Map > Source Images to open the source image dialog.
+  * From the dialog, press the "New" button.
+  * Open an image file.
+  * Press close on the dialog.
+  * The image should appear over the map.
+
+==== Geocode the image ====
+
+  * In the supplemental panel beneath the map, there is a "Map Layers" tab. From ehre you can modify the opacity of any of the layers. This will be helpful for geocoding and drawing.
+  * Press the Geocode Mode button.
+  * For geocoding, aerial imagery should be used. It is also possible to use a base map if the base map has the building outline in a good location.
+   * For now select the Bing Aerial imagery for the base map.
+ * The following geocode options are available:
+   * 2 point - Translate, Scale and Rotate the image
+   * 3 point Orthoganol - Translate, Scale X, Scale Y and Rotate the image.
+    * I think this is not working properly right now
+   * 3 point Free (or 3 Point Affine) - NOT IMPLEMENTED.
+    * DISABLE UI ELEMNT FOR 3 POINT FREE
+  * If not already selected, select the 2 point geocode.
+  * Press the toolbar button "Translate" OR, for a shortcut, press the 1 button.
+  * Click the mouse on a point of the image. This is one anchor point.
+  * Press the toolbar button "Rotate/Scale" OR, for ashortcut, press the 2 button.
+  * Click the mouse on a point of the image to place another anchor point.
+  * Click on the first anchor point and then press the "m" key (or the MOVE toolbar button). Click the mouse to place the image over the map..
+  * Do the same for the second point to control the rotate and scale.
+  * Repeat until the image is aligned as you want it.
+
+==== Tracing the Image ====
+
+ * When one or more images is loaded, a UI element appears next to the zoom in/zoom out buttons. This allows you to set the reference frame for the map display. By default the north is up. You can also select one of the images as a source frame. This makes tracing easier sinec most lines should be horizontal or vertical.
+ * First a building outline is needed. This can be traced from the source imagery or derived another method using the way tool.
+ * Once the building is drawn, go to Select mode and select the building.
+ * Once the building is selected, press the "Create Level" button. A dialog will open. Enter the data.
+  * ZLevel - A integer for the floor. Use 0 for the ground floor, negatives   for levels below ground and positiives for levels above the ground floor. 
+   * NOTE - The zlevel may not match the name of the floor. THAT IS OKAY.
+  * name - This is a String for the name of the floor. In the United States, often the ground floor is called "1". Use the value that appears on signage for the floor. Preferably the value that appears on an elevator button.
+ * When this is done a new strucutre and level list should appear in the Map content panel tree.
+ * Select the new level from the tree. Any object drawn when this level is selected will appear on this level.
+ * Trace the source imagery using the Select, Node and Way editor modes.
+  * NOTE - There is currently not a good way of matching the level to the outline. This will be added in the future.
+
+=== Commit the Data ===
+
+ * If you have data you would like to commit, go to the File menu and press "Commit".
+  * You will be prompted for a login. This should be your login on the dev server.
+  * You will be prompted for a commit message.
+  * The data will then be uploaded.
