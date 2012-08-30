@@ -186,3 +186,21 @@ MORE DETAILS ON METHODS AND TAGGING ARE TO BE ADDED. Some links for more informa
   * You will be prompted for a login. This should be your login on the dev server.
   * You will be prompted for a commit message.
   * The data will then be uploaded.
+
+= Appendix =
+
+== UI Elements ==
+
+ * Menu Bar - Holds the menus
+ * Toolbar
+  ** Mode Toolbar - Hold buttons to select the edit mode
+  ** Submode Toolbar - Additional controls specific to the selected mode.
+ * Left Panel
+  ** Content Tree - This lets you select the map area to view, which may be the outdoors or a building level.
+  ** Feature Type Panel - This lets you select the feature type. The feature type tells the type of object. For example, the feature type may be "highway=primary". See more on the feature type below.
+  ** Property Panel - This shows properties of the selected object. The properties can be edited from here.
+ * Map Panel - This holds the map.
+ * Supplemental Panel - This contains tabs with additional functionality.
+  ** Map Layers Tab - This tab lets you control the opacity of the different visible layers, which is useful when tracing objects.
+
+http://wiki.openstreetmap.org/w/images/2/21/Termite_UI_v0.png
