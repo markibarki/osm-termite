@@ -33,6 +33,10 @@ A windows Batch file is included to open the editor on a windows machine.
   * Downloading this data should display three buildings.
    * The top left panel of the editor is the content pane. It should display the map data including a list of the buildings and their levels.
 
+http://wiki.openstreetmap.org/w/images/d/da/OpenProgram.png
+
+*Image* This is a view of the program with data loaded.
+
 === Exploring ===
 
  * Examine the Nanoscale building (We will modify this building here. Do not commit these changes.)  
@@ -47,6 +51,10 @@ A windows Batch file is included to open the editor on a windows machine.
    * The UI needs to be fixed - you won't see the object is highlighted until you move the mouse away.
    * The application must have focus for the keyboard input to work.
    * Since there are many overlapping objects, this will be important.
+
+http://wiki.openstreetmap.org/w/images/9/9c/NanoscaleHover.png
+
+*Image* This is the first level of the Nanoscale Building with the mouse hovering over a wall.
  
 ==== Drawing A Way ====
 
@@ -63,6 +71,10 @@ As you move the mouse, a blue line appears, this is the line the will be created
   * When you close a line, the way ends. You can also end a way by doing the following:
    * Double click - this creates a point and ends the way
    * Press escape - This ends the way without creating a point
+
+http://wiki.openstreetmap.org/w/images/0/05/DrawASquare.png
+
+*Image* This is an image of a square being drawn. The blue dashed line is where the next segment will be drawn. The pink dashed lines are snap guides. 
 
 ==== Drawing a Node ====
 
@@ -85,6 +97,10 @@ As you move the mouse, a blue line appears, this is the line the will be created
    * As a shortcut, press the "m"m key on the keyboard instead of pressing the UI button on the toolbar.
    * The move will end when you click the map or if you press esc.
    * Virtual nodes are shown on the map at the midpoint in each segment. To add a point to a segment, drag one of the virtual nodes.
+
+http://wiki.openstreetmap.org/w/images/d/de/Move.png
+
+*Image* This images shows a node being dragged, with the blue dashed lines previewing the edit. The pink dashed line is a snap guide for an extension of a wall.
 
 ==== Undo/Redo ====
 
@@ -129,6 +145,10 @@ As you move the mouse, a blue line appears, this is the line the will be created
   * Click on the first anchor point and then press the "m" key (or the MOVE toolbar button). Click the mouse to place the image over the map..
   * Do the same for the second point to control the rotate and scale.
   * Repeat until the image is aligned as you want it.
+
+http://wiki.openstreetmap.org/w/images/6/68/Geocode.png
+
+*Image* This image shows a geocoded drawing. More detailed description of geocoding buildings should be provided. Because aerial imagery is often taken at an angle, matching the floor plan image to the roof can give an incorrect geocode. The image should be matched to where the building meets the ground.
 
 ==== Tracing the Image ====
 
