@@ -1,18 +1,87 @@
 = Termite Quick Start =
 
 == Setting Up ==
+You need the following to get started.
 
  * The Termite program
-  * The Termite program requires the Java 6 JRE (the same as JOSM).
+  * The Termite program requires the Java 6 JRE (the same as JOSM). 
+  * Included in the package are some needed configuration files.
  * A username and password on the OSM dev server.
   * This is only needed if you plan on committing data.
   * Obtain a username and password from http://api06.dev.openstreetmap.org
 
-A windows Batch file is included for windows machine.
+A windows Batch file is included to open the editor on a windows machine.
 
 == Quick Start ==
 
- * Open the Termite Program
+=== Open the Program ===
+
+ * Open the Termite program
  * Turn on a base map
   * Go to the menu Map > Base Map  Mapquest OSM to turn on a base map using Mapquest OSM tiles. 
+  * You should see you are in the middle of the desert in Nevada, USA.
+ * Move the map around
+  * Pan - options:
+   * right click and drag
+   * use the arrow keys
+  * Zoom - options:
+   * UI buttons on map
+   * mouse scroll wheel
+   * page up/page down keys
+ * Download data - to Download data, drag the mouse to create a selection window and then press the "Download Data" button.
+  * Use a selection window covering the entire map screen that is in the display when the program opens. To return to that location, close the program and reopen it.
+  * Downloading this data should display three buildings.
+   * The top left panel of the editor is the content pane. It should display the map data including a list of the buildings and their levels.
 
+=== Exploring ===
+
+ * Examine the Nanoscale building (We will modify this building here. Do not commit these changes.)  
+  * Select level 1 of the nanoscale building from the map content tree.
+  * Editor mode - The mode is selected using the buttons on the left of the tool bar. Go to Select Mode. Mode choices:
+   * Select Mode
+   * Node Tool
+   * Way Tool
+   * Geocode Mode
+  * Hover the mouse on a wall between two rooms. The wall or possible a node should highlight, depending on where the mouse is.
+  * While the mouse is hovering, press the PERIOD key. This should change the object that is highlighted. By pressing the PERIOD and COMMA keys you cycle through the options for what is highlighted. When you press the left mouse button, the highlighted object becomes selected.
+   * The UI needs to be fixed - you won't see the object is highlighted until you move the mouse away.
+   * The application must have focus for the keyboard input to work.
+   * Since there are many overlapping objects, this will be important.
+ 
+==== Drawing A Way ====
+
+ * While still in Select Mode, make sure no items are selected. If one is, click the mouse when it is over nothing.
+ * Select the Way Tool from the mode toolbar.
+ * Select an object from the Feature Type Tree corresponding to one of the red triangles. When yo draw, this is the object type that will be created.
+  * By selecting the root (object) of the tree, an unspecified object is created.. 
+ * As you move the mouse, highlight lines (pink) appear that let you snap the mouse to given objects. As with select, pressing the PERIOD or COMMA buttons change which object is used for snapping, including the option to select not snapping.
+ * Click the mouse somewhere outside the building. This creates a node.
+As you move the mouse, a blue line appears, this is the line the will be created when you click the mouse.
+ * Pink highlight lines may also appear, as before, to allow you to snap to nodes, extensions, parallels and other locations of interest.
+  * Using the pink snap lines, you should be able to make a perfect rectangle.
+   * This may require using the PERIOD or COMMA key. 
+  * When you close a line, the way ends. You can also end a way by doing the following:
+   * Double click - this creates a point and ends the way
+   * Press escape - This ends the way without creating a point
+
+==== Drawing a Node ====
+
+ * The node tool is similar to the way tool, but is only draws a single node.
+  * Currently no images are used for nodes. This will be added in the future.
+
+==== Modifying Objects ====
+
+ * When an object is selected, the properties panel shows the properties for the object. If a level or structure are active, those properties are also shown. Editting properties is done here.
+ * You can select multiple points or ways using the shift key.
+ * Some operations require you to select a node in a way (remove node, for example) To do this:
+  * Select a way
+  * Select a node in that way (no shift key is needed).
+ * The buttons in the toolbar are actions that can be done when an object is selected: You can experiment with these actions.
+  * Delete - Deletes whatever objects are selected
+  * Remove Node - If a nodes in a way is selected, this will remove the ndoe from the way.
+  * Change Feature Type - This will update the selected object to by the feature type currently selected in the feature type panel.
+  * Create Level - This creates a level for the given object. This is how indoor maps are created. (We will do this later.)
+  * Move - If you press the move button you can move the selected objects. 
+   * As a shortcut, press the "m"m key on the keyboard instead of pressing the UI button on the toolbar.
+   * The move will end when you click the map or if you press esc.
+   * Virtual nodes are shown on the map at the midpoint in each segment. To add a point to a segment, drag one of the virtual nodes.
