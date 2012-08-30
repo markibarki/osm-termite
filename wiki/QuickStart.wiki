@@ -1,11 +1,13 @@
 = Termite Quick Start =
 
+This is an early version of the Termite program. Comments and patience are appreciated. Any input can be sent to sutter@intransix.com.
+
 == Setting Up ==
 You need the following to get started.
 
  * The Termite program
   * The Termite program requires the Java 6 JRE (the same as JOSM). 
-  * Included in the package are some needed configuration files.
+  * Included in the package are some needed configuration files. The contents of the zip file should be unzipped as is into a folder.
  * A username and password on the OSM dev server.
   * This is only needed if you plan on committing data.
   * Obtain a username and password from http://api06.dev.openstreetmap.org
@@ -17,6 +19,7 @@ A windows Batch file is included to open the editor on a windows machine.
 === Open the Program ===
 
  * Open the Termite program
+  * Contact me for more help if there are any problems.
  * Turn on a base map
   * Go to the menu Map > Base Map  Mapquest OSM to turn on a base map using Mapquest OSM tiles. 
   * You should see you are in the middle of the desert in Nevada, USA.
@@ -163,6 +166,9 @@ http://wiki.openstreetmap.org/w/images/6/68/Geocode.png
  * Select the new level from the tree. Any object drawn when this level is selected will appear on this level.
  * Trace the source imagery using the Select, Node and Way editor modes.
   * NOTE - There is currently not a good way of matching the level to the outline. This will be added in the future.
+
+MORE DETAILS ON METHODS AND TAGGING ARE TO BE ADDED. Some links for more information:
+ * http://wiki.openstreetmap.org/wiki/Indoor/Termite/Mapping_Recommendations
 
 === Commit the Data ===
 
