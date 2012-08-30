@@ -85,3 +85,9 @@ As you move the mouse, a blue line appears, this is the line the will be created
    * As a shortcut, press the "m"m key on the keyboard instead of pressing the UI button on the toolbar.
    * The move will end when you click the map or if you press esc.
    * Virtual nodes are shown on the map at the midpoint in each segment. To add a point to a segment, drag one of the virtual nodes.
+
+==== Undo/Redo ====
+
+ * You can use CTRL-Z and CTRL-Y to undo and redo.
+  * NOTE - There can be stray highlights after an undo, such as the higlight for a selected object or one of the other highlights. These highlights may cover the object that was undone.
+   * If some highlights remain after a undo/redo, go to select mode and clear the selected objects by clicking at an empty spot on the screen.
