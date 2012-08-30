@@ -1,0 +1,18 @@
+= Termite Quick Start =
+
+== Setting Up ==
+
+ * The Termite program
+  * The Termite program requires the Java 6 JRE (the same as JOSM).
+ * A username and password on the OSM dev server.
+  * This is only needed if you plan on committing data.
+  * Obtain a username and password from http://api06.dev.openstreetmap.org
+
+A windows Batch file is included for windows machine.
+
+== Quick Start ==
+
+ * Open the Termite Program
+ * Turn on a base map
+  * Go to the menu Map > Base Map  Mapquest OSM to turn on a base map using Mapquest OSM tiles. 
+
