@@ -136,6 +136,11 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 			getMapPanel().repaint();
 			return false;
 		}
+		else if((infoflags & ImageObserver.ABORT) != 0) {
+			//just do a repaint, to continue with unloaded tiles
+			getMapPanel().repaint();
+			return true;
+		}
 		else {
 			return true;
 		}
