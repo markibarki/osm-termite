@@ -1,6 +1,16 @@
 = Termite Quick Start =
 
-This is an early version of the Termite program. Comments and patience are appreciated. Any input can be sent to sutter@intransix.com.
+Termite is an editor for indoor map data in OpenStreetMap.
+
+==== Disclaimers ====
+
+*Termite is currently in early testing.* Any feedback is appreciated to improve it. And, patience may be required in using it.
+
+*OpenStreetMap currently does not have a standard for making indoor maps.* Termite uses one of the proposed mapping standards. It is also designed so the underlying model used can be changed.
+
+*Termite as currently shipped is NOT connected to the live database. It is connected to a dev database.* This database currently has little data. In many cases you will be starting from scratch.
+
+Please send input to sutter@intransix.com.
 
 == Setting Up ==
 You need the following to get started.
