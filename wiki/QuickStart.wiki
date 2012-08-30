@@ -24,7 +24,7 @@ You need the following to get started.
 
 A windows Batch file is included to open the editor on a windows machine.
 
-== Quick Start ==
+== Using Termite ==
 
 === Open the Program ===
 
