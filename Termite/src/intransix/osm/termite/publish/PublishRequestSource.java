@@ -10,6 +10,9 @@ import org.json.*;
  */
 public class PublishRequestSource implements RequestSource {
 	
+	public final static String STRUCTURE_FILENAME = "indoormap";
+	public final static String LEVEL_FILENAME = "lvlgeom";
+	
 	private final static String INDOOR_SERVER = "http://localhost:8080/mapdata";
 	
 	private String fileName;

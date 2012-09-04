@@ -23,19 +23,21 @@ public class ProductJson {
 	private OsmData osmData;
 	private OsmWay structure;
 	private List<OsmRelation> levels;
+	private int version;
 	
 	private JSONObject structureJson;
 	
 	private JSONArray structureLevelJsons;
-	private List<JSONObject> levelJsons;
+	private List<JSONObject> levelJsons = new ArrayList<JSONObject>();
 	
 	private HashSet<String> namespaces = new HashSet<String>();
 	private AffineTransform mercToNat;
 
-	public ProductJson(OsmData osmData, OsmWay structure, List<OsmRelation> levels) {
+	public ProductJson(OsmData osmData, OsmWay structure, List<OsmRelation> levels, int version) {
 		this.osmData = osmData;
 		this.structure = structure;
 		this.levels = levels;
+		this.version = version;
 	}
 	
 	public JSONObject getStructureJson() {
@@ -57,8 +59,9 @@ public class ProductJson {
 	private void loadStructureJson() throws Exception {
 		JSONObject json = new JSONObject();
 		json.put("id",structure.getId());
+		json.put("v",version);
 		String name = structure.getProperty(OsmModel.KEY_NAME);
-		if(name != null) {
+		if(name == null) {
 			name = "Structure " + structure.getId();
 		}
 		json.put("nm",name);
@@ -123,7 +126,7 @@ public class ProductJson {
 		double txx = (maxLon - minLon)/maxPixX;
 		double tyx = 0;
 		double txy = 0;
-		double tyy = (minLat - maxLat)/maxPixY;
+		double tyy = (maxLat - minLat)/maxPixY;
 		double tx0 = minLon;
 		double ty0 = maxLat;
 		JSONArray natToLatLonJson = new JSONArray();
@@ -138,9 +141,9 @@ public class ProductJson {
 		txx = 1/metersPerMerc;
 		tyx = 0;
 		txy = 0;
-		tyy = 1/metersPerMerc;
+		tyy = -1/metersPerMerc;
 		tx0 = rect.getMinX();
-		ty0 = rect.getMinY();
+		ty0 = rect.getMaxY();
 		AffineTransform natToMerc = new AffineTransform();
 		natToMerc.setTransform(txx, tyx, txy, tyy, tx0, ty0);
 		mercToNat = natToMerc.createInverse();
@@ -160,6 +163,7 @@ public class ProductJson {
 		partialJson.put("id",level.getId());
 		
 		json.put("mid",structure.getId());
+		json.put("v",version);
 		
 		//get zlevel
 		int zlevel = level.getIntProperty(OsmModel.KEY_ZLEVEL,Integer.MAX_VALUE);
@@ -170,8 +174,8 @@ public class ProductJson {
 		partialJson.put("z",zlevel);
 		
 		//get name
-		String name = structure.getProperty(OsmModel.KEY_NAME);
-		if(name != null) {
+		String name = level.getProperty(OsmModel.KEY_NAME);
+		if(name == null) {
 			name = "Level " + zlevel;
 		}
 		json.put("nm",name);
@@ -187,6 +191,7 @@ public class ProductJson {
 			
 			//this is a cludgy work aroudn to get the filter value for the level
 			int originalState = feature.getFilterState();
+			feature.setFilterState(0);
 			filter.filterObject(feature);
 			if(feature.renderEnabled()) {
 				JSONObject featureJson = getFeatureJson(feature);
@@ -215,7 +220,7 @@ public class ProductJson {
 	private JSONObject getFeatureJson(OsmObject feature) throws Exception {
 		
 		//don't include nodes with no properties
-		if((feature instanceof OsmNode)&&(feature.hasProperties())) {
+		if((feature instanceof OsmNode)&&(!feature.hasProperties())) {
 			return null;
 		}
 		
@@ -231,11 +236,19 @@ public class ProductJson {
 		FeatureInfo featureInfo = feature.getFeatureInfo();
 		String name = featureInfo.getName();
 		int index = name.indexOf(KEY_VALUE_DELIMITER);
+		JSONObject props = new JSONObject();
 		if(index > 0) {
 			String key = name.substring(0, index);
 			String value = name.substring(index+1);
-			JSONObject props = new JSONObject();
 			props.put(key,value);
+		}
+		
+		//add a name property, if there is one
+		name = feature.getProperty("name");
+		if(name != null) {
+			props.put("name",name);
+		}
+		if(props.length() > 0) {
 			json.put("properties",props);
 		}
 		

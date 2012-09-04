@@ -20,6 +20,7 @@ import intransix.osm.termite.render.MapLayerManager;
 import intransix.osm.termite.gui.dialog.SourceLayerDialog;
 import intransix.osm.termite.gui.stdmode.*;
 import intransix.osm.termite.gui.task.CommitTask;
+import intransix.osm.termite.publish.PublishTask;
 import java.io.File;
 
 /**
@@ -103,6 +104,8 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private javax.swing.JMenuItem openSourceMenuItem;
 	private javax.swing.JMenu helpMenu;
 	private javax.swing.JMenuItem aboutItem;
+	private javax.swing.JMenu devMenu;
+	private javax.swing.JMenuItem publishItem;
 	
 	private javax.swing.JMenu baseMapMenu;
     private javax.swing.ButtonGroup baceMapButtonGroup;
@@ -637,6 +640,19 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		menuBar.add(mapMenu);
 		
+		//dev
+		devMenu = new javax.swing.JMenu();
+		devMenu.setText("Dev");
+		publishItem = new javax.swing.JMenuItem();
+		publishItem.setText("Publish...");
+		publishItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+				publishMap();
+            }
+        });
+		devMenu.add(publishItem);
+		menuBar.add(devMenu);
+		
 		//about button
 		helpMenu = new javax.swing.JMenu();
 		helpMenu.setText("Help");
@@ -814,6 +830,20 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private void commitData() {
 		CommitTask commitTask = new CommitTask(this);
 		commitTask.execute();
+	}
+	
+	private void publishMap() {
+		if((activeStructure != null)&&(activeLevel == null)) {
+			int result = JOptionPane.showConfirmDialog(null,"Publish Structure " + activeStructure.getId() + "?");
+			if(result == JOptionPane.OK_OPTION) {
+				PublishTask publishTask = new PublishTask(this,activeStructure.getId());
+				publishTask.execute();
+			}
+		}
+		else {
+			JOptionPane.showMessageDialog(this,"You must select a level to publish.");
+		}
+		
 	}
 	
 	private void selectBaseMap(TileInfo tileInfo) {

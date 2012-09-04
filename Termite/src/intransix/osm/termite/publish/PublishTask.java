@@ -45,6 +45,9 @@ public class PublishTask extends SwingWorker<Object,Object>{
 	@Override
 	public Object doInBackground() {
 		
+		NetRequest netRequest;
+		int responseCode;
+		
 		try {
 			//check if there is any uncomitted data
 			OsmChangeSet changeSet = new OsmChangeSet();
@@ -72,7 +75,7 @@ public class PublishTask extends SwingWorker<Object,Object>{
 				if(OsmModel.TYPE_LEVEL.equalsIgnoreCase(relation.getRelationType())) {
 					for(OsmMember member:relation.getMembers()) {
 						if((OsmModel.ROLE_PARENT.equalsIgnoreCase(member.role))&&
-								(member.osmObject instanceof OsmWay)) {
+								(member.osmObject.getId() == structureId)) {
 							levels.add(relation);
 						}
 					}
@@ -84,41 +87,46 @@ public class PublishTask extends SwingWorker<Object,Object>{
 				return null;
 			}
 			
+			//get the version
+			int version;
+			VersionRequestSource vrs = new VersionRequestSource(PublishRequestSource.STRUCTURE_FILENAME,structureId);
+			
+			netRequest = new NetRequest(vrs);
+			responseCode = netRequest.doRequest();
+			
+			if(responseCode == 200) {
+				version = vrs.getVersion();
+			}
+			else {
+				errorMsg = "Error in request for version: " + responseCode;
+				success = false;
+				return null;
+			}
+			
 			//create structure json
-			ProductJson productJson = new ProductJson(osmData,structure,levels);
+			ProductJson productJson = new ProductJson(osmData,structure,levels,version);
 			productJson.createProducts();
 			
 			//make network requests
-			NetRequest xmlRequest;
-			int responseCode;
+			//commit the data
+			JSONObject resultJson = productJson.getStructureJson();
+			success = submitJson(PublishRequestSource.STRUCTURE_FILENAME,structure.getId(),version,resultJson);
+			//handle failure
+			if(!success) {
+				return null;
+			}
 			
-//get a version number for the structure data
-//go back and add this to the files!!!!! (I ignored it. I should get the version first)
-//submit the structure and level files.
-//names: indoormap, lvlgeom, key: id of structure or level
-			
-//			//commit the data
-////			CommitRequest commitRequest = new CommitRequest(changeSet,osmData);
-////			xmlRequest = new NetRequest(commitRequest);
-////			xmlRequest.setCredentials(username, password);
-////			responseCode = xmlRequest.doRequest();
-//			
-//			if(responseCode == 200) {
-//				//success
-//				success = true;
-//			}
-////			else if(responseCode == 401) {
-////				//unauthorized
-////				errorMsg = "There username and password are not valid.";
-////				loginManager.setCredentials(username,null);
-////				success = false;
-////				return null;
-////			}
-//			else {
-//				errorMsg = "Server error: response code " + responseCode;
-//				success = false;
-//				return null;
-//			}
+			int cnt = levels.size();
+			List<JSONObject> levelJsons = productJson.getLevelJsons();
+			for(int i = 0; i < cnt; i++) {
+				OsmRelation level = levels.get(i);
+				resultJson = levelJsons.get(i);
+				success = submitJson(PublishRequestSource.LEVEL_FILENAME,level.getId(),version,resultJson);
+				//handle failure
+				if(!success) {
+					return null;
+				}
+			}
 			
 			success = true;
 		}
@@ -129,6 +137,21 @@ public class PublishTask extends SwingWorker<Object,Object>{
 		}
 		
 		return "";
+	}
+	
+	private boolean submitJson(String fileName, long key, int version, JSONObject json) throws Exception {
+		PublishRequestSource prs = new PublishRequestSource(fileName,key,version,json);
+		NetRequest netRequest = new NetRequest(prs);
+		int responseCode = netRequest.doRequest();
+
+		if(responseCode == 200) {
+			//success
+			return true;
+		}
+		else {
+			errorMsg = "Server error: response code " + responseCode;
+			return false;
+		}
 	}
 	
 	@Override
