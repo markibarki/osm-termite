@@ -28,6 +28,6 @@ public interface RequestSource {
 	
 	/** This method will be called to red the response body. The input stream is
 	 * buffered input stream and it is closed from the NetRequest code. */
-	public void readResponseBody(InputStream inputStream) throws Exception;
+	public void readResponseBody(int responseCode, InputStream inputStream) throws Exception;
 
 }

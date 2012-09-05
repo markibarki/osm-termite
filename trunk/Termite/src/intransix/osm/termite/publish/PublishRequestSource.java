@@ -62,15 +62,20 @@ public class PublishRequestSource implements RequestSource {
 	
 	/** This method will be called to red the response body. The input stream is
 	 * buffered input stream and it is closed from the NetRequest code. */
-	public void readResponseBody(InputStream inputStream) throws Exception {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		int c;
-		while((c = inputStream.read()) != -1) {
-			baos.write((byte)c);
-		}
-		byte[] data = baos.toByteArray();
-		if(data.length > 0) {
-			response = new String(data,"UTF-8");
+	public void readResponseBody(int responseCode, InputStream inputStream) throws Exception {
+		if(responseCode == 200) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			int c;
+			while((c = inputStream.read()) != -1) {
+				baos.write((byte)c);
+			}
+			byte[] data = baos.toByteArray();
+			if(data.length > 0) {
+				response = new String(data,"UTF-8");
+			}
+			else {
+				response = null;
+			}
 		}
 		else {
 			response = null;

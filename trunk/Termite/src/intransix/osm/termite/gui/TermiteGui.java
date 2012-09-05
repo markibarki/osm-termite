@@ -57,15 +57,13 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private OsmData osmData;
 	
 	//editor modes
-	private EditorMode searchMode; //not an edit editor mode - has no button for mode toolbar
-	private EditorMode defaultEditMode; //the default edit editor mode
 	private java.util.List<EditorMode> editModes; //the list of possible edit editor modes
 	private EditorMode activeMode = null; //the active editor mode
+	private DownloadEditorMode downloadMode;
+	private SelectEditorMode selectMode;
 	
 	//edit mode ui elements we need to change programmatically
-	private boolean editModesEnabled = false;
 	private ButtonGroup editModeButtonGroup;
-	private JToggleButton defaultEditModeButton;
 	
 	//feature layer info
 	private FeatureInfoMap featureMap;
@@ -185,6 +183,8 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		//control state based on presence of data
 		if(osmData != null) {
+			this.setEditModesEnable(true);
+					
 			//put the app in the edit state
 			setToEditState();
 			//set the level to null (outdoor level)
@@ -194,8 +194,10 @@ public class TermiteGui extends javax.swing.JFrame implements
 			osmData.addDataChangedListener(this);
 		}
 		else {
+			this.setEditModesEnable(true);
+			
 			//put the app in the search state
-			setToSearchState();
+			setToDownloadState();
 			
 			//update the menu
 			clearUndoItem();
@@ -278,6 +280,12 @@ public class TermiteGui extends javax.swing.JFrame implements
 		}
 	}
 	
+	public void selectBaseMap(TileInfo tileInfo) {
+		baseMapLayer.setTileInfo(tileInfo);
+		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
+		mapPanel.repaint();
+	}
+	
 	// </editor-fold>
 	
 	// <editor-fold defaultstate="collapsed" desc="UI Component Methods">
@@ -328,19 +336,18 @@ public class TermiteGui extends javax.swing.JFrame implements
 		//editor modes
 				
 		//create the editor modes
-		searchMode = new SearchEditorMode(this);
-		
-		SelectEditorMode selectMode = new SelectEditorMode(this);
+		downloadMode = new DownloadEditorMode(this);
+		selectMode = new SelectEditorMode(this);
 		NodeEditorMode nodeMode = new NodeEditorMode(this);
 		WayEditorMode wayMode = new WayEditorMode(this);
 		GeocodeEditorMode geocodeMode = new GeocodeEditorMode(this);
 		
 		editModes = new ArrayList<EditorMode>();
+		editModes.add(downloadMode);
 		editModes.add(selectMode);
 		editModes.add(nodeMode);
 		editModes.add(wayMode);
 		editModes.add(geocodeMode);
-		searchMode.setLayers(mapLayerManager);
 		
 		for(EditorMode editMode:editModes) {
 			editMode.setLayers(mapLayerManager);
@@ -353,7 +360,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 		initializeView();
 		
 		//set initial mode
-		setToSearchState();
+		setToDownloadState();
 	}
 	// </editor-fold>
 	
@@ -413,10 +420,10 @@ public class TermiteGui extends javax.swing.JFrame implements
     /** Handle the key-pressed event from the text field. */
 	@Override
     public void keyPressed(KeyEvent e) {
-		if(editModesEnabled) {
-			//select editor mode
-			for(EditorMode editMode:editModes) {
-				if(editMode.getUIShortcut() == e.getKeyCode()) {
+		//select editor mode
+		for(EditorMode editMode:editModes) {
+			if(editMode.getUIShortcut() == e.getKeyCode()) {
+				if(editMode.getModeEnabled()) {
 					JToggleButton button = editMode.getUIButton();
 					if(!button.isSelected()) {
 						button.setSelected(true);
@@ -425,6 +432,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 				}
 			}
 		}
+
     }
 
     /** Handle the key-released event from the text field. */
@@ -440,19 +448,19 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	// <editor-fold defaultstate="collapsed" desc="Edit Mode and State methods">
  	
-	private void setToSearchState() {
-		this.setEditModesEnable(false);
-		this.setEditorMode(searchMode);
-		this.editModeButtonGroup.clearSelection();
+	private void setToDownloadState() {
+		this.setEditorMode(downloadMode);
+		JToggleButton button = downloadMode.getUIButton();
+		button.setSelected(true);
 		
 		//disable some menu items
 		this.commitItem.setEnabled(false);
 	}
 	
 	private void setToEditState() {
-		this.setEditModesEnable(true);
-		this.setEditorMode(defaultEditMode);
-		defaultEditModeButton.setSelected(true);
+		this.setEditorMode(selectMode);
+		JToggleButton button = selectMode.getUIButton();
+		button.setSelected(true);
 		
 		//enable some menu items
 		this.commitItem.setEnabled(true);
@@ -462,11 +470,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		editModeButtonGroup = new ButtonGroup();
 		int i = 0;
 		for(EditorMode mode:editModes) {
-			
-			//initialize default edit mode
-			if(defaultEditMode == null) {
-				defaultEditMode = mode;
-			}
 			
 			//create button
 			String imageFile = mode.getIconImageName();
@@ -491,12 +494,10 @@ public class TermiteGui extends javax.swing.JFrame implements
 				mode.setUIShortcut(EDIT_MODE_SHORTCUTS[i]);
 			}
 			i++;
-			
-			if(mode == defaultEditMode) {
-				defaultEditModeButton = button;
-			}
-			
 		}
+		
+		//set the edit modes to the proper state.
+		this.setEditModesEnable(osmData != null);
 	}
 	
 	private void setEditorMode(EditorMode editorMode) {
@@ -516,10 +517,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 		mapPanel.repaint();
 	}
 	
-	private void setEditModesEnable(boolean enabled) {
-		editModesEnabled = enabled;
-		for(Component c:modeToolBar.getComponents()) {
-			c.setEnabled(enabled);
+	private void setEditModesEnable(boolean dataPresent) {
+		for(EditorMode editorMode:editModes) {
+			editorMode.setModeState(dataPresent);
 		}
 	}
 	
@@ -844,12 +844,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 			JOptionPane.showMessageDialog(this,"You must select a level to publish.");
 		}
 		
-	}
-	
-	private void selectBaseMap(TileInfo tileInfo) {
-		baseMapLayer.setTileInfo(tileInfo);
-		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
-		mapPanel.repaint();
 	}
 	
 	private void manageSourceLayers() {

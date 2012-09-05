@@ -3,6 +3,7 @@ package intransix.osm.termite.map.data;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import intransix.osm.termite.net.RequestSource;
+import intransix.osm.termite.net.NetRequest;
 import java.io.InputStream;
 import java.io.OutputStream;
 import javax.xml.parsers.SAXParser;
@@ -59,5 +60,10 @@ public class CloseChangeSetRequest implements RequestSource {
 	
 	/** This method will be called to red the response body. */
 	@Override
-	public void readResponseBody(InputStream is) throws Exception {}
+	public void readResponseBody(int responseCode, InputStream is) throws Exception {
+		if(responseCode != 200) {
+			String bodyText = NetRequest.readText(is);
+			System.out.println(bodyText);
+		}
+	}
 }

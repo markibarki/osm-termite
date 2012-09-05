@@ -1,5 +1,6 @@
 package intransix.osm.termite.map.data;
 
+import intransix.osm.termite.net.NetRequest;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import intransix.osm.termite.net.RequestSource;
@@ -79,16 +80,16 @@ public class OpenChangeSetRequest implements RequestSource {
 	
 	/** This method will be called to red the response body. */
 	@Override
-	public void readResponseBody(InputStream is) throws Exception {
-		int c;
-		StringBuilder sb = new StringBuilder();
-		while((c = is.read()) != -1) {
-			sb.append((char)c);
+	public void readResponseBody(int responseCode, InputStream is) throws Exception {
+		String body = NetRequest.readText(is);
+		if(responseCode == 200) {
+			//read the id
+			long id = Long.decode(body);
+			changeSet.setId(id);
 		}
-		
-		//read the id
-		long id = Long.decode(sb.toString());
-		changeSet.setId(id);
+		else {
+			System.out.println(body);
+		}
 	}
 
 }

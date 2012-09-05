@@ -19,7 +19,7 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	//====================
 	// Properties
 	//====================
-	private final static String MODE_NAME = "Geocode";
+	private final static String MODE_NAME = "Geocode Mode";
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/globe25.png";
 	
 	
@@ -73,6 +73,8 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	private ButtonGroup typeButtonGroup;
 	private JRadioButton[] radioButtons;
 	
+	private boolean sourceDataPresent;
+	
 	//====================
 	// Public Methods
 	//====================
@@ -80,6 +82,8 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 	public GeocodeEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
 		createToolBar();
+		
+		setDataEnabledStates(true,true);
 	}
 	
 	/** This method will be called to set needed map layers. */
@@ -181,6 +185,17 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		if((selection != null)&&(sourceLayers.contains(selection))) {
 			sourceSelector.setSelectedItem(selection);
 		} 
+		boolean newEnableState = (sourceLayers.size() > 0);
+		if(newEnableState != getModeEnabled()) {
+			this.setEnabled(newEnableState);
+		}
+	}
+	
+	/** This method should be called when source data status changes. */
+	public void setsourceDataPresent(boolean sourceDataPresent) {
+		this.sourceDataPresent = sourceDataPresent;
+		//set the mode state - pass a dummy value for data present, not used
+		this.setModeState(false);
 	}
 	
 	
@@ -253,6 +268,12 @@ public class GeocodeEditorMode extends EditorMode implements ActionListener, Geo
 		else if(actionCommand.equals(BUTTON_CMDS[2])) {
 			geocodeLayer.setLayerState(GeocodeLayer.LayerState.PLACE_P2);
 		}
+	}
+	
+	@Override
+	public void setModeState(boolean mapDataPresent) {
+		//set enabled based on image source data not map data
+		setEnabled(sourceDataPresent);
 	}
 	
 	private void createToolBar() {	
