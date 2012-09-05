@@ -92,7 +92,7 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 
             },
             new String [] {
-                "Source Image", "Enabled"
+                "Source Image", "Visible"
             }
         ) {
             Class[] types = new Class [] {
@@ -113,14 +113,14 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
             }
         });
 
-        newButton.setText("New");
+        newButton.setText("Add");
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
             }
         });
 
-        deleteButton.setText("Delete");
+        deleteButton.setText("Remove");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
@@ -136,7 +136,7 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(15, Short.MAX_VALUE))
+                        .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(closeButton)
