@@ -71,17 +71,23 @@ public class NetRequest {
 			}
 			
 			int responseCode = conn.getResponseCode();
-			if(responseCode == HttpURLConnection.HTTP_OK) {
-				//parse response
-				InputStream is = conn.getInputStream();
-				BufferedInputStream bis = new BufferedInputStream(is);
-				try {
-					requestSource.readResponseBody(bis);
-					bis.close();
-				}
-				finally {
-					is.close();
-				}
+
+			//parse response
+			InputStream is;
+			if(responseCode < 400) {
+				is = conn.getInputStream();
+			}
+			else {
+				is = conn.getErrorStream();
+			}
+
+			BufferedInputStream bis = new BufferedInputStream(is);
+			try {
+				requestSource.readResponseBody(responseCode, bis);
+				bis.close();
+			}
+			finally {
+				is.close();
 			}
 		
 			return responseCode;
@@ -92,6 +98,17 @@ public class NetRequest {
 				conn.disconnect();
 			}
 		}
+	}
+	
+	/** This is a utility method to read an input stream as text. */
+	public static String readText(InputStream is) throws Exception {
+		int c;
+		StringBuilder sb = new StringBuilder();
+		while((c = is.read()) != -1) {
+			sb.append((char)c);
+		}
+
+		return sb.toString();
 	}
 	
 	//=====================

@@ -1,5 +1,6 @@
 package intransix.osm.termite.map.data;
 
+import intransix.osm.termite.net.NetRequest;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import intransix.osm.termite.net.RequestSource;
@@ -68,14 +69,20 @@ public class MapDataRequest extends DefaultHandler implements RequestSource {
 	
 	/** This method will be called to red the response body. */
 	@Override
-	public void readResponseBody(InputStream is) throws Exception {
-		//parse xml
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		SAXParser saxParser = factory.newSAXParser();	
-		saxParser.parse(is,this);
-		
-		//post-parsing actions
-		osmData.dataChanged(OsmData.INITIAL_DATA_VERSION);
+	public void readResponseBody(int responseCode, InputStream is) throws Exception {
+		if(responseCode == 200) {
+			//parse xml
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			SAXParser saxParser = factory.newSAXParser();	
+			saxParser.parse(is,this);
+
+			//post-parsing actions
+			osmData.dataChanged(OsmData.INITIAL_DATA_VERSION);
+		}
+		else {
+			String bodyText = NetRequest.readText(is);
+			System.out.println(bodyText);
+		}
 	}
 	
 	/** This is the SAX parser start element method. */

@@ -10,6 +10,10 @@ import intransix.osm.termite.render.MapLayerManager;
  */
 public abstract class EditorMode {
 	
+	private boolean modeEnabled;
+	private boolean dataPresentEnabled = true;
+	private boolean dataMissingEnabled = false;
+	
 	/** This method returns the name of the editor mode. 
 	 * 
 	 * @return		The name of the editor mode 
@@ -35,6 +39,11 @@ public abstract class EditorMode {
 	public void setLayers(MapLayerManager mapLayerManager) {
 	}
 	
+	/** This method returns true if the mode is enabled. */
+	public boolean getModeEnabled() {
+		return modeEnabled;
+	}
+	
 	//---------------------
 	// Management fucntions
 	//---------------------
@@ -56,5 +65,23 @@ public abstract class EditorMode {
 	
 	public int getUIShortcut() {
 		return shortcut;
+	}
+	
+	/** This method is called when the map data present state changes. */
+	public void setModeState(boolean mapDataPresent) {
+		boolean enabled = mapDataPresent ? dataPresentEnabled : dataMissingEnabled;
+		setEnabled(enabled);
+	}
+	
+	protected void setDataEnabledStates(boolean dataPresentEnabled, boolean dataMissingEnabled) {
+		this.dataPresentEnabled = dataPresentEnabled;
+		this.dataMissingEnabled = dataMissingEnabled;
+	}
+	
+	protected void setEnabled(boolean enabled) {
+		modeEnabled = enabled;
+		if(uiButton != null) {
+			uiButton.setEnabled(modeEnabled);
+		}
 	}
 }

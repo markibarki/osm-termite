@@ -23,7 +23,7 @@ public class TermiteApp {
 	// Private Properties
 	//=====================
 	
-	private final static String VERSION = "0.0.4";
+	private final static String VERSION = "0.0.6p";
 	
 	private TermiteGui gui;
 	private LoginManager loginManager = new LoginManager();
@@ -130,5 +130,11 @@ public class TermiteApp {
 		//create the gui
 		gui = new TermiteGui(this);
 		gui.initialize();
+		
+		//set the default map
+		TileInfo defaultMap = TileInfo.getDefaultMap(mapInfoJson,tileInfoList);
+		if(defaultMap != null) {
+			gui.selectBaseMap(defaultMap);
+		}
 	}
 }

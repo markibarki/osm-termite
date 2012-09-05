@@ -16,14 +16,18 @@ import intransix.osm.termite.gui.task.MapDataRequestTask;
  *
  * @author sutter
  */
-public class SearchEditorMode extends EditorMode implements ActionListener {
+public class DownloadEditorMode extends EditorMode implements ActionListener {
 	//====================
 	// Properties
 	//====================
-	private final static String MODE_NAME = "Search Mode";
+	private final static String MODE_NAME = "Download Mode";
+	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/downloadMode.png";
 	
 	private final static String SEARCH_CMD = "saerch";
 	private final static String DOWNLOAD_CMD = "download";
+	
+	private final static int SPACE_X = 50;
+	private final static int SPACE_Y = 3;
 
 	private TermiteGui termiteGui;
 	private SearchLayer searchLayer;
@@ -34,9 +38,11 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	// Public Methods
 	//====================
 	
-	public SearchEditorMode(TermiteGui termiteGui) {
+	public DownloadEditorMode(TermiteGui termiteGui) {
 		this.termiteGui = termiteGui;
 		createToolBar();
+		
+		setDataEnabledStates(false,true);
 	}
 	
 	/** This method will be called to set needed map layers. */
@@ -59,7 +65,7 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	 * @return		The name of the icon image for this mode. 
 	 */
 	public String getIconImageName() {
-		return null;
+		return ICON_NAME;
 	}
 	
 	/** This method is called when the editor mode is turned on. 
@@ -116,15 +122,25 @@ public class SearchEditorMode extends EditorMode implements ActionListener {
 	private void createToolBar() {
 		toolBar = new JToolBar();
 		toolBar.setFloatable(false);
-		toolBar.add(new JLabel("Enter a location: "));
+		
+		JLabel label = new JLabel("Select area on map and press ");
+		toolBar.add(label);
+		JButton downloadButton = new JButton("Download");
+		toolBar.add(downloadButton);
+		
+		Box.Filler space = new javax.swing.Box.Filler(new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y));
+		toolBar.add(space);
+		
+		
+//		toolBar.add(new JLabel("Enter a location: "));
 		JTextField textField = new JTextField();
 		textField.setColumns(25);
 		textField.setMaximumSize(textField.getPreferredSize());
 		toolBar.add(textField);
 		JButton searchButton = new JButton("Search");
-		JButton downloadButton = new JButton("Download Data");
+		
 		toolBar.add(searchButton);
-		toolBar.add(downloadButton);
+		
 		
 		//add action listeners
 		searchButton.setActionCommand(SEARCH_CMD);

@@ -92,6 +92,23 @@ public class TileInfo {
 		}
 	}
 	
+	public static TileInfo getDefaultMap(JSONObject json,List<TileInfo> tileInfoList) {
+		try {
+			int defaultIndex = json.getInt("defaultMap");
+			if((defaultIndex >= 0)&&(defaultIndex < tileInfoList.size())) {
+				return tileInfoList.get(defaultIndex);
+			}
+			else {
+				return null;
+			}
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
+	}
+		
+	
 	public String getUrl(int ix, int iy, int zoom) {
 		switch(requestType) {
 			case PARAMS_XYZ:
