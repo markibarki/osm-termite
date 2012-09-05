@@ -283,6 +283,20 @@ public class TermiteGui extends javax.swing.JFrame implements
 	public void selectBaseMap(TileInfo tileInfo) {
 		baseMapLayer.setTileInfo(tileInfo);
 		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
+		//update selection
+		if(tileInfo != null) {
+			String mapName = tileInfo.getName();
+			Enumeration<AbstractButton> en = baceMapButtonGroup.getElements();
+			AbstractButton ab;
+			while(en.hasMoreElements()) {
+				ab = en.nextElement();
+				String name = ab.getText();
+				if((name.equals(mapName))&&(!ab.isSelected())) {
+					ab.setSelected(true);
+					break;
+				}
+			}
+		}
 		mapPanel.repaint();
 	}
 	
