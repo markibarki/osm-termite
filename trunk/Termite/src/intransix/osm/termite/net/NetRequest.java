@@ -37,7 +37,9 @@ public class NetRequest {
 	 * @return				The integer response code for the request.
 	 * @throws Exception 
 	 */
-	public int doRequest() throws Exception {
+	public int doRequest() throws Exception { 
+		
+System.out.println(requestSource.getUrl());
 		
 		URL url = new URL(requestSource.getUrl());
 		HttpURLConnection conn = null;
@@ -71,6 +73,8 @@ public class NetRequest {
 			}
 			
 			int responseCode = conn.getResponseCode();
+			
+System.out.println("response code: " + responseCode);
 
 			//parse response
 			InputStream is;
@@ -102,10 +106,13 @@ public class NetRequest {
 	
 	/** This is a utility method to read an input stream as text. */
 	public static String readText(InputStream is) throws Exception {
-		int c;
+		InputStreamReader in = new InputStreamReader(is, "UTF-8");
+		BufferedReader reader = new BufferedReader(in);
 		StringBuilder sb = new StringBuilder();
-		while((c = is.read()) != -1) {
-			sb.append((char)c);
+		while(true) {
+			String data = reader.readLine();
+			if(data == null) break;
+			sb.append(data);
 		}
 
 		return sb.toString();
