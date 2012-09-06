@@ -41,7 +41,7 @@ public class CommitRequest extends DefaultHandler implements RequestSource {
 		this.changeSet = changeSet;
 		this.osmData = osmData;
 		
-		String path = String.format(OsmModel.COMMIT_REQUEST_PATH,changeSet.getId());
+		String path = String.format(Locale.US,OsmModel.COMMIT_REQUEST_PATH,changeSet.getId());
 		url = OsmModel.OSM_SERVER + path;
 	}
 	

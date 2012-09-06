@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.helpers.DefaultHandler;
+import java.util.Locale;
 
 /**
  * This class manages an OSM map data request.
@@ -36,7 +37,7 @@ public class MapDataRequest extends DefaultHandler implements RequestSource {
 	public MapDataRequest(double minLat, double minLon, double maxLat, double maxLon) {
 		osmData = new OsmData();
 		
-		String path = String.format(OsmModel.DATA_REQUEST_PATH,minLat,minLon,maxLat,maxLon);
+		String path = String.format(Locale.US, OsmModel.DATA_REQUEST_PATH,minLat,minLon,maxLat,maxLon);
 		url = OsmModel.OSM_SERVER + path;
 	}
 	

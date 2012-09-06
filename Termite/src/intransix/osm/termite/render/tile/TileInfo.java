@@ -94,7 +94,7 @@ public class TileInfo {
 	
 	public static TileInfo getDefaultMap(JSONObject json,List<TileInfo> tileInfoList) {
 		try {
-			int defaultIndex = json.getInt("defaultMap");
+			int defaultIndex = json.optInt("defaultMap",-1);
 			if((defaultIndex >= 0)&&(defaultIndex < tileInfoList.size())) {
 				return tileInfoList.get(defaultIndex);
 			}
@@ -123,7 +123,7 @@ public class TileInfo {
 	}
 	
 	private String getXYZUrl(int ix, int iy, int zoom) {
-		return String.format(urlTemplate,ix,iy,zoom);
+		return String.format(Locale.US,urlTemplate,ix,iy,zoom);
 	}
 	
 	private String getLatLonMinMaxUrl(int ix, int iy, int zoom) {
@@ -138,7 +138,7 @@ public class TileInfo {
 		double maxLonDeg = Math.toDegrees(MercatorCoordinates.mxToLonRad(maxMercX));
 		double minLatDeg = Math.toDegrees(MercatorCoordinates.myToLatRad(maxMercY));
 		
-		return String.format(urlTemplate,minLatDeg,minLonDeg,maxLatDeg,maxLonDeg);
+		return String.format(Locale.US,urlTemplate,minLatDeg,minLonDeg,maxLatDeg,maxLonDeg);
 	}
 	
 	

@@ -5,6 +5,7 @@
 
 package intransix.osm.termite.publish;
 
+import java.util.Locale;
 import org.json.JSONString;
 
 /**
@@ -23,7 +24,7 @@ public class FormattedDecimal implements JSONString {
 	}
 
 	public String toJSONString() {
-		return String.format("%1$." + String.valueOf(decimalPlaces) + "f", value);
+		return String.format(Locale.US,"%1$." + String.valueOf(decimalPlaces) + "f", value);
 	}
 	
 	public double getValue() {
