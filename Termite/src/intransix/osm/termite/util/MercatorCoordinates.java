@@ -6,15 +6,19 @@ import java.awt.geom.AffineTransform;
  * These are transformations between latitude and longitude in radians and the version of
  * mercator coordinates where a span of 1 unit covers the globe.
  * 
- * This source code was provided by Micello, Inc.
+ * Original source code was provided by Micello, Inc.
  */
 public class MercatorCoordinates {
 	
 	public final static double MIN_SIZE = 0;
 	public final static double MAX_SIZE = 1;
 	
-	private final static double EARTH_CIRCUMFERENCE = 40040000.0; //somewhere between polar and equitorial value - I picked it at random though
-	private final static double METERS_PER_MERC0 = EARTH_CIRCUMFERENCE;
+	//value used in conversion for EPSG:900913 (mercator in meters coordinates)
+	private final static double EARTH_CIRC_METERS = 40075016.68; 
+	private final static double METERS_PER_MERC0 = EARTH_CIRC_METERS;
+	
+	public final static int MAX_ZOOM = 30;
+	public final static int MAX_COUNT = 1 << MAX_ZOOM;
 
 	/** This method returns the number of meters in 1 mercator coordinate unit, for either the x or y direction. */
 	public static double metersPerMerc(double my) {
@@ -94,6 +98,56 @@ public class MercatorCoordinates {
 
 		return new AffineTransform(mxx,myx,mxy,myy,mx0,my0);
 
+	}
+	
+		/** This gets the quadkey for a given mx and my
+	 * 
+	 * @param mx	mercator coordinates, with a range of 0 to 1
+	 * @param my	mercator coordinates, with a range of 0 to 1
+	 * @return		The quadkey string
+	 */
+	public static String getQuadkeyMax(double mx, double my) {
+		int mxMax = (int)(mx * MAX_COUNT);
+		int myMax = (int)(my * MAX_COUNT);
+		return getQuadkey(mxMax,myMax,MAX_ZOOM);
+	}
+	
+	/** This returns the quadkey for the given tile.
+	 * 
+	 * @param x			The tile x value
+	 * @param y			The tile y value
+	 * @param zoom		The zoom scale
+	 * @return			The quadkey string
+	 */
+	public static String getQuadkey(int tileX, int tileY, int zoom) {
+		int[] bits = new int[zoom];
+		boolean xbit, ybit;
+		int mask = 0x01;
+		for(int i = 0; i < zoom; i++) {
+			xbit = ((tileX & mask) != 0);
+			ybit = ((tileY & mask) != 0);
+			bits[i] = (xbit ? 1 : 0) + (ybit ? 2 : 0);
+			mask <<= 1;
+		}
+		StringBuilder sb = new StringBuilder();
+		for(int i = zoom-1; i >= 0; i--) {
+			sb.append(bits[i]);
+		}
+		return sb.toString();
+	}
+	
+	public static double mercMetersXToMercX(double metersX) {
+		return metersX/EARTH_CIRC_METERS + .5;
+	}
+	public static double mercMetersYToMercY(double metersY) {
+		return .5 - metersY/EARTH_CIRC_METERS;
+	}
+	
+	public static double mercXToMetersX(double mx) {
+		return (mx - .5) * EARTH_CIRC_METERS;
+	}
+	public static double mercYToMetersY(double my) {
+		return (.5 - my) * EARTH_CIRC_METERS;
 	}
 
 }
