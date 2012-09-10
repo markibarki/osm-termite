@@ -110,7 +110,7 @@ public class PublishTask extends SwingWorker<Object,Object>{
 			//make network requests
 			//commit the data
 			JSONObject resultJson = productJson.getStructureJson();
-			success = submitJson(PublishRequestSource.STRUCTURE_FILENAME,structure.getId(),version,resultJson);
+			success = submitProductJson(PublishRequestSource.STRUCTURE_FILENAME,structure.getId(),version,resultJson);
 			//handle failure
 			if(!success) {
 				return null;
@@ -121,11 +121,19 @@ public class PublishTask extends SwingWorker<Object,Object>{
 			for(int i = 0; i < cnt; i++) {
 				OsmRelation level = levels.get(i);
 				resultJson = levelJsons.get(i);
-				success = submitJson(PublishRequestSource.LEVEL_FILENAME,level.getId(),version,resultJson);
+				success = submitProductJson(PublishRequestSource.LEVEL_FILENAME,level.getId(),version,resultJson);
 				//handle failure
 				if(!success) {
 					return null;
 				}
+			}
+			
+			//post the footprint to the feature service
+			resultJson = productJson.getFootprintJson();
+			success = submitFeatureJson(PublishFeatureRequestSource.STRUCTURE_LAYERNAME,structure.getId(),resultJson);
+			//handle failure
+			if(!success) {
+				return null;
 			}
 			
 			success = true;
@@ -139,8 +147,23 @@ public class PublishTask extends SwingWorker<Object,Object>{
 		return "";
 	}
 	
-	private boolean submitJson(String fileName, long key, int version, JSONObject json) throws Exception {
+	private boolean submitProductJson(String fileName, long key, int version, JSONObject json) throws Exception {
 		PublishRequestSource prs = new PublishRequestSource(fileName,key,version,json);
+		NetRequest netRequest = new NetRequest(prs);
+		int responseCode = netRequest.doRequest();
+
+		if(responseCode == 200) {
+			//success
+			return true;
+		}
+		else {
+			errorMsg = "Server error: response code " + responseCode;
+			return false;
+		}
+	}
+	
+	private boolean submitFeatureJson(String layerName, long key, JSONObject json) throws Exception {
+		PublishFeatureRequestSource prs = new PublishFeatureRequestSource(layerName,key,json);
 		NetRequest netRequest = new NetRequest(prs);
 		int responseCode = netRequest.doRequest();
 
