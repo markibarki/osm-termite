@@ -17,8 +17,14 @@ import java.awt.geom.Rectangle2D;
  */
 public class ProductJson {
 	
-	private final static int PRECISION = 3;
+	private final static int OPENLAYERS_NAT_PRECISION = 3;
+	private final static int LAT_LON_PRECISION = 7;
 	private final static char KEY_VALUE_DELIMITER = ':';
+	
+	private final static int MERC_UNIT_FRAME = 0;
+	private final static int LAT_LON_FRAME = 1;
+	private final static int OPENLAYERS_NAT_FRAME = 2;
+	
 	
 	private OsmData osmData;
 	private OsmWay structure;
@@ -29,6 +35,8 @@ public class ProductJson {
 	
 	private JSONArray structureLevelJsons;
 	private List<JSONObject> levelJsons = new ArrayList<JSONObject>();
+	
+	private JSONObject footprintJson;
 	
 	private HashSet<String> namespaces = new HashSet<String>();
 	private AffineTransform mercToNat;
@@ -48,12 +56,20 @@ public class ProductJson {
 		return levelJsons;
 	}
 	
+	public JSONObject getFootprintJson() {
+		return footprintJson;
+	}
+	
 	public void createProducts() throws Exception {
+		//create product jsons
 		loadStructureJson();
 		for(OsmRelation level:levels) {
 			loadLevelJson(level);
 		}
 		completeJsons();
+		
+		//create footprint feature
+		createFootprintFeature();
 	}
 	
 	private void loadStructureJson() throws Exception {
@@ -111,6 +127,9 @@ public class ProductJson {
 	
 	private void loadTransformInfo(JSONObject json, Rectangle2D rect) throws Exception {
 		
+		//open layers nat frame - y increases in the North direction
+		//micello natural - y increases in south direction
+		
 		//generate the height, width and transform
 		double metersPerMerc = MercatorCoordinates.metersPerMerc(rect.getCenterY());
 		
@@ -122,7 +141,7 @@ public class ProductJson {
 		double maxPixX = (rect.getWidth()) * metersPerMerc;
 		double maxPixY = (rect.getHeight()) * metersPerMerc;
 		
-		//get the transform from nat to latlon
+		//get the transform from open layers nat to latlon
 		double txx = (maxLon - minLon)/maxPixX;
 		double tyx = 0;
 		double txy = 0;
@@ -137,7 +156,7 @@ public class ProductJson {
 		natToLatLonJson.put(tx0);
 		natToLatLonJson.put(ty0);
 		
-		//get the nat to merc and mrec to nat tranforms
+		//get the nat to merc and mrec to openlayers nat tranforms
 		txx = 1/metersPerMerc;
 		tyx = 0;
 		txy = 0;
@@ -151,7 +170,6 @@ public class ProductJson {
 		json.put("t",natToLatLonJson);
 		json.put("h",maxPixY);
 		json.put("w",maxPixX);
-		
 	}
 			
 	private void loadLevelJson(OsmRelation level) throws Exception {
@@ -194,7 +212,7 @@ public class ProductJson {
 			feature.setFilterState(0);
 			filter.filterObject(feature);
 			if(feature.renderEnabled()) {
-				JSONObject featureJson = getFeatureJson(feature);
+				JSONObject featureJson = getFeatureJson(feature,OPENLAYERS_NAT_FRAME);
 				if(featureJson != null) {
 					featureArray.put(featureJson);
 				}
@@ -207,6 +225,10 @@ public class ProductJson {
 		structureLevelJsons.put(partialJson);
 	}	
 	
+	private void createFootprintFeature() throws Exception {
+		footprintJson = getFeatureJson(structure,LAT_LON_FRAME);
+	}
+	
 	private void completeJsons() throws Exception {
 		//save the name spaces
 		JSONArray namespaceJson = new JSONArray();
@@ -217,7 +239,9 @@ public class ProductJson {
 	}
 	
 	
-	private JSONObject getFeatureJson(OsmObject feature) throws Exception {
+	/** This method creates a geojson feature for an OSM Object. The transform dictates
+	 * the coordinates of the json. A unit transform will create merc coordinates.	 */
+	private JSONObject getFeatureJson(OsmObject feature, int frame) throws Exception {
 		
 		//don't include nodes with no properties
 		if((feature instanceof OsmNode)&&(!feature.hasProperties())) {
@@ -258,17 +282,17 @@ public class ProductJson {
 		json.put("geometry",geomJson);
 		if(feature instanceof OsmNode) {
 			geomJson.put("type","Point");
-			coordinates = getJsonPoint((OsmNode)feature);
+			coordinates = getJsonPoint((OsmNode)feature,frame);
 		}
 		else if(feature instanceof OsmWay) {
 			OsmWay way = (OsmWay)feature;
 			if(way.getIsArea()) {
 				geomJson.put("type","Polygon");
-				coordinates = getJsonPointArrayList(way);
+				coordinates = getJsonPointArrayList(way,frame);
 			}
 			else {
 				geomJson.put("type","LineString");
-				coordinates = getJsonPointArray(way);
+				coordinates = getJsonPointArray(way,frame);
 			}
 		}
 		
@@ -284,21 +308,34 @@ public class ProductJson {
 	}
 	
 	/** This method creates a json point in the format [x,y]. */
-	JSONArray getJsonPoint(OsmNode node) throws Exception {
+	JSONArray getJsonPoint(OsmNode node, int frame) throws Exception {
 		Point2D point = new Point2D.Double();
-		mercToNat.transform(node.getPoint(), point);
+		int precision;
+		if(frame == OPENLAYERS_NAT_FRAME) {
+			mercToNat.transform(node.getPoint(), point);
+			precision = OPENLAYERS_NAT_PRECISION;
+		}
+		else if(frame == LAT_LON_FRAME) {
+			double lon = Math.toDegrees(MercatorCoordinates.mxToLonRad(node.getPoint().getX()));
+			double lat = Math.toDegrees(MercatorCoordinates.myToLatRad(node.getPoint().getY()));
+			point.setLocation(lon,lat);
+			precision = LAT_LON_PRECISION;
+		}
+		else {
+			throw new Exception("Unsupported output format");
+		}
 		JSONArray pointJson = new JSONArray();
-		pointJson.put(new FormattedDecimal(point.getX(),PRECISION));
-		pointJson.put(new FormattedDecimal(point.getY(),PRECISION));
+		pointJson.put(new FormattedDecimal(point.getX(),precision));
+		pointJson.put(new FormattedDecimal(point.getY(),precision));
 		return pointJson;
 	}
 	
 	/** This returns an json array of points corresponding to the passed node list. */
-	JSONArray getJsonPointArray(OsmWay way) throws Exception {
+	JSONArray getJsonPointArray(OsmWay way, int frame) throws Exception {
 		
 		JSONArray pointJsonArray = new JSONArray();
 		for(OsmNode node:way.getNodes()) {
-			JSONArray point = getJsonPoint(node);
+			JSONArray point = getJsonPoint(node,frame);
 			if(point != null) {
 				pointJsonArray.put(point);
 			}
@@ -308,9 +345,9 @@ public class ProductJson {
 	
 	/** This returns a list of point lists, corresponding to the main nodes
 	 * along with any inside rings. This is used for a polygon. */
-	JSONArray getJsonPointArrayList(OsmWay way /*, List<OsmWay> holes */) throws Exception {		
+	JSONArray getJsonPointArrayList(OsmWay way /*, List<OsmWay> holes */, int frame) throws Exception {		
 		JSONArray pointJsonArrayList = new JSONArray();
-		JSONArray pointJsonArray = getJsonPointArray(way);
+		JSONArray pointJsonArray = getJsonPointArray(way,frame);
 		pointJsonArrayList.put(pointJsonArray);
 		
 //this is for a polygon with holes
