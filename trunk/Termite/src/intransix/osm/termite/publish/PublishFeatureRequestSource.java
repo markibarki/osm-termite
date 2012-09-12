@@ -1,5 +1,6 @@
 package intransix.osm.termite.publish;
 
+import intransix.osm.termite.map.data.OsmModel;
 import intransix.osm.termite.net.RequestSource;
 import java.io.*;
 import org.json.*;
@@ -11,8 +12,6 @@ import org.json.*;
 public class PublishFeatureRequestSource implements RequestSource {
 	
 	public final static String STRUCTURE_LAYERNAME = "linkedmap";
-	
-	private final static String INDOOR_SERVER = "http://localhost:8080/mapdata";
 	
 	private String layerName;
 	private long key;
@@ -35,7 +34,7 @@ public class PublishFeatureRequestSource implements RequestSource {
 	
 	/** This method should return the url. */
 	public String getUrl() {
-		String url = INDOOR_SERVER + "/feature/" + layerName + "/" + key;
+		String url = OsmModel.PUBLISH_SERVICE + "/feature/" + layerName + "/" + key;
 		return url;
 	}
 	
