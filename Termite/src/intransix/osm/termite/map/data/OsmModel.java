@@ -42,6 +42,7 @@ public class OsmModel {
 	//-----------------------------
 //	public static String OSM_SERVER = "http://api.openstreetmap.org";
 public static String OSM_SERVER = "http://api06.dev.openstreetmap.org";
+public static String PUBLISH_SERVICE = "http://open.micello.com/mapdata";
 
 	//data request, arguments: minLat, minLon,maxLat,maxLon
 	public static String DATA_REQUEST_PATH = "/api/0.6/map?bbox=%2$.8f,%1$.8f,%4$.8f,%3$.8f";
@@ -75,6 +76,7 @@ public static String OSM_SERVER = "http://api06.dev.openstreetmap.org";
 		}
 		
 		OSM_SERVER = json.optString("osmServer",OSM_SERVER);
+		PUBLISH_SERVICE = json.optString("publishService",PUBLISH_SERVICE);
 		
 		JSONArray geometricKeys = json.optJSONArray("geometricKeys");
 		if(geometricKeys != null) {

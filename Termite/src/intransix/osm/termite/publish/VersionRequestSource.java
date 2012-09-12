@@ -1,5 +1,6 @@
 package intransix.osm.termite.publish;
 
+import intransix.osm.termite.map.data.OsmModel;
 import intransix.osm.termite.net.RequestSource;
 import java.io.*;
 import org.json.*;
@@ -10,7 +11,6 @@ import org.json.*;
  */
 public class VersionRequestSource implements RequestSource {
 	
-	private final static String INDOOR_SERVER = "http://localhost:8080/mapdata";
 	private final static int INVALID_VERSION = -1;
 	
 	private String fileName;
@@ -32,7 +32,7 @@ public class VersionRequestSource implements RequestSource {
 	
 	/** This method should return the url. */
 	public String getUrl() {
-		String url = INDOOR_SERVER + "/version/" + fileName + "/" + key;
+		String url = OsmModel.PUBLISH_SERVICE + "/version/" + fileName + "/" + key;
 		return url;
 	}
 	
