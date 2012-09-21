@@ -22,22 +22,20 @@ public class PublishTask extends SwingWorker<Object,Object>{
 	private OsmData osmData;
 	private long structureId;
 	
-	private TermiteGui gui;
 	private JDialog blocker;
 	
 	private boolean success = false;
 	private boolean canceled = false;
 	private String errorMsg;
 	
-	public PublishTask(TermiteGui gui, long structureId) {
-		this.gui = gui;
-		this.osmData = gui.getMapData();
+	public PublishTask(OsmData osmData, long structureId) {
+		this.osmData = osmData;
 		this.structureId = structureId;
 	}
 	
 	public synchronized void blockUI() {
 		if(!isDone()) {
-			blocker = new BlockerDialog(gui,this,"Publishing map data...",false);
+			blocker = new BlockerDialog(null,this,"Publishing map data...",false);
 			blocker.setVisible(true);
 		}
 	}

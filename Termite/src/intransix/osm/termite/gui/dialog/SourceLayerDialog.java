@@ -1,8 +1,9 @@
 package intransix.osm.termite.gui.dialog;
 
 import intransix.osm.termite.render.source.SourceLayer;
+import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.gui.TermiteGui;
-import intransix.osm.termite.render.MapLayerManager;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.table.*;
@@ -34,14 +35,16 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 		model = (DefaultTableModel)sourceTable.getModel();
 		model.addTableModelListener(this);
 		Object[] row = new Object[2];
-		for(SourceLayer layer:mapLayerManager.getSourceLayers()) {
-			row[0] = layer.getName();
-			row[1] = layer.isVisible();
-			model.addRow(row);
+		for(MapLayer layer:mapLayerManager.getMapLayers()) {
+			if(layer instanceof SourceLayer) {
+				row[0] = layer.getName();
+				row[1] = layer.isVisible();
+				model.addRow(row);
+			}
 		}
 	}	
 	
-	
+	@Override
 	public void tableChanged(TableModelEvent e) {
 		if(e.getType() == TableModelEvent.UPDATE) {
 			int row = e.getFirstRow();
@@ -53,9 +56,8 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 				return;
 			}
 			
-			
+			SourceLayer layer = (SourceLayer)model.getValueAt(row,LAYER_COLUMN);
 			int column = e.getColumn();
-			SourceLayer layer = mapLayerManager.getSourceLayers().get(row);
 			Object value = model.getValueAt(row, column);
 			
 			if(column == LAYER_COLUMN) {
@@ -172,7 +174,7 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
 		SourceLayer sourceLayer = openSourceLayer();
 		if(sourceLayer != null) {
-			mapLayerManager.addSourceLayer(sourceLayer);
+			mapLayerManager.addLayer(sourceLayer);
 			Object[] row = new Object[2];
 			row[0] = sourceLayer.getName();
 			row[1] = sourceLayer.isVisible();
@@ -183,10 +185,10 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
 		int index = sourceTable.getSelectedRow();
 		if(index > -1) {
-			List<SourceLayer> layers = mapLayerManager.getSourceLayers();
+			List<MapLayer> layers = mapLayerManager.getMapLayers();
 			if(layers.size() > index) {
-				SourceLayer layer = layers.get(index);
-				mapLayerManager.removeSourceLayer(layer);
+				MapLayer layer = layers.get(index);
+				mapLayerManager.removeLayer(layer);
 				model.removeRow(index);
 			}
 			else {
@@ -215,7 +217,7 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 		if(workingDirectory != null) fc.setCurrentDirectory(workingDirectory);
 		int returnVal = fc.showOpenDialog(this);
 		if(returnVal == JFileChooser.APPROVE_OPTION) {
-			SourceLayer sourceLayer = new SourceLayer(mapLayerManager);
+			SourceLayer sourceLayer = new SourceLayer();
 			java.io.File file = fc.getSelectedFile();
 			gui.setWorkingDirectory(fc.getCurrentDirectory());
 			boolean success = sourceLayer.loadImage(file);

@@ -1,6 +1,6 @@
 package intransix.osm.termite.render.source;
 
-import intransix.osm.termite.render.*;
+import intransix.osm.termite.app.maplayer.MapLayer;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.ImageObserver;
@@ -19,8 +19,7 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	private AffineTransform moveImageToMerc = new AffineTransform();
 	private boolean inMove = false;
 	
-	public SourceLayer(MapLayerManager mapLayerManager) {
-		super(mapLayerManager);
+	public SourceLayer() {
 		this.setName("Source Layer");
 		this.setVisible(false);
 	}
@@ -76,13 +75,10 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	public void render(Graphics2D g2) {
 		
 		AffineTransform base = g2.getTransform();
-		
-		MapPanel mapPanel = getMapPanel();
-		AffineTransform mercToPixels = mapPanel.getMercatorToPixels();
+		AffineTransform mercToPixels = getViewRegionManager().getMercatorToPixels();
 		
 		if(imageToMerc == null) {
-			AffineTransform pixelsToMerc = mapPanel.getPixelsToMercator();
-			Rectangle visibleRect = mapPanel.getVisibleRect();
+			AffineTransform pixelsToMerc = getViewRegionManager().getPixelsToMercator();
 			imageToMerc = new AffineTransform(pixelsToMerc);
 		}
 
@@ -99,14 +95,29 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	
 	@Override
 	public boolean imageUpdate(Image image, int infoflags, int x, int y, int width, int height) {
+		boolean returnValue;
+		boolean contentChanged;
+		
 		if((infoflags & ImageObserver.ALLBITS) != 0) {
 			//just do a repaint
-			getMapPanel().repaint();
-			return false;
+			contentChanged = true;
+			returnValue = false;
+		}
+		else if((infoflags & ImageObserver.ABORT) != 0) {
+			//just do a repaint, to continue with unloaded tiles
+			contentChanged = true;
+			returnValue = true;
 		}
 		else {
-			return true;
+			contentChanged = false;
+			returnValue = true;
 		}
+		
+		if(contentChanged) {
+			this.notifyContentChange();
+		}
+		
+		return returnValue;
 	}
 
 	//=====================

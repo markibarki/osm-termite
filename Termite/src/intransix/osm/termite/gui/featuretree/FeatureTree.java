@@ -2,12 +2,14 @@ package intransix.osm.termite.gui.featuretree;
 
 import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.map.proptree.*;
-import intransix.osm.termite.gui.FeatureLayerListener;
 import intransix.osm.termite.gui.TermiteGui;
 import javax.swing.tree.*;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
 import java.util.ArrayList;
+
+import intransix.osm.termite.app.feature.FeatureTypeManager;
+import intransix.osm.termite.app.feature.FeatureTypeListener;
 
 /**
  * This is a UI control to display the recognized feature types. It allows the
@@ -18,15 +20,15 @@ import java.util.ArrayList;
  * @author sutter
  */
 public class FeatureTree extends javax.swing.JTree 
-		implements FeatureLayerListener, TreeSelectionListener {
+		implements FeatureTypeListener, TreeSelectionListener {
 
 	//=======================
 	// Properties
 	//=======================
 	
-	private TermiteGui gui;
 	private FeatureInfoMap featureInfoMap;
 	private FeatureInfo selectedFeatureInfo;
+	private FeatureTypeManager featureTypeManager;
 	
 	//=======================
 	// Public Methods
@@ -35,18 +37,27 @@ public class FeatureTree extends javax.swing.JTree
 	/**
 	 * Creates new form FeatureTree
 	 */
-	public FeatureTree(TermiteGui gui) {
-		this.gui = gui;
+	public FeatureTree() {
 		this.setRootVisible(true);
 		this.addTreeSelectionListener(this);
 		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		this.setCellRenderer(new FeatureTreeRenderer());
 	}
 	
-	/** This method sets the feature info map, which defines the tree content. */
-	public void setFeatureInfoMap(FeatureInfoMap featureInfoMap) {
-		this.featureInfoMap = featureInfoMap;
+	/** This connects the UI element to the feature type manager. */
+	public void setFeatureTypeManager(FeatureTypeManager featureTypeManager) {
+		this.featureTypeManager = featureTypeManager;
+		
+		//load the feature map
+		featureInfoMap = featureTypeManager.getFeatureInfoMap();
 		createTree();
+		
+		//set the selection
+		FeatureInfo activeFeatureType = featureTypeManager.getActiveFeatureLayer();
+		this.onFeatureTypeSelected(activeFeatureType);
+		
+		//register for updates
+		featureTypeManager.addFeatureLayerListener(this);
 	}
 	
 	//------------------
@@ -59,7 +70,7 @@ public class FeatureTree extends javax.swing.JTree
 	 * @param feature	The selected map feature
 	 */
 	@Override
-	public void onFeatureLayerSelected(FeatureInfo featureInfo) {
+	public void onFeatureTypeSelected(FeatureInfo featureInfo) {
 		if(featureInfo != selectedFeatureInfo) {
 			this.selectNode(featureInfo);
 		}
@@ -73,6 +84,8 @@ public class FeatureTree extends javax.swing.JTree
 	 * feature info layer for the application.  */
 	@Override
 	public void valueChanged(TreeSelectionEvent event) {
+		if(featureTypeManager == null) return;
+		
 		TreePath tp = event.getNewLeadSelectionPath();
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode)tp.getLastPathComponent();
 		Object data = node.getUserObject();
@@ -80,7 +93,7 @@ public class FeatureTree extends javax.swing.JTree
 			Object fi = ((PropertyNode)data).getData();
 			if(fi instanceof FeatureInfo) {
 				selectedFeatureInfo = (FeatureInfo)fi;
-				gui.setSelectedFeatureLayer((FeatureInfo)fi);
+				featureTypeManager.setActiveFeatureType((FeatureInfo)fi);
 			}
 		}
 		else {

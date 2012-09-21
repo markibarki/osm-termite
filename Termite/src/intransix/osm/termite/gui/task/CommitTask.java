@@ -16,7 +16,6 @@ public class CommitTask extends SwingWorker<Object,Object>{
 	
 	private String message;
 	private OsmData osmData;
-	private TermiteGui gui;
 	private LoginManager loginManager;
 	private JDialog blocker;
 	
@@ -24,15 +23,14 @@ public class CommitTask extends SwingWorker<Object,Object>{
 	private boolean canceled = false;
 	private String errorMsg;
 	
-	public CommitTask(TermiteGui gui) {
-		this.gui = gui;
-		this.osmData = gui.getMapData();
-		this.loginManager = gui.getTermiteApp().getLoginManager();
+	public CommitTask(OsmData osmData, LoginManager loginManager) {
+		this.osmData = osmData;
+		this.loginManager = loginManager;
 	}
 	
 	public synchronized void blockUI() {
 		if(!isDone()) {
-			blocker = new BlockerDialog(gui,this,"Loading map data...",false);
+			blocker = new BlockerDialog(null,this,"Loading map data...",false);
 			blocker.setVisible(true);
 		}
 	}
@@ -67,7 +65,7 @@ public class CommitTask extends SwingWorker<Object,Object>{
 			}
 			
 			//get commit message
-			CommitDialog commitDialog = new CommitDialog(gui);
+			CommitDialog commitDialog = new CommitDialog(null);
 			commitDialog.setVisible(true);
 		
 			String message = commitDialog.getMessage();

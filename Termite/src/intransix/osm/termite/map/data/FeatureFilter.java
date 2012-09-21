@@ -29,10 +29,11 @@ public class FeatureFilter {
 	}
 	
 	/** This method filters the given feature. */
-	public void filterFeature(OsmObject osmObject) {
-		osmObject.setFilterState(initialState);
+	public int getFitlerValue(OsmObject osmObject) {
+		int filterValue = initialState;
 		for(FilterRule rule:filterRules) {
-			rule.filterObject(osmObject);
+			filterValue = rule.getFilterValue(osmObject,filterValue);
 		}
+		return filterValue;
 	}
 }

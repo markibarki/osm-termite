@@ -1,7 +1,7 @@
 package intransix.osm.termite.gui.task;
 
 import intransix.osm.termite.map.data.MapDataRequest;
-import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.BlockerDialog;
 import intransix.osm.termite.net.NetRequest;
 import javax.swing.*;
@@ -13,21 +13,21 @@ import javax.swing.*;
 public class MapDataRequestTask extends SwingWorker<Object,Object> {
 	
 	private MapDataRequest mapDataRequest;
-	private TermiteGui gui;
+	private MapDataManager mapDataManager;
 	private JDialog blocker;
 	
 	private boolean success = false;
 	private String errorMsg;
 	
-	public MapDataRequestTask(TermiteGui gui, double minLat, double minLon, 
+	public MapDataRequestTask(MapDataManager mapDataManager, double minLat, double minLon, 
 			double maxLat, double maxLon) {
-		this.gui = gui;
+		this.mapDataManager = mapDataManager;
 		this.mapDataRequest = new MapDataRequest(minLat, minLon, maxLat, maxLon);
 	}
 	
 	public synchronized void blockUI() {
 		if(!isDone()) {
-			blocker = new BlockerDialog(gui,this,"Loading map data...",false);
+			blocker = new BlockerDialog(null,this,"Loading map data...",false);
 			blocker.setVisible(true);
 		}
 	}
@@ -63,7 +63,7 @@ public class MapDataRequestTask extends SwingWorker<Object,Object> {
 		}
 		
 		if(success) {
-			gui.setMapData(mapDataRequest.getOsmData());
+			mapDataManager.setOsmData(mapDataRequest.getOsmData());
 		}
 		else {
 			JOptionPane.showMessageDialog(null,"There was an error: " + errorMsg);

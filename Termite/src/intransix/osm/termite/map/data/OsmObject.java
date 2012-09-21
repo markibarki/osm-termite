@@ -77,14 +77,6 @@ public abstract class OsmObject {
 		return filterState;
 	}
 	
-	public void bitwiseAndFilterState(int state) {
-		filterState &= state;
-	}
-	
-	public void bitwiseOrFilterState(int state) {
-		filterState |= state;
-	}
-	
 	/** This method gets the isLoaded flag for the object. */
 	public boolean getIsLoaded() {
 		return isLoaded;

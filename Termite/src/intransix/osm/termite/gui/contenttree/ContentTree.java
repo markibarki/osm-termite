@@ -1,11 +1,14 @@
 package intransix.osm.termite.gui.contenttree;
 
+import intransix.osm.termite.app.level.LevelSelectedListener;
+import intransix.osm.termite.app.level.LevelStructureListener;
 import intransix.osm.termite.gui.*;
 import intransix.osm.termite.map.data.*;
 import java.util.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
+import intransix.osm.termite.app.level.LevelManager;
 
 /**
  * This control is used to filter the data by level. It displays all the levels
@@ -15,7 +18,7 @@ import javax.swing.tree.*;
  * @author sutter
  */
 public class ContentTree extends javax.swing.JTree 
-		implements LevelSelectedListener, MapDataListener, TreeSelectionListener {
+		implements LevelSelectedListener, LevelStructureListener, TreeSelectionListener {
 	
 	//====================
 	// Private Properties
@@ -26,6 +29,8 @@ public class ContentTree extends javax.swing.JTree
 	
 	private TermiteGui gui;
 	private OsmData mapData;
+	
+	private LevelManager levelManager;
 	private TreeMap<OsmWay,List<OsmRelation>> activeTreeMap = null;
 
 	//====================
@@ -44,16 +49,21 @@ public class ContentTree extends javax.swing.JTree
 		clearTree();
 	}
 	
-	/** This method is called when the map data is set or cleared. It should be called 
-	 * with the value null when the data is cleared. It should be called from the
-	 * UI thread.
-	 * 
-	 * @param feature	The selected map feature
-	 */
-	@Override
-	public void onMapData(OsmData mapData) {
-		this.mapData = mapData;
-		mapDataUpdated();
+	/** This method connects the UI element to the level manager. */
+	public void setLevelManager(LevelManager levelManager) {
+		this.levelManager = levelManager;
+		
+		//load the tree
+		TreeMap<OsmWay,List<OsmRelation>> treeMap = levelManager.getTreeMap();
+		this.levelStructureChanged(treeMap);
+		
+		//set the selection
+		OsmWay structure = levelManager.getSelectedStructure();
+		OsmRelation level = levelManager.getSelectedLevel();
+		this.onLevelSelected(structure,level);
+		
+		levelManager.addLevelStructureListener(this);
+		levelManager.addLevelSelectedListener(this);
 	}
 	
 	/** This method is called when a map level is selected. It may be called 
@@ -67,43 +77,23 @@ public class ContentTree extends javax.swing.JTree
 //implement this
 	}
 	
-	/** This method should be called when the map data is updated, from the UI thread. */
-	public void mapDataUpdated() {
-		if(mapData != null) {
-			TreeMap<OsmWay,List<OsmRelation>> newTreeMap = new TreeMap<OsmWay,List<OsmRelation>>(new WayComparator());
-			//create a new data sturcture for levels,outdoor
-			boolean added = false;
-			for(OsmRelation relation:mapData.getOsmRelations()) {
-				if(OsmModel.TYPE_LEVEL.equalsIgnoreCase(relation.getRelationType())) {
-					for(OsmMember member:relation.getMembers()) {
-						if((OsmModel.ROLE_PARENT.equalsIgnoreCase(member.role))&&
-								(member.osmObject instanceof OsmWay)) {
-							OsmWay structure = (OsmWay)member.osmObject;
-							addToMap(newTreeMap,structure,relation);
-							added = true;
-							break;
-						}
-					}
-					if(!added) {
-						//handle levels that have no parent here!!!
-System.out.println("Warning! There is a level with no parent object.");
-					}
-				}
-			}
-			//sort the levels for each structure
-			LevelComparator lc = new LevelComparator();
-			for(List<OsmRelation> rs:newTreeMap.values()) {
-				Collections.sort(rs, lc);
-			}
-			//update the list (if needed)
-			if(doTreeMapUpdate(newTreeMap)) {
-				updateTree(newTreeMap);
-			}
-		}
-		else {
-			//clear the tree if there is no data
-			clearTree();
-		}
+	/** This method is called when the level structure for the data changes. 
+	 * 
+	 * @param treeMap	A mapping of level relations to structure footprints. 
+	 */
+	@Override
+	public void levelStructureChanged(TreeMap<OsmWay,List<OsmRelation>> treeMap) {
+	//create the root node
+		DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
+//		//create the outdoor node
+//		DefaultMutableTreeNode outdoorNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
+//		rootTreeNode.add(outdoorNode);
+		//add the nodes for the structures
+		populateStructures(rootTreeNode,treeMap);
+		//update the tree
+		activeTreeMap = treeMap;
+		TreeModel model = new DefaultTreeModel(rootTreeNode);
+		setModel(model);
 	}
 	
 	@Override
@@ -113,18 +103,18 @@ System.out.println("Warning! There is a level with no parent object.");
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode)tp.getLastPathComponent();
 			Object data = node.getUserObject();
 			if(data instanceof StructureWrapper) {
-				gui.setSelectedLevel(((StructureWrapper)data).structure,null);
+				levelManager.setSelectedLevel(((StructureWrapper)data).structure,null);
 			}
 			else if(data instanceof LevelWrapper) {
-				gui.setSelectedLevel(((LevelWrapper)data).structure,((LevelWrapper)data).level);
+				levelManager.setSelectedLevel(((LevelWrapper)data).structure,((LevelWrapper)data).level);
 			}
 			else {
-				gui.setSelectedLevel(null,null);
+				levelManager.setSelectedLevel(null,null);
 			}
 		}
 		else {
 //I'm not sure what to do here
-			gui.setSelectedLevel(null,null);
+			levelManager.setSelectedLevel(null,null);
 		}
 	}
 	
@@ -138,68 +128,7 @@ System.out.println("Warning! There is a level with no parent object.");
 		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
 		this.setModel(new DefaultTreeModel(rootNode));
 	}
-	
-	/** This method adds a structure and level to a tree map collection. */
-	private void addToMap(TreeMap<OsmWay,List<OsmRelation>> treeMap, 
-			OsmWay structure, OsmRelation level) {
-		List<OsmRelation> levels = treeMap.get(structure);
-		if(levels == null) {
-			levels = new ArrayList<OsmRelation>();
-			treeMap.put(structure,levels);
-		}
-		levels.add(level);
-	}
-	
-	/** This method takes the formatted new tree map and compares it to the 
-	 * current tree map. It returns true if they are different, meaning the
-	 * tree should be updated. 
-	 * 
-	 * @param newTreeMap		The tree map for the new data
-	 * @return					True if the UI tree element should be updated.
-	 */
-	private boolean doTreeMapUpdate(TreeMap<OsmWay,List<OsmRelation>> newTreeMap) {
-		if(activeTreeMap == null) return true;
-		
-		//check the way count matches
-		Set<OsmWay> activeWays = activeTreeMap.keySet();
-		Set<OsmWay> newWays = newTreeMap.keySet();
-		if(activeWays.size() != newWays.size()) return true;
-		
-		//check all way levels in new list match way levels in active list
-		List<OsmRelation> activeList;
-		List<OsmRelation> newList;
-		for(OsmWay way:newTreeMap.keySet()) {
-			activeList = activeTreeMap.get(way);
-			if(activeList == null) return true;
-			newList = newTreeMap.get(way);
-			if(newList.size() != activeList.size()) return true;
-			
-			for(int i = 0; i < newList.size(); i++) {
-				if(activeList.get(i) != newList.get(i)) return true;
-			}
-		}
-		
-		//lists match
-		return false;
-	}
-	
-	/** This method updates the UI tree to match the passed data. 
-	 * 
-	 * @param newTreeMap		The new tree map data 
-	 */
-	private void updateTree(TreeMap<OsmWay,List<OsmRelation>> newTreeMap) {
-		//create the root node
-		DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
-//		//create the outdoor node
-//		DefaultMutableTreeNode outdoorNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
-//		rootTreeNode.add(outdoorNode);
-		//add the nodes for the structures
-		populateStructures(rootTreeNode,newTreeMap);
-		//update the tree
-		activeTreeMap = newTreeMap;
-		TreeModel model = new DefaultTreeModel(rootTreeNode);
-		setModel(model);
-	}
+
 	
 	/** This method populates the structure tree nodes under the root element.
 	 * 
@@ -207,10 +136,15 @@ System.out.println("Warning! There is a level with no parent object.");
 	 * @param treeMap	The data for the tree
 	 */
 	private void populateStructures(DefaultMutableTreeNode rootNode, TreeMap<OsmWay,List<OsmRelation>> treeMap) {
-		for(OsmWay structure:treeMap.keySet()) {
-			DefaultMutableTreeNode structureNode = new DefaultMutableTreeNode(new StructureWrapper(structure));
-			populateLevels(structureNode,structure, treeMap.get(structure));
-			rootNode.add(structureNode);
+		if(treeMap != null) {
+			for(OsmWay structure:treeMap.keySet()) {
+				DefaultMutableTreeNode structureNode = new DefaultMutableTreeNode(new StructureWrapper(structure));
+				populateLevels(structureNode,structure, treeMap.get(structure));
+				rootNode.add(structureNode);
+			}
+		}
+		else {
+			rootNode.removeAllChildren();
 		}
 	}
 	
@@ -224,27 +158,6 @@ System.out.println("Warning! There is a level with no parent object.");
 		for(OsmRelation level:levels) {
 			DefaultMutableTreeNode levelNode = new DefaultMutableTreeNode(new LevelWrapper(level,structure));
 			structureNode.add(levelNode);
-		}
-	}
-	
-	/** This is a comparator to order ways by id, with smaller positive first
-	 * and negative last
-	 */
-	public class WayComparator implements Comparator<OsmWay> {
-		public int compare(OsmWay way1, OsmWay way2) {
-			//remove sign bit, making negative nubmers larger than positives (with small enough negatives)
-			Long modId1 = way1.getId() & Long.MAX_VALUE;
-			Long modId2 = way2.getId() & Long.MAX_VALUE;
-			return modId1.compareTo(modId2);
-		}
-	}
-	
-	/** This is a comparator to order levels by zlevel. */
-	public class LevelComparator implements Comparator<OsmRelation> {
-		public int compare(OsmRelation levelA, OsmRelation levelB) {
-			int zlevel1 = levelA.getIntProperty(OsmModel.KEY_ZLEVEL,0);
-			int zlevel2 = levelB.getIntProperty(OsmModel.KEY_ZLEVEL,0);
-			return zlevel1 - zlevel2;
 		}
 	}
 	
