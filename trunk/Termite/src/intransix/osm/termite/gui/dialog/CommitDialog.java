@@ -4,6 +4,7 @@ import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.gui.task.CommitTask;
 import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 
 /**
  *
@@ -11,15 +12,13 @@ import javax.swing.JOptionPane;
  */
 public class CommitDialog extends javax.swing.JDialog {
 
-	private TermiteGui termiteGui;
 	private String message;
 	/**
 	 * Creates new form CommitDialog
 	 */
-	public CommitDialog(TermiteGui termiteGui) {
-		super(termiteGui, true);
+	public CommitDialog(JFrame parent) {
+		super(parent, true);
 		initComponents();
-		this.termiteGui = termiteGui;
 	}
 	
 	/** This gets the message entered by the user. */

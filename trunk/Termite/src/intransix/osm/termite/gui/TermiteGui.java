@@ -1,27 +1,34 @@
 package intransix.osm.termite.gui;
 
+import intransix.osm.termite.app.mode.EditorMode;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
 
 import intransix.osm.termite.app.TermiteApp;
-import intransix.osm.termite.gui.filter.*;
 import intransix.osm.termite.map.data.*;
-import intransix.osm.termite.map.feature.*;
-import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.render.*;
-import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.util.MercatorCoordinates;
-import intransix.osm.termite.render.MapLayerManager;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
+import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.gui.dialog.SourceLayerDialog;
-import intransix.osm.termite.gui.stdmode.*;
 import intransix.osm.termite.gui.task.CommitTask;
 import intransix.osm.termite.publish.PublishTask;
 import java.io.File;
+
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.mapdata.MapDataListener;
+import intransix.osm.termite.map.data.OsmDataChangedListener;
+import intransix.osm.termite.app.mode.EditorModeManager;
+import intransix.osm.termite.app.mode.EditorModeListener;
+import intransix.osm.termite.app.basemap.BaseMapManager;
+import intransix.osm.termite.app.basemap.BaseMapListener;
+import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.feature.FeatureTypeManager;
+import intransix.osm.termite.app.level.LevelManager;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 
 /**
  * This is the main UI class. It initializes the UI and it manages event flow.
@@ -29,22 +36,19 @@ import java.io.File;
  * @author sutter
  */
 public class TermiteGui extends javax.swing.JFrame implements 
-		OsmDataChangedListener, KeyListener {
+		MapDataListener, OsmDataChangedListener, EditorModeListener, BaseMapListener {
 	
 	//=====================
 	// Private Properties
 	//=====================
 	
 	private final static String HIDDEN_BASE_MAP_NAME = "Hidden";
+	private final static String MAP_LAYER_PANE_NAME = "Map Layers";
 	
 	private final static String UNDO_ITEM_BASE = "Undo: ";
 	private final static String UNDO_ITEM_TEXT = "Undo";
 	private final static String REDO_ITEM_BASE = "Redo: ";
 	private final static String REDO_ITEM_TEXT = "Redo";
-	
-	private final static int[] EDIT_MODE_SHORTCUTS = {KeyEvent.VK_A,
-		KeyEvent.VK_S,KeyEvent.VK_D,KeyEvent.VK_F,KeyEvent.VK_G,KeyEvent.VK_H
-	};
 	
 	private final static int SPACE_X = 8;
 	private final static int SPACE_Y = 8;
@@ -52,43 +56,45 @@ public class TermiteGui extends javax.swing.JFrame implements
 	// <editor-fold defaultstate="collapsed" desc="Properties">
 	
 	private TermiteApp app;
-
-	//map data
+	
+	//map dasta
+	private MapDataManager mapDataManager;
 	private OsmData osmData;
 	
 	//editor modes
-	private java.util.List<EditorMode> editModes; //the list of possible edit editor modes
-	private EditorMode activeMode = null; //the active editor mode
-	private DownloadEditorMode downloadMode;
-	private SelectEditorMode selectMode;
-	
-	//edit mode ui elements we need to change programmatically
+	private EditorModeManager modeManager;
+	private HashMap<EditorMode,JToggleButton> modeButtons = new HashMap<EditorMode,JToggleButton>();
+	private JToolBar submodeToolBar = null;
 	private ButtonGroup editModeButtonGroup;
 	
-	//feature layer info
-	private FeatureInfoMap featureMap;
-	private FeatureInfo activeFeatureLayer;
+	//base maps
+	private BaseMapManager baseMapManager;
+	private HashMap<TileInfo,JRadioButtonMenuItem> tileInfoMap = new HashMap<TileInfo,JRadioButtonMenuItem>();
+	private JRadioButtonMenuItem hiddenBaseMapMenuItem;
+	private javax.swing.ButtonGroup baceMapButtonGroup;
 	
-	//source manager
-	private MapLayerManager mapLayerManager = new MapLayerManager(); 
-	private EditLayer editLayer;
-	private TileLayer baseMapLayer;
+	//level selection
+	private intransix.osm.termite.gui.contenttree.ContentTree contentTree;
 	
-	//base map options
-	private java.util.List<TileInfo> tileInfoList;
+	//feature type
+	private intransix.osm.termite.gui.featuretree.FeatureTree featureTree;
 	
-	//selected level and feature
-	private OsmWay activeStructure;
-	private OsmRelation activeLevel;
+	//property editing
+	private intransix.osm.termite.gui.property.PropertyTabPane propertyTabPane; 
+    
+	//map panel
+	private MapLayerManager mapLayerManager; 
+    private intransix.osm.termite.render.MapPanel mapPanel;
+	
+	//map layers control
+	private intransix.osm.termite.gui.maplayer.LayerManagerPanel layerManagerPanel;
+	
+	//level
+	private LevelManager levelManager;
 	
 	//this is used for keeping track of the workign directory
 	private File workingDirectory;
-	
-	//listeners
-	private java.util.List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
-	private java.util.List<LevelSelectedListener> levelSelectedListeners = new ArrayList<LevelSelectedListener>();
-	private java.util.List<FeatureLayerListener> featureTypeListeners = new ArrayList<FeatureLayerListener>();
-	
+
 	//UI components
 	private javax.swing.JMenuBar menuBar;
 	private javax.swing.JMenu fileMenu;
@@ -106,7 +112,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private javax.swing.JMenuItem publishItem;
 	
 	private javax.swing.JMenu baseMapMenu;
-    private javax.swing.ButtonGroup baceMapButtonGroup;
 	
 	private javax.swing.JPanel toolBarPanel;
 	private javax.swing.JToolBar modeToolBar;
@@ -117,15 +122,11 @@ public class TermiteGui extends javax.swing.JFrame implements
     private javax.swing.JSplitPane jSplitPane4;
 	
     private javax.swing.JScrollPane jScrollPane1;
-    private intransix.osm.termite.gui.contenttree.ContentTree contentTree;
 	private javax.swing.JScrollPane jScrollPane2;
-    private intransix.osm.termite.gui.featuretree.FeatureTree featureTree;
-	private intransix.osm.termite.gui.property.PropertyTabPane propertyTabPane; 
     
-    private intransix.osm.termite.render.MapPanel mapPanel;
 	private javax.swing.JTabbedPane supplementalTabPane;
 	
-	private intransix.osm.termite.render.LayerManagerPanel layerManagerPanel;
+
 	// </editor-fold>
 	
 	//=====================
@@ -154,153 +155,173 @@ public class TermiteGui extends javax.swing.JFrame implements
 		this.workingDirectory = workingDirectory;
 	}
 	
-	// <editor-fold defaultstate="collapsed" desc="Map Data Methods and Events">
-	//These methods are used for event flow.
+	// <editor-fold defaultstate="collapsed" desc="Initialization">
 	
-	/** This method returns the map data object. */
-	public OsmData getMapData() {
-		return osmData;
-	}
-	
-	/** This adds a map data listener. */
-	public void addMapDataListener(MapDataListener listener) {
-		mapDataListeners.add(listener);
-	}
-	
-	/** This removes a map data listener. */
-	public void removeMapDataListener(MapDataListener listener) {
-		mapDataListeners.remove(listener);
-	}
-	
-	/** This method will dispatch a map data event. It should be called
-	 * when a map data is set to notify all interested objects. */
-	public void setMapData(OsmData osmData) {
-		this.osmData = osmData;
+	public void setMapDataManager(MapDataManager mapDataManager) {
+		this.mapDataManager = mapDataManager;
+		OsmData tempData = mapDataManager.getOsmData();
 		
-		for(MapDataListener listener:mapDataListeners) {
-			listener.onMapData(osmData);
-		}
+		this.onMapData(tempData);
+		mapDataManager.addMapDataListener(this);
 		
-		//control state based on presence of data
-		if(osmData != null) {
-			this.setEditModesEnable(true);
-					
-			//put the app in the edit state
-			setToEditState();
-			//set the level to null (outdoor level)
-			this.setSelectedLevel(null, null);
-			
-			//become a listener for data changed events
-			osmData.addDataChangedListener(this);
-		}
-		else {
-			this.setEditModesEnable(true);
-			
-			//put the app in the search state
-			setToDownloadState();
-			
-			//update the menu
-			clearUndoItem();
-			clearRedoItem();
-		}
-	}
-
-	/** This method returns the active structure. */
-	public OsmWay getActiveStructure() {
-		return activeStructure;
+		//set data for property tab pane
+		propertyTabPane.onMapData(tempData);
+		mapDataManager.addMapDataListener(propertyTabPane);
 	}
 	
-	/** This method returns the active level. */
-	public OsmRelation getActiveLevel() {
-		return activeLevel;
-	}
-	
-	/** This adds a level selected listener. */
-	public void addLevelSelectedListener(LevelSelectedListener listener) {
-		levelSelectedListeners.add(listener);
-	}
-	
-	/** This removes a level selected listener. */
-	public void removeLevelSelectedListener(LevelSelectedListener listener) {
-		levelSelectedListeners.remove(listener);
-	}
-	
-	/** This method will dispatch a level selected event. It should be called
-	 * when a level is selected to notify all interested objects. */
-	public void setSelectedLevel(OsmWay structure, OsmRelation level) {
-		this.activeStructure = structure;
-		this.activeLevel = level;
+	public void setModeManager(EditorModeManager editorModeManager) {
+		this.modeManager = editorModeManager;
 		
-		//update filter
-		if(osmData != null) {
-			FilterRule filterRule = null;
-			if(level != null) {
-				filterRule = new LevelFilterRule(level);
-
-			}
-			else if(structure != null) {
-				filterRule = new StructureFilterRule(structure);
+		editModeButtonGroup = new ButtonGroup();
+		modeButtons.clear();
+		for(EditorMode mode:modeManager.getEditorModes()) {
+			
+			//create button
+			String imageFile = mode.getIconImageName();
+			String name = mode.getName();
+			JToggleButton button;
+			if(imageFile != null) {
+				java.net.URL url = getClass().getResource(imageFile);
+				ImageIcon icon = new ImageIcon(url);
+				button = new JToggleButton(icon);
 			}
 			else {
-				filterRule = new OutdoorFilterRule();
-			}
-
-			FeatureFilter filter = new FeatureFilter(filterRule);
-			osmData.setFilter(filter);
-			mapPanel.repaint();
+				button = new JToggleButton(name);
+			}			
+			button.addActionListener(new ModeButtonListener(mode,modeManager));
+			button.setMargin(new Insets(1,1,1,1));
+			button.setToolTipText(name);
+			button.setEnabled(mode.getModeEnabled());
+			editModeButtonGroup.add(button);
+			modeToolBar.add(button);
+			modeButtons.put(mode, button);
 		}
 		
-		//notify listeners
-		for(LevelSelectedListener listener:levelSelectedListeners) {
-			listener.onLevelSelected(structure,level);
-		}
+		modeManager.addModeListener(this);
 	}
 	
-	/** This method returns the active feature type. */
-	public FeatureInfo getActiveFeatureLayer() {
-		return activeFeatureLayer;
-	}
-	
-	/** This adds a feature type listener. */
-	public void addFeatureLayerListener(FeatureLayerListener listener) {
-		featureTypeListeners.add(listener);
-	}
-	
-	public void removeFeatureLayerListener(FeatureLayerListener listener) {
-		featureTypeListeners.remove(listener);
-	}
-	
-	/** This method will dispatch a feature layer selected event. It should be called
-	 * when a feature layer is selected to notify all interested objects. */
-	public void setSelectedFeatureLayer(FeatureInfo featureInfo) {
-		activeFeatureLayer = featureInfo;
+	public void setBaseMapManager(BaseMapManager baseMapManager) {
+		this.baseMapManager = baseMapManager;
+		baseMapManager.addBaseMapListener(this);
+		java.util.List<TileInfo> tileInfoList = baseMapManager.getBaseMapList();
 		
-		for(FeatureLayerListener listener:featureTypeListeners) {
-			listener.onFeatureLayerSelected(featureInfo);
-		}
-	}
-	
-	public void selectBaseMap(TileInfo tileInfo) {
-		baseMapLayer.setTileInfo(tileInfo);
-		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
-		//update selection
-		if(tileInfo != null) {
-			String mapName = tileInfo.getName();
-			Enumeration<AbstractButton> en = baceMapButtonGroup.getElements();
-			AbstractButton ab;
-			while(en.hasMoreElements()) {
-				ab = en.nextElement();
-				String name = ab.getText();
-				if((name.equals(mapName))&&(!ab.isSelected())) {
-					ab.setSelected(true);
-					break;
-				}
+		//add base map choices
+		addBaseMapMenuItem(null);
+		if(tileInfoList != null) {
+			for(TileInfo tileInfo:tileInfoList) {
+				addBaseMapMenuItem(tileInfo);
 			}
 		}
-		mapPanel.repaint();
+	}
+	
+	public void setEditManager(EditManager editManager) {
+		EditLayer editLayer = editManager.getEditLayer();
+		editLayer.addFeatureSelectedListener(propertyTabPane);
+	}
+	
+	public void setMapLayerManager(MapLayerManager mapLayerManager) {
+		java.util.List<MapLayer> mapLayers = mapLayerManager.getMapLayers();
+		
+		layerManagerPanel.layerListChanged(mapLayers);
+		mapLayerManager.addLayerListener(layerManagerPanel);
+		
+		mapPanel.layerListChanged(mapLayers);
+		mapLayerManager.addLayerListener(mapPanel);	
+	}
+	
+	public void setFeatureTypeManager(FeatureTypeManager featureTypeManager) {
+		featureTree.setFeatureTypeManager(featureTypeManager);
+	}
+	
+	public void setLevelManager(LevelManager levelManager) {
+		this.levelManager = levelManager;
+		contentTree.setLevelManager(levelManager);
+		levelManager.addLevelSelectedListener(propertyTabPane);
+	}
+	
+	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
+		mapPanel.setViewRegionManager(viewRegionManager);
 	}
 	
 	// </editor-fold>
+	
+	/** This method is called when the map data is set of cleared. It will be called 
+	 * with the value null when the data is cleared. 
+	 * 
+	 * @param mapData	The map data object
+	 */
+	@Override
+	public void onMapData(OsmData osmData) {
+		//clear listener from old data
+		if(this.osmData != null) {
+			this.osmData.removeDataChangedListener(this);
+		}
+		
+		this.osmData = osmData;
+		
+		if(this.osmData != null) {
+			this.osmData.addDataChangedListener(this);
+		}
+		
+		updateUndoRedoItems();
+	}
+	
+	/** This method is called when the data has changed. It updates the undo
+	 * and redo actions.
+	 * 
+	 * @param editNumber	This is the data version that will be reflected in any data changed 
+	 *						by this edit action.
+	 */
+	@Override
+	public void osmDataChanged(int editNumber) {
+		updateUndoRedoItems();
+	}
+	
+	/** This method returns the type of user this listener is. The type of listener
+	 * determines the order in which the listener is called when data has changed. 
+	 * 
+	 * @return 
+	 */
+	@Override
+	public int getListenerType() {
+		return OsmDataChangedListener.LISTENER_CONSUMER;
+	}
+	
+	/** This method is called when the baseMap changes. */
+	@Override
+	public void baseMapChanged(TileInfo tileInfo) {
+		JRadioButtonMenuItem selectedMenuItem = null;
+		if(tileInfo != null) {
+			selectedMenuItem = tileInfoMap.get(tileInfo);
+		}
+		if(selectedMenuItem == null) {
+			selectedMenuItem = hiddenBaseMapMenuItem;
+		}
+		selectedMenuItem.setSelected(true);
+	}
+	
+		/** This method is called when the mode changes. */
+	@Override
+	public void activeModeChanged(EditorMode activeMode) {
+		JToggleButton button = modeButtons.get(activeMode);
+		button.setSelected(true);
+		
+		//update the toolbar
+		if(submodeToolBar != null) {
+			removeToolBar(submodeToolBar);
+		}
+		submodeToolBar = activeMode.getToolBar();
+		if(submodeToolBar != null) {
+			addToolBar(submodeToolBar);
+		}
+	}
+	
+	/** This is called is a mode goes from disabled to enabled. */
+	@Override
+	public void modeEnableChanged(EditorMode mode) {
+		JToggleButton button = modeButtons.get(mode);
+		button.setEnabled(mode.getModeEnabled());
+	}
 	
 	// <editor-fold defaultstate="collapsed" desc="UI Component Methods">
 	
@@ -331,230 +352,45 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	// </editor-fold>
 
-	// <editor-fold defaultstate="collapsed" desc="Initialize">
-	public void initialize() {
-		
-		//map layers
-		Theme theme = app.getTheme();
-		mapLayerManager.init(this, mapPanel, theme);
-		//add the layer manager tab
-		addSupplementalTab("Map Layers", mapLayerManager.getLayerManagerPanel());
-
-		//get layers we need copies of
-		editLayer = mapLayerManager.getEditLayer();
-		baseMapLayer = mapLayerManager.getBaseMapLayer();
-		
-		//add the feature selected listeners to the edit layer
-		editLayer.addFeatureSelectedListener(propertyTabPane);
-		
-		//editor modes
-				
-		//create the editor modes
-		downloadMode = new DownloadEditorMode(this);
-		selectMode = new SelectEditorMode(this);
-		NodeEditorMode nodeMode = new NodeEditorMode(this);
-		WayEditorMode wayMode = new WayEditorMode(this);
-		GeocodeEditorMode geocodeMode = new GeocodeEditorMode(this);
-		
-		editModes = new ArrayList<EditorMode>();
-		editModes.add(downloadMode);
-		editModes.add(selectMode);
-		editModes.add(nodeMode);
-		editModes.add(wayMode);
-		editModes.add(geocodeMode);
-		
-		for(EditorMode editMode:editModes) {
-			editMode.setLayers(mapLayerManager);
-		}
-		
-		loadEditModes();
-		mapLayerManager.setGeocodeMode(geocodeMode);
-		
-		//map view
-		initializeView();
-		
-		//set initial mode
-		setToDownloadState();
-	}
-	// </editor-fold>
 	
-	// <editor-fold defaultstate="collapsed" desc="Event Handlers">
-	/** This method is called when the data has changed. It updates the undo
-	 * and redo actions.
-	 * 
-	 * @param editNumber	This is the data version that will be reflected in any data changed 
-	 *						by this edit action.
-	 */
-	@Override
-	public void osmDataChanged(int editNumber) {
+	private void updateUndoRedoItems() {
+		boolean undoSet = false;
+		boolean redoSet = false;
 		if(osmData != null) {
 			String undoMessage = osmData.getUndoMessage();
 			if(undoMessage != null) {
 				undoItem.setText(UNDO_ITEM_BASE + undoMessage);
 				undoItem.setEnabled(true);
-			}
-			else {
-				clearUndoItem();
+				undoSet = true;
 			}
 			
 			String redoMessage = osmData.getRedoMessage();
 			if(redoMessage != null) {
 				redoItem.setText(REDO_ITEM_BASE + redoMessage);
 				redoItem.setEnabled(true);
+				redoSet = true;
 			}
-			else {
-				clearRedoItem();
-			}
+			
 		}
 		
-		if(contentTree != null) {
-			contentTree.mapDataUpdated();
+		if(!undoSet) {
+			undoItem.setText(UNDO_ITEM_TEXT);
+			undoItem.setEnabled(false);
 		}
-	}
-	
-	private void clearUndoItem() {
-		undoItem.setText(UNDO_ITEM_TEXT);
-		undoItem.setEnabled(false);
-	}
-	
-	private void clearRedoItem() {
-		redoItem.setText(REDO_ITEM_TEXT);
-		redoItem.setEnabled(false);
-	}
-	// </editor-fold>
-	
 		
-	// <editor-fold defaultstate="collapsed" desc="Key Listener">
-	
-	/** Handle the key typed event from the text field. */
-    @Override
-	public void keyTyped(KeyEvent e) {
-    }
-
-    /** Handle the key-pressed event from the text field. */
-	@Override
-    public void keyPressed(KeyEvent e) {
-		//select editor mode
-		for(EditorMode editMode:editModes) {
-			if(editMode.getUIShortcut() == e.getKeyCode()) {
-				if(editMode.getModeEnabled()) {
-					JToggleButton button = editMode.getUIButton();
-					if(!button.isSelected()) {
-						button.setSelected(true);
-						this.setEditorMode(editMode);
-					}
-				}
-			}
+		if(!redoSet) {
+			redoItem.setText(REDO_ITEM_TEXT);
+			redoItem.setEnabled(false);
 		}
+	}
 
-    }
-
-    /** Handle the key-released event from the text field. */
-    @Override
-	public void keyReleased(KeyEvent e) {
-    }
-	
-	// </editor-fold>
 	
 	//================================
 	// Private Methods
 	//================================
-	
-	// <editor-fold defaultstate="collapsed" desc="Edit Mode and State methods">
- 	
-	private void setToDownloadState() {
-		this.setEditorMode(downloadMode);
-		JToggleButton button = downloadMode.getUIButton();
-		button.setSelected(true);
-		
-		//disable some menu items
-		this.commitItem.setEnabled(false);
-	}
-	
-	private void setToEditState() {
-		this.setEditorMode(selectMode);
-		JToggleButton button = selectMode.getUIButton();
-		button.setSelected(true);
-		
-		//enable some menu items
-		this.commitItem.setEnabled(true);
-	}
-	
-	private void loadEditModes() {
-		editModeButtonGroup = new ButtonGroup();
-		int i = 0;
-		for(EditorMode mode:editModes) {
-			
-			//create button
-			String imageFile = mode.getIconImageName();
-			String name = mode.getName();
-			JToggleButton button;
-			if(imageFile != null) {
-				java.net.URL url = getClass().getResource(imageFile);
-				ImageIcon icon = new ImageIcon(url);
-				button = new JToggleButton(icon);
-			}
-			else {
-				button = new JToggleButton(name);
-			}			
-			button.addActionListener(new ModeButtonListener(mode));
-			button.setMargin(new Insets(1,1,1,1));
-			button.setToolTipText(name);
-			editModeButtonGroup.add(button);
-			modeToolBar.add(button);
-			
-			mode.setUIButton(button);
-			if(i < EDIT_MODE_SHORTCUTS.length) {
-				mode.setUIShortcut(EDIT_MODE_SHORTCUTS[i]);
-			}
-			i++;
-		}
-		
-		//set the edit modes to the proper state.
-		this.setEditModesEnable(osmData != null);
-	}
-	
-	private void setEditorMode(EditorMode editorMode) {
-		//get rid of old mode
-		if(activeMode != null) {
-			//turn off mode
-			this.activeMode.turnOff();
-			this.activeMode = null;
-		}
-		
-		activeMode = editorMode;
-		
-		//prepare the new mode
-		editorMode.turnOn();
-		
-		//repaint map
-		mapPanel.repaint();
-	}
-	
-	private void setEditModesEnable(boolean dataPresent) {
-		for(EditorMode editorMode:editModes) {
-			editorMode.setModeState(dataPresent);
-		}
-	}
-	
-	// </editor-fold>
+
 	
 	// <editor-fold defaultstate="collapsed" desc="Initialization Methods">
-	
-	private void initializeView() {
-		Rectangle2D latLonBounds = app.getInitialLatLonBounds();
-		double minLat = Math.toRadians(latLonBounds.getMinY());
-		double minLon = Math.toRadians(latLonBounds.getMinX());
-		double maxLat = Math.toRadians(latLonBounds.getMaxY());
-		double maxLon = Math.toRadians(latLonBounds.getMaxX());
-		
-		double minMX = MercatorCoordinates.lonRadToMx(minLon); 
-		double minMY = MercatorCoordinates.latRadToMy(maxLat); 
-		double maxMX = MercatorCoordinates.lonRadToMx(maxLon); 
-		double maxMY = MercatorCoordinates.latRadToMy(minLat); 
-		Rectangle2D mercBounds = new Rectangle2D.Double(minMX,minMY,maxMX - minMX,maxMY - minMY);
-		mapPanel.setViewBounds(mercBounds);
-	}
 
 	@SuppressWarnings("unchecked")
     private void initComponents() {
@@ -628,16 +464,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 		baseMapMenu = new javax.swing.JMenu();
 		baseMapMenu.setText("Base Map");
 		baceMapButtonGroup = new javax.swing.ButtonGroup();
-		
-		tileInfoList = this.app.getBaseMapInfo();
-		
-		//add base map choices
-		addBaseMapMenuItem(null);
-		if(tileInfoList != null) {
-			for(TileInfo tileInfo:tileInfoList) {
-				addBaseMapMenuItem(tileInfo);
-			}
-		}
 
         mapMenu.add(baseMapMenu);
 		
@@ -726,32 +552,28 @@ public class TermiteGui extends javax.swing.JFrame implements
 		//content tree
 		jScrollPane1 = new javax.swing.JScrollPane();
         contentTree = new intransix.osm.termite.gui.contenttree.ContentTree(this);
-		this.addMapDataListener(contentTree);
-		this.addLevelSelectedListener(contentTree);
 		jScrollPane1.setViewportView(contentTree);
 		
 		//feature tree
         jScrollPane2 = new javax.swing.JScrollPane();
-        featureTree = new intransix.osm.termite.gui.featuretree.FeatureTree(this);
-		this.addFeatureLayerListener(featureTree);
-		featureTree.setFeatureInfoMap(app.getFeatureInfoMap());
+        featureTree = new intransix.osm.termite.gui.featuretree.FeatureTree();
 		jScrollPane2.setViewportView(featureTree);
 		
 		//property tabbed pane
-		propertyTabPane = new intransix.osm.termite.gui.property.PropertyTabPane(this);
-		this.addLevelSelectedListener(propertyTabPane);
-		this.addMapDataListener(propertyTabPane);
+		propertyTabPane = new intransix.osm.termite.gui.property.PropertyTabPane();
         
 		//map panel
         mapPanel = new intransix.osm.termite.render.MapPanel();
 		mapPanel.setMinimumSize(new java.awt.Dimension(200, 200));
 		mapPanel.setPreferredSize(new java.awt.Dimension(600,600));
-		this.addMapDataListener(mapPanel);
-		mapPanel.addKeyListener(this);
 		
 		//supplemental tabbed pane
         supplementalTabPane = new javax.swing.JTabbedPane();
 
+		//map layer panel
+		layerManagerPanel = new intransix.osm.termite.gui.maplayer.LayerManagerPanel();
+		supplementalTabPane.addTab(MAP_LAYER_PANE_NAME,layerManagerPanel);
+		
 		//layout the content panes
 		jSplitPane1.setOrientation(javax.swing.JSplitPane.HORIZONTAL_SPLIT);
 		jSplitPane1.setDividerLocation(150);
@@ -794,22 +616,25 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		String name;
 		boolean isSelected;
+		JRadioButtonMenuItem menuItem = new javax.swing.JRadioButtonMenuItem();
+		
 		if(tileInfo != null) {
 			name = tileInfo.getName();
 			isSelected = false;
+			tileInfoMap.put(tileInfo,menuItem);
 		}
 		else {
 			name = HIDDEN_BASE_MAP_NAME;
 			isSelected = true;
+			hiddenBaseMapMenuItem = menuItem;
 		}
 		
-		JRadioButtonMenuItem menuItem = new javax.swing.JRadioButtonMenuItem();
 		baceMapButtonGroup.add(menuItem);
         menuItem.setSelected(isSelected);
         menuItem.setText(name);
 		menuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectBaseMap(tileInfo);
+                baseMapManager.setBaseMap(tileInfo);
             }
         });
         baseMapMenu.add(menuItem);
@@ -825,7 +650,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private void clearData() {
 		int result = JOptionPane.showConfirmDialog(this,"Are you sure you want to discard the current map data?");
 		if(result == JOptionPane.OK_OPTION) {
-			this.setMapData(null);
+			mapDataManager.setOsmData(null);
 		}
 	}
 	
@@ -842,22 +667,33 @@ public class TermiteGui extends javax.swing.JFrame implements
 	}
 	
 	private void commitData() {
-		CommitTask commitTask = new CommitTask(this);
+		if(osmData == null) {
+			JOptionPane.showMessageDialog(this,"There is no data to publish.");
+			return;
+		}
+		
+		CommitTask commitTask = new CommitTask(osmData,app.getLoginManager());
 		commitTask.execute();
 	}
 	
 	private void publishMap() {
+		if(osmData == null) {
+			JOptionPane.showMessageDialog(this,"There is no data to publish.");
+			return;
+		}
+		
+		OsmWay activeStructure = levelManager.getSelectedStructure();
+		OsmRelation activeLevel = levelManager.getSelectedLevel();
 		if((activeStructure != null)&&(activeLevel == null)) {
 			int result = JOptionPane.showConfirmDialog(null,"Publish Structure " + activeStructure.getId() + "?");
 			if(result == JOptionPane.OK_OPTION) {
-				PublishTask publishTask = new PublishTask(this,activeStructure.getId());
+				PublishTask publishTask = new PublishTask(osmData,activeStructure.getId());
 				publishTask.execute();
 			}
 		}
 		else {
 			JOptionPane.showMessageDialog(this,"You must select a level to publish.");
-		}
-		
+		}	
 	}
 	
 	private void manageSourceLayers() {
@@ -869,14 +705,16 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private class ModeButtonListener implements ActionListener {
 		
 		private EditorMode mode;
+		private EditorModeManager modeManager;
 		
-		public ModeButtonListener(EditorMode mode) {
+		public ModeButtonListener(EditorMode mode, EditorModeManager modeManager) {
 			this.mode = mode;
+			this.modeManager = modeManager;
 		}
 		
 		@Override
 		public void actionPerformed(ActionEvent ae) {
-			setEditorMode(mode);
+			modeManager.setEditorMode(mode);
 		}
 	}
 	// </editor-fold>

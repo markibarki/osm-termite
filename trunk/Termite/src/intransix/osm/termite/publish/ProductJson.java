@@ -5,7 +5,7 @@ import java.util.*;
 import org.json.*;
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.feature.FeatureInfo;
-import intransix.osm.termite.gui.filter.LevelFilterRule;
+import intransix.osm.termite.app.level.LevelFilterRule;
 import intransix.osm.termite.util.MercatorCoordinates;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -98,15 +98,13 @@ public class ProductJson {
 		//measure the structure bounds
 		Rectangle2D rect = null;
 		Point2D point;
+		int filterValue;
 		//check the levels
 		for(OsmRelation level:levels) {
 			FilterRule filter = new LevelFilterRule(level);
 			for(OsmNode node:osmData.getOsmNodes()) {
-
-				//this is a cludgy work aroudn to get the filter value for the level
-				int originalState = node.getFilterState();
-				filter.filterObject(node);
-				if(node.renderEnabled()) {
+				filterValue = filter.getFilterValue(node,filter.getInitialState());
+				if((filterValue & FilterRule.RENDER_ENABLED) != 0) {
 					point = node.getPoint();
 					if(rect == null) {
 						rect = new Rectangle2D.Double(point.getX(),point.getY(),0,0);
@@ -115,7 +113,6 @@ public class ProductJson {
 						rect.add(point);
 					}
 				}
-				node.setFilterState(originalState);
 			}
 		}
 		//add in the parent structure - assume rect has been set since there are levels
@@ -205,19 +202,17 @@ public class ProductJson {
 		json.put("features",featureArray);
 		
 		FilterRule filter = new LevelFilterRule(level);
+		int filterValue;
 		for(OsmObject feature:osmData.getFeatureList()) {
 			
 			//this is a cludgy work aroudn to get the filter value for the level
-			int originalState = feature.getFilterState();
-			feature.setFilterState(0);
-			filter.filterObject(feature);
-			if(feature.renderEnabled()) {
+			filterValue = filter.getFilterValue(feature,filter.getInitialState());
+				if((filterValue & FilterRule.RENDER_ENABLED) != 0) {
 				JSONObject featureJson = getFeatureJson(feature,OPENLAYERS_NAT_FRAME);
 				if(featureJson != null) {
 					featureArray.put(featureJson);
 				}
 			}
-			feature.setFilterState(originalState);
 		}
 		
 		//save jsons

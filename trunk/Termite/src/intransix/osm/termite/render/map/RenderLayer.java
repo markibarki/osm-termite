@@ -1,13 +1,15 @@
 package intransix.osm.termite.render.map;
 
+import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.map.data.OsmObject;
 import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.data.OsmNode;
 import intransix.osm.termite.map.data.OsmWay;
 import intransix.osm.termite.render.*;
 import intransix.osm.termite.map.theme.Theme;
-import intransix.osm.termite.gui.MapDataListener;
-import intransix.osm.termite.render.LocalCoordinateListener;
+import intransix.osm.termite.app.mapdata.MapDataListener;
+import intransix.osm.termite.app.viewregion.LocalCoordinateListener;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -22,16 +24,15 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 	private OsmData mapData;
 	private Theme theme;
 	
-	public RenderLayer(MapLayerManager mapLayerManager) {
-		super(mapLayerManager);
+	public RenderLayer() {
 		this.setName("Render Layer");
-		
-		MapPanel mapPanel = getMapPanel();
-		mapPanel.addLocalCoordinateListener(this);
 	}
 	
+	@Override
 	public void onMapData(OsmData mapData) {
 		this.mapData = mapData;
+		//should be active whenever there is map data
+		this.setActiveState(mapData != null);
 	}
 	
 	public void setTheme(Theme theme) {
@@ -44,9 +45,9 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 		OsmData localData = mapData;
 		Theme localTheme = theme;
 		
-		AffineTransform localToPixels = getMapPanel().getLocalToPixels();
-		AffineTransform mercatorToLocal = getMapPanel().getMercatorToLocal();
-		double zoomScalePixelsPerLocal = getMapPanel().getZoomScalePixelsPerLocal();
+		AffineTransform localToPixels = getViewRegionManager().getLocalToPixels();
+		AffineTransform mercatorToLocal = getViewRegionManager().getMercatorToLocal();
+		double zoomScalePixelsPerLocal = getViewRegionManager().getZoomScalePixelsPerLocal();
 //System.out.println(zoomScalePixelsPerLocal);
 		if((localData == null)||(localTheme == null)) return;
 		
@@ -78,7 +79,7 @@ public class RenderLayer extends MapLayer implements MapDataListener, LocalCoord
 	}
 	
 	@Override
-	public void onLocalCoordinateChange(MapPanel mapPanel, AffineTransform oldLocalToNewLocal) {
+	public void onLocalCoordinateChange(ViewRegionManager viewRegionManager, AffineTransform oldLocalToNewLocal) {
 		if(mapData != null) {
 			Feature feature;
 			java.util.List<OsmObject> objectList = mapData.getFeatureList();

@@ -47,9 +47,6 @@ public class OsmData {
 	private List<OsmWaySrc> srcWays = new ArrayList<OsmWaySrc>();
 	private List<OsmRelationSrc> srcRelations = new ArrayList<OsmRelationSrc>();
 	
-	//this is for filtering the features
-	private FeatureFilter filter = null;
-	
 	//the list of edit actions
 	private List<EditAction> actions = new ArrayList<EditAction>();
 	private int nextAddIndex = 0;
@@ -60,17 +57,17 @@ public class OsmData {
 	// Public Methods
 	//======================
 	
-	public void setFilter(FeatureFilter filter) {
-		this.filter = filter;
-		
-		//update the filtered value for all features. */
-		filterAll();
-	}
-	
 	/** This adds a data changed listener. */
 	public void addDataChangedListener(OsmDataChangedListener listener) {
 		if(!listeners.contains(listener)) {
-			listeners.add(listener);
+			//for now, just put preprocessors at the beginning and others at the end
+			//we should sort on the listener type instead
+			if(listener.getListenerType() == OsmDataChangedListener.LISTENER_PREPROCESSOR) {
+				listeners.add(0,listener);
+			}
+			else {
+				listeners.add(listener);
+			}
 		}
 	}
 	
@@ -171,6 +168,11 @@ public class OsmData {
 	/** This method returns a collection of all the relations. */
 	public Collection<OsmRelation> getOsmRelations() {
 		return relationMap.values();
+	}
+	
+	/** This method returns a collection of all the relations. */
+	public Collection<OsmSegment> getOsmSegments() {
+		return segments.values();
 	}
 	
 	/** This is a test method to load the latest edit number used. */
@@ -567,24 +569,12 @@ public class OsmData {
 		return relation;
 	}
 	
-	/** This method runs the given object through the filter. */
-	void filterObject(OsmObject osmObject) {
-		if(filter != null) {
-			filter.filterFeature(osmObject);
-		}
-		else {
-			osmObject.setFilterState(FilterRule.ALL_ENABLED);
-		}
-	}
-	
 	/** This method notifies any data changed listeners. It should be called 
 	 * when the data changes.
 	 * 
 	 * @param editNumber	This is the data version for any data changed in this edit. 
 	 */
 	void dataChanged(int editNumber) {
-		//update filter
-		filterAll();
 
 long startMsec = System.currentTimeMillis();
 long start = System.nanoTime();
@@ -615,22 +605,6 @@ private String getDelta(long t1, long t2) {
 	//==========================
 	// Private Methods
 	//==========================
-	
-	/** this runs all object through the filter. */
-	private void filterAll() {
-		for(OsmNode node:nodeMap.values()) {
-			filterObject(node);
-		}
-		for(OsmWay way:wayMap.values()) {
-			filterObject(way);
-		}
-		//filter segments according to node state
-		for(OsmSegment segment:segments.values()) {
-			int state1 = segment.getNode1().getFilterState();
-			int state2 = segment.getNode2().getFilterState();
-			segment.setFilterState(state1 & state2);
-		}
-	}
 	
 	private void reportFatalError(String actionDesc, String exceptionMsg) {
 		JOptionPane.showMessageDialog(null,"There was a fatal error on the action: " + actionDesc +

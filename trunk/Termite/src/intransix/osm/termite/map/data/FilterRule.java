@@ -24,14 +24,12 @@ public interface FilterRule {
 	 */
 	int getInitialState();
 	
-	/** This method sets the filter value for the object, based on the object
-	 * parameters. Multiple filter rules may run sequentially. Thus it is recommended that a 
-	 * filter follows the policy of doing an AND operation of an OR operation with 
-	 * the existing object filter state, rather than explicitly setting an
-	 * enable/disable value which would nullify any previous filter rules.
+	/** This method gets the filter value for a given object, with a initial
+	 * filter value that may have been set by previous filter rules.
 	 * 
 	 * @param osmObject		The object to be filtered
+	 * @param initialValue	The filter state of the object before this rule is applied.
 	 * @return				The value of this filter rule for this object.
 	 */ 
-	void filterObject(OsmObject osmObject);
+	int getFilterValue(OsmObject osmObject, int initialValue);
 }

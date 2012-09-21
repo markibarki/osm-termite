@@ -1,9 +1,9 @@
 package intransix.osm.termite.render.tile;
 
-import intransix.osm.termite.render.MapLayer;
-import intransix.osm.termite.render.MapLayerManager;
-import intransix.osm.termite.render.MapListener;
+import intransix.osm.termite.app.maplayer.MapLayer;
+import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.render.MapPanel;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import java.awt.*;
 import java.awt.geom.*;
 import java.net.URL;
@@ -41,13 +41,9 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	// Public Methods
 	//=========================
 	
-	public TileLayer(MapLayerManager mapLayerManager) {
-		super(mapLayerManager);
+	public TileLayer() {
 		this.setName("Base Map");
 		this.setVisible(false);
-		
-		MapPanel mapPanel = getMapPanel();
-		mapPanel.addMapListener(this);
 	}
 	
 	public void setTileInfo(TileInfo tileInfo) {
@@ -80,14 +76,16 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 		if(tileInfo == null) return;
 		if(zoomTooHigh) return;
 		
-		MapPanel mapPanel = getMapPanel();
-		AffineTransform mercToPixels = mapPanel.getMercatorToPixels();
-		AffineTransform pixelsToMerc = mapPanel.getPixelsToMercator();
-		Rectangle visibleRect = mapPanel.getVisibleRect();
+		ViewRegionManager vrm = getViewRegionManager();
+		if(vrm == null) return;
+		
+		AffineTransform mercToPixels = vrm.getMercatorToPixels();
+		AffineTransform pixelsToMerc = vrm.getPixelsToMercator();
+		Rectangle visibleRect = vrm.getPixelRect();
 		
 		//we need to select the desired tile zoom
 		if(tileZoom == INVALID_ZOOM) {
-			setZoomScale(mapPanel.getZoomScalePixelsPerMerc());
+			setZoomScale(vrm.getZoomScalePixelsPerMerc());
 		}
 		
 		//get the current tile zoom
@@ -131,20 +129,31 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	@Override
 	public boolean imageUpdate(Image image, int infoflags, int x, int y, int width, int height) {
+		boolean returnValue;
+		boolean contentChanged;
+		
 		if((infoflags & ImageObserver.ALLBITS) != 0) {
 			//just do a repaint
-			getMapPanel().repaint();
-			return false;
+			contentChanged = true;
+			returnValue = false;
 		}
 		else if((infoflags & ImageObserver.ABORT) != 0) {
 			//just do a repaint, to continue with unloaded tiles
-			getMapPanel().repaint();
-			return true;
+			contentChanged = true;
+			returnValue = true;
 		}
 		else {
-			return true;
+			contentChanged = false;
+			returnValue = true;
 		}
+		
+		if(contentChanged) {
+			this.notifyContentChange();
+		}
+		
+		return returnValue;
 	}
+	
 	
 	//--------------------------
 	// MapListener Interface
@@ -152,8 +161,8 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onZoom(MapPanel mapPanel) {
-		setZoomScale(mapPanel.getZoomScalePixelsPerMerc());
+	public void onZoom(ViewRegionManager vrm) {
+		setZoomScale(vrm.getZoomScalePixelsPerMerc());
 	}
 	
 	private void setZoomScale(double pixelsPerMerc) {
@@ -182,10 +191,10 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	}
 	
 	@Override
-	public void onPanStart(MapPanel mapPanel) {}
+	public void onPanStart(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanEnd(MapPanel mapPanel) {}
+	public void onPanEnd(ViewRegionManager vrm) {}
 	
 	//=================================
 	// Private Methods

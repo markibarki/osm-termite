@@ -1,6 +1,8 @@
 package intransix.osm.termite.render.source;
 
 
+import intransix.osm.termite.app.maplayer.MapLayer;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.render.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -52,8 +54,7 @@ public class GeocodeLayer extends MapLayer implements
 	
 	private java.util.List<GeocodeStateListener> stateListeners = new ArrayList<GeocodeStateListener>();
 	
-	public GeocodeLayer(MapLayerManager mapLayerManager) {
-		super(mapLayerManager);
+	public GeocodeLayer() {
 		anchorPoints = new AnchorPoint[3];
 		anchorPoints[0] = p0;
 		anchorPoints[1] = p1;
@@ -80,37 +81,6 @@ public class GeocodeLayer extends MapLayer implements
 	
 	public void removeGeocodeStateListener(GeocodeStateListener stateListener) {
 		stateListeners.remove(stateListener);
-	}
-	
-	/** This mode sets the edit layer active. */
-	@Override
-	public void setActiveState(boolean isActive) {
-		super.setActiveState(isActive);
-		MapPanel mapPanel = this.getMapPanel();
-		if(mapPanel != null) {
-			if(isActive) {
-				mapPanel.addMouseListener(this);
-				mapPanel.addMouseMotionListener(this);
-				mapPanel.addKeyListener(this);
-				
-				//update source layer, just in case.
-				if(sourceLayer != null) {
-					this.setSourceLayer(sourceLayer);
-				}
-				
-				setGeocodeType(GeocodeType.TWO_POINT);
-				setLayerState(LayerState.SELECT);
-			}
-			else {
-				mapPanel.removeMouseListener(this);
-				mapPanel.removeMouseMotionListener(this);
-				mapPanel.removeKeyListener(this);
-				
-				cleanUp();
-				
-				setLayerState(LayerState.INACTIVE);
-			}
-		}
 	}
 	
 	public void setGeocodeType(GeocodeType geocodeType) {
@@ -153,8 +123,7 @@ public class GeocodeLayer extends MapLayer implements
 	
 	@Override
 	public void render(Graphics2D g2) {
-		MapPanel mapPanel = getMapPanel();
-		AffineTransform mercToPixels = mapPanel.getMercatorToPixels();
+		AffineTransform mercToPixels = getViewRegionManager().getMercatorToPixels();
 		
 		//draw the points
 		AnchorPoint ap;
@@ -183,7 +152,6 @@ public class GeocodeLayer extends MapLayer implements
 	
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		this.getMapPanel().requestFocusInWindow();
 	}
 	
 	@Override
@@ -194,14 +162,13 @@ public class GeocodeLayer extends MapLayer implements
 	public void mouseMoved(MouseEvent e) {
 		//read mouse location in global coordinates
 		if(layerState == LayerState.MOVE) {
-			MapPanel mapPanel = getMapPanel();
-			AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
+			AffineTransform pixelsToMercator = getViewRegionManager().getPixelsToMercator();
 			movePix.setLocation(e.getX(),e.getY());
 			pixelsToMercator.transform(movePix, moveMerc);
 			updateMoveTransform(moveMerc);
 			
 			sourceLayer.setMove(true, moveImageToMerc);
-			mapPanel.repaint();
+			notifyContentChange();
 		}
 	}
 	
@@ -213,9 +180,9 @@ public class GeocodeLayer extends MapLayer implements
 		if(e.getButton() != MouseEvent.BUTTON1) return;
 	
 		boolean changed = false;
-		MapPanel mapPanel = getMapPanel();
-		AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
-		double mercPerPixelsScale = 1 / mapPanel.getZoomScalePixelsPerMerc();
+		ViewRegionManager viewRegionManager = getViewRegionManager();
+		AffineTransform pixelsToMercator = viewRegionManager.getPixelsToMercator();
+		double mercPerPixelsScale = 1 / viewRegionManager.getZoomScalePixelsPerMerc();
 		
 		Point2D mouseMerc = new Point2D.Double();
 		mouseMerc.setLocation(e.getX(),e.getY());
@@ -306,7 +273,7 @@ public class GeocodeLayer extends MapLayer implements
 	
 		
 		if(changed) {
-			mapPanel.repaint();
+			notifyContentChange();
 		}
 	}
 	
@@ -352,6 +319,48 @@ public class GeocodeLayer extends MapLayer implements
 	
 	// </editor-fold>
 	
+	/** This mode sets the edit layer active. */
+	@Override
+	public void setActiveState(boolean isActive) {
+		super.setActiveState(isActive);
+		MapPanel mapPanel = this.getMapPanel();
+		if(mapPanel != null) {
+			if(isActive) {
+				//activate the mouse listeners
+				mapPanel.addMouseListener(this);
+				mapPanel.addMouseMotionListener(this);
+				mapPanel.addKeyListener(this);
+				
+				//refresh the source layer transformation
+				if(this.sourceLayer != null) {
+					this.setSourceLayer(sourceLayer);
+				}
+			}
+			else {
+				mapPanel.removeMouseListener(this);
+				mapPanel.removeMouseMotionListener(this);
+				mapPanel.removeKeyListener(this);
+				
+				cleanup();
+			}
+		}
+	}
+
+	
+	private void cleanup() {
+
+		this.setLayerState(LayerState.INACTIVE);
+		selection = INVALID_SELECTION;
+		
+		for(AnchorPoint ap:anchorPoints) {
+			ap.reset();
+		}
+	
+	
+		imageToMerc = null;
+		mercToImage = null;
+	}
+		
 	//=====================
 	// Private Methods
 	//=====================
@@ -376,20 +385,6 @@ public class GeocodeLayer extends MapLayer implements
 			p1.pointType = AnchorPoint.PointType.ROTATE_SCALE_XY;
 			p2.pointType = AnchorPoint.PointType.ROTATE_SCALE_XY;
 		}
-	}
-	
-	/** This method gets the location of the mouse in pixels. */
-	private Point2D getMouseMerc() {
-		//get the current mouse location and update the nodes that move with the mouse
-		MapPanel mapPanel = getMapPanel();
-		AffineTransform pixelsToMercator = mapPanel.getPixelsToMercator();
-
-		Point2D mouseMerc = new Point2D.Double();
-		java.awt.Point mouseInApp = MouseInfo.getPointerInfo().getLocation();
-		java.awt.Point mapPanelInApp = mapPanel.getLocationOnScreen();
-		mouseMerc.setLocation(mouseInApp.x - mapPanelInApp.x,mouseInApp.y - mapPanelInApp.y);
-		pixelsToMercator.transform(mouseMerc,mouseMerc);
-		return mouseMerc;
 	}
 	
 	private void updateMoveTransform(Point2D moveMerc) {
@@ -476,16 +471,16 @@ if((length1 == 0)||(length2 == 0)) return;
 	private void initializeMove() {
 		moveImageToMerc.setTransform(imageToMerc);
 
-		Point2D mouseMerc = getMouseMerc();
+		Point2D mouseMerc = getMapPanel().getMousePointMerc();
 		updateMoveTransform(mouseMerc);
 
 		sourceLayer.setMove(true, moveImageToMerc);
-		getMapPanel().repaint();
+		notifyContentChange();
 	}
 	
 	private void exitMove() {
 		sourceLayer.setMove(false,null);
-		getMapPanel().repaint();
+		notifyContentChange();
 	}
 	
 	private void completeMove() {
@@ -499,7 +494,7 @@ if((length1 == 0)||(length2 == 0)) return;
 		}
 		sourceLayer.setMove(false,null);
 		sourceLayer.setImageToMerc(imageToMerc);
-		getMapPanel().repaint();
+		notifyContentChange();
 	}
 	
 	private void updateInverseTransform() {
@@ -509,20 +504,6 @@ if((length1 == 0)||(length2 == 0)) return;
 		catch(Exception ex) {
 			ex.printStackTrace();
 		}
-	}
-	
-	private void cleanUp() {
-
-		this.setLayerState(LayerState.INACTIVE);
-		selection = INVALID_SELECTION;
-		
-		for(AnchorPoint ap:anchorPoints) {
-			ap.reset();
-		}
-	
-	
-		imageToMerc = null;
-		mercToImage = null;
 	}
 	
 }

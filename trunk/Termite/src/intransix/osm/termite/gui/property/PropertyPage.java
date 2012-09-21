@@ -17,15 +17,18 @@ public class PropertyPage extends javax.swing.JPanel {
 	private final static int KEY_INDEX = 0;
 	private final static int VALUE_INDEX = 1;
 	
-	private TermiteGui gui;
+	private OsmData osmData;
 	private OsmObject osmObject;
 
 	/**
 	 * Creates new form PropertyPage
 	 */
-	public PropertyPage(TermiteGui gui) {
+	public PropertyPage() {
 		initComponents();
-		this.gui = gui;
+	}
+	
+	public void setMapData(OsmData osmData) {
+		this.osmData = osmData;
 	}
 	
 	public void setObject(OsmObject osmObject) {
@@ -144,24 +147,27 @@ public class PropertyPage extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+		if(osmData == null) return;
 		int rowIndex = jTable1.getSelectedRow();
 		if(rowIndex >= 0) {
 			String key = (String)jTable1.getModel().getValueAt(rowIndex,KEY_INDEX);
-			PropertyEditDialog ped = new PropertyEditDialog(null,gui.getMapData(),osmObject,key);
+			PropertyEditDialog ped = new PropertyEditDialog(null,osmData,osmObject,key);
 			ped.setVisible(true);
 		}
 	}//GEN-LAST:event_editButtonActionPerformed
 
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-		PropertyEditDialog ped = new PropertyEditDialog(null,gui.getMapData(),osmObject);
+		if(osmData == null) return;
+		PropertyEditDialog ped = new PropertyEditDialog(null,osmData,osmObject);
 		ped.setVisible(true);
 	}//GEN-LAST:event_newButtonActionPerformed
 
 	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+		if(osmData == null) return;
 		int rowIndex = jTable1.getSelectedRow();
 		if(rowIndex >= 0) {
 			String key = (String)jTable1.getModel().getValueAt(rowIndex,KEY_INDEX);
-			PropertyEdit pe = new PropertyEdit(gui.getMapData());
+			PropertyEdit pe = new PropertyEdit(osmData);
 			pe.editProperty(osmObject,key,null,null);
 		}
 	}//GEN-LAST:event_deleteButtonActionPerformed
