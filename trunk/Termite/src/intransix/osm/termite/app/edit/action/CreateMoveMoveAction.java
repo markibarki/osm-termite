@@ -1,5 +1,8 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.app.edit.MouseMoveAction;
+import intransix.osm.termite.app.edit.editobject.EditNode;
+import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.map.data.OsmData;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -10,15 +13,17 @@ import java.util.List;
  * @author sutter
  */
 public class CreateMoveMoveAction implements MouseMoveAction {
-	
-	private OsmData osmData;
-	private EditLayer editLayer;
+
+	private EditManager editManager;
 	private EditNode editNode;
 	
-	public boolean init(OsmData osmData, EditLayer editLayer) {
-		this.osmData = osmData;
-		this.editLayer = editLayer;
-		List<EditNode> movingNodes = editLayer.getMovingNodes();
+	public CreateMoveMoveAction(EditManager editManager) {
+		this.editManager = editManager;
+	}
+	
+	public boolean init() {
+
+		List<EditNode> movingNodes = editManager.getMovingNodes();
 		if(movingNodes.size() == 1) {
 			editNode = movingNodes.get(0);
 			return true;

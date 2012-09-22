@@ -1,5 +1,10 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.app.edit.VirtualNode;
+import intransix.osm.termite.app.edit.MouseClickAction;
+import intransix.osm.termite.app.edit.snapobject.SnapObject;
+import intransix.osm.termite.app.edit.snapobject.SnapNode;
+import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.data.OsmNode;
 import intransix.osm.termite.map.data.OsmWay;
@@ -15,19 +20,26 @@ import java.util.List;
  */
 public class SelectClickAction implements MouseClickAction {
 	
-	private EditLayer editLayer;
+	private EditManager editManager;
 	
-	public boolean init(OsmData osmData, EditLayer editLayer) {
-		this.editLayer = editLayer;
+	
+	public SelectClickAction(EditManager editManager) {
+		this.editManager = editManager;
+	}
+	
+	@Override
+	public boolean init() {
 		return true;
 	}
 	
-	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
-		//do a selection with the press
+	@Override
+	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
+		
+		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
 		
 		//get the preview objects, so it can be added to the selection
-		List<SnapObject> snapObjects = editLayer.getSnapObjects();
-		int activeSnapObject = editLayer.getActiveSnapObject();
+		List<SnapObject> snapObjects = editManager.getSnapObjects();
+		int activeSnapObject = editManager.getActiveSnapObject();
 				
 		//store the latest point used for selection, for the move anchor
 		EditDestPoint selectionPoint = clickDestPoint;
@@ -48,16 +60,16 @@ public class SelectClickAction implements MouseClickAction {
 			//get the edit object for this snap object
 			selectObject = snapObject.getSelectObject();
 		}
-		editLayer.setSelectionPoint(selectionPoint);
+		editManager.setSelectionPoint(selectionPoint);
 
-		boolean wasVirtualNode = editLayer.getVirtualNodeSelected();
+		boolean wasVirtualNode = editManager.getVirtualNodeSelected();
 		boolean isVirtualNode = selectObject instanceof VirtualNode;
 
 		//handle selection
 
 		//check normal select or select node in a way
-		List<Object> selection = editLayer.getSelection();
-		List<Integer> selectedWayNodes = editLayer.getSelectedWayNodes();
+		List<Object> selection = editManager.getSelection();
+		List<Integer> selectedWayNodes = editManager.getSelectedWayNodes();
 		
 		
 		
@@ -116,10 +128,9 @@ public class SelectClickAction implements MouseClickAction {
 			selectedWayNodes.clear();
 		}
 
-		editLayer.setVirtualNodeSelected(isVirtualNode);
+		editManager.setVirtualNodeSelected(isVirtualNode);
 
 		//report selection
-		editLayer.setSelection(selection, selectedWayNodes);
-		editLayer.notifyContentChange();
+		editManager.setSelection(selection, selectedWayNodes);
 	}
 }

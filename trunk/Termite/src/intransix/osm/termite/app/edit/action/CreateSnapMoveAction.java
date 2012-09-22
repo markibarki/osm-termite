@@ -1,40 +1,145 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.app.edit.MouseMoveAction;
+import intransix.osm.termite.app.edit.editobject.EditSegment;
+import intransix.osm.termite.app.edit.snapobject.SnapSegment;
+import intransix.osm.termite.app.edit.snapobject.SnapObject;
+import intransix.osm.termite.app.edit.snapobject.SnapIntersection;
+import intransix.osm.termite.app.edit.snapobject.SnapNode;
+import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
+import intransix.osm.termite.map.data.OsmData;
 import intransix.osm.termite.map.data.OsmNode;
 import intransix.osm.termite.map.data.OsmObject;
-import java.awt.Graphics2D;
+import intransix.osm.termite.map.data.OsmSegment;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import intransix.osm.termite.map.data.OsmSegment;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  * @author sutter
  */
-public class SnapSegment extends SnapObject {
+public class CreateSnapMoveAction implements MouseMoveAction {
 	
-	//=======================
-	// Properties
-	//=======================
+	//this is the limit for ignoring pairs of lines for intersecting
+	private final static double ALMOST_PARALLEL_SIN_THETA = .1; //5.7 degrees
 	
-	//display line start
-	public Point2D p1;
-	//display line end
-	public Point2D p2;
+	private OsmData osmData;
+	private EditManager editManager;
+	private List<SnapSegment> workingSnapSegments = new ArrayList<SnapSegment>();
 	
-	//=======================
-	// Public Methods
-	//=======================
+	private ViewRegionManager viewRegionManager;
 	
-	/** Constructor */
-	public SnapSegment() {
-		//set type as unknown - se dont' know what kind of segment
-		super(SnapType.UNKNOWN);
+	public CreateSnapMoveAction(EditManager editManager) {
+		this.editManager = editManager;
 	}
 	
-	/** This method tests if the mouse point hits the segment. If so, it 
+	@Override
+	public boolean init() {
+		
+		//needed to find horizontal and vertical for snapping
+		this.viewRegionManager = editManager.getEditLayer().getViewRegionManager();
+		
+		return true;
+	}
+	
+	@Override
+	public void mouseMoved(Point2D mouseMerc, double mercRadSq, MouseEvent e) {
+		
+		//get snapObjects
+		List<SnapObject> snapObjects = editManager.getSnapObjects();
+		snapObjects.clear();
+		
+		//check for hovering over these objects
+		SnapObject snapObject;
+		List<OsmObject> objectList = osmData.getFeatureList();
+		for(OsmObject mapObject:objectList) {
+			//make sure edit is enabled for this object
+			if(!mapObject.editEnabled()) continue;
+
+			//do the hover check
+			if(mapObject instanceof OsmNode) {
+				//check for a node hit
+				snapObject = SnapNode.testNode((OsmNode)mapObject, mouseMerc, mercRadSq);
+				if(snapObject != null) {
+					snapObjects.add(snapObject);
+				}
+
+				//check for a segment hit
+				for(OsmSegment segment:((OsmNode)mapObject).getSegments()) {
+					if(!segment.editEnabled()) continue;
+
+					//only do the segments that start with this node, to avoid doing them twice
+					if(segment.getNode1() == mapObject) {
+						//snap preview - when we are in an edit
+						//check for segment and extension hit
+						//do this when a mouse edit action is active
+
+						SnapSegment snapSegment = testSegmentHit(segment,
+								mouseMerc,mercRadSq);
+						if(snapSegment != null) {
+							snapObjects.add(snapSegment);
+							workingSnapSegments.add(snapSegment);
+						}
+					}
+				}
+			}
+		}
+		
+		//check for snapping in the pending snap segments
+		SnapSegment ss;
+		List<EditSegment> pendingSnapSegments = editManager.getPendingSnapSegments();
+		if(pendingSnapSegments != null) {
+			AffineTransform pixelsToMercator= viewRegionManager.getPixelsToMercator();
+			Point2D mercPix00 = new Point2D.Double(0,0);
+			Point2D mercPix10 = new Point2D.Double(1,0);
+			Point2D mercPix01 = new Point2D.Double(0,1);
+			pixelsToMercator.transform(mercPix00, mercPix00);
+			pixelsToMercator.transform(mercPix10, mercPix10);
+			pixelsToMercator.transform(mercPix01, mercPix01);
+		
+			for(EditSegment es:pendingSnapSegments) {
+				//check for horizontal snap
+				ss = getHorOrVertSnapSegment(es,mouseMerc,mercRadSq,mercPix00,mercPix10,mercPix01);
+				if(ss != null) {
+					snapObjects.add(ss);
+					workingSnapSegments.add(ss);
+				}
+				else {
+					//only check perpicular if it is not already a horizontal or vertical snap
+					//check for perps from both ends
+					ss = getPerpSegment(es,mouseMerc,mercRadSq);
+					if(ss != null) {
+						snapObjects.add(ss);
+						workingSnapSegments.add(ss);
+					}
+				}
+			}
+		}
+		
+		//check for intersections
+		workingSnapSegments.clear();
+		loadIntersections(workingSnapSegments, mouseMerc, mercRadSq, snapObjects);
+		workingSnapSegments.clear();
+		
+		//order the snap objects and select the active one
+		if(snapObjects.size() > 1) {
+			Collections.sort(snapObjects);
+		}
+		int activeSnapObject = snapObjects.isEmpty() ? -1 : 0;
+		editManager.setActiveSnapObject(activeSnapObject);
+	}
+	
+	//===========================
+	// Private Methods
+	//===========================
+	
+		/** This method tests if the mouse point hits the segment. If so, it 
 	 * create a SnapSegment object. 
 	 * 
 	 * @param segment		The osm segment being tested
@@ -42,7 +147,7 @@ public class SnapSegment extends SnapObject {
 	 * @param mercRadSq		The radius for a hit, in mercator coordinates.
 	 * @return 
 	 */
-	public static SnapSegment testSegmentHit(OsmSegment segment, 
+	private SnapSegment testSegmentHit(OsmSegment segment, 
 			Point2D mouseMerc, double mercRadSq) {
 		
 		return getSnapSegment(segment.getNode1().getPoint(),
@@ -50,36 +155,7 @@ public class SnapSegment extends SnapObject {
 				mouseMerc,false,mercRadSq);
 	}
 	
-	/** This method renders the object.
-	 * 
-	 * @param g2				The graphics context
-	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
-	 * @param styleInfo			The style info for rendering
-	 */
-	@Override
-	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
-			StyleInfo styleInfo) {
 		
-		Style style = this.getHoverStyle(styleInfo);
-		renderSegment(g2,mercatorToPixels,p1,p2,style);
-	}
-	
-	/** This method looks up an select object for this snap object.  . There is
-	 * no select object for a segment.
-	 * 
-	 * @param editMap	The edit map of existing edit objects
-	 * @return			The edit object
-	 */
-	@Override
-	public EditObject getSelectObject() {
-		//no select object for segment
-		return null;
-	}
-	
-	//===========================
-	// Private Methods
-	//===========================
-	
 	/** This method calculates a snap point for an input point on a segment. The
 	 * edit layer will snap from the input (mouse) location to a segment. The snap
 	 * is also rendered in the UI. It is rendered differently for snapping to a point
@@ -98,7 +174,7 @@ public class SnapSegment extends SnapObject {
 	 * @param mercRadSq			This is the radius of a hit in mercator coordinates.
 	 * @return					The SnapSegmnt object. Null if there is no snap.
 	 */
-	private static SnapSegment getSnapSegment(Point2D segPt1, Point2D segPt2, 
+	private SnapSegment getSnapSegment(Point2D segPt1, Point2D segPt2, 
 			Point2D inPoint, boolean segmentIsVirtual, double mercRadSq) {
 		
 //quick check for 0 length segments
@@ -165,7 +241,7 @@ if(segPt1.distanceSq(segPt2) == 0) return null;
 	 * @param mercPix01		the 0,1 pixel location on the screen, in mercator coordinates
 	 * @return 
 	 */
-	public static SnapSegment getHorOrVertSnapSegment(EditSegment es, Point2D mouseMerc, double mercRadSq,
+	private SnapSegment getHorOrVertSnapSegment(EditSegment es, Point2D mouseMerc, double mercRadSq,
 			Point2D mercPix00, Point2D mercPix10, Point2D mercPix01) {
 		
 		//use the point AWAY from the mouse as the base point
@@ -204,7 +280,7 @@ if(segPt1.distanceSq(segPt2) == 0) return null;
 	/** This method loads the best perpendicular snap segment. If none is found
 	 * null is returned. This only searches for a perpendicular between the 
 	 * input segment and segments connected to it at the FIXED end. */
-	public static SnapSegment getPerpSegment(EditSegment editSegment, Point2D mouseMerc, double mercRadSq) {
+	private SnapSegment getPerpSegment(EditSegment editSegment, Point2D mouseMerc, double mercRadSq) {
 		OsmNode pivotNode;
 		Point2D pivotPoint = new Point2D.Double();
 		SnapSegment ss;
@@ -247,5 +323,64 @@ if(segPt1.distanceSq(segPt2) == 0) return null;
 		
 		return ss0;
 	}
+	
+	
+	/** This method calculates the intersection of the two segments and checks if
+	 * the intersection in in range. 
+	 * 
+	 * @param ss1			one segment
+	 * @param ss2			the other segment
+	 * @param mouseMerc		the mouse location,in mercator coordinates 
+	 * @param mercRadSq		the error radius for a snap, in mercator coordinates
+	 * @return 
+	 */
+	private void loadIntersections(List<SnapSegment> snapSegments, 
+			Point2D mouseMer, double mercRadSq, List<SnapObject> snapObjects) {
+		
+		int cnt = snapSegments.size();
+		for(int i = 0; i < cnt; i++) {
+			final SnapSegment ss1 = snapSegments.get(i);
+			for(int j = i+1; j < cnt; j++) {
+				final SnapSegment ss2 = snapSegments.get(j);
+				
+				double xs1 = ss1.p1.getX();
+				double ys1 = ss1.p1.getY();
+				double dx1 = ss1.p2.getX() - xs1;
+				double dy1 = ss1.p2.getY() - ys1;
+				double xs2 = ss2.p1.getX();
+				double ys2 = ss2.p1.getY();
+				double dx2 = ss2.p2.getX() - xs2;
+				double dy2 = ss2.p2.getY() - ys2;
+
+				double den = dx1*dy2 - dy1*dx2;
+				double len1 = Math.sqrt(dx1*dx1 + dy1*dy1);
+				double len2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+
+				//make sure lines are not cloe to being parallel
+				if( Math.abs(den / (len1 * len2)) < ALMOST_PARALLEL_SIN_THETA) continue;
+
+				//find intersection
+				double num = -(xs1*dy2 - ys1*dx2) + (xs2*dy2 - ys2*dx2);
+				double alpha = num / den;
+
+				double xSnap = xs1 + alpha * dx1;
+				double ySnap = ys1 + alpha * dy1;
+
+				double err2 = mouseMer.distanceSq(xSnap,ySnap);
+
+				if(err2 < mercRadSq) {
+					//not in range
+					SnapIntersection si = new SnapIntersection();
+					si.snapPoint = new Point2D.Double(xSnap,ySnap);
+					si.s1 = ss1;
+					si.s2 = ss2;
+					si.err2 = err2;
+					
+					snapObjects.add(si);
+				}		
+			}
+		}
+	}
+	
 	
 }

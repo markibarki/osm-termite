@@ -53,7 +53,7 @@ public class FeatureTree extends javax.swing.JTree
 		createTree();
 		
 		//set the selection
-		FeatureInfo activeFeatureType = featureTypeManager.getActiveFeatureLayer();
+		FeatureInfo activeFeatureType = featureTypeManager.getActiveFeatureType();
 		this.onFeatureTypeSelected(activeFeatureType);
 		
 		//register for updates

@@ -1,4 +1,4 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit;
 
 /**
  * This interface is used for notifications of edit state changes.
@@ -7,5 +7,5 @@ package intransix.osm.termite.render.edit;
  */
 public interface EditStateListener {
 
-	void editModeChanged(boolean inMove);
+	void editStateChanged(boolean inMove);
 }

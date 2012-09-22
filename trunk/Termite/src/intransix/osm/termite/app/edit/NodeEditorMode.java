@@ -7,10 +7,10 @@ import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.edit.NodeToolClickAction;
-import intransix.osm.termite.render.edit.SelectClickAction;
-import intransix.osm.termite.render.edit.CreateMoveMoveAction;
-import intransix.osm.termite.render.edit.CreateSnapMoveAction;
+import intransix.osm.termite.app.edit.action.NodeToolClickAction;
+import intransix.osm.termite.app.edit.action.SelectClickAction;
+import intransix.osm.termite.app.edit.action.CreateMoveMoveAction;
+import intransix.osm.termite.app.edit.action.CreateSnapMoveAction;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,8 +66,7 @@ public class NodeEditorMode extends EditorMode {
 	public void turnOn() {
 		if(editLayer != null) {
 			editLayer.setActiveState(true);
-			editLayer.setMouseClickAction(new NodeToolClickAction());
-			editLayer.setMouseMoveActions(new CreateMoveMoveAction(),new CreateSnapMoveAction());
+			loadMouseActions();
 			
 			MapPanel mapPanel = editLayer.getMapPanel();
 			mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -81,7 +80,6 @@ public class NodeEditorMode extends EditorMode {
 	public void turnOff() {
 		if(editLayer != null) {
 			editLayer.setActiveState(false);
-			editLayer.setMouseClickAction(new SelectClickAction());
 			
 			MapPanel mapPanel = editLayer.getMapPanel();
 			mapPanel.setCursor(Cursor.getDefaultCursor());
@@ -90,5 +88,19 @@ public class NodeEditorMode extends EditorMode {
 	
 	private void createToolBar() {	
 		toolBar = null;
+	}
+	
+	private void loadMouseActions() {
+		//set up move state
+		MouseClickAction mouseClickAction = new NodeToolClickAction(editManager);		
+		mouseClickAction.init();
+
+		MouseMoveAction snapAction = new CreateSnapMoveAction(editManager);
+		snapAction.init();
+		MouseMoveAction moveAction = new CreateMoveMoveAction(editManager);
+		moveAction.init();
+
+		editLayer.setMouseClickAction(mouseClickAction);
+		editLayer.setMouseMoveActions(moveAction, snapAction);
 	}
 }

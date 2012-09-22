@@ -1,6 +1,14 @@
 
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.app.edit.VirtualNode;
+import intransix.osm.termite.app.edit.MouseClickAction;
+import intransix.osm.termite.app.edit.editobject.EditVirtualNode;
+import intransix.osm.termite.app.edit.editobject.EditObject;
+import intransix.osm.termite.app.edit.editobject.EditSegment;
+import intransix.osm.termite.app.edit.editobject.EditNode;
+import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.level.LevelManager;
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.data.edit.EditDestPoint;
 import intransix.osm.termite.map.data.edit.WayNodeEdit;
@@ -15,28 +23,27 @@ import java.awt.event.MouseEvent;
  */
 public class VirtualNodeClickAction implements MouseClickAction {
 
-	private OsmData osmData;
-	private EditLayer editLayer;
-	private OsmRelation activeLevel;
+	private EditManager editManager;
+	private LevelManager levelManager;
 	private VirtualNode virtualNode;
 	private EditVirtualNode editVirtualNode;
 	
+	public VirtualNodeClickAction(EditManager editManager) {
+		this.editManager = editManager;
+	}
+	
 	@Override
-	public boolean init(OsmData osmData, EditLayer editLayer) {
-		this.osmData = osmData;
-		this.editLayer = editLayer;
+	public boolean init() {
 		
-		this.activeLevel = editLayer.getActiveLevel();
-		
-		editLayer.clearPending();
+		editManager.clearPending();
 		
 		//selection
-		List<Object> selection = editLayer.getSelection();
+		List<Object> selection = editManager.getSelection();
 		
 		//these lists are to display the move preview
-		List<EditObject> pendingObjects = editLayer.getPendingObjects();
-		List<EditNode> movingNodes = editLayer.getMovingNodes();
-		List<EditSegment> pendingSnapSegments = editLayer.getPendingSnapSegments();
+		List<EditObject> pendingObjects = editManager.getPendingObjects();
+		List<EditNode> movingNodes = editManager.getMovingNodes();
+		List<EditSegment> pendingSnapSegments = editManager.getPendingSnapSegments();
 		
 		//there should be one and it should be a virtual node
 		for(Object selectObject:selection) {
@@ -55,7 +62,7 @@ public class VirtualNodeClickAction implements MouseClickAction {
 		
 		if(virtualNode != null) {
 			//set initial position
-			Point2D mouseMerc = editLayer.getMapPanel().getMousePointMerc();
+			Point2D mouseMerc = editManager.getMousePointMerc();
 			editVirtualNode.enVirtual.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
 			return true;
 		}
@@ -65,14 +72,13 @@ public class VirtualNodeClickAction implements MouseClickAction {
 	}
 	
 	@Override
-	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
+	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
 		if(virtualNode == null) return;
 		
-		WayNodeEdit wne = new WayNodeEdit(osmData);
-		wne.nodeInserted(virtualNode.segment,clickDestPoint,activeLevel);
-
-		//clear the move edit
-		editLayer.clearMoveEdit();
+		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
+		
+		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
+		wne.nodeInserted(virtualNode.segment,clickDestPoint,levelManager.getSelectedLevel());
 	}
 		
 }

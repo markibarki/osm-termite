@@ -1,7 +1,9 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.editobject;
 
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.feature.FeatureInfo;
+import intransix.osm.termite.render.edit.Style;
+import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -36,7 +38,7 @@ public class EditNode extends EditObject {
 	
 	/** This method should not be called except from within the EditObjects. 
 	 * Use the static method from EditObject to get an instance of this object. */
-	EditNode(OsmNode node) {
+	public EditNode(OsmNode node) {
 		this.node = node;
 		this.featureInfo = node.getFeatureInfo();
 		this.point = new Point2D.Double(node.getPoint().getX(),node.getPoint().getY());
@@ -44,7 +46,7 @@ public class EditNode extends EditObject {
 	
 	/** This method should not be called except from within the EditObjects. 
 	 * Use the static method from EditObject to get an instance of this object. */
-	EditNode(Point2D point, FeatureInfo featureInfo) {
+	public EditNode(Point2D point, FeatureInfo featureInfo) {
 		this.node = null;
 		this.featureInfo = featureInfo;
 		this.point = new Point2D.Double(point.getX(),point.getY()); 

@@ -33,7 +33,7 @@ public class FeatureTypeManager {
 	}
 		
 	/** This method returns the active feature type. */
-	public FeatureInfo getActiveFeatureLayer() {
+	public FeatureInfo getActiveFeatureType() {
 		return activeFeatureType;
 	}
 	

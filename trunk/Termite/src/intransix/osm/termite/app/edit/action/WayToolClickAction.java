@@ -1,5 +1,12 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.app.edit.MouseClickAction;
+import intransix.osm.termite.app.edit.editobject.EditObject;
+import intransix.osm.termite.app.edit.editobject.EditSegment;
+import intransix.osm.termite.app.edit.editobject.EditNode;
+import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.feature.FeatureTypeManager;
+import intransix.osm.termite.app.level.LevelManager;
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.data.edit.EditDestPoint;
 import intransix.osm.termite.map.data.edit.WayNodeEdit;
@@ -15,21 +22,22 @@ import java.awt.event.MouseEvent;
  */
 public class WayToolClickAction implements MouseClickAction {
 	
-	private OsmData osmData;
-	private EditLayer editLayer;
+	private EditManager editManager;
 	private OsmWay activeWay;
 	private OsmNode activeNode;
 	private int insertIndex;
 	
 	private EditNode editNode;
 	
+	public WayToolClickAction(EditManager editManager) {	
+		this.editManager = editManager;
+	}
+	
 	@Override
-	public boolean init(OsmData osmData, EditLayer editLayer) {
-		this.osmData = osmData;
-		this.editLayer = editLayer;
+	public boolean init() {
 		
 		//check for an active way
-		List<Object> selection = editLayer.getSelection();		
+		List<Object> selection = editManager.getSelection();		
 		if(selection.size() == 1) {
 			Object selected = selection.get(0);
 			activeWay = (OsmWay)selected;
@@ -44,7 +52,7 @@ public class WayToolClickAction implements MouseClickAction {
 			else {
 				List<OsmNode> nodes = activeWay.getNodes();
 				//figure out which end to add to
-				List<Integer> selectedWayNodes = editLayer.getSelectedWayNodes();
+				List<Integer> selectedWayNodes = editManager.getSelectedWayNodes();
 				int activeIndex = -1;
 				if(selectedWayNodes.size() == 1) {
 					activeIndex = selectedWayNodes.get(0);
@@ -62,31 +70,35 @@ public class WayToolClickAction implements MouseClickAction {
 			}
 		}
 		else {
-			editLayer.clearSelection();
+			editManager.clearSelection();
 		}
 		
 		//get the mouse location
-		Point2D mercPoint = editLayer.getMapPanel().getMousePointMerc();
+		Point2D mercPoint = editManager.getMousePointMerc();
 		setPendingData(mercPoint);
 		
 		return true;
 	}
 	
 	@Override
-	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
+	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
+		
+		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
 		
 		//on double click end the way and return
 		if(e.getClickCount() > 1) {
-			editLayer.resetWayEdit();
+			resetWayEdit();
 			return;
 		}
 	
 		//process normal click
-		FeatureInfo featureInfo = editLayer.getFeatureInfo();
-		OsmRelation activeLevel = editLayer.getActiveLevel();
+		FeatureTypeManager featureTypeManager = editManager.getFeatureTypeManager();
+		LevelManager levelManager = editManager.getLevelManager();
+		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
+		OsmRelation activeLevel = levelManager.getSelectedLevel();
 	
 		//execute a way node addition
-		WayNodeEdit wne = new WayNodeEdit(osmData);
+		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
 		boolean success = wne.wayToolClicked(clickDestPoint,activeWay,insertIndex,activeNode,featureInfo,activeLevel);
 		
 		if(success) {
@@ -100,7 +112,7 @@ public class WayToolClickAction implements MouseClickAction {
 				if(activeWay.isClosed()) {
 					activeWay = null;
 					activeNode = null;
-					editLayer.resetWayEdit();
+					resetWayEdit();
 				}
 				else {
 					//make sure this is selected
@@ -130,7 +142,7 @@ public class WayToolClickAction implements MouseClickAction {
 			else if(activeNode != null) {
 				selection.add(activeNode);
 			}
-			editLayer.setSelection(selection, wayNodeSelection);
+			editManager.setSelection(selection, wayNodeSelection);
 
 			//update the click location
 			setPendingData(clickDestPoint.point);
@@ -143,12 +155,12 @@ public class WayToolClickAction implements MouseClickAction {
 	}
 	
 	private void setPendingData(Point2D pendingPoint) {
-		editLayer.clearPending();
+		editManager.clearPending();
 		
 		//these lists are to display the move preview
-		List<EditObject> pendingObjects = editLayer.getPendingObjects();
-		List<EditNode> movingNodes = editLayer.getMovingNodes();
-		List<EditSegment> pendingSnapSegments = editLayer.getPendingSnapSegments();
+		List<EditObject> pendingObjects = editManager.getPendingObjects();
+		List<EditNode> movingNodes = editManager.getMovingNodes();
+		List<EditSegment> pendingSnapSegments = editManager.getPendingSnapSegments();
 		
 		//get the node to add
 		editNode = new EditNode(pendingPoint,null);
@@ -176,6 +188,10 @@ public class WayToolClickAction implements MouseClickAction {
 				}
 			}
 		}
+	}
+	
+	private void resetWayEdit() {
+		editManager.getWayEditorMode().resetWayEdit();
 	}
 	
 }
