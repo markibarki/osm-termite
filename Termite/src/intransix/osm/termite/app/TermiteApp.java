@@ -148,12 +148,14 @@ public class TermiteApp {
 		featureTypeManager = new FeatureTypeManager();
 		featureTypeManager.init(featureInfoName);
 		
-		//edit manager
-		editManager = new EditManager();
-		editManager.init();
+		//levels
+		levelManager = new LevelManager(filterManager);
+		mapDataManager.addMapDataListener(levelManager);
 		
-		EditLayer editLayer = editManager.getEditLayer();
-		mapDataManager.addMapDataListener(editLayer);
+		//edit manager
+		editManager = new EditManager(featureTypeManager,levelManager);
+		editManager.init();
+		mapDataManager.addMapDataListener(editManager);
 		
 		//geocode
 		geocodeManager = new GeocodeManager();
@@ -162,10 +164,6 @@ public class TermiteApp {
 		//filter
 		filterManager = new FilterManager();
 		mapDataManager.addMapDataListener(filterManager);
-		
-		//levels
-		levelManager = new LevelManager(filterManager);
-		mapDataManager.addMapDataListener(levelManager);
 		
 		//view region manager
 		viewRegionManager = new ViewRegionManager();

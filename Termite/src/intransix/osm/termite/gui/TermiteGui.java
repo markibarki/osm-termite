@@ -215,8 +215,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	}
 	
 	public void setEditManager(EditManager editManager) {
-		EditLayer editLayer = editManager.getEditLayer();
-		editLayer.addFeatureSelectedListener(propertyTabPane);
+		editManager.addFeatureSelectedListener(propertyTabPane);
 	}
 	
 	public void setMapLayerManager(MapLayerManager mapLayerManager) {

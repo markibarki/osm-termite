@@ -5,14 +5,11 @@
 package intransix.osm.termite.app.edit;
 
 import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.edit.action.*;
 import intransix.osm.termite.app.mode.EditorMode;
 import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.render.*;
 import intransix.osm.termite.render.edit.EditLayer;
-import intransix.osm.termite.render.edit.WayToolClickAction;
-import intransix.osm.termite.render.edit.SelectClickAction;
-import intransix.osm.termite.render.edit.CreateMoveMoveAction;
-import intransix.osm.termite.render.edit.CreateSnapMoveAction;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,8 +62,7 @@ public class WayEditorMode extends EditorMode {
 	public void turnOn() {
 		if(editLayer != null) {
 			editLayer.setActiveState(true);
-			editLayer.setMouseClickAction(new WayToolClickAction());
-			editLayer.setMouseMoveActions(new CreateMoveMoveAction(),new CreateSnapMoveAction());
+			loadMouseActions();
 		}
 		MapPanel mapPanel = editLayer.getMapPanel();
 		mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -78,12 +74,31 @@ public class WayEditorMode extends EditorMode {
 	public void turnOff() {
 		if(editLayer != null) {
 			editLayer.setActiveState(false);
-			editLayer.setMouseClickAction(new SelectClickAction());
 			
 			MapPanel mapPanel = editLayer.getMapPanel();
 			mapPanel.setCursor(Cursor.getDefaultCursor());
 			
 		}
+	}
+	
+	public void resetWayEdit() {
+		editManager.clearPreview();
+		editManager.clearPending();
+		editManager.clearSelection();
+	}
+	
+	private void loadMouseActions() {
+		//set up move state
+		MouseClickAction mouseClickAction = new WayToolClickAction(editManager);		
+		mouseClickAction.init();
+
+		MouseMoveAction snapAction = new CreateSnapMoveAction(editManager);
+		snapAction.init();
+		MouseMoveAction moveAction = new CreateMoveMoveAction(editManager);
+		moveAction.init();
+
+		editLayer.setMouseClickAction(mouseClickAction);
+		editLayer.setMouseMoveActions(moveAction, snapAction);
 	}
 
 }

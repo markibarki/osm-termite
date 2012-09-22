@@ -123,10 +123,7 @@ public class PropertyTabPane extends JTabbedPane implements
 	 * @param wayNodeType		This is the type of way nodes selected for the way, if applicable.
 	 */
 	@Override
-	public void onFeatureSelected(List<Object> selection, 
-			FeatureSelectedListener.SelectionType selectionType,
-			List<Integer> wayNodeSelection,
-			FeatureSelectedListener.WayNodeType wayNodeType) {
+	public void onFeatureSelected(List<Object> selection,List<Integer> wayNodeSelection) {
 
 		//for now, only support single selection of properties
 		OsmObject osmObject = null;

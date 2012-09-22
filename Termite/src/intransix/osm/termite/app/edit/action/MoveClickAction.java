@@ -1,10 +1,14 @@
+package intransix.osm.termite.app.edit.action;
 
-package intransix.osm.termite.render.edit;
-
+import intransix.osm.termite.app.edit.MouseClickAction;
+import intransix.osm.termite.app.edit.editobject.EditObject;
+import intransix.osm.termite.app.edit.editobject.EditSegment;
+import intransix.osm.termite.app.edit.editobject.EditNode;
+import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.edit.SelectEditorMode;
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.data.edit.MoveEdit;
 import intransix.osm.termite.map.data.edit.EditDestPoint;
-import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +20,7 @@ import java.awt.event.MouseEvent;
  */
 public class MoveClickAction implements MouseClickAction {
 	
-	private OsmData osmData;
-	private EditLayer editLayer;
+	private EditManager editManager;
 	private EditDestPoint moveStartPoint;
 	
 	//working variabls to initialize edit display for move
@@ -26,19 +29,22 @@ public class MoveClickAction implements MouseClickAction {
 	private boolean lastSegmentWasNew;
 	private boolean lastSegmentWasDynamic;
 	
-	public boolean init(OsmData osmData, EditLayer editLayer) {
-		this.osmData = osmData;
-		this.editLayer = editLayer;
-		this.moveStartPoint = editLayer.getSelectionPoint();
+	public MoveClickAction(EditManager editManager) {
+		this.editManager = editManager;
+	}
+	
+	public boolean init() {
+
+		this.moveStartPoint = editManager.getSelectionPoint();
 		
 		//these are the objects that will move
-		List<Object> selection = editLayer.getSelection();
+		List<Object> selection = editManager.getSelection();
 		
 		//these lists are to display the move preview
-		editLayer.clearPending();
-		List<EditObject> pendingObjects = editLayer.getPendingObjects();
-		List<EditNode> movingNodes = editLayer.getMovingNodes();
-		List<EditSegment> pendingSnapSegments = editLayer.getPendingSnapSegments();
+		editManager.clearPending();
+		List<EditObject> pendingObjects = editManager.getPendingObjects();
+		List<EditNode> movingNodes = editManager.getMovingNodes();
+		List<EditSegment> pendingSnapSegments = editManager.getPendingSnapSegments();
 		
 		//add all unique nodes to the moving nodes
 		editMap = new HashMap<Object,EditObject>();
@@ -84,13 +90,14 @@ public class MoveClickAction implements MouseClickAction {
 	}
 	
 	@Override
-	public void mousePressed(EditDestPoint clickDestPoint, MouseEvent e) {
+	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
 		
-		List<Object> selection = editLayer.getSelection();
+		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
+		List<Object> selection = editManager.getSelection();
 		
 		if(!selection.isEmpty()) {
 			//execute the move
-			MoveEdit me = new MoveEdit(osmData);
+			MoveEdit me = new MoveEdit(editManager.getOsmData());
 			boolean success = me.selectionMoved(selection,moveStartPoint,clickDestPoint);
 			
 			if(success) {
@@ -98,23 +105,27 @@ public class MoveClickAction implements MouseClickAction {
 				//so we don't have the invalid object stroed there
 				boolean nodeDeleted = me.getNodeDeleted();
 				if(nodeDeleted) {
-					editLayer.clearSelection();
+					editManager.clearSelection();
 				}
 				
 				//update select point
-				editLayer.setSelectionPoint(clickDestPoint);
+				editManager.setSelectionPoint(clickDestPoint);
 			}
 		}
-		//exit move mode
-		editLayer.exitMove();
+		
+		//clean up and exit move mode
+		editManager.clearPreview();
+		editManager.clearPending();
+		SelectEditorMode sem = editManager.getSelectEditorMode();
+		sem.setSelectState();
 	}
 	
 	private void initMovingNodes() {
-		Point2D mouseMerc = editLayer.getMapPanel().getMousePointMerc();
+		Point2D mouseMerc = editManager.getMousePointMerc();
 		double dx = mouseMerc.getX() - moveStartPoint.point.getX();
 		double dy = mouseMerc.getY() - moveStartPoint.point.getY();
 
-		List<EditNode> movingNodes = editLayer.getMovingNodes();
+		List<EditNode> movingNodes = editManager.getMovingNodes();
 
 		for(EditNode en:movingNodes) {
 			//for a move, all nodes should be real so node should exist

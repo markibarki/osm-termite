@@ -1,6 +1,8 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.editobject;
 
 import intransix.osm.termite.map.data.OsmSegment;
+import intransix.osm.termite.render.edit.StyleInfo;
+import intransix.osm.termite.app.edit.VirtualNode;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
@@ -37,7 +39,7 @@ public class EditVirtualNode extends EditObject {
 	//=======================
 	
 	/** Constructor */
-	EditVirtualNode(VirtualNode virtualNode) {
+	public EditVirtualNode(VirtualNode virtualNode) {
 		this.osmSegment = virtualNode.segment;
 		en1 = new EditNode(osmSegment.getNode1());
 		en2 = new EditNode(osmSegment.getNode2());

@@ -1,7 +1,9 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit;
 
 import intransix.osm.termite.map.data.OsmSegmentWrapper;
 import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.render.edit.Style;
+import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.Graphics2D;
 import java.awt.geom.*;
 
@@ -40,7 +42,7 @@ public abstract class EditDrawable {
 	//=========================
 	
 	/** This method renders a point. */
-	static void renderPoint(Graphics2D g2, AffineTransform mercatorToPixels,
+	public static void renderPoint(Graphics2D g2, AffineTransform mercatorToPixels,
 			Point2D point, Style style) {
 		g2.setColor(style.color);
 		mercatorToPixels.transform(point,workingPoint1);
@@ -50,7 +52,7 @@ public abstract class EditDrawable {
 	}
 	
 	/** This method renders a way. */
-	static void renderWay(Graphics2D g2, AffineTransform mercatorToPixels,
+	public static void renderWay(Graphics2D g2, AffineTransform mercatorToPixels,
 			OsmWay way, Style style) {
 		
 		for(OsmSegmentWrapper osw:way.getSegments()) {
@@ -64,7 +66,7 @@ public abstract class EditDrawable {
 	}
 	
 	/** This method renders a segment. */
-	static void renderSegment(Graphics2D g2, AffineTransform mercatorToPixels,
+	public static void renderSegment(Graphics2D g2, AffineTransform mercatorToPixels,
 			Point2D p1, Point2D p2, Style style) {
 		
 		g2.setColor(style.color);

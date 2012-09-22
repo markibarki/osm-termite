@@ -1,6 +1,8 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.editobject;
 
 import intransix.osm.termite.map.data.OsmSegment;
+import intransix.osm.termite.render.edit.Style;
+import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 
@@ -33,7 +35,7 @@ public class EditSegment extends EditObject {
 	
 	/** This method should not be called except from within the EditObjects. 
 	 * Use the static method from EditObject to get an instance of this object. */
-	EditSegment(OsmSegment osmSegment, EditNode en1, EditNode en2) {
+	public EditSegment(OsmSegment osmSegment, EditNode en1, EditNode en2) {
 		this.en1 = en1;
 		this.en2 = en2;
 		this.osmSegment = osmSegment;

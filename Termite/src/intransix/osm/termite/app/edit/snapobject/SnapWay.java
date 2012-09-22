@@ -1,10 +1,12 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.snapobject;
 
 import intransix.osm.termite.map.data.OsmObject;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import intransix.osm.termite.map.data.OsmWay;
 import intransix.osm.termite.map.data.OsmSegment;
+import intransix.osm.termite.render.edit.Style;
+import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
@@ -24,19 +26,6 @@ public class SnapWay extends SnapObject {
 		this.way = way;
 		this.snapPoint = snapPoint;
 		this.err2 = err2;
-	}
-	
-	public static void loadHitWays(OsmSegment segment, Point2D mouseMerc, 
-			double mercRadSq, List<SnapObject> snapObjects) {
-		Point2D p1 = segment.getNode1().getPoint();
-		Point2D p2 = segment.getNode2().getPoint();
-		double err2 = Line2D.ptSegDistSq(p1.getX(),p1.getY(),p2.getX(),p2.getY(),
-				mouseMerc.getX(),mouseMerc.getY());
-		if(err2 < mercRadSq) {
-			for(OsmWay way:segment.getOsmWays()) {
-				snapObjects.add(new SnapWay(way,mouseMerc,err2));
-			}
-		}
 	}
 	
 	/** This method renders the object.

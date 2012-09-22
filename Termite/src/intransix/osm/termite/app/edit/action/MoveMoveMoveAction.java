@@ -1,5 +1,8 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.app.edit.MouseMoveAction;
+import intransix.osm.termite.app.edit.editobject.EditNode;
+import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.map.data.OsmData;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -14,22 +17,26 @@ import java.util.List;
  * @author sutter
  */
 public class MoveMoveMoveAction implements MouseMoveAction {
-	private OsmData osmData;
-	private EditLayer editLayer;
+
+	private EditManager editManager;
 	
-	public boolean init(OsmData osmData, EditLayer editLayer) {
-		this.osmData = osmData;
-		this.editLayer = editLayer;
+	public MoveMoveMoveAction(EditManager editManager) {
+		this.editManager = editManager;
+	}
+	
+	@Override
+	public boolean init() {
 		return true;
 	}
 	
+	@Override
 	public void mouseMoved(Point2D mouseMerc, double mercRadSq, MouseEvent e) {
-		EditDestPoint moveStartPoint = editLayer.getSelectionPoint();
+		EditDestPoint moveStartPoint = editManager.getSelectionPoint();
 		if(moveStartPoint != null) {
 			double dx = mouseMerc.getX() - moveStartPoint.point.getX();
 			double dy = mouseMerc.getY() - moveStartPoint.point.getY();
 			
-			List<EditNode> movingNodes = editLayer.getMovingNodes();
+			List<EditNode> movingNodes = editManager.getMovingNodes();
 			
 			for(EditNode en:movingNodes) {
 				//for a move, all nodes should be real so node should exist

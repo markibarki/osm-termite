@@ -1,5 +1,8 @@
-package intransix.osm.termite.render.edit;
+package intransix.osm.termite.app.edit.snapobject;
 
+import intransix.osm.termite.app.edit.EditDrawable;
+import intransix.osm.termite.render.edit.Style;
+import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.geom.Point2D;
 /**
  *
@@ -40,16 +43,6 @@ public abstract class SnapObject extends EditDrawable implements Comparable<Snap
 		/** This updates the precedence order for this snap type. */
 		public final void setOrder(int order) {
 			this.order = order;
-		}
-		
-		/** This returns the precedence order for this snap type. */
-		public final boolean getEnabled() {
-			return enabled;
-		}
-		
-		/** This updates the precedence order for this snap type. */
-		public final void setEnabled(boolean enabled) {
-			this.enabled = enabled;
 		}
 	}
 	
