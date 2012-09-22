@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.app.edit.action;
 
 import intransix.osm.termite.app.edit.EditManager;
@@ -13,11 +9,11 @@ import java.util.List;
  *
  * @author sutter
  */
-public class xRemoveNodeFromWayAction {
+public class aRemoveNodeFromWayAction {
 	
 	private EditManager editManager;
 	
-	public xRemoveNodeFromWayAction(EditManager editManager) {
+	public aRemoveNodeFromWayAction(EditManager editManager) {
 		this.editManager = editManager;
 	}
 	public void removeNodeFromWay() {
