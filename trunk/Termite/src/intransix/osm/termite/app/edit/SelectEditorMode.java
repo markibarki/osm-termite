@@ -63,7 +63,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	private ChangeFeatureTypeAction changeFeatureTypeAction;
 	private CreateLevelAction createLevelAction;
 	private DeleteSelectionAction deleteSelectionAction;
-	private RemoveNodeFromWayAction removeNodeFromWayAction;
+	private RemoveWayNodeAction removeNodeFromWayAction;
 	
 	private boolean inMoveState = false;
 	
@@ -81,7 +81,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 		changeFeatureTypeAction = new ChangeFeatureTypeAction(editManager);
 		createLevelAction = new CreateLevelAction(editManager);
 		deleteSelectionAction = new DeleteSelectionAction(editManager);
-//		removeNodeFromWayAction = new RemoveNodeFromWayAction(editManager);
+		removeNodeFromWayAction = new RemoveWayNodeAction(editManager);
 	}
 	
 	/** This method returns the name of the editor mode. 

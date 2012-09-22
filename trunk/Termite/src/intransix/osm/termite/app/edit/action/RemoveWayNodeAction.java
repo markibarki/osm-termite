@@ -9,11 +9,11 @@ import java.util.List;
  *
  * @author sutter
  */
-public class aRemoveNodeFromWayAction {
+public class RemoveWayNodeAction {
 	
 	private EditManager editManager;
 	
-	public aRemoveNodeFromWayAction(EditManager editManager) {
+	public RemoveWayNodeAction(EditManager editManager) {
 		this.editManager = editManager;
 	}
 	public void removeNodeFromWay() {
