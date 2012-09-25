@@ -132,5 +132,7 @@ public class SelectClickAction implements MouseClickAction {
 
 		//report selection
 		editManager.setSelection(selection, selectedWayNodes);
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 }

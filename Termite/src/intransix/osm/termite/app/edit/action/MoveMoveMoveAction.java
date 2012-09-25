@@ -46,5 +46,7 @@ public class MoveMoveMoveAction implements MouseMoveAction {
 				}
 			}
 		}
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 }

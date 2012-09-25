@@ -71,8 +71,9 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	// Public Methods
 	//====================
 	
-	public SelectEditorMode(EditLayer editLayer) {
-		this.editLayer = editLayer;
+	public SelectEditorMode(EditManager editManager) {
+		this.editManager = editManager;
+		this.editLayer = editManager.getEditLayer();
 		createToolBar();
 		
 		//I need to separate out the ui, then this will go in ui class
@@ -122,6 +123,8 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 			editLayer.setActiveState(false);
 			editManager.removeFeatureSelectedListener(this);
 		}
+		//remove from move state if it is there
+		inMoveState = false;
 	}
 	
 	public void addEditStateListener(EditStateListener stateListener) {
@@ -140,7 +143,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	}
 	
 	public boolean setSelectState() {
-		if((this.getModeEnabled())&&(!inMoveState)) {
+		if(this.getModeEnabled()) {
 			MouseClickAction mouseClickAction = new SelectClickAction(editManager);
 			mouseClickAction.init();
 			
@@ -152,7 +155,7 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 			
 			editManager.clearPreview();
 			
-			inMoveState = true;
+			inMoveState = false;
 			
 			//notify listeners
 			for(EditStateListener esl:stateListeners) {
@@ -167,29 +170,31 @@ public class SelectEditorMode extends EditorMode implements ActionListener,
 	}
 	
 	public boolean setMoveState() {
-		if((this.getModeEnabled())&&(inMoveState)) {
+		if((this.getModeEnabled())&&(!inMoveState)) {
 			List<Object> selection = editManager.getSelection();
 			if(selection.isEmpty()) return false;
 			
 			//set up move state
 			MouseClickAction mouseClickAction;
+			MouseMoveAction moveAction;
 			if(editManager.getVirtualNodeSelected()) {
-				mouseClickAction = new VirtualNodeClickAction(editManager);		
+				mouseClickAction = new VirtualNodeClickAction(editManager);	
+				moveAction = new CreateMoveMoveAction(editManager);
 			}
 			else {
 				mouseClickAction = new MoveClickAction(editManager);
+				moveAction = new MoveMoveMoveAction(editManager);
 			}
 			mouseClickAction.init();
 			
 			MouseMoveAction snapAction = new CreateSnapMoveAction(editManager);
 			snapAction.init();
-			MouseMoveAction moveAction = new MoveMoveMoveAction(editManager);
 			moveAction.init();
 			
 			editLayer.setMouseClickAction(mouseClickAction);
 			editLayer.setMouseMoveActions(moveAction, snapAction);
 			
-			inMoveState = false;
+			inMoveState = true;
 			
 			//notify listeners
 			for(EditStateListener esl:stateListeners) {

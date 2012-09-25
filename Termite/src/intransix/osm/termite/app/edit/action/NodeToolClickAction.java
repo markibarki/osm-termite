@@ -37,6 +37,8 @@ public class NodeToolClickAction implements MouseClickAction {
 		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
 		setPendingData(new Point2D.Double(0,0),featureInfo);
 		
+		editManager.getEditLayer().notifyContentChange();
+		
 		return true;
 	}
 	
@@ -63,6 +65,8 @@ public class NodeToolClickAction implements MouseClickAction {
 		
 		//prepare for next
 		setPendingData(clickDestPoint.point,featureInfo);
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 	
 	private void setPendingData(Point2D pendingPoint, FeatureInfo featureInfo) {

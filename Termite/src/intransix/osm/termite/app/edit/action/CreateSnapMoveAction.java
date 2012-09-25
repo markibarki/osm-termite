@@ -29,7 +29,6 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 	//this is the limit for ignoring pairs of lines for intersecting
 	private final static double ALMOST_PARALLEL_SIN_THETA = .1; //5.7 degrees
 	
-	private OsmData osmData;
 	private EditManager editManager;
 	private List<SnapSegment> workingSnapSegments = new ArrayList<SnapSegment>();
 	
@@ -50,9 +49,12 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 	
 	@Override
 	public void mouseMoved(Point2D mouseMerc, double mercRadSq, MouseEvent e) {
+		OsmData osmData = editManager.getOsmData();
+		if(osmData == null) return;
 		
 		//get snapObjects
 		List<SnapObject> snapObjects = editManager.getSnapObjects();
+		boolean wasActive = (snapObjects.size() > 0);
 		snapObjects.clear();
 		
 		//check for hovering over these objects
@@ -123,7 +125,6 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 		}
 		
 		//check for intersections
-		workingSnapSegments.clear();
 		loadIntersections(workingSnapSegments, mouseMerc, mercRadSq, snapObjects);
 		workingSnapSegments.clear();
 		
@@ -133,6 +134,12 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 		}
 		int activeSnapObject = snapObjects.isEmpty() ? -1 : 0;
 		editManager.setActiveSnapObject(activeSnapObject);
+		
+		boolean isActive = (snapObjects.size() > 0);
+		
+		if(wasActive||isActive) {
+			editManager.getEditLayer().notifyContentChange();
+		}
 	}
 	
 	//===========================

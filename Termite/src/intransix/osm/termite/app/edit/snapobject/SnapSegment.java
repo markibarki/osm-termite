@@ -1,17 +1,11 @@
 package intransix.osm.termite.app.edit.snapobject;
 
-import intransix.osm.termite.map.data.OsmNode;
-import intransix.osm.termite.map.data.OsmObject;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import intransix.osm.termite.map.data.OsmSegment;
 import intransix.osm.termite.app.edit.editobject.EditObject;
-import intransix.osm.termite.app.edit.editobject.EditSegment;
 import intransix.osm.termite.render.edit.Style;
 import intransix.osm.termite.render.edit.StyleInfo;
-import java.util.HashMap;
 
 /**
  *

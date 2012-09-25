@@ -257,9 +257,9 @@ public class EditManager implements MapDataListener {
 	
 	public void init() {
 		editLayer = new EditLayer(this);
-		selectMode = new SelectEditorMode(editLayer);
-		nodeMode = new NodeEditorMode(editLayer);
-		wayMode = new WayEditorMode(editLayer);
+		selectMode = new SelectEditorMode(this);
+		nodeMode = new NodeEditorMode(this);
+		wayMode = new WayEditorMode(this);
 	}	
 	
 		// <editor-fold defaultstate="collapsed" desc="Map Data Listener">
@@ -267,6 +267,7 @@ public class EditManager implements MapDataListener {
 	@Override
 	public void onMapData(OsmData osmData) {
 		this.osmData = osmData;		
+		//pass the data to the in
 	}
 	// </editor-fold>
 	
