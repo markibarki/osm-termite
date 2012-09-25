@@ -41,9 +41,6 @@ public class EditLayer extends MapLayer implements
 	private MouseMoveAction moveMouseMoveAction;
 	private MouseMoveAction snapMouseMoveAction;
 	
-	private SnapSelectAction snapSelectAction;
-	private DeleteSelectionAction deleteSelectionAction;
-	
 	// </editor-fold>
 	
 	//=========================
@@ -220,11 +217,12 @@ public class EditLayer extends MapLayer implements
     /** Handle the key-pressed event from the text field. */
 	@Override
     public void keyPressed(KeyEvent e) {
-		boolean changed = false;
 		if(e.getKeyCode() == KeyEvent.VK_COMMA) {
+			SnapSelectAction snapSelectAction = new SnapSelectAction(editManager);
 			snapSelectAction.nextSnapOject();
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_PERIOD) {
+			SnapSelectAction snapSelectAction = new SnapSelectAction(editManager);
 			snapSelectAction.previousSnapObject();
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_M) {
@@ -250,6 +248,7 @@ public class EditLayer extends MapLayer implements
 			}
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_DELETE) {
+			DeleteSelectionAction deleteSelectionAction = new DeleteSelectionAction(editManager);
 			deleteSelectionAction.deleteSelection();
 		}
     }

@@ -40,7 +40,9 @@ public class WayToolClickAction implements MouseClickAction {
 		List<Object> selection = editManager.getSelection();		
 		if(selection.size() == 1) {
 			Object selected = selection.get(0);
-			activeWay = (OsmWay)selected;
+			if(selected instanceof OsmWay) {
+				activeWay = (OsmWay)selected;
+			}
 		}
 
 		if(activeWay != null) {		
@@ -76,6 +78,8 @@ public class WayToolClickAction implements MouseClickAction {
 		//get the mouse location
 		Point2D mercPoint = editManager.getMousePointMerc();
 		setPendingData(mercPoint);
+		
+		editManager.getEditLayer().notifyContentChange();
 		
 		return true;
 	}
@@ -152,6 +156,8 @@ public class WayToolClickAction implements MouseClickAction {
 			//something wrong happened - clean up
 //			editLayer.clearSelection();
 		}
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 	
 	private void setPendingData(Point2D pendingPoint) {

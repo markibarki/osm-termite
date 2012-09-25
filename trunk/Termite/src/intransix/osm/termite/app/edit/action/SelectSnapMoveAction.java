@@ -82,6 +82,8 @@ public class SelectSnapMoveAction implements MouseMoveAction {
 		}
 		int activeSnapObject = snapObjects.isEmpty() ? -1 : 0;
 		editManager.setActiveSnapObject(activeSnapObject);
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 	
 		/** This method tests if the mouse hit the virtual node on this segment.

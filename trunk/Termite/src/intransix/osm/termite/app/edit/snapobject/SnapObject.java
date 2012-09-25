@@ -19,10 +19,10 @@ public abstract class SnapObject extends EditDrawable implements Comparable<Snap
 		WAY(true,3),
 		INTERSECTION(true,4),
 		SEGMENT_INT(true,5),
-		SEGMENT_EXT(true,6),
-		SEGMENT_PERP(true,7),
-		HORIZONTAL(true,8),
-		VERTICAL(true,9),
+		SEGMENT_EXT(true,8),
+		SEGMENT_PERP(true,9),
+		HORIZONTAL(true,6),
+		VERTICAL(true,7),
 		UNKNOWN(true,10);
 		
 		//this indicates the precedence order for this snap type

@@ -86,6 +86,7 @@ public class MoveClickAction implements MouseClickAction {
 		
 		//clean up working data
 		editMap = null;
+		editManager.getEditLayer().notifyContentChange();
 		return true;
 	}
 	
@@ -118,6 +119,8 @@ public class MoveClickAction implements MouseClickAction {
 		editManager.clearPending();
 		SelectEditorMode sem = editManager.getSelectEditorMode();
 		sem.setSelectState();
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 	
 	private void initMovingNodes() {

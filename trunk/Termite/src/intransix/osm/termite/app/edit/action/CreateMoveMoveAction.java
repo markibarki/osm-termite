@@ -21,11 +21,13 @@ public class CreateMoveMoveAction implements MouseMoveAction {
 		this.editManager = editManager;
 	}
 	
+	@Override
 	public boolean init() {
 
 		List<EditNode> movingNodes = editManager.getMovingNodes();
 		if(movingNodes.size() == 1) {
 			editNode = movingNodes.get(0);
+			editManager.getEditLayer().notifyContentChange();
 			return true;
 		}
 		else {
@@ -33,7 +35,9 @@ public class CreateMoveMoveAction implements MouseMoveAction {
 		}
 	}
 	
+	@Override
 	public void mouseMoved(Point2D mouseMerc, double mercRadSq, MouseEvent e) {
 		editNode.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
+		editManager.getEditLayer().notifyContentChange();
 	}
 }

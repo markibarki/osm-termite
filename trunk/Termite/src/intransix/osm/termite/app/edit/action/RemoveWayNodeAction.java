@@ -34,6 +34,8 @@ public class RemoveWayNodeAction {
 				editManager.clearWayNodesSelection();
 			}
 		}
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 	
 }

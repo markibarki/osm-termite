@@ -34,8 +34,9 @@ public class WayEditorMode extends EditorMode {
 	// Public Methods
 	//====================
 	
-	public WayEditorMode(EditLayer editLayer) {
-		this.editLayer = editLayer;
+	public WayEditorMode(EditManager editManager) {
+		this.editManager = editManager;
+		this.editLayer = editManager.getEditLayer();
 	}
 	
 	/** This method returns the name of the editor mode. 

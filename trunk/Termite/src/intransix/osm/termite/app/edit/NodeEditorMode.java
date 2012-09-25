@@ -38,8 +38,9 @@ public class NodeEditorMode extends EditorMode {
 	// Public Methods
 	//====================
 	
-	public NodeEditorMode(EditLayer editLayer) {
-		this.editLayer = editLayer;
+	public NodeEditorMode(EditManager editManager) {
+		this.editManager = editManager;
+		this.editLayer = editManager.getEditLayer();
 	}
 	
 	/** This method returns the name of the editor mode. 

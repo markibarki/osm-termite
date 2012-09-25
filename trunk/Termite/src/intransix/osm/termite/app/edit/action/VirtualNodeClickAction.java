@@ -8,6 +8,7 @@ import intransix.osm.termite.app.edit.editobject.EditObject;
 import intransix.osm.termite.app.edit.editobject.EditSegment;
 import intransix.osm.termite.app.edit.editobject.EditNode;
 import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.edit.SelectEditorMode;
 import intransix.osm.termite.app.level.LevelManager;
 import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.map.data.edit.EditDestPoint;
@@ -30,6 +31,7 @@ public class VirtualNodeClickAction implements MouseClickAction {
 	
 	public VirtualNodeClickAction(EditManager editManager) {
 		this.editManager = editManager;
+		this.levelManager = editManager.getLevelManager();
 	}
 	
 	@Override
@@ -64,6 +66,8 @@ public class VirtualNodeClickAction implements MouseClickAction {
 			//set initial position
 			Point2D mouseMerc = editManager.getMousePointMerc();
 			editVirtualNode.enVirtual.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
+			
+			editManager.getEditLayer().notifyContentChange();
 			return true;
 		}
 		else {
@@ -79,6 +83,14 @@ public class VirtualNodeClickAction implements MouseClickAction {
 		
 		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
 		wne.nodeInserted(virtualNode.segment,clickDestPoint,levelManager.getSelectedLevel());
+		
+		//clean up and exit move mode
+		editManager.clearPreview();
+		editManager.clearPending();
+		SelectEditorMode sem = editManager.getSelectEditorMode();
+		sem.setSelectState();
+		
+		editManager.getEditLayer().notifyContentChange();
 	}
 		
 }
