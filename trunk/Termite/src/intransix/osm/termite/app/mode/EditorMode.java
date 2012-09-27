@@ -15,6 +15,7 @@ public abstract class EditorMode {
 	private boolean modeEnabled;
 	private boolean dataPresentEnabled = true;
 	private boolean dataMissingEnabled = false;
+	private EditorModeManager editorModeManager;
 	
 	/** This method returns the name of the editor mode. 
 	 * 
@@ -54,6 +55,10 @@ public abstract class EditorMode {
 	// Management fucntions
 	//---------------------
 	
+	public void setEditorModeManager(EditorModeManager editorModeManager) {
+		this.editorModeManager = editorModeManager;
+	}
+	
 	/** This method is called when the map data present state changes. */
 	public boolean getEnableStateForDataState(boolean mapDataPresent) {
 		return mapDataPresent ? dataPresentEnabled : dataMissingEnabled;
@@ -66,5 +71,6 @@ public abstract class EditorMode {
 	
 	public void setEnabled(boolean enabled) {
 		modeEnabled = enabled;
+		editorModeManager.notifyEnableChange(this);
 	}
 }

@@ -14,7 +14,7 @@ import intransix.osm.termite.render.MapPanel;
  */
 public abstract class MapLayer {
 	
-	private final static double INVALID_ANGLE = Double.MAX_VALUE;
+	public final static double INVALID_ANGLE = Double.MAX_VALUE;
 	
 	private String name;
 	private boolean active = false;
@@ -103,6 +103,16 @@ public abstract class MapLayer {
 	
 	public double getPrerredAngleRadians() {
 		return preferredAngleRadians;
+	}
+	
+	/** This method sets the preferred frame of reference angle for this layer. 
+	 * By default there is no preferred angle. To explicitly set no preferred
+	 * angle, use the value preferredAngleRadians = INVALID_ANGLE;
+	 * 
+	 * @param preferredAngleRadians 
+	 */
+	public void setPreferredAngleRadians(double preferredAngleRadians) {
+		this.preferredAngleRadians = preferredAngleRadians;
 	}
 	
 	public abstract void render(Graphics2D g2);

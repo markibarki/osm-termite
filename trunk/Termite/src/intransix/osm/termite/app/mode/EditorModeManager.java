@@ -39,6 +39,7 @@ public class EditorModeManager implements MapDataListener {
 	
 	public void addMode(EditorMode mode) {
 		this.editorModes.add(mode);
+		mode.setEditorModeManager(this);
 	}
 	
 	/** This method sets the editor mode. */
@@ -108,11 +109,11 @@ public class EditorModeManager implements MapDataListener {
 	}
 	
 	//=================================
-	// Private Methods
+	// Package Methods
 	//=================================
 	
 	/** This method notifies any listeners the a mode enabled changed. */
-	private void notifyEnableChange(EditorMode mode) {
+	void notifyEnableChange(EditorMode mode) {
 		for(EditorModeListener modeListener:modeListeners) {
 			modeListener.modeEnableChanged(mode);
 		}
