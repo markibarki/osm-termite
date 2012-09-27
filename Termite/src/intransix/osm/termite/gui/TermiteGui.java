@@ -221,6 +221,8 @@ public class TermiteGui extends javax.swing.JFrame implements
 	public void setMapLayerManager(MapLayerManager mapLayerManager) {
 		java.util.List<MapLayer> mapLayers = mapLayerManager.getMapLayers();
 		
+		this.mapLayerManager = mapLayerManager;
+		
 		layerManagerPanel.layerListChanged(mapLayers);
 		mapLayerManager.addLayerListener(layerManagerPanel);
 		

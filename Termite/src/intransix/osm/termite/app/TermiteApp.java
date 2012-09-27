@@ -157,10 +157,6 @@ public class TermiteApp {
 		editManager.init();
 		mapDataManager.addMapDataListener(editManager);
 		
-		//geocode
-		geocodeManager = new GeocodeManager();
-		geocodeManager.init();
-		
 		//filter
 		filterManager = new FilterManager();
 		mapDataManager.addMapDataListener(filterManager);
@@ -171,6 +167,12 @@ public class TermiteApp {
 		
 		//map layers
 		mapLayerManager = new MapLayerManager(viewRegionManager,mapPanel);
+		
+		//geocode
+		geocodeManager = new GeocodeManager();
+		geocodeManager.init(mapLayerManager);
+		
+		//populate tghe map layers
 		mapLayerManager.addLayer(baseMapManager.getBaseMapLayer());
 		mapLayerManager.addLayer(mapDataManager.getRenderLayer());
 		mapLayerManager.addLayer(mapDataManager.getDownloadLayer());
@@ -179,13 +181,13 @@ public class TermiteApp {
 		
 		//editor modes
 		modeManager = new EditorModeManager();
+		mapDataManager.addMapDataListener(modeManager);
 		modeManager.addMode(mapDataManager.getDownloadEditorMode());
 		modeManager.addMode(editManager.getSelectEditorMode());
 		modeManager.addMode(editManager.getNodeEditorMode());
 		modeManager.addMode(editManager.getWayEditorMode());
 		modeManager.addMode(geocodeManager.getGeocodeEditorMode());
 		modeManager.setDefaultModes(mapDataManager.getDownloadEditorMode(),editManager.getSelectEditorMode());
-		mapDataManager.addMapDataListener(modeManager);
 		
 		//gui initialization
 		gui.setMapDataManager(mapDataManager); //undo/redo

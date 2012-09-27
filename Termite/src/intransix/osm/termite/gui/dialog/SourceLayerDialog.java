@@ -8,7 +8,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.table.*;
 import javax.swing.event.*;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -22,6 +22,7 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 	private TermiteGui gui;
 	private MapLayerManager mapLayerManager;
 	private DefaultTableModel model;
+	private HashMap<Integer,SourceLayer> layerMap = new HashMap<Integer,SourceLayer>();
 	
 	/**
 	 * Creates new form SourceLayerDialog
@@ -35,11 +36,14 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 		model = (DefaultTableModel)sourceTable.getModel();
 		model.addTableModelListener(this);
 		Object[] row = new Object[2];
+		layerMap.clear();
+		int index = 0;
 		for(MapLayer layer:mapLayerManager.getMapLayers()) {
 			if(layer instanceof SourceLayer) {
 				row[0] = layer.getName();
 				row[1] = layer.isVisible();
 				model.addRow(row);
+				layerMap.put(index++,(SourceLayer)layer);
 			}
 		}
 	}	
@@ -56,7 +60,7 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 				return;
 			}
 			
-			SourceLayer layer = (SourceLayer)model.getValueAt(row,LAYER_COLUMN);
+			SourceLayer layer = layerMap.get(row);
 			int column = e.getColumn();
 			Object value = model.getValueAt(row, column);
 			
@@ -185,15 +189,9 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
 		int index = sourceTable.getSelectedRow();
 		if(index > -1) {
-			List<MapLayer> layers = mapLayerManager.getMapLayers();
-			if(layers.size() > index) {
-				MapLayer layer = layers.get(index);
-				mapLayerManager.removeLayer(layer);
-				model.removeRow(index);
-			}
-			else {
-				JOptionPane.showMessageDialog(this,"Unknown error in delete.");
-			}
+			SourceLayer layer = layerMap.get(index);
+			mapLayerManager.removeLayer(layer);
+			model.removeRow(index);
 		}
 		else {
 			JOptionPane.showMessageDialog(this,"You must select a row to delete.");

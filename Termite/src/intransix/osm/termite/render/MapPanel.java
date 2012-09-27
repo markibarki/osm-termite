@@ -112,8 +112,6 @@ public class MapPanel extends JPanel implements MapLayerListener,
 		//add any layer with a preferred angle to the coordBasis list
 		java.util.List<MapLayer> refFrameLayers = new ArrayList<MapLayer>();
 		for(MapLayer layer:layers) {
-			layer.setMapPanel(this);
-			
 			//add listener to new list
 			layer.addLayerListener(this);
 			//get the reference frame layers

@@ -27,6 +27,7 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	public void setMove(boolean inMove, AffineTransform moveImageToMerc) {
 		this.inMove = inMove;
 		this.moveImageToMerc = moveImageToMerc;
+		this.notifyContentChange();
 	}
 	
 	public AffineTransform getImageToMerc() {
@@ -35,17 +36,28 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	
 	public void setImageToMerc(AffineTransform imageToMerc) {
 		this.imageToMerc = imageToMerc;
+		
+		double preferredAngleRad;
+		if(imageToMerc != null) {
+		
+			double[] matrix = new double[6];
+			imageToMerc.getMatrix(matrix);
+
+			//this will only give good results for a rotation, not a skew
+			preferredAngleRad = Math.atan2(matrix[1],matrix[0]);
+
+		}
+		else {
+			preferredAngleRad = INVALID_ANGLE;
+		}
+		this.setPreferredAngleRadians(preferredAngleRad);
+		
+		this.notifyContentChange();
 	}
 	
-	public double getAngleRad() {
-		if(imageToMerc == null) return 0;
-		
-		double[] matrix = new double[6];
-		imageToMerc.getMatrix(matrix);
-		
-		//this will only give good results for a rotation, not a skew
-		double ang1 = Math.atan2(matrix[1],matrix[0]);
-		return ang1;
+	@Override
+	public boolean hasPreferredAngle() {
+		return true;
 	}
 	
 	public boolean loadImage(File file) {

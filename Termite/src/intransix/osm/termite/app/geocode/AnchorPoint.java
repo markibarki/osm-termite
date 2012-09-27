@@ -1,5 +1,5 @@
 
-package intransix.osm.termite.render.source;
+package intransix.osm.termite.app.geocode;
 
 import java.awt.Color;
 import java.awt.geom.*;
@@ -9,7 +9,7 @@ import java.awt.Graphics2D;
  *
  * @author sutter
  */
-class AnchorPoint {
+public class AnchorPoint {
 	
 	public enum PointType {
 		TRANSLATE(Color.BLUE),
@@ -79,5 +79,33 @@ class AnchorPoint {
 		this.pointType = null;
 		this.mercPoint = null;
 		this.imagePoint = null;
+	}
+	
+	/** This method is used to for 3 point orthogonal gecodes to determine
+	 * which point scales in the x direction and which scales in the y direction.
+	 * 
+	 * @param p1	the first scale anchor point
+	 * @param p2	the second scale anchor point
+	 */ 
+	public static void setScalePointTypes(AnchorPoint p1, AnchorPoint p2) {
+		Point2D ip1 = p1.imagePoint;
+		Point2D ip2 = p2.imagePoint;
+		
+		if((ip1 != null)&&(ip2 != null)) {
+			double tan1 = Math.abs(ip1.getY())/(Math.abs(ip1.getX()) + .001);
+			double tan2 = Math.abs(ip2.getY())/(Math.abs(ip2.getX()) + .001);
+			if(tan1 < tan2) {
+				p1.pointType = AnchorPoint.PointType.ROTATE_SCALE_X;
+				p2.pointType = AnchorPoint.PointType.ROTATE_SCALE_Y;
+			}
+			else {
+				p1.pointType = AnchorPoint.PointType.ROTATE_SCALE_Y;
+				p2.pointType = AnchorPoint.PointType.ROTATE_SCALE_X;
+			}
+		}
+		else {
+			p1.pointType = AnchorPoint.PointType.ROTATE_SCALE_XY;
+			p2.pointType = AnchorPoint.PointType.ROTATE_SCALE_XY;
+		}
 	}
 }
