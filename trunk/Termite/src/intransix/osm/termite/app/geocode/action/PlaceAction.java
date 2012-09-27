@@ -40,12 +40,18 @@ public class PlaceAction implements GeocodeMouseAction {
 	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
 		int pointIndex = geocodeEditorMode.getPlacementPointIndex();
 		
-		AnchorPoint anchorPoint = geocodeManager.getAnchorPoints()[pointIndex];
+		AnchorPoint[] anchorPoints = geocodeManager.getAnchorPoints();
+		AnchorPoint anchorPoint = anchorPoints[pointIndex];
 		anchorPoint.mercPoint = mouseMerc;
 		anchorPoint.imagePoint = new Point2D.Double();
 		
 		AffineTransform mercToImage = geocodeManager.getMercToImage();
 		mercToImage.transform(mouseMerc,anchorPoint.imagePoint);
+		
+		//in trhee point mode, update the point types if needed
+		if(geocodeEditorMode.getGeocodeType() == GeocodeEditorMode.GeocodeType.THREE_POINT_ORTHO) {
+			AnchorPoint.setScalePointTypes(anchorPoints[1], anchorPoints[2]);
+		}
 		
 		geocodeLayer.notifyContentChange();
 	}

@@ -38,7 +38,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener {
 	}
 	
 	private GeocodeType geocodeType = GeocodeType.TWO_POINT;
-	private LayerState layerState = LayerState.SELECT;
+	private LayerState layerState = LayerState.INACTIVE;
 	private AnchorPoint.PointType placePointType;
 	private int placePointIndex;
 	
@@ -58,6 +58,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener {
 	public GeocodeEditorMode(GeocodeManager geocodeManager) {
 		this.geocodeManager = geocodeManager;
 		this.toolBar = new GeocodeToolbar(this);
+		this.addGeocodeStateListener(this.toolBar);
 		
 		//make this automatically disabled - only enabled manually
 		setDataEnabledStates(false,false);

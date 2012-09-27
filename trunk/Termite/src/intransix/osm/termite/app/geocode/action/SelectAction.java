@@ -45,12 +45,12 @@ public class SelectAction implements GeocodeMouseAction {
 			AnchorPoint anchorPoint = anchorPoints[i];
 			if(anchorPoint.hitCheck(mouseMerc, mercPerPixelsScale)) {
 				geocodeManager.setSelection(i);
+				geocodeLayer.notifyContentChange();
 				return;
 			}
 		}
 		//if we are still here, nothing was selected
 		geocodeManager.setSelection(GeocodeManager.INVALID_SELECTION);
-		
 		geocodeLayer.notifyContentChange();
 	}
 	

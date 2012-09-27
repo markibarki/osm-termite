@@ -140,7 +140,8 @@ public abstract class MapLayer {
 	
 	/** This method notifies any listeners the a mode enabled changed. */
 	public void notifyContentChange() {
-		for(MapLayerListener layerListener:layerListeners) {
+		for(int i = 0; i < layerListeners.size(); i++) {
+			MapLayerListener layerListener = layerListeners.get(i);
 			layerListener.layerContentChanged(this);
 		}
 	}
@@ -150,8 +151,9 @@ public abstract class MapLayer {
 	//=================================
 	
 	private void notifyStateChange() {
-		for(MapLayerListener layerListener:layerListeners) {
-			layerListener.layerContentChanged(this);
+		for(int i = 0; i < layerListeners.size(); i++) {
+			MapLayerListener layerListener = layerListeners.get(i);
+			layerListener.layerStateChanged(this);
 		}
 	}
 	
