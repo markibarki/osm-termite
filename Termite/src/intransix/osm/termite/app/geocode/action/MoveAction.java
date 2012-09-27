@@ -5,6 +5,7 @@ import intransix.osm.termite.render.source.GeocodeLayer;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -60,6 +61,9 @@ public class MoveAction implements GeocodeMouseAction {
 			updateMoveTransform(anchorPoint,mouseMerc);
 			geocodeManager.executeMove();
 			
+			//exit the move after a click
+			geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
+			
 			geocodeLayer.notifyContentChange();
 		}
 	}
@@ -68,6 +72,10 @@ public class MoveAction implements GeocodeMouseAction {
 	private void updateMoveTransform(AnchorPoint moveAnchor, Point2D moveMerc) {
 		
 		AnchorPoint p0 = geocodeManager.getAnchorPoints()[0];
+		
+		if((p0 == null)||(p0.mercPoint == null)) {
+			return;
+		}
 
 		switch(moveAnchor.pointType) {
 			case TRANSLATE:
@@ -143,11 +151,9 @@ if((length1 == 0)||(length2 == 0)) return;
 		double scaleY = doYScale ? scale : 1;
 		
 		moveImageToMerc.setTransform(imageToMerc);
-		moveImageToMerc.translate(-baseAnchorMerc.getX(),-baseAnchorMerc.getY());
 		moveImageToMerc.translate(baseAnchorImage.getX(),baseAnchorImage.getY());
 		moveImageToMerc.rotate(rot);
 		moveImageToMerc.scale(scaleX,scaleY);
 		moveImageToMerc.translate(-baseAnchorImage.getX(),-baseAnchorImage.getY());
-		moveImageToMerc.translate(baseAnchorMerc.getX(),baseAnchorMerc.getY());
 	}
 }
