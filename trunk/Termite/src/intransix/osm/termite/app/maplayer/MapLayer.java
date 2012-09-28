@@ -3,8 +3,6 @@ package intransix.osm.termite.app.maplayer;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Composite;
-import java.util.ArrayList;
-import java.util.List;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.render.MapPanel;
 
@@ -13,6 +11,15 @@ import intransix.osm.termite.render.MapPanel;
  * @author sutter
  */
 public abstract class MapLayer {
+	
+	public final static int ORDER_BASE_MAP_1 = 0;
+	public final static int ORDER_BASE_MAP_2 = 1;
+	public final static int ORDER_BASE_MAP_3 = 2;
+	public final static int ORDER_EDIT_MAP = 3;
+	public final static int ORDER_OVERLAY_1 = 4;
+	public final static int ORDER_OVERLAY_2 = 5;
+	public final static int ORDER_OVERLAY_3 = 6;
+	public final static int ORDER_EDIT_MARKINGS = 7;
 	
 	public final static double INVALID_ANGLE = Double.MAX_VALUE;
 	
@@ -24,22 +31,15 @@ public abstract class MapLayer {
 	private double preferredAngleRadians = INVALID_ANGLE;
 	private Composite composite;	
 	
-	private List<MapLayerListener> layerListeners = new ArrayList<MapLayerListener>();
+	//to distribute change events
+	MapLayerManager mapLayerManager;
 	//the element that controls the display coordinates
 	private ViewRegionManager viewRegionManager;
 	//the ui element wyich displays the layers. Needed to connect mouse interactions.
 	private MapPanel mapPanel;
 	
-	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
-		this.viewRegionManager = viewRegionManager;
-	}
-	
 	public ViewRegionManager getViewRegionManager() {
 		return viewRegionManager;
-	}
-	
-	public void setMapPanel(MapPanel mapPanel) {
-		this.mapPanel = mapPanel;
 	}
 	
 	public MapPanel getMapPanel() {
@@ -56,7 +56,7 @@ public abstract class MapLayer {
 	
 	public void setName(String name) {
 		this.name = name;
-		notifyStateChange();
+		if(mapLayerManager != null) mapLayerManager.notifyStateChange(this);
 	}
 	
 	public String getName() {
@@ -70,7 +70,7 @@ public abstract class MapLayer {
 	
 	public void setActiveState(boolean active) {
 		this.active = active;
-		notifyStateChange();
+		if(mapLayerManager != null) mapLayerManager.notifyStateChange(this);
 	}
 	
 	public final boolean getActiveState() {
@@ -86,7 +86,7 @@ public abstract class MapLayer {
 			this.alpha = 1;
 			composite = null;
 		}
-		notifyStateChange();
+		if(mapLayerManager != null) mapLayerManager.notifyStateChange(this);
 	}
 	
 	public float getOpacity() {
@@ -119,42 +119,35 @@ public abstract class MapLayer {
 	
 	public void setVisible(boolean visible) {
 		this.visible = visible;
-		notifyStateChange();
+		if(mapLayerManager != null) mapLayerManager.notifyStateChange(this);
 	}
 	
 	public boolean isVisible() {
 		return visible;
 	}
 	
-	/** This method adds a mode listener. */
-	public void addLayerListener(MapLayerListener layerListener) {
-		if(!layerListeners.contains(layerListener)) {
-			layerListeners.add(layerListener);
-		}
-	}
-	
-	/** This method removes a mode listener. */
-	public void removeLayerListener(MapLayerListener layerListener) {
-		layerListeners.remove(layerListener);
-	}
-	
 	/** This method notifies any listeners the a mode enabled changed. */
 	public void notifyContentChange() {
-		for(int i = 0; i < layerListeners.size(); i++) {
-			MapLayerListener layerListener = layerListeners.get(i);
-			layerListener.layerContentChanged(this);
-		}
+		if(mapLayerManager != null) mapLayerManager.notifyContentChange(this);
+	}
+	
+	//=================================
+	// Package Methods
+	//=================================
+	
+	/** This method connects the layer to the map panel. */
+	void connect(MapLayerManager mapLayerManager,
+			ViewRegionManager viewRegionManager,
+			MapPanel mapPanel) {
+		this.mapLayerManager = mapLayerManager;
+		this.viewRegionManager = viewRegionManager;
+		this.mapPanel = mapPanel;
 	}
 	
 	//=================================
 	// Private Methods
 	//=================================
 	
-	private void notifyStateChange() {
-		for(int i = 0; i < layerListeners.size(); i++) {
-			MapLayerListener layerListener = layerListeners.get(i);
-			layerListener.layerStateChanged(this);
-		}
-	}
+	
 	
 }

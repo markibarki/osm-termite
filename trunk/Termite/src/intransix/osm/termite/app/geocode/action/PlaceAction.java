@@ -1,5 +1,6 @@
 package intransix.osm.termite.app.geocode.action;
 
+import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.geocode.*;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import java.awt.event.MouseEvent;
@@ -7,14 +8,23 @@ import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 
 /**
- *
+ * This method is used to place an anchor point in geocoding. 
+ * 
  * @author sutter
  */
 public class PlaceAction implements GeocodeMouseAction {
 	
+	//=====================
+	// Properties
+	//=====================
+	
 	private GeocodeManager geocodeManager;
 	private GeocodeEditorMode geocodeEditorMode;
 	private GeocodeLayer geocodeLayer;
+	
+	//=====================
+	// Public Methods
+	//=====================
 	
 	public PlaceAction(GeocodeManager geocodeManager, 
 			GeocodeEditorMode geocodeEditorMode) {
@@ -52,6 +62,9 @@ public class PlaceAction implements GeocodeMouseAction {
 		if(geocodeEditorMode.getGeocodeType() == GeocodeEditorMode.GeocodeType.THREE_POINT_ORTHO) {
 			AnchorPoint.setScalePointTypes(anchorPoints[1], anchorPoints[2]);
 		}
+		
+		//exit the move after a click
+			geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
 		
 		geocodeLayer.notifyContentChange();
 	}

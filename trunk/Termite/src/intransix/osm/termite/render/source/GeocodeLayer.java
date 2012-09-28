@@ -1,7 +1,6 @@
 package intransix.osm.termite.render.source;
 
 
-import intransix.osm.termite.app.geocode.AnchorPoint;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.app.geocode.GeocodeManager;
@@ -29,6 +28,7 @@ public class GeocodeLayer extends MapLayer implements
 		this.geocodeManager = geocodeManager;
 		
 		this.setName("Geocode Layer");
+		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
 	}
 	
 	public void setGeocodeEditorMode(GeocodeEditorMode geocodeEditorMode) {

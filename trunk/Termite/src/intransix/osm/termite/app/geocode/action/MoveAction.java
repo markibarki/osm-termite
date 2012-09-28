@@ -1,5 +1,6 @@
 package intransix.osm.termite.app.geocode.action;
 
+import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.geocode.*;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import java.awt.event.MouseEvent;
@@ -8,14 +9,23 @@ import java.awt.geom.AffineTransform;
 import javax.swing.JOptionPane;
 
 /**
- *
+ * This MouseAction is used for a move in geocoding. 
+ * 
  * @author sutter
  */
 public class MoveAction implements GeocodeMouseAction {
 	
+	//=====================
+	// Properties
+	//=====================
+	
 	private GeocodeManager geocodeManager;
 	private GeocodeLayer geocodeLayer;
 	private AffineTransform workingTransform = new AffineTransform();
+	
+	//=====================
+	// Public Methods
+	//=====================
 	
 	public MoveAction(GeocodeManager geocodeManager) {
 		this.geocodeManager = geocodeManager;
@@ -68,6 +78,9 @@ public class MoveAction implements GeocodeMouseAction {
 		}
 	}
 	
+	//=====================
+	// Private Methods
+	//=====================
 	
 	private void updateMoveTransform(AnchorPoint moveAnchor, Point2D moveMerc) {
 		

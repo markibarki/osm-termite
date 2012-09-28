@@ -7,7 +7,7 @@ import java.awt.geom.Point2D;
 import intransix.osm.termite.map.data.OsmSegment;
 import intransix.osm.termite.render.edit.Style;
 import intransix.osm.termite.render.edit.StyleInfo;
-import intransix.osm.termite.app.edit.VirtualNode;
+import intransix.osm.termite.app.edit.data.VirtualNode;
 import java.util.HashMap;
 
 /**

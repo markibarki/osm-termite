@@ -1,23 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.app.edit;
 
-import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.edit.action.*;
 import intransix.osm.termite.app.mode.EditorMode;
-import intransix.osm.termite.gui.TermiteGui;
 import intransix.osm.termite.render.*;
 import intransix.osm.termite.render.edit.EditLayer;
 import java.awt.Cursor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JToolBar;
 
 /**
- *
+ * This mode is used to draw ways. 
+ * 
  * @author sutter
  */
 public class WayEditorMode extends EditorMode {
@@ -82,12 +73,15 @@ public class WayEditorMode extends EditorMode {
 		}
 	}
 	
+	/** This method removes any current active way, leaving the program in 
+	 * way edit mode. */ 
 	public void resetWayEdit() {
 		editManager.clearPreview();
 		editManager.clearPending();
 		editManager.clearSelection();
 	}
 	
+	/** This method loads the proper mouse actions for this mode. */
 	private void loadMouseActions() {
 		//set up move state
 		MouseClickAction mouseClickAction = new WayToolClickAction(editManager);		

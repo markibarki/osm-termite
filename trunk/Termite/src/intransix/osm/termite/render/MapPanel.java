@@ -88,7 +88,8 @@ public class MapPanel extends JPanel implements MapLayerListener,
 	 * visible and opacity. */
 	@Override
 	public void layerStateChanged(MapLayer mapLayer) {
-		this.repaint();
+		//we need to reload the list in case the reference frame dropdown changes
+		layerListChanged(layers);
 	}
 	
 	/** This method is called when the content of a layer changes. */
@@ -102,20 +103,13 @@ public class MapPanel extends JPanel implements MapLayerListener,
 	/** This method is called when the map layer list changes. */
 	@Override
 	public void layerListChanged(java.util.List<MapLayer> mapLayerList) {
-		//remove listener from old list
-		for(MapLayer layer:layers) {
-			layer.removeLayerListener(this);
-		}
-		
 		this.layers = mapLayerList;
 		
 		//add any layer with a preferred angle to the coordBasis list
 		java.util.List<MapLayer> refFrameLayers = new ArrayList<MapLayer>();
 		for(MapLayer layer:layers) {
-			//add listener to new list
-			layer.addLayerListener(this);
 			//get the reference frame layers
-			if(layer.hasPreferredAngle()) refFrameLayers.add(layer);
+			if((layer.hasPreferredAngle())&&(layer.isVisible())) refFrameLayers.add(layer);
 		}
 		updateRefFrameLayers(refFrameLayers);
 

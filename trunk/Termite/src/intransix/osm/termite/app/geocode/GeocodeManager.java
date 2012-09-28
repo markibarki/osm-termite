@@ -1,22 +1,22 @@
 package intransix.osm.termite.app.geocode;
 
+import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.render.source.SourceLayer;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
+
 
 /**
- *
+ * This object manages the geocoding state.
+ * 
  * @author sutter
  */
 public class GeocodeManager {
+	
+	//==================
+	// Properties
+	//==================
 	
 	public final static int INVALID_SELECTION = -1;
 	
@@ -36,10 +36,12 @@ public class GeocodeManager {
 	private AffineTransform mercToImage;
 	private AffineTransform moveImageToMerc = new AffineTransform();
 		
-	//----------------
-	// Mangement
-	//----------------
+
+	//==================
+	// Public Methods
+	//==================
 	
+	/** This method initializes the geocode layer. */
 	public void init(MapLayerManager mapLayerManager) {
 		geocodeLayer = new GeocodeLayer(this);
 		geocodeEditorMode = new GeocodeEditorMode(this);
@@ -54,18 +56,17 @@ public class GeocodeManager {
 		anchorPoints[2] = p2;
 	}
 	
+	/** This method retrieves the geocode editor mode. */
 	public GeocodeEditorMode getGeocodeEditorMode() {
 		return geocodeEditorMode;
 	}
 	
+	/** This method retrieves the geocode layer. */
 	public GeocodeLayer getGeocodeLayer() {
 		return geocodeLayer;
 	}
 	
-	//----------------
-	// Geocoding
-	//----------------
-	
+	/** This method sets the source layer that will be geocoded. */
 	public void setSourceLayer(SourceLayer sourceLayer) {	
 		this.sourceLayer = sourceLayer;
 		if(sourceLayer != null) {
@@ -76,15 +77,22 @@ public class GeocodeManager {
 		}
 	}
 
+	/** This method retrieves the current list of anchor points. */
 	public AnchorPoint[] getAnchorPoints() {
 		return anchorPoints;
 	}
+	
+	/** This method gets the selcted anchor point. */
 	public int getSelection() {
 		return selection;
 	}
+	
+	/** This method sets the selected anchor point. */
 	public void setSelection(int selection) {
 		this.selection = selection;
 	}
+	
+	/** This method gets the selected anchor point. */
 	public AnchorPoint getSelectedAnchorPoint() {
 		if(selection != INVALID_SELECTION) {
 			return anchorPoints[selection];
@@ -93,6 +101,9 @@ public class GeocodeManager {
 			return null;
 		}
 	}
+	
+	/** This method gets the AffineTransform relating the current moving image
+	 * location to meractor coordinates. */
 	public AffineTransform getMoveImageToMerc() {
 		return moveImageToMerc;
 	}
@@ -105,14 +116,19 @@ public class GeocodeManager {
 		}
 	}
 	
+	/** This method gets the AffineTransform relating the image pixels to mercator coordinates
+	 * for the source image. */
 	public AffineTransform getImageToMerc() {
 		return imageToMerc;
 	}
 	
+	/** This method gets the AffineTransform relating mercator coordinates
+	 * to image pixels for the source image. */
 	public AffineTransform getMercToImage() {
 		return mercToImage;
 	}
 	
+	/** This method should be called when the geocode layer is made active. */
 	public void layerActive() {
 		//refresh the source layer transformation
 		if(this.sourceLayer != null) {
@@ -120,6 +136,7 @@ public class GeocodeManager {
 		}
 	}
 	
+	/** This method should be called when the geocode layer is made inactive. */
 	public void layerInactive() {
 		selection = INVALID_SELECTION;
 		
@@ -131,11 +148,8 @@ public class GeocodeManager {
 		imageToMerc = null;
 		mercToImage = null;
 	}
-		
-	//=====================
-	// Private Methods
-	//=====================
 	
+	/** This method initializes a move operation. */
 	public void initMove() {
 		if(sourceLayer == null) return;
 		
@@ -143,12 +157,14 @@ public class GeocodeManager {
 		sourceLayer.setMove(true, moveImageToMerc);
 	}
 	
+	/** This method should be called to end a move operation. */
 	public void exitMove() {
 		if(sourceLayer == null) return;
 		
 		sourceLayer.setMove(false,null);
 	}
 	
+	/** This method executes a move on the source image. */
 	public void executeMove() {
 		if(sourceLayer == null) return;
 		
@@ -164,6 +180,13 @@ public class GeocodeManager {
 		sourceLayer.setImageToMerc(imageToMerc);
 	}
 	
+	//=====================
+	// Private Methods
+	//=====================
+	
+	/** This method updates the mercToImgae transform. It should be called whenever
+	 * the imageToMerc transform is changed. 
+	 */
 	private void updateInverseTransform() {
 		try {
 			mercToImage = imageToMerc.createInverse();

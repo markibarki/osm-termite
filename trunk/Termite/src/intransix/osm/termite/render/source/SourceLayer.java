@@ -21,7 +21,9 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	
 	public SourceLayer() {
 		this.setName("Source Layer");
+		this.setOrder(MapLayer.ORDER_OVERLAY_3);
 		this.setVisible(false);
+		this.setPreferredAngleRadians(0);
 	}
 	
 	public void setMove(boolean inMove, AffineTransform moveImageToMerc) {
@@ -53,11 +55,6 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 		this.setPreferredAngleRadians(preferredAngleRad);
 		
 		this.notifyContentChange();
-	}
-	
-	@Override
-	public boolean hasPreferredAngle() {
-		return true;
 	}
 	
 	public boolean loadImage(File file) {
