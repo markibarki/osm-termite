@@ -1,4 +1,4 @@
-package intransix.osm.termite.app.edit;
+package intransix.osm.termite.render.edit;
 
 import intransix.osm.termite.map.data.OsmSegmentWrapper;
 import intransix.osm.termite.map.data.OsmWay;

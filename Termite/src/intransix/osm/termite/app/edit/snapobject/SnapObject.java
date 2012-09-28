@@ -1,6 +1,6 @@
 package intransix.osm.termite.app.edit.snapobject;
 
-import intransix.osm.termite.app.edit.EditDrawable;
+import intransix.osm.termite.render.edit.EditDrawable;
 import intransix.osm.termite.render.edit.Style;
 import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.geom.Point2D;

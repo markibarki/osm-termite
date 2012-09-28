@@ -31,6 +31,7 @@ public class DownloadLayer extends MapLayer implements MouseListener, MouseMotio
 	
 	public DownloadLayer() {
 		this.setName("Checkout Search Layer");
+		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
 	}
 	
 	/** This mode sets the edit layer active. */

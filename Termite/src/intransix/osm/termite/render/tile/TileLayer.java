@@ -43,6 +43,7 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	public TileLayer() {
 		this.setName("Base Map");
+		this.setOrder(MapLayer.ORDER_BASE_MAP_1);
 		this.setVisible(false);
 	}
 	

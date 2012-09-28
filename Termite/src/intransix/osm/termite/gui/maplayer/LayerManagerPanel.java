@@ -51,12 +51,6 @@ public class LayerManagerPanel extends JPanel implements MapLayerListener {
 	 refreshes the layer list. */
 	@Override
 	public void layerListChanged(List<MapLayer> mapLayerList) {
-		//remove listener from old list
-		if(this.mapLayerList != null) {
-			for(MapLayer layer:this.mapLayerList) {
-				layer.removeLayerListener(this);
-			}
-		}
 
 		//save list
 		this.mapLayerList = mapLayerList;
@@ -66,9 +60,6 @@ public class LayerManagerPanel extends JPanel implements MapLayerListener {
 		model.setRowCount(0);
 		Object[] row = new Object[2];
 		for(MapLayer layer:mapLayerList) {
-			//add listener to new list
-			layer.addLayerListener(this);
-			
 			if((layer.getActiveState())&&(layer.isVisible())) {
 				row[LAYER_COLUMN] = layer;
 				row[OPACITY_COLUMN] = layer.getOpacity();

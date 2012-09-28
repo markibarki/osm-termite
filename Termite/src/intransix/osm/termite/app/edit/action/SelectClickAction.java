@@ -1,6 +1,6 @@
 package intransix.osm.termite.app.edit.action;
 
-import intransix.osm.termite.app.edit.VirtualNode;
+import intransix.osm.termite.app.edit.data.VirtualNode;
 import intransix.osm.termite.app.edit.MouseClickAction;
 import intransix.osm.termite.app.edit.snapobject.SnapObject;
 import intransix.osm.termite.app.edit.snapobject.SnapNode;

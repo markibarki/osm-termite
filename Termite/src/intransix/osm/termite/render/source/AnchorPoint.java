@@ -1,16 +1,17 @@
 
-package intransix.osm.termite.app.geocode;
+package intransix.osm.termite.render.source;
 
 import java.awt.Color;
 import java.awt.geom.*;
 import java.awt.Graphics2D;
 
 /**
- *
+ * This is an Anchor point for controlling geocoding of an image.
  * @author sutter
  */
 public class AnchorPoint {
 	
+	/** This gives the type of anchor point. */
 	public enum PointType {
 		TRANSLATE(Color.BLUE),
 		ROTATE_SCALE_XY(Color.PINK),
@@ -40,6 +41,7 @@ public class AnchorPoint {
 	
 	private Point2D pixPoint = new Point2D.Double();
 	
+	/** This method renders the anchor point. */
 	public void renderPoint(Graphics2D g2,AffineTransform mercToPixels, 
 			boolean isSelected, boolean inMove, AffineTransform moveImageToMerc) {
 		
@@ -66,6 +68,7 @@ public class AnchorPoint {
 		g2.drawLine(x,y-RADIUS_PIX,x,y+RADIUS_PIX);
 	}
 	
+	/** This method checks if the test point hits the anchor point. */
 	public boolean hitCheck(Point2D testMerc, double mercPerPixelsScale) {
 		if(mercPoint != null) {
 			return (mercPoint.distance(testMerc) < RADIUS_PIX * mercPerPixelsScale);
@@ -75,6 +78,7 @@ public class AnchorPoint {
 		}
 	}
 	
+	/** This clears the anchor point, making it not set.*/
 	public void reset() {
 		this.pointType = null;
 		this.mercPoint = null;

@@ -1,6 +1,9 @@
-package intransix.osm.termite.app.geocode;
+package intransix.osm.termite.render.source;
 
+import intransix.osm.termite.app.geocode.GeocodeEditorMode;
+import intransix.osm.termite.app.geocode.GeocodeStateListener;
 import intransix.osm.termite.app.maplayer.MapLayer;
+import intransix.osm.termite.app.maplayer.MapLayerListener;
 import intransix.osm.termite.render.source.SourceLayer;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -8,11 +11,16 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 /**
- *
+ * This is the submode toolbar for the geocode editor mode. 
  * @author sutter
  */
-public class GeocodeToolbar extends JToolBar implements ActionListener, GeocodeStateListener {
+public class GeocodeToolbar extends JToolBar implements ActionListener, 
+		GeocodeStateListener {
 
+	//=====================
+	// Properties
+	//=====================
+	
 	private final static String SOURCE_SELECT_CMD = "source";
 	
 	private final static String SELECT_TEXT = "Select [esc]";
@@ -57,6 +65,10 @@ public class GeocodeToolbar extends JToolBar implements ActionListener, GeocodeS
 	
 	private ButtonGroup typeButtonGroup;
 	private JRadioButton[] radioButtons;
+	
+	//=====================
+	// Public Methods
+	//=====================
 	
 	public GeocodeToolbar(GeocodeEditorMode geocodeEditorMode) {
 		this.geocodeEditorMode = geocodeEditorMode;
@@ -182,7 +194,10 @@ public class GeocodeToolbar extends JToolBar implements ActionListener, GeocodeS
 		}
 	}
 	
-		
+	//=====================
+	// Private methods
+	//=====================	
+	
 	private void configureForGeocodeType(int type) {
 		String[] dynamicNames = BUTTON_NAMES[type];
 		int i = 0;

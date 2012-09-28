@@ -23,6 +23,7 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	
 	public RenderLayer() {
 		this.setName("Render Layer");
+		this.setOrder(MapLayer.ORDER_EDIT_MAP);
 	}
 	
 	@Override

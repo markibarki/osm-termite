@@ -1,14 +1,16 @@
-package intransix.osm.termite.app.edit;
+package intransix.osm.termite.app.edit.data;
 
 import intransix.osm.termite.map.data.OsmSegment;
-import intransix.osm.termite.map.data.OsmNode;
 import java.awt.geom.Point2D;
 
 /**
- *
+ * This is an object that represents a virtual node. It does not exist as a node
+ * but will be created if it is moved or otherwise used.
+ * 
  * @author sutter
  */
 public class VirtualNode {
+	
 	public OsmSegment segment;
 	public Point2D point;
 	

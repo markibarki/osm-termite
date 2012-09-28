@@ -1,5 +1,6 @@
 package intransix.osm.termite.render.edit;
 
+import intransix.osm.termite.app.edit.data.VirtualNode;
 import intransix.osm.termite.app.edit.action.*;
 import intransix.osm.termite.app.edit.*;
 import intransix.osm.termite.app.edit.editobject.EditObject;
@@ -50,6 +51,7 @@ public class EditLayer extends MapLayer implements
 	public EditLayer(EditManager editManager) {
 		this.editManager = editManager;
 		this.setName("Edit Layer");
+		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
 	}
 	
 	// <editor-fold defaultstate="collapsed" desc="Accessors">

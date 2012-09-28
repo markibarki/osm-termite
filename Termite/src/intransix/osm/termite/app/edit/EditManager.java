@@ -73,6 +73,13 @@ public class EditManager implements MapDataListener {
 		this.levelManager = levelManager;
 	}
 	
+	public void init() {
+		editLayer = new EditLayer(this);
+		selectMode = new SelectEditorMode(this);
+		nodeMode = new NodeEditorMode(this);
+		wayMode = new WayEditorMode(this);
+	}
+	
 	//---------------------
 	// Edit State Accessors
 	//---------------------
@@ -166,6 +173,7 @@ public class EditManager implements MapDataListener {
 		clearPending();
 	}
 	
+	/** This method clears any nodes selected within the active way. */
 	public void clearWayNodesSelection() {
 		selectedWayNodes.clear();
 		virtualNodeSelected = false;
@@ -179,46 +187,27 @@ public class EditManager implements MapDataListener {
 		movingNodes.clear();
 	}
 	
+	/** This method clears the preview (snap) objects. */
 	public void clearPreview() {
 		snapObjects.clear();
 		activeSnapObject = -1;
 	}
 	
-//////////////////////////////////////////////////////////////////////////
-	
-//	/** This method ends the current way edit and starts a new one. */
-//	public void resetWayEdit() {
-//		//clear old working data
-//		clearSelection();
-//		//overwrite old way edit action with a new one
-//		editLayer.setMouseClickAction(new WayToolClickAction());
-//	}
-//	
-//	/** This will end a move edit. */
-//	public void clearMoveEdit() {
-//		clearSelection();
-//		editLayer.setMouseClickAction(new SelectClickAction());
-//	}
-//		
-//		/** This method returns true if a move mode is active. */
-//	public boolean inMove() {
-//		return ((mouseClickAction instanceof MoveClickAction)||
-//				(mouseClickAction instanceof VirtualNodeClickAction));
-//	}
-//////////////////////////////////////////////////////////////////////////
-	
 	//--------------------
 	// Layer, Mode accessors
 	//---------------------
 	
+	/** This method retrieves the OSM data. */
 	public OsmData getOsmData() {
 		return osmData;
 	}
 	
+	/** This method retrives the feature type manager. */
 	public FeatureTypeManager getFeatureTypeManager() {
 		return featureTypeManager;
 	}
 	
+	/** This method retrieves the level manager. */
 	public LevelManager getLevelManager() { 
 		return levelManager;
 	}
@@ -238,38 +227,32 @@ public class EditManager implements MapDataListener {
 		return editLayer.getMapPanel().getMousePointMerc();
 	}
 	
-	
+	/** This method retrieves the edit layer. */
 	public EditLayer getEditLayer() {
 		return editLayer;
 	}
 	
+	/** This method retrieves the select editor mode. */
 	public SelectEditorMode getSelectEditorMode() {
 		return selectMode;
 	}
 	
+	/** This method retrieves the node editor mode. */
 	public NodeEditorMode getNodeEditorMode() {
 		return nodeMode;
 	}
 	
+	/** This method retrieves the way editor mode. */
 	public WayEditorMode getWayEditorMode() {
 		return wayMode;
-	}
-	
-	public void init() {
-		editLayer = new EditLayer(this);
-		selectMode = new SelectEditorMode(this);
-		nodeMode = new NodeEditorMode(this);
-		wayMode = new WayEditorMode(this);
 	}	
 	
-		// <editor-fold defaultstate="collapsed" desc="Map Data Listener">
 	/** This method is called when the map data is set. */
 	@Override
 	public void onMapData(OsmData osmData) {
 		this.osmData = osmData;		
 		//pass the data to the in
 	}
-	// </editor-fold>
 	
 	
 	//========================
@@ -285,7 +268,7 @@ public class EditManager implements MapDataListener {
 	// Private Methods
 	//========================
 	
-		/** This method returns the current edit destination point based on the
+	/** This method returns the current edit destination point based on the
 	 * currently selected hover node or segment. 
 	 * 
 	 * @param mouseMerc		The location of the mouse in mercator coordinates.

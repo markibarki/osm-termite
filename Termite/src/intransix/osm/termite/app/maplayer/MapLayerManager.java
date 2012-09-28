@@ -49,8 +49,7 @@ public class MapLayerManager {
 	public void addLayer(MapLayer layer) {
 		if(!mapLayers.contains(layer)) {
 			mapLayers.add(layer);
-			layer.setViewRegionManager(viewRegionManager);
-			layer.setMapPanel(mapPanel);
+			layer.connect(this,viewRegionManager,mapPanel);
 			
 			//sort collection
 			Collections.sort(mapLayers, comp);
@@ -75,17 +74,32 @@ public class MapLayerManager {
 		layerListeners.remove(layerListener);
 	}
 	
+	//========================
+	// Package Methods
+	//========================
+	
+	void notifyContentChange(MapLayer layer) {
+		for(int i = 0; i < layerListeners.size(); i++) {
+			MapLayerListener layerListener = layerListeners.get(i);
+			layerListener.layerContentChanged(layer);
+		}
+	}
+	
+	void notifyStateChange(MapLayer layer) {
+		for(int i = 0; i < layerListeners.size(); i++) {
+			MapLayerListener layerListener = layerListeners.get(i);
+			layerListener.layerStateChanged(layer);
+		}
+	}
 	
 	//======================
 	// Private Methods
 	//======================
 	
 	/** This method notifies any listeners the a mode enabled changed. */
-	public void notifyListChange() {
+	private void notifyListChange() {
 		for(MapLayerListener layerListener:layerListeners) {
 			layerListener.layerListChanged(mapLayers);
 		}
 	}
-	
-	
 }

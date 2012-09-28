@@ -1,27 +1,30 @@
 package intransix.osm.termite.app.geocode;
 
+import intransix.osm.termite.render.source.GeocodeToolbar;
+import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.mode.EditorMode;
 import intransix.osm.termite.app.geocode.action.*;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.maplayer.MapLayerListener;
 import intransix.osm.termite.render.source.*;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import javax.swing.*;
 import java.util.List;
 
 /**
- *
+ * This is the editor mode for geocoding.
+ * 
  * @author sutter
  */
-public class GeocodeEditorMode extends EditorMode implements MapLayerListener {
+public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	//====================
 	// Properties
 	//====================
 	private final static String MODE_NAME = "Geocode Mode";
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/globe25.png";
 	
+	/** This is the submode of geocoding. */
 	public enum LayerState {
 		INACTIVE,
 		SELECT,
@@ -31,6 +34,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener {
 		MOVE
 	}
 	
+	/** This is the type of geocoding. */
 	public enum GeocodeType {
 		TWO_POINT,
 		THREE_POINT_ORTHO,

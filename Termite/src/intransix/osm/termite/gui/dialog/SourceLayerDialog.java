@@ -182,7 +182,9 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 			Object[] row = new Object[2];
 			row[0] = sourceLayer.getName();
 			row[1] = sourceLayer.isVisible();
+			int index = model.getRowCount();
 			model.addRow(row);
+			layerMap.put(index,sourceLayer);
 		}
 	}//GEN-LAST:event_newButtonActionPerformed
 
