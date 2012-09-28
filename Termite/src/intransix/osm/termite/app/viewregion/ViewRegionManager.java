@@ -293,6 +293,14 @@ this.resetLocalCoordinates();
 		double maxLon = Preferences.getDoubleProperty(MAX_LON_TAG,INVALID_ANGLE);
 		if(maxLon == INVALID_ANGLE) maxLon = DEFAULT_MAX_LON;
 		
+		if((maxLat - minLat <= 0)||(maxLon - minLon <= 0)||
+				(minLat < -90)||(minLon < -180)||(maxLat > 90)||(maxLon > 180)) {
+			minLat = DEFAULT_MIN_LAT;
+			minLon = DEFAULT_MIN_LON;
+			maxLat = DEFAULT_MAX_LAT;
+			maxLon = DEFAULT_MAX_LON;
+		}
+		
 		Rectangle2D rect = new Rectangle2D.Double(minLon,minLat,maxLon-minLon,maxLat-minLat);
 		setLatLonViewBounds(rect);
 	}
