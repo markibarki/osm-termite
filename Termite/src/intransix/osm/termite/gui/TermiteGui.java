@@ -28,7 +28,9 @@ import intransix.osm.termite.app.basemap.BaseMapListener;
 import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.feature.FeatureTypeManager;
 import intransix.osm.termite.app.level.LevelManager;
+import intransix.osm.termite.app.preferences.Preferences;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
+import intransix.osm.termite.app.ShutdownListener;
 
 /**
  * This is the main UI class. It initializes the UI and it manages event flow.
@@ -36,7 +38,8 @@ import intransix.osm.termite.app.viewregion.ViewRegionManager;
  * @author sutter
  */
 public class TermiteGui extends javax.swing.JFrame implements 
-		MapDataListener, OsmDataChangedListener, EditorModeListener, BaseMapListener {
+		MapDataListener, OsmDataChangedListener, EditorModeListener, 
+		BaseMapListener, ShutdownListener {
 	
 	//=====================
 	// Private Properties
@@ -49,6 +52,22 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private final static String UNDO_ITEM_TEXT = "Undo";
 	private final static String REDO_ITEM_BASE = "Redo: ";
 	private final static String REDO_ITEM_TEXT = "Redo";
+	
+	//layout
+	private final static int DEFAULT_WIDTH = 1000;
+	private final static int DEFAULT_HEIGHT = 800;
+	private final static int MIN_WIDTH = 200;
+	private final static int MIN_HEIGHT = 200;
+		
+	private final static int DEFAULT_SPLIT_1 = 150;
+	private final static int DEFAULT_SPLIT_2 = 200;
+	private final static int DEFAULT_SPLIT_3 = 500;
+	private final static int DEFAULT_SPLIT_4 = 200;
+
+	private final static double DEFAULT_RESIZE_1 = .25;
+	private final static double DEFAULT_RESIZE_2 = .33;
+	private final static double DEFAULT_RESIZE_3 = .8;
+	private final static double DEFAULT_RESIZE_4 = .5;
 	
 	private final static int SPACE_X = 8;
 	private final static int SPACE_Y = 8;
@@ -140,6 +159,14 @@ public class TermiteGui extends javax.swing.JFrame implements
 	public TermiteGui(TermiteApp app) {
 		this.app = app;
 		initComponents();
+		
+		//add a listener to handle the window close
+		this.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				onWindowClose();
+			}
+		});
 	}
 	// </editor-fold>
 	
@@ -324,6 +351,36 @@ public class TermiteGui extends javax.swing.JFrame implements
 		button.setEnabled(mode.getModeEnabled());
 	}
 	
+	@Override
+	public void onShutdown() {
+		int width = this.getWidth();
+		int height = this.getHeight();
+		int split1 = this.jSplitPane1.getDividerLocation();
+		int split2 = this.jSplitPane2.getDividerLocation();
+		int split3 = this.jSplitPane3.getDividerLocation();
+		int split4 = this.jSplitPane4.getDividerLocation();
+		boolean isMaximized = (this.getExtendedState() & Frame.MAXIMIZED_BOTH) != 0;
+		
+		try {
+			if(isMaximized) {
+				Preferences.setProperty("isMaximized",true);
+			}
+			else {
+				Preferences.clearProperty("isMaximized");
+			}
+			Preferences.setProperty("guiWidth",width);
+			Preferences.setProperty("guiHeight",height);
+	
+			Preferences.setProperty("guiSplit1",split1);
+			Preferences.setProperty("guiSplit2",split2);
+			Preferences.setProperty("guiSplit3",split3);
+			Preferences.setProperty("guiSplit4",split4);
+		}
+		catch(Exception ex) {
+			//no luck
+		}
+	}
+	
 	// <editor-fold defaultstate="collapsed" desc="UI Component Methods">
 	
 	public void addToolBar(JToolBar toolBar) {
@@ -396,6 +453,21 @@ public class TermiteGui extends javax.swing.JFrame implements
 	@SuppressWarnings("unchecked")
     private void initComponents() {
 		
+		setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+		
+		//load the sizes for the layout
+		int width = Preferences.getIntProperty("guiWidth",DEFAULT_WIDTH);
+		int height = Preferences.getIntProperty("guiHeight",DEFAULT_HEIGHT);
+		
+		int split1 = Preferences.getIntProperty("guiSplit1",DEFAULT_SPLIT_1);
+		int split2 = Preferences.getIntProperty("guiSplit2",DEFAULT_SPLIT_2);
+		int split3 = Preferences.getIntProperty("guiSplit3",DEFAULT_SPLIT_3);
+		int split4 = Preferences.getIntProperty("guiSplit4",DEFAULT_SPLIT_4);
+		boolean isMaximized = Preferences.getBooleanProperty("isMaximized",false);
+		
+		this.setMinimumSize(new java.awt.Dimension(MIN_WIDTH, MIN_HEIGHT));
+		this.setPreferredSize(new java.awt.Dimension(width,height));
+
 		Container contentPane = this.getContentPane();
 		contentPane.setLayout(new BoxLayout(contentPane,BoxLayout.Y_AXIS));	
 		
@@ -565,8 +637,6 @@ public class TermiteGui extends javax.swing.JFrame implements
         
 		//map panel
         mapPanel = new intransix.osm.termite.render.MapPanel();
-		mapPanel.setMinimumSize(new java.awt.Dimension(200, 200));
-		mapPanel.setPreferredSize(new java.awt.Dimension(600,600));
 		
 		//supplemental tabbed pane
         supplementalTabPane = new javax.swing.JTabbedPane();
@@ -577,20 +647,20 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		//layout the content panes
 		jSplitPane1.setOrientation(javax.swing.JSplitPane.HORIZONTAL_SPLIT);
-		jSplitPane1.setDividerLocation(150);
-		jSplitPane1.setResizeWeight(.25);
+		jSplitPane1.setDividerLocation(split1);
+		jSplitPane1.setResizeWeight(DEFAULT_RESIZE_1);
 		
 		jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-		jSplitPane2.setDividerLocation(200);
-		jSplitPane3.setResizeWeight(.33);
+		jSplitPane2.setDividerLocation(split2);
+		jSplitPane3.setResizeWeight(DEFAULT_RESIZE_2);
         
         jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-		jSplitPane3.setDividerLocation(500);
-		jSplitPane3.setResizeWeight(.8);
+		jSplitPane3.setDividerLocation(split3);
+		jSplitPane3.setResizeWeight(DEFAULT_RESIZE_3);
 		
 		jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane4.setDividerLocation(200);
-		jSplitPane3.setResizeWeight(.5);
+        jSplitPane4.setDividerLocation(split4);
+		jSplitPane4.setResizeWeight(DEFAULT_RESIZE_4);
 		
 		jSplitPane1.setLeftComponent(jSplitPane2);
 		jSplitPane1.setRightComponent(jSplitPane3);
@@ -611,6 +681,11 @@ public class TermiteGui extends javax.swing.JFrame implements
 		this.add(jSplitPane1);
 
         pack();
+		
+		//it seems we have to maximize after we pack
+		if (isMaximized) {
+			this.setExtendedState(this.getExtendedState() | Frame.MAXIMIZED_BOTH);
+		}
     }
 	
 	private void addBaseMapMenuItem(final TileInfo tileInfo) {
@@ -644,7 +719,14 @@ public class TermiteGui extends javax.swing.JFrame implements
 	// </editor-fold>
 
 	// <editor-fold defaultstate="collapsed" desc="Internal Event Functions ans Classes">
+	
+	/** This is called when the exit menu is used. */
 	private void quitItemActionPerformed(java.awt.event.ActionEvent evt) {
+		app.exit();
+	}
+	
+	/** This is called when the window is closed using the top right corner. */
+	private void onWindowClose() {
 		app.exit();
 	}
 	
@@ -675,6 +757,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 		
 		CommitTask commitTask = new CommitTask(osmData,app.getLoginManager());
 		commitTask.execute();
+		commitTask.blockUI();
 	}
 	
 	private void publishMap() {

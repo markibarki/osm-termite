@@ -7,13 +7,26 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.awt.Component;
-import java.awt.MouseInfo;
+import intransix.osm.termite.app.ShutdownListener;
+import intransix.osm.termite.app.preferences.Preferences;
 
 /**
  *
  * @author sutter
  */
-public class ViewRegionManager {
+public class ViewRegionManager implements ShutdownListener {
+	
+	private final static String MIN_LAT_TAG = "minLat";
+	private final static String MIN_LON_TAG = "minLon";
+	private final static String MAX_LAT_TAG = "maxLat";
+	private final static String MAX_LON_TAG = "maxLon";
+	private final static double INVALID_ANGLE = Double.MAX_VALUE;
+	
+	private final static double DEFAULT_MIN_LAT = -30.0;
+	private final static double DEFAULT_MIN_LON = -150.0;
+	private final static double DEFAULT_MAX_LAT = 60.0;
+	private final static double DEFAULT_MAX_LON = 150.0;
+	
 		//transforms
 	private AffineTransform localToPixels = new AffineTransform();
 	private AffineTransform pixelsToLocal = new AffineTransform();
@@ -263,6 +276,51 @@ this.resetLocalCoordinates();
 		mercatorToPixels.preConcatenate(zt);
 		updateTransforms();
 		mapComponent.repaint();
+	}
+	
+	/** This method should be called after the UI is set up and the initial view 
+	 * can be set. */
+	public void setInitialView() {
+		double minLat = Preferences.getDoubleProperty(MIN_LAT_TAG,INVALID_ANGLE);
+		if(minLat == INVALID_ANGLE) minLat = DEFAULT_MIN_LAT;
+		
+		double minLon = Preferences.getDoubleProperty(MIN_LON_TAG,INVALID_ANGLE);
+		if(minLon == INVALID_ANGLE) minLon = DEFAULT_MIN_LON;
+		
+		double maxLat = Preferences.getDoubleProperty(MAX_LAT_TAG,INVALID_ANGLE);
+		if(maxLat == INVALID_ANGLE) maxLat = DEFAULT_MAX_LAT;
+		
+		double maxLon = Preferences.getDoubleProperty(MAX_LON_TAG,INVALID_ANGLE);
+		if(maxLon == INVALID_ANGLE) maxLon = DEFAULT_MAX_LON;
+		
+		Rectangle2D rect = new Rectangle2D.Double(minLon,minLat,maxLon-minLon,maxLat-minLat);
+		setLatLonViewBounds(rect);
+	}
+	
+	@Override
+	public void onShutdown() {
+		//save the viewport
+		Point2D topLeft = new Point2D.Double();
+		Rectangle rect = this.getPixelRect();
+		Point2D bottomRight = new Point2D.Double(rect.width,rect.height);
+		//transform to merc
+		this.localToMercator.transform(topLeft, topLeft);
+		this.localToMercator.transform(bottomRight, bottomRight);
+		//get lat lon range
+		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(bottomRight.getY()));
+		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(topLeft.getX()));
+		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(topLeft.getY()));
+		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(bottomRight.getX()));
+		//save values
+		try {
+			Preferences.setProperty(MIN_LAT_TAG,minLat);
+			Preferences.setProperty(MIN_LON_TAG,minLon);
+			Preferences.setProperty(MAX_LAT_TAG,maxLat);
+			Preferences.setProperty(MAX_LON_TAG,maxLon);
+		}
+		catch(Exception ex) {
+			//no luck
+		}
 	}
 	
 	

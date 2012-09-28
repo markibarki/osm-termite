@@ -1,5 +1,6 @@
 package intransix.osm.termite.app.mapdata;
 
+import intransix.osm.termite.app.preferences.Preferences;
 import intransix.osm.termite.map.data.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +26,13 @@ public class MapDataManager {
 	private DownloadLayer downloadLayer;
 	private DownloadEditorMode downloadEditorMode;
 	
-	public void init(String confogFileName) throws Exception {
+	public void init() throws Exception {
 		
-		JSONObject modelJson = JsonIO.readJsonFile(confogFileName);
+		String configFileName = Preferences.getProperty("modelFile");
+		if(configFileName == null) {
+			throw new Exception("OSM Model file not found.");
+		}
+		JSONObject modelJson = JsonIO.readJsonFile(configFileName);
 		OsmModel.parse(modelJson);
 		
 		renderLayer = new RenderLayer();
