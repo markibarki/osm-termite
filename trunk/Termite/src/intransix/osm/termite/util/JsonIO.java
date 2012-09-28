@@ -34,4 +34,19 @@ public class JsonIO {
 		return json;
 	}
 
+	public static void writeJsonFile(String fileName, JSONObject json) throws Exception {
+		//save file
+		FileOutputStream os = null;
+		try {
+			File file = new File(fileName);
+			os = new FileOutputStream(file);
+			OutputStreamWriter out = new OutputStreamWriter(os, "UTF-8");
+			String data = json.toString();
+			out.write(data);
+			out.flush();
+		}
+		finally {
+			if(os != null) try {os.close();} catch(Exception ex) {};
+		}
+	}
 }

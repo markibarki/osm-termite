@@ -1,5 +1,6 @@
 package intransix.osm.termite.app;
 
+import java.util.*;
 import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.util.JsonIO;
 import intransix.osm.termite.gui.*;
@@ -17,11 +18,14 @@ import intransix.osm.termite.app.feature.FeatureTypeManager;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.app.level.LevelManager;
 import intransix.osm.termite.app.filter.FilterManager;
+import intransix.osm.termite.app.preferences.Preferences;
 
 import intransix.osm.termite.render.map.RenderLayer;
-import intransix.osm.termite.render.edit.EditLayer;
+import intransix.osm.termite.render.tile.TileLayer;
 
 import intransix.osm.termite.render.MapPanel;
+import javax.swing.JOptionPane;
+import intransix.osm.termite.gui.task.ShutdownTask;
 
 /**
  *
@@ -32,6 +36,9 @@ public class TermiteApp {
 	//=====================
 	// Private Properties
 	//=====================
+	
+	//this can be overridden using a command line argument
+	private static String CONFIG_FILE_NAME = "config.json";
 	
 	private final static String VERSION = "0.0.7p0";
 	
@@ -50,6 +57,8 @@ public class TermiteApp {
 	private ViewRegionManager viewRegionManager;
 	private FilterManager filterManager;
 	private LevelManager levelManager;
+	
+	private List<ShutdownListener> shutdownListeners = new ArrayList<ShutdownListener>();
 	
 	//=====================
 	//
@@ -74,6 +83,17 @@ public class TermiteApp {
 		return theme;
 	}
 	
+	public void addShutdownListener(ShutdownListener listener) {
+		if(!shutdownListeners.contains(listener)) {
+			this.shutdownListeners.add(listener);
+		}
+	}
+	
+	public void removeShutdownListener(ShutdownListener listener) {
+		this.shutdownListeners.remove(listener);
+	}
+
+	
 	public void startup() {
 		
 		try {
@@ -88,6 +108,14 @@ public class TermiteApp {
 	}
 	
 	public void exit() {
+		try {
+			ShutdownTask st = new ShutdownTask(this);
+			st.execute();
+			st.blockUI();
+		}
+		catch(Exception ex) {
+			JOptionPane.showMessageDialog(null,"There was an error shutting down.");
+		}
 		System.exit(0);
 	}
 	
@@ -95,15 +123,30 @@ public class TermiteApp {
 	 * @param args the command line arguments
 	 */
 	public static void main(String[] args) {
+		if(args.length > 0) {
+			TermiteApp.CONFIG_FILE_NAME = args[0];
+		}
+		
 		 //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
 				TermiteApp app = new TermiteApp();
-                app.startup();
+				app.startup();
             }
         });
         
+	}
+	
+	/** This method is automatically called at shutdown to save any desired data
+	 * to the preference file, or take any other action at close. An object can
+	 * register as a ShutdownListener if it wants to be notified at shutdown.
+	 */
+	public void preshutdown() throws Exception {
+		for(ShutdownListener listener:shutdownListeners) {
+			listener.onShutdown();
+		}
+		Preferences.savePreferences(CONFIG_FILE_NAME);
 	}
 	
 	//=====================
@@ -114,13 +157,15 @@ public class TermiteApp {
 		
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		
-		//load the initialization files
-		String themeFileName = "theme.json";
-		String featureInfoName = "featureInfo.json";
-		String modelFileName = "model.json";
-		String baseMapFileName= "baseMapInfo.json";
+		//load the preferences
+		Preferences.init(CONFIG_FILE_NAME);
+		loadAppPreferences();
 		
 		//load the theme
+		String themeFileName = Preferences.getProperty("themeFile");
+		if(themeFileName == null) {
+			throw new Exception("Theme file missing!");
+		}
 		JSONObject themeJson = JsonIO.readJsonFile(themeFileName);
 		theme = Theme.parse(themeJson);
 		
@@ -138,15 +183,15 @@ public class TermiteApp {
 		
 		//map data
 		mapDataManager = new MapDataManager();
-		mapDataManager.init(modelFileName);
+		mapDataManager.init();
 		
 		//base map
 		baseMapManager = new BaseMapManager();
-		baseMapManager.init(baseMapFileName);
+		baseMapManager.init();
 		
 		//featture type
 		featureTypeManager = new FeatureTypeManager();
-		featureTypeManager.init(featureInfoName);
+		featureTypeManager.init();
 		
 		//levels
 		levelManager = new LevelManager(filterManager);
@@ -164,6 +209,7 @@ public class TermiteApp {
 		//view region manager
 		viewRegionManager = new ViewRegionManager();
 		viewRegionManager.setMapComponent(mapPanel);
+		addShutdownListener(viewRegionManager);
 		
 		//map layers
 		mapLayerManager = new MapLayerManager(viewRegionManager,mapPanel);
@@ -198,14 +244,30 @@ public class TermiteApp {
 		gui.setMapLayerManager(mapLayerManager); //for map layer state editing (not display)
 		gui.setViewRegionManager(viewRegionManager);
 		gui.setModeManager(modeManager); //sets the mode
+		this.addShutdownListener(gui);
 		
-		//set the view
-		Rectangle2D rect = new Rectangle2D.Double(-117.126,40.366,.03,.03);
-		viewRegionManager.setLatLonViewBounds(rect);
-	
+		
+		//more generic init
 		RenderLayer renderLayer = mapDataManager.getRenderLayer();
 		renderLayer.setTheme(theme);
 		
+		TileLayer tileLayer = baseMapManager.getBaseMapLayer();
+		viewRegionManager.addMapListener(tileLayer);
+		
+		//set the view
+		viewRegionManager.setInitialView();
 		mapDataManager.setOsmData(null);
+	}
+	
+	private void loadAppPreferences() {
+		//network
+		String proxyHost = Preferences.getProperty("proxyHost");
+		if(proxyHost != null) {
+			System.setProperty("http.proxyHost",proxyHost);
+			String proxyPort = Preferences.getProperty("proxyPort");
+			if(proxyPort != null) {
+				System.setProperty("http.proxyPort",proxyPort);
+			}
+		}
 	}
 }

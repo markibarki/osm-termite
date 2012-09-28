@@ -1,5 +1,6 @@
 package intransix.osm.termite.app.feature;
 
+import intransix.osm.termite.app.preferences.Preferences;
 import intransix.osm.termite.map.data.OsmModel;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.map.feature.FeatureInfoMap;
@@ -19,7 +20,13 @@ public class FeatureTypeManager {
 	private FeatureInfo activeFeatureType;
 	private List<FeatureTypeListener> featureTypeListeners = new ArrayList<FeatureTypeListener>();
 	
-	public void init(String configFileName) throws Exception {
+	public void init() throws Exception {
+		
+		String configFileName = Preferences.getProperty("featureInfoFile");
+		if(configFileName == null) {
+			throw new Exception("Feature file not found.");
+		}
+		
 		JSONObject featureInfoJson = JsonIO.readJsonFile(configFileName);
 		featureInfoMap = FeatureInfoMap.parse(featureInfoJson);
 		

@@ -92,15 +92,15 @@ public class TileInfo {
 		}
 	}
 	
-	public static TileInfo getDefaultMap(JSONObject json,List<TileInfo> tileInfoList) {
+	public static TileInfo getDefaultMap(String defaultMap,List<TileInfo> tileInfoList) {
 		try {
-			int defaultIndex = json.optInt("defaultMap",-1);
-			if((defaultIndex >= 0)&&(defaultIndex < tileInfoList.size())) {
-				return tileInfoList.get(defaultIndex);
+			for(TileInfo tileInfo:tileInfoList) {
+				if(defaultMap.equalsIgnoreCase(tileInfo.name)) {
+					return tileInfo;
+				}
 			}
-			else {
-				return null;
-			}
+			//noen found
+			return null;
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
