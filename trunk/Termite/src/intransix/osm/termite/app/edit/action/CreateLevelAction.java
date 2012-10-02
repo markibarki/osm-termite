@@ -1,9 +1,10 @@
 package intransix.osm.termite.app.edit.action;
 
 import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.dialog.CreateLevelDialog;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmObject;
 import java.util.List;
 import javax.swing.JOptionPane;
 
@@ -21,12 +22,12 @@ public class CreateLevelAction {
 	
 	public void createLevel() {
 		List<Object> selection = editManager.getSelection();
-		OsmData osmData = editManager.getOsmData();
+		MapDataManager mapDataManager = editManager.getOsmData();
 		
 		if(selection.size() == 1) {
 			Object parent = selection.get(0);
 			if(parent instanceof OsmObject) {
-				CreateLevelDialog cld = new CreateLevelDialog(null,osmData,(OsmObject)parent);
+				CreateLevelDialog cld = new CreateLevelDialog(null,mapDataManager,(OsmObject)parent);
 				cld.setVisible(true);
 			}
 			else {

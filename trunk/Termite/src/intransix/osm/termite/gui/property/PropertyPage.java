@@ -1,10 +1,12 @@
 package intransix.osm.termite.gui.property;
 
-import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import java.util.Collection;
 import javax.swing.*;
 import javax.swing.table.*;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.edit.PropertyEdit;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.app.edit.impl.PropertyEdit;
 import intransix.osm.termite.gui.TermiteGui;
 
 
@@ -17,7 +19,7 @@ public class PropertyPage extends javax.swing.JPanel {
 	private final static int KEY_INDEX = 0;
 	private final static int VALUE_INDEX = 1;
 	
-	private OsmData osmData;
+	private MapDataManager mapDataManager;
 	private OsmObject osmObject;
 
 	/**
@@ -26,9 +28,9 @@ public class PropertyPage extends javax.swing.JPanel {
 	public PropertyPage() {
 		initComponents();
 	}
-	
-	public void setMapData(OsmData osmData) {
-		this.osmData = osmData;
+		
+	public void setMapDataManager(MapDataManager mapDataManager) {
+		this.mapDataManager = mapDataManager;
 	}
 	
 	public void setObject(OsmObject osmObject) {
@@ -40,7 +42,8 @@ public class PropertyPage extends javax.swing.JPanel {
 		clearTable();
 		if(osmObject != null) {
 			DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
-			for(String key:osmObject.getPropertyKeys()) {
+			Collection<String> propertyKeys = osmObject.getPropertyKeys();
+			for(String key:propertyKeys) {
 				String value = osmObject.getProperty(key);
 				String[] row = new String[] {key,value};
 				model.addRow(row);
@@ -147,27 +150,27 @@ public class PropertyPage extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-		if(osmData == null) return;
+		if(mapDataManager == null) return;
 		int rowIndex = jTable1.getSelectedRow();
 		if(rowIndex >= 0) {
 			String key = (String)jTable1.getModel().getValueAt(rowIndex,KEY_INDEX);
-			PropertyEditDialog ped = new PropertyEditDialog(null,osmData,osmObject,key);
+			PropertyEditDialog ped = new PropertyEditDialog(null,mapDataManager,osmObject,key);
 			ped.setVisible(true);
 		}
 	}//GEN-LAST:event_editButtonActionPerformed
 
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-		if(osmData == null) return;
-		PropertyEditDialog ped = new PropertyEditDialog(null,osmData,osmObject);
+		if(mapDataManager == null) return;
+		PropertyEditDialog ped = new PropertyEditDialog(null,mapDataManager,osmObject);
 		ped.setVisible(true);
 	}//GEN-LAST:event_newButtonActionPerformed
 
 	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-		if(osmData == null) return;
+		if(mapDataManager == null) return;
 		int rowIndex = jTable1.getSelectedRow();
 		if(rowIndex >= 0) {
 			String key = (String)jTable1.getModel().getValueAt(rowIndex,KEY_INDEX);
-			PropertyEdit pe = new PropertyEdit(osmData);
+			PropertyEdit pe = new PropertyEdit(mapDataManager);
 			pe.editProperty(osmObject,key,null,null);
 		}
 	}//GEN-LAST:event_deleteButtonActionPerformed

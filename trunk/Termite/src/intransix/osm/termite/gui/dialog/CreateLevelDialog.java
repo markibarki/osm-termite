@@ -1,24 +1,25 @@
 package intransix.osm.termite.gui.dialog;
 
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import javax.swing.JOptionPane;
-import intransix.osm.termite.map.data.edit.LevelCreateEdit;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.app.edit.impl.LevelCreateEdit;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmObject;
 /**
  *
  * @author sutter
  */
 public class CreateLevelDialog extends javax.swing.JDialog {
 
-	private OsmData osmData;
+	private MapDataManager mapDataManager;
 	private OsmObject parent;
 	
 	/**
 	 * Creates new form CreateLevelDialog
 	 */
-	public CreateLevelDialog(java.awt.Frame frame, OsmData osmData, OsmObject parent) {
+	public CreateLevelDialog(java.awt.Frame frame, MapDataManager mapDataManager, OsmObject parent) {
 		super(frame,true);
-		this.osmData = osmData;
+		this.mapDataManager = mapDataManager;
 		this.parent = parent;
 		initComponents();
 	}
@@ -132,7 +133,7 @@ public class CreateLevelDialog extends javax.swing.JDialog {
 			return;
 		}
 		
-		LevelCreateEdit lce = new LevelCreateEdit(osmData);
+		LevelCreateEdit lce = new LevelCreateEdit(mapDataManager);
 		lce.nodeToolClicked(parent, zlevel, name);
 		
 		this.setVisible(false);

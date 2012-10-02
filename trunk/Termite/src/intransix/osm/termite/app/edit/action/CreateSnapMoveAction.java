@@ -7,11 +7,12 @@ import intransix.osm.termite.app.edit.snapobject.SnapObject;
 import intransix.osm.termite.app.edit.snapobject.SnapIntersection;
 import intransix.osm.termite.app.edit.snapobject.SnapNode;
 import intransix.osm.termite.app.edit.EditManager;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmNode;
-import intransix.osm.termite.map.data.OsmObject;
-import intransix.osm.termite.map.data.OsmSegment;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmNode;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.map.workingdata.OsmSegment;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
@@ -49,8 +50,8 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 	
 	@Override
 	public void mouseMoved(Point2D mouseMerc, double mercRadSq, MouseEvent e) {
-		OsmData osmData = editManager.getOsmData();
-		if(osmData == null) return;
+		MapDataManager mapDataManager = editManager.getOsmData();
+		if(mapDataManager == null) return;
 		
 		//get snapObjects
 		List<SnapObject> snapObjects = editManager.getSnapObjects();
@@ -59,10 +60,10 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 		
 		//check for hovering over these objects
 		SnapObject snapObject;
-		List<OsmObject> objectList = osmData.getFeatureList();
+		List<OsmObject> objectList = mapDataManager.getFeatureList();
 		for(OsmObject mapObject:objectList) {
 			//make sure edit is enabled for this object
-			if(!mapObject.editEnabled()) continue;
+			if(!MapDataManager.getObjectEditEnabled(mapObject)) continue;
 
 			//do the hover check
 			if(mapObject instanceof OsmNode) {
@@ -74,7 +75,7 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 
 				//check for a segment hit
 				for(OsmSegment segment:((OsmNode)mapObject).getSegments()) {
-					if(!segment.editEnabled()) continue;
+					if(!MapDataManager.getSegmentEditEnabled(segment)) continue;
 
 					//only do the segments that start with this node, to avoid doing them twice
 					if(segment.getNode1() == mapObject) {

@@ -1,7 +1,7 @@
 package intransix.osm.termite.app.level;
 
-import intransix.osm.termite.map.data.OsmRelation;
-import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmWay;
 import java.util.List;
 import java.util.TreeMap;
 

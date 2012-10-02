@@ -1,6 +1,7 @@
 package intransix.osm.termite.app.edit.editobject;
 
-import intransix.osm.termite.map.data.*;
+import intransix.osm.termite.map.workingdata.OsmNode;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.render.edit.Style;
 import intransix.osm.termite.render.edit.StyleInfo;
@@ -40,7 +41,7 @@ public class EditNode extends EditObject {
 	 * Use the static method from EditObject to get an instance of this object. */
 	public EditNode(OsmNode node) {
 		this.node = node;
-		this.featureInfo = node.getFeatureInfo();
+		this.featureInfo = MapDataManager.getObjectFeatureInfo(node);
 		this.point = new Point2D.Double(node.getPoint().getX(),node.getPoint().getY());
 	}
 	

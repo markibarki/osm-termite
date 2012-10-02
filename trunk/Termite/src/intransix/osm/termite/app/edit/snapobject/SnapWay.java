@@ -1,10 +1,10 @@
 package intransix.osm.termite.app.edit.snapobject;
 
-import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.map.workingdata.OsmObject;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
-import intransix.osm.termite.map.data.OsmWay;
-import intransix.osm.termite.map.data.OsmSegment;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmSegment;
 import intransix.osm.termite.render.edit.Style;
 import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.geom.Line2D;

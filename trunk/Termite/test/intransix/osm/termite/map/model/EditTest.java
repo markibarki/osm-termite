@@ -1,26 +1,25 @@
 package intransix.osm.termite.map.model;
 
-import intransix.osm.termite.map.data.UpdatePosition;
-import intransix.osm.termite.map.data.OsmNode;
-import intransix.osm.termite.map.data.OsmModel;
-import intransix.osm.termite.map.data.DeleteInstruction;
-import intransix.osm.termite.map.data.OsmRelationSrc;
-import intransix.osm.termite.map.data.EditAction;
-import intransix.osm.termite.map.data.UpdateInsertMember;
-import intransix.osm.termite.map.data.OsmWaySrc;
-import intransix.osm.termite.map.data.EditInstruction;
-import intransix.osm.termite.map.data.OsmNodeSrc;
-import intransix.osm.termite.map.data.UpdateRemoveNode;
-import intransix.osm.termite.map.data.UpdateInstruction;
-import intransix.osm.termite.map.data.OsmRelation;
-import intransix.osm.termite.map.data.UpdateObjectProperty;
-import intransix.osm.termite.map.data.UpdateInsertNode;
-import intransix.osm.termite.map.data.UpdateMemberOrder;
-import intransix.osm.termite.map.data.OsmWay;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.CreateInstruction;
-import intransix.osm.termite.map.data.UpdateRemoveMember;
-import intransix.osm.termite.map.data.UpdateRole;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.mapdata.instruction.UpdatePosition;
+import intransix.osm.termite.map.workingdata.OsmNode;
+import intransix.osm.termite.map.workingdata.OsmModel;
+import intransix.osm.termite.app.mapdata.instruction.DeleteInstruction;
+import intransix.osm.termite.map.dataset.*;
+import intransix.osm.termite.app.mapdata.instruction.EditAction;
+import intransix.osm.termite.app.mapdata.instruction.UpdateInsertMember;
+import intransix.osm.termite.app.mapdata.instruction.EditInstruction;
+import intransix.osm.termite.app.mapdata.instruction.UpdateRemoveNode;
+import intransix.osm.termite.app.mapdata.instruction.UpdateInstruction;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.app.mapdata.instruction.UpdateObjectProperty;
+import intransix.osm.termite.app.mapdata.instruction.UpdateInsertNode;
+import intransix.osm.termite.app.mapdata.instruction.UpdateMemberOrder;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.app.mapdata.instruction.CreateInstruction;
+import intransix.osm.termite.app.mapdata.instruction.UpdateRemoveMember;
+import intransix.osm.termite.app.mapdata.instruction.UpdateRole;
 import intransix.osm.termite.map.feature.*;
 import intransix.osm.termite.util.JsonIO;
 import intransix.osm.termite.util.MercatorCoordinates;
@@ -37,8 +36,10 @@ import org.junit.*;
  * @author sutter
  */
 public class EditTest {
-		
+	
+	private MapDataManager mapDataManager;	
 	private OsmData osmData;
+	private OsmDataSet dataSet;
 	
 	public EditTest() {
 	}
@@ -53,7 +54,6 @@ public class EditTest {
 		
 		JSONObject modelJson = JsonIO.readJsonFile(modelFileName);
 		OsmModel.parse(modelJson);
-		OsmModel.featureInfoMap = featureInfoMap;
 	}
 
 	@AfterClass
@@ -68,9 +68,13 @@ public class EditTest {
 		double mx = MercatorCoordinates.lonRadToMx(Math.toRadians(baseLon));
 		double my = MercatorCoordinates.latRadToMy(Math.toRadians(baseLat));
 		
-		osmData = new OsmData();
+		dataSet = new OsmDataSet();
+		mapDataManager = new MapDataManager();
+		mapDataManager.setData(dataSet);
+		osmData = mapDataManager.getOsmData();
 		
 		ObjectTestData.osmData = osmData;
+		ObjectTestData.mapDataManager = mapDataManager;
 	}
 	
 	@After
@@ -97,7 +101,7 @@ public class EditTest {
 		// Create Node
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Test Create Node");
+		action = new EditAction(mapDataManager,"Test Create Node");
 		
 		NodeTestData n1Data = new NodeTestData();
 		
@@ -107,7 +111,7 @@ public class EditTest {
 		oNode1.setPosition(x1,y1);
 		oNode1.addProperty("test","xxx");
 		oNode1.addProperty("buildingpart","stairs");
-		instr = new CreateInstruction(oNode1,osmData);
+		instr = new CreateInstruction(oNode1,mapDataManager);
 		action.addInstruction(instr);
 		
 		n1Data.id = oNode1.getId();
@@ -126,7 +130,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.dataVersion = osmData.test_getLatestEditNumber();
+		n1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		n1Data.validate(); 
 		
 		//undo
@@ -153,20 +157,20 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.dataVersion = osmData.test_getLatestEditNumber();
+		n1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		n1Data.validate(); 
 		
 		//------------------------
 		// Create Some more test nodes
 		//------------------------
 		
-		action = new EditAction(osmData,"Create more nodes");
+		action = new EditAction(mapDataManager,"Create more nodes");
 		
 		OsmNodeSrc oNode2 = new OsmNodeSrc();
 		double x2 = 0;
 		double y2 = 0;
 		oNode2.setPosition(x2,y2);
-		instr = new CreateInstruction(oNode2,osmData);
+		instr = new CreateInstruction(oNode2,mapDataManager);
 		long idn2 = oNode2.getId();
 		action.addInstruction(instr);
 		
@@ -174,7 +178,7 @@ public class EditTest {
 		double x3 = 0;
 		double y3 = 0;
 		oNode3.setPosition(x3,y3);
-		instr = new CreateInstruction(oNode3,osmData);
+		instr = new CreateInstruction(oNode3,mapDataManager);
 		long idn3 = oNode3.getId();
 		action.addInstruction(instr);
 		
@@ -191,7 +195,7 @@ public class EditTest {
 		// Create Way
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Test Create Way");
+		action = new EditAction(mapDataManager,"Test Create Way");
 		
 		WayTestData w1Data = new WayTestData();
 		
@@ -202,7 +206,7 @@ public class EditTest {
 		wayNodes.add(idn3);
 		wayNodes.add(n1Data.id);
 		oWay1.addProperty("buildingpart","wall");
-		instr = new CreateInstruction(oWay1,osmData);
+		instr = new CreateInstruction(oWay1,mapDataManager);
 		w1Data.id = oWay1.getId();
 		action.addInstruction(instr);
 		
@@ -224,7 +228,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -254,7 +258,7 @@ public class EditTest {
 		}
 		
 		n1Data.wayIds.add(w1Data.id);
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -263,13 +267,13 @@ public class EditTest {
 		// Create another way
 		//------------------------
 		
-		action = new EditAction(osmData,"Create another way");
+		action = new EditAction(mapDataManager,"Create another way");
 		
 		OsmNodeSrc oNode4 = new OsmNodeSrc();
 		double x4 = 0;
 		double y4 = 0;
 		oNode4.setPosition(x4,y4);
-		instr = new CreateInstruction(oNode4,osmData);
+		instr = new CreateInstruction(oNode4,mapDataManager);
 		long idn4 = oNode4.getId();
 		action.addInstruction(instr);
 		
@@ -277,7 +281,7 @@ public class EditTest {
 		double x5 = 0;
 		double y5 = 0;
 		oNode5.setPosition(x5,y5);
-		instr = new CreateInstruction(oNode5,osmData);
+		instr = new CreateInstruction(oNode5,mapDataManager);
 		long idn5 = oNode5.getId();
 		action.addInstruction(instr);
 		
@@ -285,7 +289,7 @@ public class EditTest {
 		double x6 = 0;
 		double y6 = 0;
 		oNode6.setPosition(x6,y6);
-		instr = new CreateInstruction(oNode6,osmData);
+		instr = new CreateInstruction(oNode6,mapDataManager);
 		long idn6 = oNode6.getId();
 		action.addInstruction(instr);
 		
@@ -296,7 +300,7 @@ public class EditTest {
 		wayNodes2.add(idn6);
 		wayNodes2.add(idn4);
 		oWay2.addProperty("buildingpart","wall");
-		instr = new CreateInstruction(oWay2,osmData);
+		instr = new CreateInstruction(oWay2,mapDataManager);
 		long idw2 = oWay2.getId();
 		action.addInstruction(instr);
 		
@@ -317,7 +321,7 @@ public class EditTest {
 		//create a multipoly relation
 		//---------------------
 		
-		action = new EditAction(osmData,"Create a multipoly relation");
+		action = new EditAction(mapDataManager,"Create a multipoly relation");
 		
 		RelationTestData r1Data = new RelationTestData();
 		
@@ -325,7 +329,7 @@ public class EditTest {
 		relationSrc.addMember(w1Data.id,"way","outer");
 		relationSrc.addMember(idw2,"way","inner");
 		relationSrc.addProperty(OsmModel.KEY_TYPE,"multipolygon");
-		instr = new CreateInstruction(relationSrc,osmData);
+		instr = new CreateInstruction(relationSrc,mapDataManager);
 		r1Data.id = relationSrc.getId();
 		action.addInstruction(instr);
 		
@@ -344,7 +348,7 @@ public class EditTest {
 		}
 		
 		w1Data.rels.add(r1Data.id);
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		w1Data.validate();
 		r1Data.validate();
@@ -373,7 +377,7 @@ public class EditTest {
 		}
 		
 		w1Data.rels.add(r1Data.id);
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		w1Data.validate();
 		r1Data.validate();
@@ -382,7 +386,7 @@ public class EditTest {
 		// Create a generic relation
 		//------------------
 		
-		action = new EditAction(osmData,"Create a generic relation");
+		action = new EditAction(mapDataManager,"Create a generic relation");
 		
 		RelationTestData r2Data = new RelationTestData();
 		
@@ -392,7 +396,7 @@ public class EditTest {
 		relationSrc.addMember(n1Data.id,"node","ccc");
 		relationSrc.addProperty(OsmModel.KEY_TYPE,"generic");
 		relationSrc.addProperty("key","value");
-		instr = new CreateInstruction(relationSrc,osmData);
+		instr = new CreateInstruction(relationSrc,mapDataManager);
 		r2Data.id = relationSrc.getId();
 		action.addInstruction(instr);
 		
@@ -415,7 +419,7 @@ public class EditTest {
 		n1Data.rels.add(r2Data.id);
 		w1Data.rels.add(r2Data.id);
 		r1Data.rels.add(r2Data.id);
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		r2Data.validate();
 		n1Data.validate();
@@ -452,7 +456,7 @@ public class EditTest {
 		n1Data.rels.add(r2Data.id);
 		w1Data.rels.add(r2Data.id);
 		r1Data.rels.add(r2Data.id);
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		r2Data.validate();
 		n1Data.validate();
@@ -473,7 +477,7 @@ public class EditTest {
 		//change node level
 		//=====================
 				
-		action = new EditAction(osmData,"Test Edit Node Properties");
+		action = new EditAction(mapDataManager,"Test Edit Node Properties");
 		
 
 		osmNode = osmData.getOsmNode(n1Data.id);
@@ -495,9 +499,9 @@ public class EditTest {
 		}
 		
 		n1Data.props.put(initialKey,finalValue);
-		n1Data.dataVersion = osmData.test_getLatestEditNumber();
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		n1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -514,9 +518,9 @@ public class EditTest {
 		}
 		
 		n1Data.props.put(initialKey,initialValue);
-		n1Data.dataVersion = osmData.test_getLatestEditNumber();
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		n1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -527,7 +531,7 @@ public class EditTest {
 		//edit way type
 		//=====================
 		
-		action = new EditAction(osmData,"Test Edit Way Properties");
+		action = new EditAction(mapDataManager,"Test Edit Way Properties");
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 		
@@ -549,9 +553,9 @@ public class EditTest {
 		
 		w1Data.featureInfoName = "buildingpart:unit";
 		w1Data.props.put(initialKey,finalValue);
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -569,9 +573,9 @@ public class EditTest {
 		
 		w1Data.featureInfoName = "buildingpart:wall";
 		w1Data.props.put(initialKey,initialValue);
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -582,7 +586,7 @@ public class EditTest {
 		//edit generic multipoly properties, update key
 		//=====================
 		
-		action = new EditAction(osmData,"Test Edit Relation Properties");
+		action = new EditAction(mapDataManager,"Test Edit Relation Properties");
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
@@ -605,7 +609,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -624,7 +628,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -636,7 +640,7 @@ public class EditTest {
 		// Edit Node Location
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Move a node");
+		action = new EditAction(mapDataManager,"Move a node");
 		
 		osmNode = osmData.getOsmNode(n1Data.id);
 	
@@ -658,9 +662,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.dataVersion = osmData.test_getLatestEditNumber();
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		n1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -680,9 +684,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.dataVersion = osmData.test_getLatestEditNumber();
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		n1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 				
 		n1Data.validate();
 		w1Data.validate();
@@ -693,7 +697,7 @@ public class EditTest {
 		// Remove Node from Way
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Remove a node");
+		action = new EditAction(mapDataManager,"Remove a node");
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
@@ -713,9 +717,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -734,9 +738,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 				
 		n1Data.validate();
 		w1Data.validate();
@@ -756,9 +760,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -769,7 +773,7 @@ public class EditTest {
 		//remove the other instance of this node
 		//------------------------------
 		
-		action = new EditAction(osmData,"Remove a node");
+		action = new EditAction(mapDataManager,"Remove a node");
 		
 		UpdateRemoveNode urn2 = new UpdateRemoveNode(2);
 		instr = new UpdateInstruction(osmWay,urn2);
@@ -787,9 +791,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -800,7 +804,7 @@ public class EditTest {
 		// Indert Node into Way
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Insert a node");
+		action = new EditAction(mapDataManager,"Insert a node");
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
@@ -820,9 +824,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -842,9 +846,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 				
 		n1Data.validate();
 		w1Data.validate();
@@ -864,9 +868,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -877,7 +881,7 @@ public class EditTest {
 		//now add another at the end, like when we started
 		//---------------------
 		
-		action = new EditAction(osmData,"Insert a node");
+		action = new EditAction(mapDataManager,"Insert a node");
 		
 		UpdateInsertNode uin2 = new UpdateInsertNode(n1Data.id,3);
 		instr = new UpdateInstruction(osmWay,uin2);
@@ -894,9 +898,9 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -908,7 +912,7 @@ public class EditTest {
 		// Remove Member from Relation
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Remove a member");
+		action = new EditAction(mapDataManager,"Remove a member");
 		
 		osmRelation = osmData.getOsmRelation(r1Data.id);
 		
@@ -928,8 +932,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -949,8 +953,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -971,8 +975,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -983,7 +987,7 @@ public class EditTest {
 		// Insert Member into Relation
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Insert a member");
+		action = new EditAction(mapDataManager,"Insert a member");
 		
 		osmRelation = osmData.getOsmRelation(r1Data.id);
 
@@ -1003,8 +1007,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1024,8 +1028,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1045,8 +1049,8 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1061,7 +1065,7 @@ public class EditTest {
 		// move legally
 		//---------------
 		
-		action = new EditAction(osmData,"Move member");
+		action = new EditAction(mapDataManager,"Move member");
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
@@ -1080,7 +1084,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1099,7 +1103,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1110,7 +1114,7 @@ public class EditTest {
 		//move illegally
 		//-------------
 		
-		action = new EditAction(osmData,"Move member");
+		action = new EditAction(mapDataManager,"Move member");
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
@@ -1136,7 +1140,7 @@ public class EditTest {
 		// Edit Member Role
 		//////////////////////////////////////////////////////////////
 		
-		action = new EditAction(osmData,"Edit member role");
+		action = new EditAction(mapDataManager,"Edit member role");
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 		
@@ -1160,7 +1164,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1181,7 +1185,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1196,7 +1200,7 @@ public class EditTest {
 		// Relation
 		//=====================
 		
-		action = new EditAction(osmData,"Delete a relation");
+		action = new EditAction(mapDataManager,"Delete a relation");
 		
 		osmRelation = osmData.getOsmRelation(r2Data.id);
 	
@@ -1235,7 +1239,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r2Data.dataVersion = osmData.test_getLatestEditNumber();
+		r2Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 				
 		n1Data.validate();
 		w1Data.validate();
@@ -1269,7 +1273,7 @@ public class EditTest {
 		// Failed delete attempt
 		//---------------------
 		
-		action = new EditAction(osmData,"Delete a way");
+		action = new EditAction(mapDataManager,"Delete a way");
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
@@ -1294,7 +1298,7 @@ public class EditTest {
 		// Empty relation
 		//----------------------
 		
-		action = new EditAction(osmData,"Remove ways from relation 1");
+		action = new EditAction(mapDataManager,"Remove ways from relation 1");
 		
 		osmRelation = osmData.getOsmRelation(r1Data.id);
 		
@@ -1316,7 +1320,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		r1Data.dataVersion = osmData.test_getLatestEditNumber();
+		r1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 				
 		n1Data.validate();
 		w1Data.validate();
@@ -1326,7 +1330,7 @@ public class EditTest {
 		// successful delete delete attempt
 		//---------------------
 		
-		action = new EditAction(osmData,"Delete a way");
+		action = new EditAction(mapDataManager,"Delete a way");
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
@@ -1361,7 +1365,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1375,7 +1379,7 @@ public class EditTest {
 		//failed delete attempt
 		//-----------------------
 		
-		action = new EditAction(osmData,"Delete a node");
+		action = new EditAction(mapDataManager,"Delete a node");
 		
 		osmNode = osmData.getOsmNode(n1Data.id);
 	
@@ -1400,7 +1404,7 @@ public class EditTest {
 		//remove node from way
 		//-----------------------
 		
-		action = new EditAction(osmData,"Remove nodes from a way");
+		action = new EditAction(mapDataManager,"Remove nodes from a way");
 		
 		osmWay = osmData.getOsmWay(w1Data.id);
 	
@@ -1423,7 +1427,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		w1Data.dataVersion = osmData.test_getLatestEditNumber();
+		w1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 		
 		n1Data.validate();
 		w1Data.validate();
@@ -1433,7 +1437,7 @@ public class EditTest {
 		//successful delete attempt
 		//-------------------------
 		
-		action = new EditAction(osmData,"Delete a node");
+		action = new EditAction(mapDataManager,"Delete a node");
 		
 		osmNode = osmData.getOsmNode(n1Data.id);
 	
@@ -1464,7 +1468,7 @@ public class EditTest {
 			assert(false);
 		}
 		
-		n1Data.dataVersion = osmData.test_getLatestEditNumber();
+		n1Data.dataVersion = mapDataManager.test_getLatestEditNumber();
 				
 		n1Data.validate();
 		w1Data.validate();

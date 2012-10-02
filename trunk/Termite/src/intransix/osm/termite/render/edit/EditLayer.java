@@ -1,5 +1,8 @@
 package intransix.osm.termite.render.edit;
 
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.app.edit.data.VirtualNode;
 import intransix.osm.termite.app.edit.action.*;
 import intransix.osm.termite.app.edit.*;
@@ -9,7 +12,6 @@ import java.awt.Graphics2D;
 import java.awt.geom.*;
 import java.awt.event.*;
 
-import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import java.util.List;

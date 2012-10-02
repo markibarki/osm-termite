@@ -3,10 +3,10 @@ package intransix.osm.termite.app.edit.action;
 import intransix.osm.termite.app.edit.MouseMoveAction;
 import intransix.osm.termite.app.edit.editobject.EditNode;
 import intransix.osm.termite.app.edit.EditManager;
-import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.workingdata.OsmData;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-import intransix.osm.termite.map.data.edit.EditDestPoint;
+import intransix.osm.termite.app.edit.impl.EditDestPoint;
 import java.util.List;
 
 /**

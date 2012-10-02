@@ -1,5 +1,8 @@
 package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.app.edit.MouseClickAction;
 import intransix.osm.termite.app.edit.editobject.EditObject;
 import intransix.osm.termite.app.edit.editobject.EditSegment;
@@ -7,9 +10,8 @@ import intransix.osm.termite.app.edit.editobject.EditNode;
 import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.feature.FeatureTypeManager;
 import intransix.osm.termite.app.level.LevelManager;
-import intransix.osm.termite.map.data.*;
-import intransix.osm.termite.map.data.edit.EditDestPoint;
-import intransix.osm.termite.map.data.edit.WayNodeEdit;
+import intransix.osm.termite.app.edit.impl.EditDestPoint;
+import intransix.osm.termite.app.edit.impl.WayNodeEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.List;

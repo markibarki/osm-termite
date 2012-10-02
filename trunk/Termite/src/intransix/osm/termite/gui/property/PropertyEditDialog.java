@@ -1,8 +1,9 @@
 package intransix.osm.termite.gui.property;
 
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmObject;
-import intransix.osm.termite.map.data.edit.PropertyEdit;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.app.edit.impl.PropertyEdit;
 import javax.swing.JOptionPane;
 
 /**
@@ -11,7 +12,7 @@ import javax.swing.JOptionPane;
  */
 public class PropertyEditDialog extends javax.swing.JDialog {
 
-	private OsmData osmData;
+	private MapDataManager mapDataManager;
 	private OsmObject osmObject;
 	private String key;
 	private String value;
@@ -19,9 +20,9 @@ public class PropertyEditDialog extends javax.swing.JDialog {
 	/**
 	 * Creates new form PropertyEditDialog
 	 */
-	public PropertyEditDialog(java.awt.Frame parent, OsmData osmData, OsmObject osmObject, String key) {
+	public PropertyEditDialog(java.awt.Frame parent, MapDataManager mapDataManager, OsmObject osmObject, String key) {
 		super(parent, true);
-		this.osmData = osmData;
+		this.mapDataManager = mapDataManager;
 		this.osmObject = osmObject;
 		this.key = key;
 		
@@ -34,9 +35,9 @@ public class PropertyEditDialog extends javax.swing.JDialog {
 		}
 	}
 	
-	public PropertyEditDialog(java.awt.Frame parent, OsmData osmData, OsmObject osmObject) {
+	public PropertyEditDialog(java.awt.Frame parent, MapDataManager mapDataManager, OsmObject osmObject) {
 		super(parent, true);
-		this.osmData = osmData;
+		this.mapDataManager = mapDataManager;
 		this.osmObject = osmObject;
 		this.key = null;
 		
@@ -144,7 +145,7 @@ public class PropertyEditDialog extends javax.swing.JDialog {
 			JOptionPane.showMessageDialog(null,"The value must be set.");
 			return;
 		}
-		PropertyEdit pe = new PropertyEdit(osmData);
+		PropertyEdit pe = new PropertyEdit(mapDataManager);
 		pe.editProperty(osmObject,key,targetKey,targetValue);
 		setVisible(false);
 		

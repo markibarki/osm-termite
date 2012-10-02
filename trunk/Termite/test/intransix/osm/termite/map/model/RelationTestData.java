@@ -1,9 +1,9 @@
 package intransix.osm.termite.map.model;
 
-import intransix.osm.termite.map.data.OsmRelation;
-import intransix.osm.termite.map.data.OsmMember;
-import intransix.osm.termite.map.data.OsmObject;
-import intransix.osm.termite.map.data.OsmRelationSrc;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmMember;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.map.dataset.OsmRelationSrc;
 import java.util.*;
 
 /**

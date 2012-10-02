@@ -1,5 +1,8 @@
 package intransix.osm.termite.gui;
 
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmRelation;
 import intransix.osm.termite.app.mode.EditorMode;
 import java.util.*;
 import javax.swing.*;
@@ -7,7 +10,6 @@ import java.awt.*;
 import java.awt.event.*;
 
 import intransix.osm.termite.app.TermiteApp;
-import intransix.osm.termite.map.data.*;
 import intransix.osm.termite.render.*;
 import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.edit.EditLayer;
@@ -15,12 +17,11 @@ import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.gui.dialog.SourceLayerDialog;
 import intransix.osm.termite.gui.task.CommitTask;
-import intransix.osm.termite.publish.PublishTask;
+import intransix.osm.termite.gui.task.PublishTask;
 import java.io.File;
 
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.mapdata.MapDataListener;
-import intransix.osm.termite.map.data.OsmDataChangedListener;
 import intransix.osm.termite.app.mode.EditorModeManager;
 import intransix.osm.termite.app.mode.EditorModeListener;
 import intransix.osm.termite.app.basemap.BaseMapManager;
@@ -38,7 +39,7 @@ import intransix.osm.termite.app.ShutdownListener;
  * @author sutter
  */
 public class TermiteGui extends javax.swing.JFrame implements 
-		MapDataListener, OsmDataChangedListener, EditorModeListener, 
+		MapDataListener, EditorModeListener, 
 		BaseMapListener, ShutdownListener {
 	
 	//=====================
@@ -78,7 +79,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	//map dasta
 	private MapDataManager mapDataManager;
-	private OsmData osmData;
 	
 	//editor modes
 	private EditorModeManager modeManager;
@@ -186,13 +186,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	public void setMapDataManager(MapDataManager mapDataManager) {
 		this.mapDataManager = mapDataManager;
-		OsmData tempData = mapDataManager.getOsmData();
-		
-		this.onMapData(tempData);
 		mapDataManager.addMapDataListener(this);
 		
 		//set data for property tab pane
-		propertyTabPane.onMapData(tempData);
 		mapDataManager.addMapDataListener(propertyTabPane);
 	}
 	
@@ -279,19 +275,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 	 * @param mapData	The map data object
 	 */
 	@Override
-	public void onMapData(OsmData osmData) {
-		//clear listener from old data
-		if(this.osmData != null) {
-			this.osmData.removeDataChangedListener(this);
-		}
-		
-		this.osmData = osmData;
-		
-		if(this.osmData != null) {
-			this.osmData.addDataChangedListener(this);
-		}
-		
-		updateUndoRedoItems();
+	public void onMapData(boolean dataPresent) {
 	}
 	
 	/** This method is called when the data has changed. It updates the undo
@@ -303,16 +287,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 	@Override
 	public void osmDataChanged(int editNumber) {
 		updateUndoRedoItems();
-	}
-	
-	/** This method returns the type of user this listener is. The type of listener
-	 * determines the order in which the listener is called when data has changed. 
-	 * 
-	 * @return 
-	 */
-	@Override
-	public int getListenerType() {
-		return OsmDataChangedListener.LISTENER_CONSUMER;
 	}
 	
 	/** This method is called when the baseMap changes. */
@@ -414,15 +388,15 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private void updateUndoRedoItems() {
 		boolean undoSet = false;
 		boolean redoSet = false;
-		if(osmData != null) {
-			String undoMessage = osmData.getUndoMessage();
+		if(mapDataManager.dataPresent()) {
+			String undoMessage = mapDataManager.getUndoMessage();
 			if(undoMessage != null) {
 				undoItem.setText(UNDO_ITEM_BASE + undoMessage);
 				undoItem.setEnabled(true);
 				undoSet = true;
 			}
 			
-			String redoMessage = osmData.getRedoMessage();
+			String redoMessage = mapDataManager.getRedoMessage();
 			if(redoMessage != null) {
 				redoItem.setText(REDO_ITEM_BASE + redoMessage);
 				redoItem.setEnabled(true);
@@ -733,35 +707,35 @@ public class TermiteGui extends javax.swing.JFrame implements
 	private void clearData() {
 		int result = JOptionPane.showConfirmDialog(this,"Are you sure you want to discard the current map data?");
 		if(result == JOptionPane.OK_OPTION) {
-			mapDataManager.setOsmData(null);
+			mapDataManager.clearData();
 		}
 	}
 	
 	private void undoItemActionPerformed(java.awt.event.ActionEvent evt) {
-		if(osmData != null) {
-			osmData.undo();
+		if(mapDataManager != null) {
+			mapDataManager.undo();
 		}
 	}
 	
 	private void redoItemActionPerformed(java.awt.event.ActionEvent evt) {
-		if(osmData != null) {
-			osmData.redo();
+		if(mapDataManager != null) {
+			mapDataManager.redo();
 		}
 	}
 	
 	private void commitData() {
-		if(osmData == null) {
+		if(!mapDataManager.dataPresent()) {
 			JOptionPane.showMessageDialog(this,"There is no data to publish.");
 			return;
 		}
 		
-		CommitTask commitTask = new CommitTask(osmData,app.getLoginManager());
+		CommitTask commitTask = new CommitTask(mapDataManager,app.getLoginManager());
 		commitTask.execute();
 		commitTask.blockUI();
 	}
 	
 	private void publishMap() {
-		if(osmData == null) {
+		if(!mapDataManager.dataPresent()) {
 			JOptionPane.showMessageDialog(this,"There is no data to publish.");
 			return;
 		}
@@ -771,7 +745,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 		if((activeStructure != null)&&(activeLevel == null)) {
 			int result = JOptionPane.showConfirmDialog(null,"Publish Structure " + activeStructure.getId() + "?");
 			if(result == JOptionPane.OK_OPTION) {
-				PublishTask publishTask = new PublishTask(osmData,activeStructure.getId());
+				PublishTask publishTask = new PublishTask(mapDataManager,activeStructure.getId());
 				publishTask.execute();
 			}
 		}

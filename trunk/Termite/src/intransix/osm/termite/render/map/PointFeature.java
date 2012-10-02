@@ -1,7 +1,9 @@
 package intransix.osm.termite.render.map;
 
-import intransix.osm.termite.map.data.OsmNode;
-import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.map.workingdata.OsmNode;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.PiggybackData;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
@@ -15,11 +17,10 @@ import java.awt.Shape;
  *
  * @author sutter
  */
-public class PointFeature implements Feature {
+public class PointFeature extends PiggybackData implements Feature {
 	
 	private final static double RADIUS_PIXELS = 3;
 	
-	private int localVersion = OsmData.INVALID_DATA_VERSION;
 	private OsmNode osmNode;
 	private Style style;
 	private Ellipse2D marker = new Ellipse2D.Double();
@@ -43,16 +44,16 @@ public class PointFeature implements Feature {
 	
 	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
-		if(!osmNode.renderEnabled()) return;
+		if(!MapDataManager.getObjectRenderEnabled(osmNode)) return;
 		
-		if(osmNode.getDataVersion() != this.localVersion) {
+		if(!isUpToDate(osmNode)) {
 			//load geometry
 			updateData(mercatorToLocal);
 
 			//get the style
 			style = theme.getStyle(osmNode);
 			
-			this.localVersion = osmNode.getDataVersion();
+			markAsUpToDate(osmNode);
 		}
 		
 		if((marker != null)&&(style != null)) {

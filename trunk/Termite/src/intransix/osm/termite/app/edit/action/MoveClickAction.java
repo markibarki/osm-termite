@@ -1,14 +1,16 @@
 package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmSegment;
+import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.app.edit.MouseClickAction;
 import intransix.osm.termite.app.edit.editobject.EditObject;
 import intransix.osm.termite.app.edit.editobject.EditSegment;
 import intransix.osm.termite.app.edit.editobject.EditNode;
 import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.edit.SelectEditorMode;
-import intransix.osm.termite.map.data.*;
-import intransix.osm.termite.map.data.edit.MoveEdit;
-import intransix.osm.termite.map.data.edit.EditDestPoint;
+import intransix.osm.termite.app.edit.impl.MoveEdit;
+import intransix.osm.termite.app.edit.impl.EditDestPoint;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.List;
