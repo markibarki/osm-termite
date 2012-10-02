@@ -1,7 +1,7 @@
 package intransix.osm.termite.gui.dialog;
 
 import intransix.osm.termite.gui.TermiteGui;
-import intransix.osm.termite.map.data.OsmData;
+import intransix.osm.termite.map.workingdata.OsmData;
 import intransix.osm.termite.gui.task.CommitTask;
 import javax.swing.JOptionPane;
 import javax.swing.JFrame;

@@ -1,6 +1,6 @@
 package intransix.osm.termite.app.edit.data;
 
-import intransix.osm.termite.map.data.OsmSegment;
+import intransix.osm.termite.map.workingdata.OsmSegment;
 import java.awt.geom.Point2D;
 
 /**

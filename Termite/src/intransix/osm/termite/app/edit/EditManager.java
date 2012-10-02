@@ -2,14 +2,13 @@ package intransix.osm.termite.app.edit;
 
 import intransix.osm.termite.app.feature.FeatureTypeManager;
 import intransix.osm.termite.app.level.LevelManager;
-import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.edit.editobject.EditObject;
 import intransix.osm.termite.app.edit.editobject.EditSegment;
 import intransix.osm.termite.app.edit.editobject.EditNode;
 import intransix.osm.termite.app.edit.snapobject.SnapObject;
 import intransix.osm.termite.app.edit.snapobject.SnapNode;
-import intransix.osm.termite.map.data.*;
-import intransix.osm.termite.map.data.edit.EditDestPoint;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.edit.impl.EditDestPoint;
 import intransix.osm.termite.render.edit.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import java.util.List;
  *
  * @author sutter
  */
-public class EditManager implements MapDataListener {
+public class EditManager {
 
 	//=========================
 	// Properties 
@@ -62,15 +61,18 @@ public class EditManager implements MapDataListener {
 	
 	private LevelManager levelManager;
 	private FeatureTypeManager featureTypeManager;
-	private OsmData osmData;
+	private MapDataManager mapDataManager;
 	
 	//===========================
 	// Public Methods
 	//===========================
 	
-	public EditManager(FeatureTypeManager featureTypeManager, LevelManager levelManager) {
+	public EditManager(FeatureTypeManager featureTypeManager, 
+			LevelManager levelManager,
+			MapDataManager mapDataManager) {
 		this.featureTypeManager = featureTypeManager;
 		this.levelManager = levelManager;
+		this.mapDataManager = mapDataManager;
 	}
 	
 	public void init() {
@@ -198,8 +200,8 @@ public class EditManager implements MapDataListener {
 	//---------------------
 	
 	/** This method retrieves the OSM data. */
-	public OsmData getOsmData() {
-		return osmData;
+	public MapDataManager getOsmData() {
+		return mapDataManager;
 	}
 	
 	/** This method retrives the feature type manager. */
@@ -246,14 +248,6 @@ public class EditManager implements MapDataListener {
 	public WayEditorMode getWayEditorMode() {
 		return wayMode;
 	}	
-	
-	/** This method is called when the map data is set. */
-	@Override
-	public void onMapData(OsmData osmData) {
-		this.osmData = osmData;		
-		//pass the data to the in
-	}
-	
 	
 	//========================
 	// Protected Methods

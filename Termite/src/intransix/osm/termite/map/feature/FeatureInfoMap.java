@@ -2,8 +2,8 @@ package intransix.osm.termite.map.feature;
 
 import intransix.osm.termite.map.proptree.PropertyNode;
 import intransix.osm.termite.map.proptree.KeyNode;
-import intransix.osm.termite.map.data.OsmObject;
-import intransix.osm.termite.map.data.PropertyPair;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.util.PropertyPair;
 import java.util.List;
 import java.util.ArrayList;
 import org.json.*;

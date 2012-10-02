@@ -192,19 +192,20 @@ public class TermiteApp {
 		//featture type
 		featureTypeManager = new FeatureTypeManager();
 		featureTypeManager.init();
-		
-		//levels
-		levelManager = new LevelManager(filterManager);
-		mapDataManager.addMapDataListener(levelManager);
-		
-		//edit manager
-		editManager = new EditManager(featureTypeManager,levelManager);
-		editManager.init();
-		mapDataManager.addMapDataListener(editManager);
+		mapDataManager.setFeatureTypeManager(featureTypeManager);
 		
 		//filter
 		filterManager = new FilterManager();
-		mapDataManager.addMapDataListener(filterManager);
+		mapDataManager.setFilterManager(filterManager);
+		filterManager.addFilterListener(mapDataManager);
+		
+		//levels
+		levelManager = new LevelManager(mapDataManager, filterManager);
+		mapDataManager.addMapDataListener(levelManager);
+		
+		//edit manager
+		editManager = new EditManager(featureTypeManager,levelManager,mapDataManager);
+		editManager.init();
 		
 		//view region manager
 		viewRegionManager = new ViewRegionManager();
@@ -256,7 +257,7 @@ public class TermiteApp {
 		
 		//set the view
 		viewRegionManager.setInitialView();
-		mapDataManager.setOsmData(null);
+		mapDataManager.clearData();
 	}
 	
 	private void loadAppPreferences() {

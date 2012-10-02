@@ -1,12 +1,13 @@
 package intransix.osm.termite.app.edit;
 
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.app.mode.EditorMode;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.edit.SelectToolbar;
 import intransix.osm.termite.app.edit.action.SelectClickAction;
 import intransix.osm.termite.app.edit.action.SelectSnapMoveAction;
 import intransix.osm.termite.app.edit.action.*;
-import intransix.osm.termite.map.data.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;

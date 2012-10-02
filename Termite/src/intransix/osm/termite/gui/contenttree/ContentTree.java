@@ -1,9 +1,12 @@
 package intransix.osm.termite.gui.contenttree;
 
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmModel;
 import intransix.osm.termite.app.level.LevelSelectedListener;
 import intransix.osm.termite.app.level.LevelStructureListener;
 import intransix.osm.termite.gui.*;
-import intransix.osm.termite.map.data.*;
 import java.util.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -63,7 +66,7 @@ public class ContentTree extends javax.swing.JTree
 		this.onLevelSelected(structure,level);
 		
 		levelManager.addLevelStructureListener(this);
-		levelManager.addLevelSelectedListener(this);
+		levelManager.addLevelSelectedListener(this);		
 	}
 	
 	/** This method is called when a map level is selected. It may be called 
@@ -83,7 +86,7 @@ public class ContentTree extends javax.swing.JTree
 	 */
 	@Override
 	public void levelStructureChanged(TreeMap<OsmWay,List<OsmRelation>> treeMap) {
-	//create the root node
+		//create the root node
 		DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
 //		//create the outdoor node
 //		DefaultMutableTreeNode outdoorNode = new DefaultMutableTreeNode(OUTDOORS_NAME);
@@ -94,6 +97,9 @@ public class ContentTree extends javax.swing.JTree
 		activeTreeMap = treeMap;
 		TreeModel model = new DefaultTreeModel(rootTreeNode);
 		setModel(model);
+		
+		//for now, always set the outside when the structure changes
+		this.setSelectionRow(0);
 	}
 	
 	@Override

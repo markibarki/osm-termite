@@ -5,8 +5,9 @@
 package intransix.osm.termite.app.edit.action;
 
 import intransix.osm.termite.app.edit.EditManager;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.edit.DeleteSelection;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.app.edit.impl.DeleteSelection;
 import java.util.List;
 
 /**
@@ -23,11 +24,11 @@ public class DeleteSelectionAction {
 	
 	public void deleteSelection() {
 		List<Object> selection = editManager.getSelection();
-		OsmData osmData = editManager.getOsmData();
+		MapDataManager mapDataManager = editManager.getOsmData();
 	
 		//works on a node or way or a collection of nodes and ways
-		if((!selection.isEmpty())&&(osmData != null)) {
-			DeleteSelection ds = new DeleteSelection(osmData);
+		if(!selection.isEmpty()) {
+			DeleteSelection ds = new DeleteSelection(mapDataManager);
 			ds.deleteSelection(selection);
 			
 			//clear the selection

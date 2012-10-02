@@ -1,16 +1,24 @@
 package intransix.osm.termite.app.level;
 
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmMember;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmModel;
+import intransix.osm.termite.app.filter.FeatureFilter;
+import intransix.osm.termite.app.filter.FilterRule;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.filter.FilterManager;
-import intransix.osm.termite.map.data.*;
 import java.util.*;
 
 /**
  *
  * @author sutter
  */
-public class LevelManager implements MapDataListener{
+public class LevelManager implements MapDataListener {
 	
+	private MapDataManager mapDataManager;
 	private FilterManager filterManager;
 	
 	private OsmWay selectedStructure;
@@ -18,10 +26,10 @@ public class LevelManager implements MapDataListener{
 	private List<LevelSelectedListener> levelSelectedListeners = new ArrayList<LevelSelectedListener>();
 	private List<LevelStructureListener> levelStructureListeners = new ArrayList<LevelStructureListener>();
 	
-	private OsmData osmData;
 	private TreeMap<OsmWay,List<OsmRelation>> activeTreeMap = null;
 	
-	public LevelManager(FilterManager filterManager) {
+	public LevelManager(MapDataManager mapDataManager, FilterManager filterManager) {
+		this.mapDataManager = mapDataManager;
 		this.filterManager = filterManager;
 	}
 	
@@ -30,13 +38,23 @@ public class LevelManager implements MapDataListener{
 	 * UI thread.
 	 */
 	@Override
-	public void onMapData(OsmData osmData) {
-		this.osmData = osmData;
+	public void onMapData(boolean dataPresent) {
+		
+	}
+	
+	/** This method is called when the data has changed.
+	 * 
+	 * @param editNumber	This is the data version that will be reflected in any data changed 
+	 *						by this edit action.
+	 */
+	@Override
+	public void osmDataChanged(int editNumber) {
 		mapDataUpdated();
 	}
 	
 	/** This method should be called when the map data is updated, from the UI thread. */
 	public void mapDataUpdated() {
+		OsmData osmData = mapDataManager.getOsmData();
 		if(osmData != null) {
 			TreeMap<OsmWay,List<OsmRelation>> newTreeMap = new TreeMap<OsmWay,List<OsmRelation>>(new WayComparator());
 			//create a new data sturcture for levels,outdoor
@@ -65,11 +83,13 @@ System.out.println("Warning! There is a level with no parent object.");
 			}
 			//update the list (if needed)
 			if(treeUpdated(newTreeMap)) {
+				activeTreeMap = newTreeMap;
 				notifyTreeChange(newTreeMap);
 			}
 		}
 		else {
 			//clear the tree if there is no data
+			activeTreeMap = null;
 			notifyTreeChange(null);
 		}
 	}
@@ -99,6 +119,9 @@ System.out.println("Warning! There is a level with no parent object.");
 	/** This method will dispatch a level selected event. It should be called
 	 * when a level is selected to notify all interested objects. */
 	public void setSelectedLevel(OsmWay structure, OsmRelation level) {
+		
+		this.selectedStructure = structure;
+		this.selectedLevel = level;
 		
 		//update filter
 		if(filterManager != null) {

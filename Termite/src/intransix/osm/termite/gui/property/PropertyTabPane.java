@@ -1,12 +1,13 @@
 package intransix.osm.termite.gui.property;
 
-import intransix.osm.termite.map.data.OsmObject;
-import intransix.osm.termite.map.data.OsmRelation;
-import intransix.osm.termite.map.data.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmWay;
 import intransix.osm.termite.app.edit.FeatureSelectedListener;
 import intransix.osm.termite.app.level.LevelSelectedListener;
 import intransix.osm.termite.app.mapdata.MapDataListener;
-import intransix.osm.termite.map.data.*;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import java.util.List;
 import javax.swing.JTabbedPane;
 
@@ -15,7 +16,7 @@ import javax.swing.JTabbedPane;
  * @author sutter
  */
 public class PropertyTabPane extends JTabbedPane implements 
-		LevelSelectedListener, FeatureSelectedListener, OsmDataChangedListener,
+		LevelSelectedListener, FeatureSelectedListener,
 		MapDataListener {
 	
 	private final static String STRUCTURE_LABEL = "Structure";
@@ -30,9 +31,19 @@ public class PropertyTabPane extends JTabbedPane implements
 	private boolean featureActive = false;
 	
 	public PropertyTabPane() {
-		structurePage = new PropertyPage();
-		levelPage = new PropertyPage();
 		featurePage = new PropertyPage();
+		levelPage = new PropertyPage();
+		structurePage = new PropertyPage();
+	}
+	
+	public void setMapDataManager(MapDataManager mapDataManager) {
+		structurePage.setMapDataManager(mapDataManager);
+		levelPage.setMapDataManager(mapDataManager);
+		featurePage.setMapDataManager(mapDataManager);
+		
+		if(mapDataManager != null) {
+			mapDataManager.addMapDataListener(this);
+		}
 	}
 	
 	/** This method is called when the map data is set of cleared. It will be called 
@@ -41,14 +52,8 @@ public class PropertyTabPane extends JTabbedPane implements
 	 * @param mapData	The map data object
 	 */
 	@Override
-	public void onMapData(OsmData mapData) {
-		structurePage.setMapData(mapData);
-		levelPage.setMapData(mapData);
-		featurePage.setMapData(mapData);
-		
-		if(mapData != null) {
-			mapData.addDataChangedListener(this);
-		}
+	public void onMapData(boolean dataPresent) {
+		//no action - should be no properties to set yet
 	}
 	
 	/** This method is called when the data has changed.
@@ -61,16 +66,6 @@ public class PropertyTabPane extends JTabbedPane implements
 		if(structureActive) structurePage.updateProperties();
 		if(levelActive) levelPage.updateProperties();
 		if(featureActive) featurePage.updateProperties();
-	}
-	
-	/** This method returns the type of user this listener is. The type of listener
-	 * determines the order in which the listener is called when data has changed. 
-	 * 
-	 * @return 
-	 */
-	@Override
-	public int getListenerType() {
-		return OsmDataChangedListener.LISTENER_CONSUMER;
 	}		
 	
 	/** This method is called when a map level is selected. It may be called 

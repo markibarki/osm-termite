@@ -1,12 +1,16 @@
 package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmSegment;
+import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.app.edit.MouseMoveAction;
 import intransix.osm.termite.app.edit.snapobject.SnapWay;
 import intransix.osm.termite.app.edit.snapobject.SnapObject;
 import intransix.osm.termite.app.edit.snapobject.SnapVirtualNode;
 import intransix.osm.termite.app.edit.snapobject.SnapNode;
 import intransix.osm.termite.app.edit.EditManager;
-import intransix.osm.termite.map.data.*;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -38,12 +42,12 @@ public class SelectSnapMoveAction implements MouseMoveAction {
 		snapObjects.clear();
 		
 		//check for hovering over these objects
-		OsmData osmData = editManager.getOsmData();
+		MapDataManager mapDataManager = editManager.getOsmData();
 		SnapObject snapObject;
-		List<OsmObject> objectList = osmData.getFeatureList();
+		List<OsmObject> objectList = mapDataManager.getFeatureList();
 		for(OsmObject mapObject:objectList) {
 			//make sure edit is enabled for this object
-			if(!mapObject.editEnabled()) continue;
+			if(!MapDataManager.getObjectEditEnabled(mapObject)) continue;
 
 			//do the hover check
 			if(mapObject instanceof OsmNode) {
@@ -55,7 +59,7 @@ public class SelectSnapMoveAction implements MouseMoveAction {
 
 				//check for a segment hit
 				for(OsmSegment segment:((OsmNode)mapObject).getSegments()) {
-					if(!segment.editEnabled()) continue;
+					if(!MapDataManager.getSegmentEditEnabled(segment)) continue;
 
 					//only do the segments that start with this node, to avoid doing them twice
 					if(segment.getNode1() == mapObject) {

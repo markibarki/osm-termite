@@ -1,11 +1,10 @@
 package intransix.osm.termite.gui.task;
 
-import intransix.osm.termite.map.data.*;
+import intransix.osm.termite.app.mapdata.commit.*;
 import intransix.osm.termite.app.LoginManager;
-import intransix.osm.termite.gui.TermiteGui;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.BlockerDialog;
 import intransix.osm.termite.gui.dialog.CommitDialog;
-import intransix.osm.termite.net.NetRequest;
 import javax.swing.*;
 
 /**
@@ -14,8 +13,14 @@ import javax.swing.*;
  */
 public class CommitTask extends SwingWorker<Object,Object>{
 	
-	private String message;
-	private OsmData osmData;
+	//====================
+	// Properties
+	//====================
+	
+	private final static String EXCEPTION_MSG_BASE = "There was an error: ";
+	
+	private MapDataManager mapDataManager;
+	private CommitAction commitAction;
 	private LoginManager loginManager;
 	private JDialog blocker;
 	
@@ -23,11 +28,19 @@ public class CommitTask extends SwingWorker<Object,Object>{
 	private boolean canceled = false;
 	private String errorMsg;
 	
-	public CommitTask(OsmData osmData, LoginManager loginManager) {
-		this.osmData = osmData;
+	
+	//====================
+	// Public Methods
+	//====================
+	
+	/** Constructor. */
+	public CommitTask(MapDataManager mapDataManager, LoginManager loginManager) {
+		this.mapDataManager = mapDataManager;
 		this.loginManager = loginManager;
 	}
 	
+	/** Calling this method will block the UI thread until the task completes. 
+	 * It should preferably be called from the UI thread. */
 	public synchronized void blockUI() {
 		if(!isDone()) {
 			blocker = new BlockerDialog(null,this,"Loading map data...",false);
@@ -35,16 +48,17 @@ public class CommitTask extends SwingWorker<Object,Object>{
 		}
 	}
 	
+	/** This is the main task method, called by SwingWorker. */
 	@Override
 	public Object doInBackground() {
 		
+		commitAction = new CommitAction(mapDataManager, loginManager);
+		
 		try {
-			//get the change set
-			OsmChangeSet changeSet = new OsmChangeSet();
-			osmData.loadChangeSet(changeSet);
+			success = commitAction.verifyChangeSet();
 			
-			if(changeSet.isEmpty()) {
-				JOptionPane.showMessageDialog(null,"There is no data to commit.");
+			if(!success) {
+				JOptionPane.showMessageDialog(null,commitAction.getErrorMessage());
 				canceled = true;
 				return null;
 			}
@@ -74,92 +88,25 @@ public class CommitTask extends SwingWorker<Object,Object>{
 				canceled = true;
 				return null;
 			}
-			changeSet.setMessage(message);
 			
-			//make network requests
-			NetRequest xmlRequest;
-			int responseCode;
+			success = commitAction.commit(message);
 			
-			//open a change set
-			OpenChangeSetRequest openChangeSetRequest = new OpenChangeSetRequest(changeSet);
-			xmlRequest = new NetRequest(openChangeSetRequest);
-			xmlRequest.setCredentials(username, password);
-			responseCode = xmlRequest.doRequest();
-
-			if(responseCode == 200) {
-				//success
-				success = true;
-			}
-			else if(responseCode == 401) {
-				//unauthorized
-				errorMsg = "There username and password are not valid.";
-				loginManager.setCredentials(username,null);
-				success = false;
+			if(!success) {
+				errorMsg = commitAction.getErrorMessage();
 				return null;
-			}
-			else {
-				errorMsg = "Server error: response code " + responseCode;
-				success = false;
-				return null;
-			}
+			}	
 			
-			//commit the data
-			CommitRequest commitRequest = new CommitRequest(changeSet,osmData);
-			xmlRequest = new NetRequest(commitRequest);
-			xmlRequest.setCredentials(username, password);
-			responseCode = xmlRequest.doRequest();
-			
-			if(responseCode == 200) {
-				//success
-				success = true;
-			}
-			else if(responseCode == 401) {
-				//unauthorized
-				errorMsg = "There username and password are not valid.";
-				loginManager.setCredentials(username,null);
-				success = false;
-				return null;
-			}
-			else {
-				errorMsg = "Server error: response code " + responseCode;
-				success = false;
-				return null;
-			}
-			
-			//close the change set
-			CloseChangeSetRequest closeChangeSetRequest = new CloseChangeSetRequest(changeSet);
-			xmlRequest = new NetRequest(closeChangeSetRequest);
-			xmlRequest.setCredentials(username, password);
-			responseCode = xmlRequest.doRequest();
-			
-			if(responseCode == 200) {
-				//success
-				success = true;
-			}
-			else if(responseCode == 401) {
-				//unauthorized
-				errorMsg = "There username and password are not valid.";
-				loginManager.setCredentials(username,null);
-				success = false;
-				return null;
-			}
-			else {
-				errorMsg = "Server error: response code " + responseCode;
-				success = false;
-				return null;
-			}
-			
-			success = true;
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
-			errorMsg = ex.getMessage();
+			errorMsg = EXCEPTION_MSG_BASE + ex.getMessage();
 			success = false;
 		}
 		
 		return "";
 	}
 	
+	/** This method is called in the UI thread on completion of the task. */
 	@Override
 	public synchronized void done() {
 		
@@ -172,10 +119,12 @@ public class CommitTask extends SwingWorker<Object,Object>{
 		}
 		
 		if(success) {
-			//no action needed
+			//do the data update in the UI thread
+			commitAction.postProcessInUiThread();
 		}
 		else {
-			JOptionPane.showMessageDialog(null,"There was an error: " + errorMsg);
+			//show an error message
+			JOptionPane.showMessageDialog(null,errorMsg);
 		}	
 	}
 }

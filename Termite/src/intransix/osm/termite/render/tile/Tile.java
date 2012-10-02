@@ -1,6 +1,6 @@
 package intransix.osm.termite.render.tile;
 
-import intransix.osm.termite.map.data.OsmModel;
+import intransix.osm.termite.map.workingdata.OsmModel;
 import intransix.osm.termite.util.MercatorCoordinates;
 import java.awt.*;
 import java.awt.geom.AffineTransform;

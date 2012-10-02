@@ -1,6 +1,12 @@
 package intransix.osm.termite.render.map;
 
-import intransix.osm.termite.map.data.*;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.PiggybackData;
+import intransix.osm.termite.map.workingdata.OsmMember;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmModel;
+import intransix.osm.termite.map.workingdata.OsmNode;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
@@ -19,7 +25,7 @@ import java.awt.BasicStroke;
  *
  * @author sutter
  */
-public class PathFeature implements Feature {
+public class PathFeature extends PiggybackData implements Feature {
 	//====================
 	// Private Proeprties
 	//====================
@@ -29,7 +35,6 @@ public class PathFeature implements Feature {
 	private final static Color virtualColor = Color.LIGHT_GRAY;
 	private final static Stroke virtualStroke = new BasicStroke(1);
 	
-	private int localVersion = OsmData.INVALID_DATA_VERSION;
 	private OsmWay osmWay;
 	private Shape shape;
 	private boolean isArea;
@@ -55,16 +60,16 @@ public class PathFeature implements Feature {
 	
 	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
-		if(!osmWay.renderEnabled()) return;
+		if(!MapDataManager.getObjectRenderEnabled(osmWay)) return;
 		
-		if(osmWay.getDataVersion() != this.localVersion) {			
+		if(!isUpToDate(osmWay)) {			
 			//load geometry
 			updateData(mercatorToLocal);
 			
 			//get the style
 			style = theme.getStyle(osmWay);
 			
-			this.localVersion = osmWay.getDataVersion();
+			markAsUpToDate(osmWay);
 		}
 		
 		if((shape != null)&&(style != null)) {

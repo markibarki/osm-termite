@@ -1,6 +1,6 @@
 package intransix.osm.termite.app.edit.editobject;
 
-import intransix.osm.termite.map.data.OsmSegment;
+import intransix.osm.termite.map.workingdata.OsmSegment;
 import intransix.osm.termite.render.edit.StyleInfo;
 import intransix.osm.termite.app.edit.data.VirtualNode;
 import java.awt.Graphics2D;

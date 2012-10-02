@@ -1,6 +1,7 @@
 package intransix.osm.termite.gui.task;
 
-import intransix.osm.termite.map.data.MapDataRequest;
+import intransix.osm.termite.app.mapdata.download.MapDataRequest;
+import intransix.osm.termite.app.mapdata.download.RequestAction;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.BlockerDialog;
 import intransix.osm.termite.net.NetRequest;
@@ -12,8 +13,9 @@ import javax.swing.*;
  */
 public class MapDataRequestTask extends SwingWorker<Object,Object> {
 	
-	private MapDataRequest mapDataRequest;
-	private MapDataManager mapDataManager;
+	private final static String EXCEPTION_MSG_BASE = "There was an error: ";
+	
+	private RequestAction requestAction;
 	private JDialog blocker;
 	
 	private boolean success = false;
@@ -21,8 +23,7 @@ public class MapDataRequestTask extends SwingWorker<Object,Object> {
 	
 	public MapDataRequestTask(MapDataManager mapDataManager, double minLat, double minLon, 
 			double maxLat, double maxLon) {
-		this.mapDataManager = mapDataManager;
-		this.mapDataRequest = new MapDataRequest(minLat, minLon, maxLat, maxLon);
+		this.requestAction = new RequestAction(mapDataManager,minLat,minLon,maxLat,maxLon);
 	}
 	
 	public synchronized void blockUI() {
@@ -36,19 +37,15 @@ public class MapDataRequestTask extends SwingWorker<Object,Object> {
 	public Object doInBackground() {
 		
 		try {
-			NetRequest xmlRequest = new NetRequest(mapDataRequest);
-			int responseCode = xmlRequest.doRequest();
-			if(responseCode == 200) {
-				success = true;
-			}
-			else {
-				errorMsg = "Server error: response code " + responseCode;
-				success = false;
+			success = requestAction.request();
+			if(!success) {
+				errorMsg = requestAction.getErrorMsg();
+				return null;
 			}
 		}
 		catch(Exception ex) {
 			ex.printStackTrace();
-			errorMsg = ex.getMessage();
+			errorMsg = EXCEPTION_MSG_BASE + ex.getMessage();
 			success = false;
 		}
 		
@@ -63,10 +60,14 @@ public class MapDataRequestTask extends SwingWorker<Object,Object> {
 		}
 		
 		if(success) {
-			mapDataManager.setOsmData(mapDataRequest.getOsmData());
+			boolean success = requestAction.postProcessInUiThread();
+			if(!success) {
+				errorMsg = requestAction.getErrorMsg();
+			}
 		}
-		else {
-			JOptionPane.showMessageDialog(null,"There was an error: " + errorMsg);
+		
+		if(!success) {
+			JOptionPane.showMessageDialog(null,errorMsg);
 		}	
 	}
 }

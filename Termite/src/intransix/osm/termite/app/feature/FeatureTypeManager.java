@@ -1,7 +1,8 @@
 package intransix.osm.termite.app.feature;
 
 import intransix.osm.termite.app.preferences.Preferences;
-import intransix.osm.termite.map.data.OsmModel;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.util.PropertyPair;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.map.feature.FeatureInfoMap;
 import intransix.osm.termite.util.JsonIO;
@@ -29,9 +30,24 @@ public class FeatureTypeManager {
 		
 		JSONObject featureInfoJson = JsonIO.readJsonFile(configFileName);
 		featureInfoMap = FeatureInfoMap.parse(featureInfoJson);
-		
-		//load feature info into model
-		OsmModel.featureInfoMap = featureInfoMap;
+	}
+	
+	public FeatureInfo getFeatureInfo(OsmObject osmObject) {
+		if(featureInfoMap != null) {
+			return featureInfoMap.getFeatureInfo(osmObject);
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public List<PropertyPair> getFeatureProperties(FeatureInfo featureInfo) {
+		if(featureInfoMap != null) {
+			return featureInfoMap.getFeatureProperties(featureInfo);
+		}
+		else {
+			return null;
+		}
 	}
 	
 	/** This method gets the feature info map. */

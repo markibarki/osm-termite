@@ -1,14 +1,16 @@
 package intransix.osm.termite.app.edit.action;
 
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.app.edit.MouseClickAction;
 import intransix.osm.termite.app.edit.editobject.EditObject;
 import intransix.osm.termite.app.edit.editobject.EditNode;
 import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.feature.FeatureTypeManager;
 import intransix.osm.termite.app.level.LevelManager;
-import intransix.osm.termite.map.data.*;
-import intransix.osm.termite.map.data.edit.EditDestPoint;
-import intransix.osm.termite.map.data.edit.NodeCreateEdit;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.edit.impl.EditDestPoint;
+import intransix.osm.termite.app.edit.impl.NodeCreateEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -53,14 +55,14 @@ public class NodeToolClickAction implements MouseClickAction {
 		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
 		
 		//process normal click
-		OsmData osmData = editManager.getOsmData();
+		MapDataManager mapDataManager = editManager.getOsmData();
 		FeatureTypeManager featureTypeManager = editManager.getFeatureTypeManager();
 		LevelManager levelManager = editManager.getLevelManager();
 		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
 		OsmRelation activeLevel = levelManager.getSelectedLevel();
 	
 		//execute a node addition
-		NodeCreateEdit nce = new NodeCreateEdit(osmData);
+		NodeCreateEdit nce = new NodeCreateEdit(mapDataManager);
 		OsmNode node = nce.nodeToolClicked(clickDestPoint,featureInfo,activeLevel);
 		
 		//prepare for next

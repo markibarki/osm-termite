@@ -1,7 +1,11 @@
 package intransix.osm.termite.app.level;
 
-import intransix.osm.termite.map.data.FilterRule;
-import intransix.osm.termite.map.data.*;
+import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.map.workingdata.OsmWay;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmModel;
+import intransix.osm.termite.map.workingdata.OsmNode;
+import intransix.osm.termite.app.filter.FilterRule;
 
 /**
  *

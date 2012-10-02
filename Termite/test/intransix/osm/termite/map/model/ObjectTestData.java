@@ -1,8 +1,9 @@
 package intransix.osm.termite.map.model;
 
-import intransix.osm.termite.map.data.OsmRelation;
-import intransix.osm.termite.map.data.OsmData;
-import intransix.osm.termite.map.data.OsmObject;
+import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.map.workingdata.OsmRelation;
+import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.map.workingdata.OsmObject;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.util.*;
 
@@ -15,6 +16,7 @@ import java.util.*;
 public abstract class ObjectTestData {
 	
 	public static OsmData osmData;
+	public static MapDataManager mapDataManager;
 	
 	public long id;
 	public List<Long> rels = new ArrayList<Long>();
@@ -55,7 +57,7 @@ public abstract class ObjectTestData {
 		}
 		
 		//check feature info
-		FeatureInfo fi = osmObject.getFeatureInfo();
+		FeatureInfo fi = MapDataManager.getObjectFeatureInfo(osmObject);
 		if(fi == null) assert(featureInfoName == null);
 		else assert(featureInfoName.equals(fi.getName()));
 		
