@@ -140,7 +140,7 @@ public class MapDataRequest extends DefaultHandler implements RequestSource {
 			if(activeObject != null) {
 				String key = attributes.getValue("k");
 				String value = attributes.getValue("v");
-				activeObject.addProperty(key, value);
+				activeObject.putProperty(key, value);
 			}
 		}
 		else if(name.equalsIgnoreCase("member")) {

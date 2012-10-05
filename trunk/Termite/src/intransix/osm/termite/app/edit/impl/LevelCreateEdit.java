@@ -30,9 +30,9 @@ System.out.println("Create a level");
 			relationSrc.addMember(parent.getId(),parent.getObjectType(),OsmModel.ROLE_PARENT);
 
 			//get the properties
-			relationSrc.addProperty(OsmModel.KEY_TYPE,OsmModel.TYPE_LEVEL);
-			relationSrc.addProperty(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel));
-			relationSrc.addProperty(OsmModel.KEY_NAME,displayName);
+			relationSrc.putProperty(OsmModel.KEY_TYPE,OsmModel.TYPE_LEVEL);
+			relationSrc.putProperty(OsmModel.KEY_ZLEVEL,String.valueOf(zlevel));
+			relationSrc.putProperty(OsmModel.KEY_NAME,displayName);
 			
 			EditInstruction instr = new CreateInstruction(relationSrc,getMapDataManager());
 			action.addInstruction(instr);

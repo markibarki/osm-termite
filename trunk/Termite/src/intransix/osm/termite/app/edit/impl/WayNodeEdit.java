@@ -84,7 +84,7 @@ System.out.println("Add a node to a way");
 			FeatureTypeManager featureTypeManager = getMapDataManager().getFeatureTypeManager();
 			List<PropertyPair> properties = featureTypeManager.getFeatureProperties(featureInfo);
 			for(PropertyPair pp:properties) {
-				waySrc.addProperty(pp.key,pp.value);
+				waySrc.putProperty(pp.key,pp.value);
 			}
 
 			EditInstruction instr = new CreateInstruction(waySrc,getMapDataManager());

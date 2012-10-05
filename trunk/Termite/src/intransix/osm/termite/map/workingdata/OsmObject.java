@@ -292,7 +292,7 @@ public abstract class OsmObject<T extends OsmSrcData> {
 	public void copyInto(T targetData) {
 		targetData.setId(id);
 		for(String key:tags.keySet()) {
-			targetData.addProperty(key,this.getProperty(key));
+			targetData.putProperty(key,this.getProperty(key));
 		}
 	}
 	

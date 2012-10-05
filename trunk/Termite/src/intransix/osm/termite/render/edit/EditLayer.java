@@ -239,14 +239,14 @@ public class EditLayer extends MapLayer implements
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			SelectEditorMode sem = editManager.getSelectEditorMode();
-			if(sem.getModeEnabled()) {
+			if(sem.getModeActive()) {
 				if(sem.isInMoveState()) {
 					sem.setSelectState();
 				}
 			}
 			else {
 				WayEditorMode wem = editManager.getWayEditorMode();
-				if(wem.getModeEnabled()) {
+				if(wem.getModeActive()) {
 					wem.resetWayEdit();
 				}
 			}

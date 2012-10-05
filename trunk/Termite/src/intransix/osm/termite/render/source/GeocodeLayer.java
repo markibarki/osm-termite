@@ -37,7 +37,9 @@ public class GeocodeLayer extends MapLayer implements
 	
 	public void setMouseAction(GeocodeMouseAction mouseAction) {
 		this.mouseAction = mouseAction;
-		mouseAction.init(this);
+		if(mouseAction != null) {
+			mouseAction.init(this);
+		}
 	}
 	
 	@Override

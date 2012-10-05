@@ -54,7 +54,15 @@ public abstract class OsmSrcData {
 	}
 	
 	/** This method adds a property to the src data. */
-	public void addProperty(String key, String value) {
+	public void putProperty(String key, String value) {
+		//check if it is already present
+		for(PropertyPair pp:properties) {
+			if(key.equals(pp.key)) {
+				pp.value = value;
+				return;
+			}
+		}
+		//if we are still here, we need to add a new property
 		properties.add(new PropertyPair(key,value));
 	}
 	

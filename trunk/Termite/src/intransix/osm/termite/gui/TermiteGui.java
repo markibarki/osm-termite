@@ -189,7 +189,7 @@ public class TermiteGui extends javax.swing.JFrame implements
 		mapDataManager.addMapDataListener(this);
 		
 		//set data for property tab pane
-		mapDataManager.addMapDataListener(propertyTabPane);
+		this.propertyTabPane.setMapDataManager(mapDataManager);
 	}
 	
 	public void setModeManager(EditorModeManager editorModeManager) {

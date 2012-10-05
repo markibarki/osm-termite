@@ -58,13 +58,13 @@ public class OsmChangeSet {
 	 * from the list before it is created. */ 
 	public List<OsmChangeObject> getCreated() {
 		//sort so object are not references before created
-		Collections.sort(updated);
+		Collections.sort(created);
 		return created;
 	}
 	
 	/** This returns the objects updated during the session. */
 	public List<OsmChangeObject> getUpdated() {
-		return created;
+		return updated;
 	}
 	
 	/** This returns the objects deleted during the session, in order so that no object is referenced
@@ -73,7 +73,7 @@ public class OsmChangeSet {
 		//sort so objects are not referenced after the are deleted
 		Collections.sort(deleted);
 		Collections.reverse(deleted);
-		return created;
+		return deleted;
 	}
 	
 	public boolean isEmpty() {

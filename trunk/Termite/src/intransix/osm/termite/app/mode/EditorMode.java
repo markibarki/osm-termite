@@ -47,6 +47,11 @@ public abstract class EditorMode {
 		return modeEnabled;
 	}
 	
+	/** This method returns true if the mode is active. */
+	public boolean getModeActive() {
+		return (editorModeManager.getActiveMode() == this);
+	}
+	
 	/** This method returns the submode toolbar for the editor mode. */
 	public JToolBar getToolBar() {
 		return null;
