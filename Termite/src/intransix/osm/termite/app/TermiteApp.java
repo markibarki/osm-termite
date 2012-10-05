@@ -251,6 +251,7 @@ public class TermiteApp {
 		//more generic init
 		RenderLayer renderLayer = mapDataManager.getRenderLayer();
 		renderLayer.setTheme(theme);
+		viewRegionManager.addLocalCoordinateListener(renderLayer);
 		
 		TileLayer tileLayer = baseMapManager.getBaseMapLayer();
 		viewRegionManager.addMapListener(tileLayer);

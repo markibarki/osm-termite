@@ -46,7 +46,7 @@ if(destPoint.snapNode != null) {
 			FeatureTypeManager featureTypeManager = getMapDataManager().getFeatureTypeManager();
 			List<PropertyPair> properties = featureTypeManager.getFeatureProperties(featureInfo);
 			for(PropertyPair pp:properties) {
-				nodeSrc.addProperty(pp.key,pp.value);
+				nodeSrc.putProperty(pp.key,pp.value);
 			}
 			
 			EditInstruction instr = new CreateInstruction(nodeSrc,getMapDataManager());

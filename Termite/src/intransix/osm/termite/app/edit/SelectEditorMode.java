@@ -164,7 +164,10 @@ public class SelectEditorMode extends EditorMode implements FeatureSelectedListe
 			editLayer.setMouseClickAction(mouseClickAction);
 			editLayer.setMouseMoveActions(null, snapAction);
 			
+			//clear any old state, but not selection
+			editManager.clearPending();
 			editManager.clearPreview();
+			editLayer.notifyContentChange();
 			
 			inMoveState = false;
 			

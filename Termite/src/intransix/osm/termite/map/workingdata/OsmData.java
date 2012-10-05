@@ -119,17 +119,26 @@ public class OsmData {
 	
 	public void nodeIdChanged(long id1, long id2) {
 		OsmNode node = nodeMap.remove(id1);
-		nodeMap.put(id2, node);
+		if(node != null) {
+			nodeMap.put(id2, node);
+			node.setId(id2);
+		}
 	}
 	
 	public void wayIdChanged(long id1, long id2) {
 		OsmWay way = wayMap.remove(id1);
-		wayMap.put(id2, way);
+		if(way != null) {
+			wayMap.put(id2, way);
+			way.setId(id2);
+		}
 	}
 	
 	public void relationIdChanged(long id1, long id2) {
 		OsmRelation relation = relationMap.remove(id1);
-		relationMap.put(id2, relation);
+		if(relation != null) {
+			relationMap.put(id2, relation);
+			relation.setId(id2);
+		}
 	}
 	
 	

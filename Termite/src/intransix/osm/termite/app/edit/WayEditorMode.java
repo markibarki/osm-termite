@@ -76,9 +76,12 @@ public class WayEditorMode extends EditorMode {
 	/** This method removes any current active way, leaving the program in 
 	 * way edit mode. */ 
 	public void resetWayEdit() {
-		editManager.clearPreview();
-		editManager.clearPending();
-		editManager.clearSelection();
+		if(this.getModeActive()) {
+			editManager.clearPreview();
+			editManager.clearPending();
+			editManager.clearSelection();
+			loadMouseActions();
+		}
 	}
 	
 	/** This method loads the proper mouse actions for this mode. */

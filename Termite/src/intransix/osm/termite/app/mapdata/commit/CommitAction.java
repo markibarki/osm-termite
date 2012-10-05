@@ -216,6 +216,10 @@ public class CommitAction {
 		
 		OsmChangeObject changeObject;
 		for(OsmNode node:osmData.getOsmNodes()) {
+			//make sure the node was loaded from initial data or created with a create
+			//and not a unloaded refernce created to populate a way or relation
+			if(!node.getIsLoaded()) continue;
+			
 			//remove nodes in working data from list
 			OsmNodeSrc originalNodeSrc = dataSet.getNodeSrc(node.getId());
 			if(originalNodeSrc != null) {
@@ -229,6 +233,10 @@ public class CommitAction {
 				}
 			}
 			else {
+if(node.getId() > 0) {
+	System.out.println("ERROR in Commit: trying to create a node with a positive ID.");
+	continue;
+}
 				OsmNodeSrc finalNodeSrc = new OsmNodeSrc();
 				node.copyInto(finalNodeSrc);
 				changeObject = new OsmChangeObject(null,finalNodeSrc);
@@ -248,6 +256,10 @@ public class CommitAction {
 		srcWays.addAll(dataSet.getSrcWays());
 		
 		for(OsmWay way:osmData.getOsmWays()) {
+			//make sure the way was loaded from initial data or created with a create
+			//and not a unloaded refernce created to populate a way or relation
+			if(!way.getIsLoaded()) continue;
+			
 			OsmWaySrc originalWaySrc = dataSet.getWaySrc(way.getId());
 			if(originalWaySrc != null) {
 				//compare and remove
@@ -260,6 +272,11 @@ public class CommitAction {
 				}
 			}
 			else {
+if(way.getId() > 0) {
+	System.out.println("ERROR in Commit: trying to create a way with a positive ID.");
+	continue;
+}
+
 				OsmWaySrc finalWaySrc = new OsmWaySrc();
 				way.copyInto(finalWaySrc);
 				changeObject = new OsmChangeObject(null,finalWaySrc);
@@ -278,7 +295,11 @@ public class CommitAction {
 		HashSet<OsmRelationSrc> srcRelations = new HashSet<OsmRelationSrc>();
 		srcRelations.addAll(dataSet.getSrcRelations());
 		
-		for(OsmRelation relation:osmData.getOsmRelations()) {		
+		for(OsmRelation relation:osmData.getOsmRelations()) {	
+			//make sure the relation was loaded from initial data or created with a create
+			//and not a unloaded refernce created to populate a way or relation
+			if(!relation.getIsLoaded()) continue;
+			
 			OsmRelationSrc originalRelationSrc = dataSet.getRelationSrc(relation.getId());
 			if(originalRelationSrc != null) {
 				//compare and remove
@@ -291,6 +312,10 @@ public class CommitAction {
 				}
 			}
 			else {
+if(relation.getId() > 0) {
+	System.out.println("ERROR in Commit: trying to create a relation with a positive ID.");
+	continue;
+}
 				OsmRelationSrc finalRelationSrc = new OsmRelationSrc();
 				relation.copyInto(finalRelationSrc);
 				changeObject = new OsmChangeObject(null,finalRelationSrc);
@@ -331,14 +356,14 @@ public class CommitAction {
 					osmObject = osmData.getOsmNode(info.oldId);
 					
 					if(info.newId != info.oldId) {
+						//move the node object
+						osmData.nodeIdChanged(info.oldId,info.newId);
+						osmObject.setDataVersion(editNumber);
 						//create node src
 						OsmNodeSrc osmNodeSrc = new OsmNodeSrc();
 						osmObject.copyInto(osmNodeSrc);
 						dataSet.putNodeSrc(osmNodeSrc);
 						osmSrcObject = osmNodeSrc;
-						//move the node object
-						osmData.nodeIdChanged(info.oldId,info.newId);
-						osmObject.setDataVersion(editNumber);
 					}
 					else {
 						//get copy of node src
@@ -360,13 +385,14 @@ public class CommitAction {
 					osmObject = osmData.getOsmWay(info.oldId);
 					
 					if(info.newId != info.oldId) {
+						//move the way object
+						osmData.wayIdChanged(info.oldId,info.newId);
+						osmObject.setDataVersion(editNumber);
 						//create way src
 						OsmWaySrc osmWaySrc = new OsmWaySrc();
 						osmObject.copyInto(osmWaySrc);
 						dataSet.putWaySrc(osmWaySrc);
 						osmSrcObject = osmWaySrc;
-						//move the way object
-						osmData.wayIdChanged(info.oldId,info.newId);
 					}
 					else {
 						//lookup copy of way
@@ -388,13 +414,14 @@ public class CommitAction {
 					osmObject = osmData.getOsmRelation(info.oldId);
 					
 					if(info.newId != info.oldId) {
+						//move the relation object
+						osmData.relationIdChanged(info.oldId,info.newId);
+						osmObject.setDataVersion(editNumber);
 						//create relation src
 						OsmRelationSrc osmRelationSrc = new OsmRelationSrc();
 						osmObject.copyInto(osmRelationSrc);
 						dataSet.putRelationSrc(osmRelationSrc);
 						osmSrcObject = osmRelationSrc;
-						//move the relation object
-						osmData.relationIdChanged(info.oldId,info.newId);
 					}
 					else {
 						//get copy of relation src
@@ -413,11 +440,6 @@ public class CommitAction {
 				//update version in source
 				if(info.newVersion != null) {
 					osmSrcObject.setOsmObjectVersion(info.newVersion);
-				}
-				
-				if(info.newId != info.oldId) {
-					osmObject.setId(info.newId);
-					osmSrcObject.setId(info.newId);
 				}
 			}	
 		}

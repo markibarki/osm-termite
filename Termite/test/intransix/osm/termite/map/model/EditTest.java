@@ -109,8 +109,8 @@ public class EditTest {
 		double x1 = 0;
 		double y1 = 0;
 		oNode1.setPosition(x1,y1);
-		oNode1.addProperty("test","xxx");
-		oNode1.addProperty("buildingpart","stairs");
+		oNode1.putProperty("test","xxx");
+		oNode1.putProperty("buildingpart","stairs");
 		instr = new CreateInstruction(oNode1,mapDataManager);
 		action.addInstruction(instr);
 		
@@ -205,7 +205,7 @@ public class EditTest {
 		wayNodes.add(idn2);
 		wayNodes.add(idn3);
 		wayNodes.add(n1Data.id);
-		oWay1.addProperty("buildingpart","wall");
+		oWay1.putProperty("buildingpart","wall");
 		instr = new CreateInstruction(oWay1,mapDataManager);
 		w1Data.id = oWay1.getId();
 		action.addInstruction(instr);
@@ -299,7 +299,7 @@ public class EditTest {
 		wayNodes2.add(idn5);
 		wayNodes2.add(idn6);
 		wayNodes2.add(idn4);
-		oWay2.addProperty("buildingpart","wall");
+		oWay2.putProperty("buildingpart","wall");
 		instr = new CreateInstruction(oWay2,mapDataManager);
 		long idw2 = oWay2.getId();
 		action.addInstruction(instr);
@@ -328,7 +328,7 @@ public class EditTest {
 		OsmRelationSrc relationSrc = new OsmRelationSrc();
 		relationSrc.addMember(w1Data.id,"way","outer");
 		relationSrc.addMember(idw2,"way","inner");
-		relationSrc.addProperty(OsmModel.KEY_TYPE,"multipolygon");
+		relationSrc.putProperty(OsmModel.KEY_TYPE,"multipolygon");
 		instr = new CreateInstruction(relationSrc,mapDataManager);
 		r1Data.id = relationSrc.getId();
 		action.addInstruction(instr);
@@ -394,8 +394,8 @@ public class EditTest {
 		relationSrc.addMember(w1Data.id,"way","aaa");
 		relationSrc.addMember(r1Data.id,"relation","bbb");
 		relationSrc.addMember(n1Data.id,"node","ccc");
-		relationSrc.addProperty(OsmModel.KEY_TYPE,"generic");
-		relationSrc.addProperty("key","value");
+		relationSrc.putProperty(OsmModel.KEY_TYPE,"generic");
+		relationSrc.putProperty("key","value");
 		instr = new CreateInstruction(relationSrc,mapDataManager);
 		r2Data.id = relationSrc.getId();
 		action.addInstruction(instr);
