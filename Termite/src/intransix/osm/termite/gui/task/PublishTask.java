@@ -39,8 +39,6 @@ public class PublishTask extends SwingWorker<Object,Object>{
 	public Object doInBackground() {
 		
 		try {
-			boolean success;
-
 			success = publishAction.verifyPublish();
 
 			if(!success) {

@@ -23,6 +23,7 @@ public class OsmModel {
 	public static String KEY_REF = "ref";
 	public static String KEY_REF_SCOPE_GEOM = "ref:scope:geom";
 	public static String KEY_REF_SCOPE_RELATION = "ref:scope:rel";
+	public static String DEFAULT_ANGLE = "default_angle";
 	
 	//osm standards
 	public final static String TYPE_NODE = "node";
@@ -71,6 +72,7 @@ public static String PUBLISH_SERVICE = "http://open.micello.com/mapdata";
 			KEY_REF = nameDefs.optString("refKey",KEY_REF);
 			KEY_REF_SCOPE_GEOM = nameDefs.optString("refScopeGeomKey",KEY_REF_SCOPE_GEOM);
 			KEY_REF_SCOPE_RELATION = nameDefs.optString("refScopeRelKey",KEY_REF_SCOPE_RELATION);
+			DEFAULT_ANGLE = nameDefs.optString("defaultAngle",DEFAULT_ANGLE);
 		}
 		
 		OSM_SERVER = json.optString("osmServer",OSM_SERVER);
