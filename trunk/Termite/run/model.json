@@ -9,7 +9,8 @@
 		"refKeyKey":"ref:key",
 		"refKey":"ref",
 		"refScopeGeomKey":"ref:scope:geom",
-		"refScopeRelKey":"ref:scope:rel"
+		"refScopeRelKey":"ref:scope:rel",
+		"defaultAngle":"default_angle"
 	},
 	"geometricKeys":[
 		"level","structure","ele"

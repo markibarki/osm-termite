@@ -46,6 +46,9 @@ public class ProductJson {
 	
 	private HashSet<String> namespaces = new HashSet<String>();
 	private AffineTransform mercToNat;
+	private AffineTransform natToMerc;
+	private double widthMeters;
+	private double heightMeters;
 
 	public ProductJson(MapDataManager mapDataManager, OsmWay structure, List<OsmRelation> levels, int version) {
 		this.mapDataManager = mapDataManager;
@@ -92,19 +95,39 @@ public class ProductJson {
 		json.put("lvl",structureLevelJsons);
 		
 		//set the transform and height and width
-		Rectangle2D rect = getBounds();
-		loadTransformInfo(json,rect);	
+		double defaultAngleDeg = structure.getDoubleProperty("default_angle",0);
+		createTransform(defaultAngleDeg);
+		
+		AffineTransform natToLatLon = MercatorCoordinates.convertMercatorToLatLonTransform(natToMerc);
+		double[] matrix = new double[6];
+		natToLatLon.getMatrix(matrix);
+		JSONArray natToLatLonJson = new JSONArray();
+		for(int i = 0; i < 6; i++) {
+			natToLatLonJson.put(matrix[i]);
+		}
+		
+		//save transform info
+		json.put("t",natToLatLonJson);
+		json.put("h",heightMeters);
+		json.put("w",widthMeters);
 		
 		structureJson = json;
 		
 	}
 	
-	private Rectangle2D getBounds() {
+	private void createTransform(double defaultAngleDeg) {
+
+		double defaultAngleRad = Math.toRadians(defaultAngleDeg);
+		AffineTransform defaultRotationTransform = new AffineTransform();
+		defaultRotationTransform.setToRotation(defaultAngleRad);
+		AffineTransform invDefaultRotationTransform = new AffineTransform();
+		invDefaultRotationTransform.setToRotation(-defaultAngleRad);
 		
 		//measure the structure bounds
 		OsmData osmData = mapDataManager.getOsmData();
 		Rectangle2D rect = null;
-		Point2D point;
+		Point2D mercPoint;
+		Point2D rotPoint = new Point2D.Double();
 		int filterValue;
 		//check the levels
 		for(OsmRelation level:levels) {
@@ -112,68 +135,44 @@ public class ProductJson {
 			for(OsmNode node:osmData.getOsmNodes()) {
 				filterValue = filter.getFilterValue(node,filter.getInitialState());
 				if((filterValue & FilterRule.RENDER_ENABLED) != 0) {
-					point = node.getPoint();
+					mercPoint = node.getPoint();
+					defaultRotationTransform.transform(mercPoint, rotPoint);
 					if(rect == null) {
-						rect = new Rectangle2D.Double(point.getX(),point.getY(),0,0);
+						rect = new Rectangle2D.Double(rotPoint.getX(),rotPoint.getY(),0,0);
 					}
 					else {
-						rect.add(point);
+						rect.add(rotPoint);
 					}
 				}
 			}
 		}
 		//add in the parent structure - assume rect has been set since there are levels
 		for(OsmNode node:structure.getNodes()) {
-			rect.add(node.getPoint());
+			mercPoint = node.getPoint();
+			defaultRotationTransform.transform(mercPoint, rotPoint);
+			rect.add(rotPoint);
 		}
-		return rect;
-	}
-	
-	private void loadTransformInfo(JSONObject json, Rectangle2D rect) throws Exception {
-		
-		//open layers nat frame - y increases in the North direction
-		//micello natural - y increases in south direction
-		
-		//generate the height, width and transform
+		//get the transformation to mercator
+		//get the nat to merc and mrec to openlayers nat tranforms
 		double metersPerMerc = MercatorCoordinates.metersPerMerc(rect.getCenterY());
-		
-		double minLat = MercatorCoordinates.mxToLonRad(rect.getMaxY());
-		double minLon = MercatorCoordinates.mxToLonRad(rect.getMinX());
-		double maxLat = MercatorCoordinates.mxToLonRad(rect.getMinY());
-		double maxLon = MercatorCoordinates.mxToLonRad(rect.getMaxX());
-		
-		double maxPixX = (rect.getWidth()) * metersPerMerc;
-		double maxPixY = (rect.getHeight()) * metersPerMerc;
-		
-		//get the transform from open layers nat to latlon
-		double txx = (maxLon - minLon)/maxPixX;
+		double txx = 1/metersPerMerc;
 		double tyx = 0;
 		double txy = 0;
-		double tyy = (maxLat - minLat)/maxPixY;
-		double tx0 = minLon;
-		double ty0 = maxLat;
-		JSONArray natToLatLonJson = new JSONArray();
-		natToLatLonJson.put(txx);
-		natToLatLonJson.put(tyx);
-		natToLatLonJson.put(txy);
-		natToLatLonJson.put(tyy);
-		natToLatLonJson.put(tx0);
-		natToLatLonJson.put(ty0);
-		
-		//get the nat to merc and mrec to openlayers nat tranforms
-		txx = 1/metersPerMerc;
-		tyx = 0;
-		txy = 0;
-		tyy = -1/metersPerMerc;
-		tx0 = rect.getMinX();
-		ty0 = rect.getMaxY();
-		AffineTransform natToMerc = new AffineTransform();
+		double tyy = -1/metersPerMerc;
+		double tx0 = rect.getMinX();
+		double ty0 = rect.getMaxY();
+		natToMerc = new AffineTransform();
 		natToMerc.setTransform(txx, tyx, txy, tyy, tx0, ty0);
-		mercToNat = natToMerc.createInverse();
-			
-		json.put("t",natToLatLonJson);
-		json.put("h",maxPixY);
-		json.put("w",maxPixX);
+		natToMerc.preConcatenate(invDefaultRotationTransform);
+		try {
+			mercToNat = natToMerc.createInverse();
+		}
+		catch(Exception ex) {
+			//this shouldn't happen
+		}
+		
+		widthMeters = rect.getWidth() * metersPerMerc;
+		heightMeters = rect.getHeight() * metersPerMerc;
 	}
 			
 	private void loadLevelJson(OsmRelation level) throws Exception {
@@ -273,6 +272,10 @@ public class ProductJson {
 		name = feature.getProperty("name");
 		if(name != null) {
 			props.put("name",name);
+		}
+		String ref = feature.getProperty("ref");
+		if(ref != null) {
+			props.put("ref",ref);
 		}
 		if(props.length() > 0) {
 			json.put("properties",props);
