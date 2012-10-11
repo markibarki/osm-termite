@@ -3,7 +3,7 @@
 	"nameDefs":{
 		"levelType":"level",
 		"parentRole":"structure",
-		"nodeRole":"buildingpart",
+		"nodeRole":"node",
 		"anchorRole":"anchor",
 		"zlevelKey":"zlevel",
 		"refKeyKey":"ref:key",
