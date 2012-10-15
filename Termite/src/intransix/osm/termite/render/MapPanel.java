@@ -284,7 +284,7 @@ public class MapPanel extends JPanel implements MapLayerListener,
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if(e.getButton() == MouseEvent.BUTTON3) {
+		if(e.getButton() == MouseEvent.BUTTON1) {
 			viewRegionManager.startPan(e.getX(),e.getY());
 		}
 	}

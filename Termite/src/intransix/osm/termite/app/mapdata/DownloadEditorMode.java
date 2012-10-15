@@ -1,50 +1,43 @@
 package intransix.osm.termite.app.mapdata;
 
 import intransix.osm.termite.app.mode.EditorMode;
-import intransix.osm.termite.gui.TermiteGui;
-import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.checkout.DownloadLayer;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import javax.swing.*;
-import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 
 import intransix.osm.termite.util.*;
 import intransix.osm.termite.gui.task.MapDataRequestTask;
+import intransix.osm.termite.render.checkout.DownloadToolbar;
 
 /**
  *
  * @author sutter
  */
-public class DownloadEditorMode extends EditorMode implements ActionListener {
+public class DownloadEditorMode extends EditorMode {
 	//====================
 	// Properties
 	//====================
+	
 	private final static String MODE_NAME = "Download Mode";
 	private final static String ICON_NAME = "/intransix/osm/termite/resources/stdmodes/downloadMode.png";
-	
-	private final static String SEARCH_CMD = "saerch";
-	private final static String DOWNLOAD_CMD = "download";
-	
-	private final static int SPACE_X = 50;
-	private final static int SPACE_Y = 3;
+
 
 	private MapDataManager mapDataManager;
 	private DownloadLayer downloadLayer;
-	private JToolBar toolBar = null;	
-	private JTextField searchField;
+	private DownloadToolbar toolBar = null;	
+	
 	
 	//====================
 	// Public Methods
 	//====================
 	
 	public DownloadEditorMode(MapDataManager mapDataManager, DownloadLayer downloadLayer) {
-		createToolBar();
-		
 		this.mapDataManager = mapDataManager;
 		this.downloadLayer = downloadLayer;
 		setDataEnabledStates(false,true);
+		
+		toolBar = new DownloadToolbar(this);
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -76,16 +69,7 @@ public class DownloadEditorMode extends EditorMode implements ActionListener {
 		downloadLayer.setActiveState(false);
 	}	
 	
-	public void actionPerformed(ActionEvent ae) {
-		if(DOWNLOAD_CMD.equals(ae.getActionCommand())) {
-			doDownload();
-		}
-		else if(SEARCH_CMD.equals(ae.getActionCommand())) {
-			doSearch();
-		}
-	}
-	
-	private void doDownload() {
+	public void doDownload() {
 		Rectangle2D selection = downloadLayer.getSelectionMercator();
 		if(selection == null) {
 			JOptionPane.showMessageDialog(null, "You must select a bounding box to download.");
@@ -108,46 +92,18 @@ public class DownloadEditorMode extends EditorMode implements ActionListener {
 		mdrt.blockUI();
 	}
 	
-	private void doSearch() {
+	public void doSearch(String searchString) {
 		JOptionPane.showMessageDialog(null, "Search is not implmented.");
+	}
+	
+	public void clearSelection() {
+		downloadLayer.clearSelection();
 	}
 	
 	@Override
 	public JToolBar getToolBar() {
-		if(toolBar == null) {
-			createToolBar();
-		}
 		return toolBar;
 	}
 	
-	
-	private void createToolBar() {
-		toolBar = new JToolBar();
-		toolBar.setFloatable(false);
-		
-		JLabel label = new JLabel("Select area on map and press ");
-		toolBar.add(label);
-		JButton downloadButton = new JButton("Download");
-		toolBar.add(downloadButton);
-		
-		Box.Filler space = new javax.swing.Box.Filler(new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y));
-		toolBar.add(space);
-		
-		
-//		toolBar.add(new JLabel("Enter a location: "));
-		JTextField textField = new JTextField();
-		textField.setColumns(25);
-		textField.setMaximumSize(textField.getPreferredSize());
-		toolBar.add(textField);
-		JButton searchButton = new JButton("Search");
-		
-		toolBar.add(searchButton);
-		
-		
-		//add action listeners
-		searchButton.setActionCommand(SEARCH_CMD);
-		searchButton.addActionListener(this);
-		downloadButton.setActionCommand(DOWNLOAD_CMD);
-		downloadButton.addActionListener(this);
-	}
+
 }
