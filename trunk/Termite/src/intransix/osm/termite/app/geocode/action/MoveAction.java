@@ -163,10 +163,13 @@ if((length1 == 0)||(length2 == 0)) return;
 		double scaleX = doXScale ? scale : 1;
 		double scaleY = doYScale ? scale : 1;
 		
+		workingTransform.setToRotation(rot,baseAnchorMerc.getX(),baseAnchorMerc.getY());
+		
 		moveImageToMerc.setTransform(imageToMerc);
 		moveImageToMerc.translate(baseAnchorImage.getX(),baseAnchorImage.getY());
-		moveImageToMerc.rotate(rot);
 		moveImageToMerc.scale(scaleX,scaleY);
 		moveImageToMerc.translate(-baseAnchorImage.getX(),-baseAnchorImage.getY());
+		
+		moveImageToMerc.preConcatenate(workingTransform);
 	}
 }
