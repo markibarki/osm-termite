@@ -69,6 +69,16 @@ public class GeocodeLayer extends MapLayer implements
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		if(e.getButton() != MouseEvent.BUTTON1) return;
+		
+		if(mouseAction != null) {
+			Point2D mouseMerc = new Point2D.Double();
+			ViewRegionManager viewRegionManager = getViewRegionManager();
+			AffineTransform pixelsToMercator = viewRegionManager.getPixelsToMercator();
+			mouseMerc.setLocation(e.getX(),e.getY());
+			pixelsToMercator.transform(mouseMerc,mouseMerc);
+			mouseAction.mousePressed(mouseMerc, e);
+		}
 	}
 	
 	@Override
@@ -98,16 +108,6 @@ public class GeocodeLayer extends MapLayer implements
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if(e.getButton() != MouseEvent.BUTTON1) return;
-		
-		if(mouseAction != null) {
-			Point2D mouseMerc = new Point2D.Double();
-			ViewRegionManager viewRegionManager = getViewRegionManager();
-			AffineTransform pixelsToMercator = viewRegionManager.getPixelsToMercator();
-			mouseMerc.setLocation(e.getX(),e.getY());
-			pixelsToMercator.transform(mouseMerc,mouseMerc);
-			mouseAction.mousePressed(mouseMerc, e);
-		}
 	}
 	
 	@Override

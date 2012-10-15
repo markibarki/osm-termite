@@ -8,13 +8,15 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.geom.*;
 
 /**
  *
  * @author sutter
  */
-public class DownloadLayer extends MapLayer implements MouseListener, MouseMotionListener {
+public class DownloadLayer extends MapLayer implements MouseListener, 
+		MouseMotionListener, KeyListener {
 	
 	private final static Color FILL_COLOR = new Color(0,0,255,64);
 	private final static Color STROKE_COLOR = new Color(0,0,255,196);
@@ -24,6 +26,7 @@ public class DownloadLayer extends MapLayer implements MouseListener, MouseMotio
 	
 	private Rectangle2D selection = null;
 	private Point2D startPoint = null;
+	private boolean selecting = false;
 	
 	public Rectangle2D getSelectionMercator() {
 		return selection;
@@ -43,10 +46,12 @@ public class DownloadLayer extends MapLayer implements MouseListener, MouseMotio
 			if(isActive) {
 				mapPanel.addMouseListener(this);
 				mapPanel.addMouseMotionListener(this);
+				mapPanel.addKeyListener(this);
 			}
 			else {
 				mapPanel.removeMouseListener(this);
 				mapPanel.removeMouseMotionListener(this);
+				mapPanel.removeKeyListener(this);
 			}
 		}
 	}
@@ -66,18 +71,35 @@ public class DownloadLayer extends MapLayer implements MouseListener, MouseMotio
 		}
 	}
 	
+	/** This method clears the selection. */
+	public void clearSelection() {
+		startPoint = null;
+		selection = null;
+		selecting = false;
+		this.notifyContentChange();
+	}
+	
 	//-------------------------
 	// Mouse Events
 	//-------------------------
 	
 	public void mouseClicked(MouseEvent e) {
+		if(e.getButton() == MouseEvent.BUTTON1) {
+			Point2D point = getMercatorPoint(e.getX(),e.getY());
+			if(!selecting) {
+				startPoint = point;
+				selection = new Rectangle2D.Double(point.getX(),point.getY(),0,0);
+				selecting = true;
+			}
+			else if(selection != null) {
+				updateSelection(point);
+				selecting = false;
+			}
+		}
+		notifyContentChange();
 	}
 	
 	public void mouseDragged(MouseEvent e) {	
-		if((e.getModifiers() & (MouseEvent.BUTTON1_MASK | MouseEvent.BUTTON1_DOWN_MASK)) != 0) {
-			Point2D point = getMercatorPoint(e.getX(),e.getY());
-			updateSelection(point);
-		}
 	}
 	
 	public void mouseEntered(MouseEvent e) {
@@ -87,24 +109,44 @@ public class DownloadLayer extends MapLayer implements MouseListener, MouseMotio
 	}
 	
 	public void mouseMoved(MouseEvent e) {
-		
-	}
-	
-	public void mousePressed(MouseEvent e) {
-		if(e.getButton() == MouseEvent.BUTTON1) {
-			selection = null;
+		if((selecting)&&(selection != null)) {
+			Point2D point = getMercatorPoint(e.getX(),e.getY());
+			updateSelection(point);
 			notifyContentChange();
 		}
 	}
 	
-	public void mouseReleased(MouseEvent e) {
-		if(e.getButton() == MouseEvent.BUTTON1) {
-			Point2D point = getMercatorPoint(e.getX(),e.getY());
-			if(selection != null) {
-				updateSelection(point);
-			}
-		}
+	public void mousePressed(MouseEvent e) {
+		
 	}
+	
+	public void mouseReleased(MouseEvent e) {
+	}
+	
+		
+	// <editor-fold defaultstate="collapsed" desc="Key Listener">
+	
+	/** Handle the key typed event from the text field. */
+    @Override
+	public void keyTyped(KeyEvent e) {
+    }
+
+    /** Handle the key-pressed event from the text field. */
+	@Override
+    public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			clearSelection();
+		}
+    }
+
+    /** Handle the key-released event from the text field. */
+    @Override
+	public void keyReleased(KeyEvent e) {
+    }
+	
+	// </editor-fold>
+
+
 	
 	private Point2D getMercatorPoint(int pixX, int pixY) {
 		Point2D point = new Point2D.Double(pixX,pixY);
@@ -115,30 +157,24 @@ public class DownloadLayer extends MapLayer implements MouseListener, MouseMotio
 	
 	/** This method updates the selection for a new mouse point. */
 	private void updateSelection(Point2D mercPoint) {
-		if(selection == null) {
-			startPoint = mercPoint;
-			selection = new Rectangle2D.Double(mercPoint.getX(),mercPoint.getY(),0,0);
-		} 
-		else {
-			double x,y,w,h;
-			if(mercPoint.getX() < startPoint.getX()) {
-				x = mercPoint.getX();
-				w = startPoint.getX() - x;
-			}
-			else {
-				x = startPoint.getX();
-				w = mercPoint.getX() - x;
-			}
-			if(mercPoint.getY() < startPoint.getY()) {
-				y = mercPoint.getY();
-				h = startPoint.getY() - y;
-			}
-			else {
-				y = startPoint.getY();
-				h = mercPoint.getY() - y;
-			}
-			selection.setRect(x, y, w, h);
+		
+		double x,y,w,h;
+		if(mercPoint.getX() < startPoint.getX()) {
+			x = mercPoint.getX();
+			w = startPoint.getX() - x;
 		}
-		notifyContentChange();
+		else {
+			x = startPoint.getX();
+			w = mercPoint.getX() - x;
+		}
+		if(mercPoint.getY() < startPoint.getY()) {
+			y = mercPoint.getY();
+			h = startPoint.getY() - y;
+		}
+		else {
+			y = startPoint.getY();
+			h = mercPoint.getY() - y;
+		}
+		selection.setRect(x, y, w, h);
 	}
 }

@@ -152,6 +152,16 @@ public class EditLayer extends MapLayer implements
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		AffineTransform pixelsToMercator = getViewRegionManager().getPixelsToMercator();
+		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
+		pixelsToMercator.transform(mouseMerc, mouseMerc);
+		
+		if(e.getButton() == MouseEvent.BUTTON1) {
+			if(mouseClickAction != null) {
+				//let the mouse edit action handle the press
+				mouseClickAction.mousePressed(mouseMerc,e);
+			}
+		}
 	}
 	
 	@Override
@@ -193,16 +203,7 @@ public class EditLayer extends MapLayer implements
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		AffineTransform pixelsToMercator = getViewRegionManager().getPixelsToMercator();
-		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
-		pixelsToMercator.transform(mouseMerc, mouseMerc);
 		
-		if(e.getButton() == MouseEvent.BUTTON1) {
-			if(mouseClickAction != null) {
-				//let the mouse edit action handle the press
-				mouseClickAction.mousePressed(mouseMerc,e);
-			}
-		}
 	}
 	
 	@Override
@@ -211,7 +212,7 @@ public class EditLayer extends MapLayer implements
 	
 	// </editor-fold>
 	
-	// <editor-fold defaultstate="collapsed" desc="Key Listener and Focus Listener">
+	// <editor-fold defaultstate="collapsed" desc="Key Listener">
 	
 	/** Handle the key typed event from the text field. */
     @Override
