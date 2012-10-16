@@ -146,24 +146,42 @@ public class PathFeature extends PiggybackData implements Feature {
 			// Multipoly Case
 			//-----------------
 			List<OsmMember> members = multipoly.getMembers();
+			PathFeature currentFeature;
+			OsmWay currentWay;
+			boolean firstDone = false;
 			
-			if(members.get(0).osmObject == osmWay) {
-				//main way
-				
-				this.isArea = osmWay.getIsArea();
+			for(OsmMember member:members) {
+				if(member.osmObject instanceof OsmWay) {
+					currentWay = (OsmWay)member.osmObject;
+					
+					//get the feature for this compononent of the multipoly
+					currentFeature = (PathFeature)currentWay.getPiggybackData(RenderLayer.piggybackIndex);
+					if(currentFeature == null) {
+						currentFeature = new PathFeature(currentWay);
+						currentWay.setPiggybackData(RenderLayer.piggybackIndex, currentFeature);
+					}
 
-				for(OsmMember member:members) {
+					//just use first as the main
+					//don't store the others
+					if(!firstDone) {
+						currentFeature.isArea = currentWay.getIsArea();
+						currentFeature.shape = path;
+						firstDone = true;
+					}
+					else {
+						currentFeature.shape = null;
+					}
+
+					//add this way to the multipolygon
 					if(member.osmObject instanceof OsmWay) {
 						addWayToPath(path,(OsmWay)member.osmObject,isArea, mercatorToLocal);
 					}
+					
+					//mark the feature as up to date
+					currentFeature.markAsUpToDate(currentWay);
 				}
-				
-				this.shape = path;
-			
 			}
-			else {
-				this.shape = null;
-			}
+
 		}
 		else {
 			//-----------------

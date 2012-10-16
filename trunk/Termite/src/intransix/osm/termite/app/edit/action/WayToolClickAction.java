@@ -17,6 +17,7 @@ import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.ArrayList;
 import java.awt.event.MouseEvent;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -102,6 +103,11 @@ public class WayToolClickAction implements MouseClickAction {
 		LevelManager levelManager = editManager.getLevelManager();
 		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
 		OsmRelation activeLevel = levelManager.getSelectedLevel();
+		
+		if(featureInfo == null) {
+			JOptionPane.showMessageDialog(null,"You must select a feature type before you create a way");
+			return;
+		}
 	
 		//execute a way node addition
 		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
