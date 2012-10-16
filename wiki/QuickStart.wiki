@@ -35,13 +35,13 @@ A windows Batch file is included to open the editor on a windows machine.
   * You should see you are in the middle of the desert in Nevada, USA.
  * Move the map around
   * Pan - options:
-   * right click and drag
+   * left click and drag the mouse
    * use the arrow keys
   * Zoom - options:
    * UI buttons on map
    * mouse scroll wheel
    * page up/page down keys
- * Download data - to Download data, drag the mouse to create a selection window and then press the "Download Data" button.
+ * Download data - to Download data, click the mouse to start a selection. Click again to complete the selection. Then press the "Download Data" button to download the data.
   * Select the entire error covered by the screen at program startup. Since we have moved the screen, close and reopen the program to do this step. 
   * Downloading this data should display three buildings.
    * The top left panel of the editor is the content pane. It should display the map data including a list of the buildings and their levels.
