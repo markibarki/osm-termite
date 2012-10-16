@@ -8,8 +8,6 @@ Termite is an editor for indoor map data in OpenStreetMap.
 
 *OpenStreetMap currently does not have a standard for making indoor maps.* Termite uses one of the proposed mapping standards. It is also designed so the underlying model used can be changed.
 
-*Termite as currently shipped is NOT connected to the live database. It is connected to a dev database.* This database currently has little data. In many cases you will be starting from scratch.
-
 Please send input to sutter@intransix.com.
 
 == Setting Up ==
@@ -18,9 +16,6 @@ You need the following to get started.
  * The Termite program
   * The Termite program requires the Java 6 JRE (the same as JOSM). 
   * Included in the package are some needed configuration files. The contents of the zip file should be unzipped as is into a folder.
- * A username and password on the OSM dev server.
-  * This is only needed if you plan on committing data.
-  * Obtain a username and password from http://api06.dev.openstreetmap.org
 
 A windows Batch file is included to open the editor on a windows machine.
 
