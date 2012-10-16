@@ -225,7 +225,6 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	public void setBaseMapManager(BaseMapManager baseMapManager) {
 		this.baseMapManager = baseMapManager;
-		baseMapManager.addBaseMapListener(this);
 		java.util.List<TileInfo> tileInfoList = baseMapManager.getBaseMapList();
 		
 		//add base map choices
@@ -235,6 +234,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 				addBaseMapMenuItem(tileInfo);
 			}
 		}
+		
+		this.baseMapChanged(baseMapManager.getBaseMapInfo());
+		baseMapManager.addBaseMapListener(this);
 	}
 	
 	public void setEditManager(EditManager editManager) {
