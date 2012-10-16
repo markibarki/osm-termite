@@ -22,7 +22,7 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	
 	public final static int DEFAULT_ZLEVEL = 0;
 
-	private static int piggybackIndex;
+	static int piggybackIndex;
 	static {
 		piggybackIndex = OsmObject.registerPiggybackUser();
 	}

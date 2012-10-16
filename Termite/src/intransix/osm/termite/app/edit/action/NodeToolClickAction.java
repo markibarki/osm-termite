@@ -15,6 +15,7 @@ import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.Point2D;
 import java.util.List;
 import java.awt.event.MouseEvent;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -60,6 +61,11 @@ public class NodeToolClickAction implements MouseClickAction {
 		LevelManager levelManager = editManager.getLevelManager();
 		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
 		OsmRelation activeLevel = levelManager.getSelectedLevel();
+		
+		if(featureInfo == null) {
+			JOptionPane.showMessageDialog(null,"You must select a feature type before you create a node.");
+			return;
+		}
 	
 		//execute a node addition
 		NodeCreateEdit nce = new NodeCreateEdit(mapDataManager);
