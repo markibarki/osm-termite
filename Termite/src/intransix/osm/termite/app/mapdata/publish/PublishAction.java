@@ -33,6 +33,9 @@ public class PublishAction {
 //this is not a perfect check, SHOULD BE IMPROVED
 		String undoMessage = mapDataManager.getUndoMessage();
 
+//skip check for editted data
+//if(true) return true;
+		
 		if(undoMessage == null) {
 			return true;
 		}
