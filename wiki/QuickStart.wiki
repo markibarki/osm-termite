@@ -26,8 +26,8 @@ A windows Batch file is included to open the editor on a windows machine.
  * Open the Termite program
   * Contact me for more help if there are any problems.
  * Turn on a base map
-  * Go to the menu Map > Base Map  Mapquest OSM to turn on a base map using Mapquest OSM tiles. 
-  * You should see you are in the middle of the desert in Nevada, USA.
+  * Go to the menu Map > Base Map  OpenStreetMap to turn on a base map using standard Mapnik OSM tiles. 
+  * You should see you are in the middle of the desert in Nevada, USA, including one or more isolated buildings. (Don't lose these.)
  * Move the map around
   * Pan - options:
    * left click and drag the mouse
@@ -37,8 +37,7 @@ A windows Batch file is included to open the editor on a windows machine.
    * mouse scroll wheel
    * page up/page down keys
  * Download data - to Download data, click the mouse to start a selection. Click again to complete the selection. Then press the "Download Data" button to download the data.
-  * Select the entire error covered by the screen at program startup. Since we have moved the screen, close and reopen the program to do this step. 
-  * Downloading this data should display three buildings.
+  * Select the area around the displayed buildings. These should be sample data.
    * The top left panel of the editor is the content pane. It should display the map data including a list of the buildings and their levels.
 
 http://wiki.openstreetmap.org/w/images/d/da/OpenProgram.png
