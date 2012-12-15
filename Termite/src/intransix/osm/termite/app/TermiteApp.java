@@ -40,7 +40,7 @@ public class TermiteApp {
 	//this can be overridden using a command line argument
 	private static String CONFIG_FILE_NAME = "config.json";
 	
-	private final static String VERSION = "0.0.8p0";
+	private final static String VERSION = "0.0.8p1";
 	
 	private TermiteGui gui;
 	private LoginManager loginManager = new LoginManager();
