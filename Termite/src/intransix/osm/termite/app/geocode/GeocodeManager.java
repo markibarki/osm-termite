@@ -67,7 +67,13 @@ public class GeocodeManager {
 	}
 	
 	/** This method sets the source layer that will be geocoded. */
-	public void setSourceLayer(SourceLayer sourceLayer) {	
+	public void setSourceLayer(SourceLayer sourceLayer) {
+
+//test caching geocode
+if(this.sourceLayer != null) {
+	this.sourceLayer.storeChanges();
+}
+
 		this.sourceLayer = sourceLayer;
 		if(sourceLayer != null) {
 			imageToMerc = sourceLayer.getImageToMerc();
@@ -139,6 +145,11 @@ public class GeocodeManager {
 	/** This method should be called when the geocode layer is made inactive. */
 	public void layerInactive() {
 		selection = INVALID_SELECTION;
+
+//test caching geocode
+if(sourceLayer != null) {
+	sourceLayer.storeChanges();
+}
 		
 		for(AnchorPoint ap:anchorPoints) {
 			ap.reset();
