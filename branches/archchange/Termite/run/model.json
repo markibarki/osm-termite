@@ -1,0 +1,22 @@
+{
+	"levelSpec":"nodeRelation",
+	"nameDefs":{
+		"levelType":"level",
+		"parentRole":"structure",
+		"nodeRole":"node",
+		"anchorRole":"anchor",
+		"zlevelKey":"zlevel",
+		"refKeyKey":"ref:key",
+		"refKey":"ref",
+		"refScopeGeomKey":"ref:scope:geom",
+		"refScopeRelKey":"ref:scope:rel",
+		"defaultAngle":"default_angle"
+	},
+	"geometricKeys":[
+		"level","structure","ele"
+	],
+	
+	"_osmServer":"http://api06.dev.openstreetmap.org",
+	"osmServer":"http://api.openstreetmap.org",
+	
+}
