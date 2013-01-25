@@ -343,6 +343,10 @@ if(relation.getId() > 0) {
 		OsmObject osmObject;
 		OsmSrcData osmSrcObject;
 		for(UpdateInfo info:updateList) {
+			
+//@TODO I'm not sure I properly handle the case of a object NOT deleted because of a 
+//conflict on the server. The object will not be reinstated into the working
+//data set. Figure out how to respond to this.
 	
 			if(info.objectType.equals("node")) {
 				if(info.newId == OsmData.INVALID_ID) {
@@ -368,8 +372,20 @@ if(relation.getId() > 0) {
 					else {
 						//get copy of node src
 						osmSrcObject = dataSet.getNodeSrc(info.oldId);
-						//update source object
-						osmObject.copyInto(osmSrcObject);
+						
+						if((osmObject != null)&&(osmObject.getDataVersion() != OsmData.INVALID_DATA_VERSION)) {
+							//this was an update - update the source object						
+							osmObject.copyInto(osmSrcObject);
+						}
+						else {
+							//this was a failed delete
+							//recreate the failed delete node
+							OsmNode node = osmData.getOsmNode(osmSrcObject.getId(),true);
+							node.copyFrom((OsmNodeSrc)osmSrcObject, osmData);
+							node.setDataVersion(editNumber);
+							osmObject = node;
+						}
+						
 					}	
 				}
 			}
@@ -397,8 +413,19 @@ if(relation.getId() > 0) {
 					else {
 						//lookup copy of way
 						osmSrcObject = dataSet.getWaySrc(info.oldId);
-						//update source object
-						osmObject.copyInto(osmSrcObject);
+						
+						if((osmObject != null)&&(osmObject.getDataVersion() != OsmData.INVALID_DATA_VERSION)) {
+							//this was an update - update the source object						
+							osmObject.copyInto(osmSrcObject);
+						}
+						else {
+							//this was a failed delete
+							//recreate the failed delete way
+							OsmWay way = osmData.getOsmWay(osmSrcObject.getId(),true);
+							way.copyFrom((OsmWaySrc)osmSrcObject, osmData);
+							way.setDataVersion(editNumber);
+							osmObject = way;
+						}
 					}	
 				}
 			}
@@ -426,8 +453,19 @@ if(relation.getId() > 0) {
 					else {
 						//get copy of relation src
 						osmSrcObject = dataSet.getRelationSrc(info.oldId);
-						//update source object
-						osmObject.copyInto(osmSrcObject);
+						
+						if((osmObject != null)&&(osmObject.getDataVersion() != OsmData.INVALID_DATA_VERSION)) {
+							//this was an update - update the source object						
+							osmObject.copyInto(osmSrcObject);
+						}
+						else {
+							//this was a failed delete
+							//recreate the failed delete way
+							OsmRelation relation = osmData.getOsmRelation(osmSrcObject.getId(),true);
+							relation.copyFrom((OsmRelationSrc)osmSrcObject, osmData);
+							relation.setDataVersion(editNumber);
+							osmObject = relation;
+						}
 					}	
 				}	
 			}
