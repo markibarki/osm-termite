@@ -1,6 +1,6 @@
 package intransix.osm.termite.app.edit.action;
 
-import intransix.osm.termite.map.workingdata.OsmObject;
+import intransix.osm.termite.app.filter.FilterManager;
 import intransix.osm.termite.map.workingdata.OsmWay;
 import intransix.osm.termite.map.workingdata.OsmSegment;
 import intransix.osm.termite.map.workingdata.OsmNode;
@@ -44,40 +44,40 @@ public class SelectSnapMoveAction implements MouseMoveAction {
 		//check for hovering over these objects
 		MapDataManager mapDataManager = editManager.getOsmData();
 		SnapObject snapObject;
-		List<OsmObject> objectList = mapDataManager.getFeatureList();
-		for(OsmObject mapObject:objectList) {
+
+		for(OsmNode node:mapDataManager.getOsmData().getOsmNodes()) {
 			//make sure edit is enabled for this object
-			if(!MapDataManager.getObjectEditEnabled(mapObject)) continue;
+			if(!FilterManager.getObjectEditEnabled(node)) continue;
 
 			//do the hover check
-			if(mapObject instanceof OsmNode) {
-				//check for a node hit
-				snapObject = SnapNode.testNode((OsmNode)mapObject, mouseMerc, mercRadSq);
-				if(snapObject != null) {
-					snapObjects.add(snapObject);
-				}
 
-				//check for a segment hit
-				for(OsmSegment segment:((OsmNode)mapObject).getSegments()) {
-					if(!MapDataManager.getSegmentEditEnabled(segment)) continue;
+			//check for a node hit
+			snapObject = SnapNode.testNode(node, mouseMerc, mercRadSq);
+			if(snapObject != null) {
+				snapObjects.add(snapObject);
+			}
 
-					//only do the segments that start with this node, to avoid doing them twice
-					if(segment.getNode1() == mapObject) {
+			//check for a segment hit
+			for(OsmSegment segment:node.getSegments()) {
+				if(!FilterManager.getSegmentEditEnabled(segment)) continue;
 
-							//selection preview - when we are selecting an object
-							//select objects if no mouse edit action is active
+				//only do the segments that start with this node, to avoid doing them twice
+				if(segment.getNode1() == node) {
 
-							//check for a virtual node hit
-							snapObject = testVirtualNodeHit(segment, mouseMerc, mercRadSq);
-							if(snapObject != null) {
-								snapObjects.add(snapObject);
-							}
+						//selection preview - when we are selecting an object
+						//select objects if no mouse edit action is active
 
-							//check for way hit
-							loadHitWays(segment, mouseMerc, mercRadSq, snapObjects);
-					}
+						//check for a virtual node hit
+						snapObject = testVirtualNodeHit(segment, mouseMerc, mercRadSq);
+						if(snapObject != null) {
+							snapObjects.add(snapObject);
+						}
+
+						//check for way hit
+						loadHitWays(segment, mouseMerc, mercRadSq, snapObjects);
 				}
 			}
+
 		}
 		
 		//order the snap objects and select the active one

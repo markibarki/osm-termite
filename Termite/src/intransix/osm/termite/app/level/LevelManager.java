@@ -52,6 +52,12 @@ public class LevelManager implements MapDataListener {
 		mapDataUpdated();
 	}
 	
+	/** This returns the priority for this object as a map data listener. */
+	@Override
+	public int getMapDataListenerPriority() {
+		return 2;
+	}
+	
 	/** This method should be called when the map data is updated, from the UI thread. */
 	public void mapDataUpdated() {
 		OsmData osmData = mapDataManager.getOsmData();

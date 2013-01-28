@@ -176,6 +176,8 @@ public class ProductJson {
 	}
 			
 	private void loadLevelJson(OsmRelation level) throws Exception {
+throw new Exception("Not implemented: localLevelJson");
+/*
 		JSONObject json = new JSONObject();
 		JSONObject partialJson = new JSONObject();
 		
@@ -224,6 +226,7 @@ public class ProductJson {
 		//save jsons
 		levelJsons.add(json);
 		structureLevelJsons.put(partialJson);
+*/
 	}	
 	
 	private void createFootprintFeature() throws Exception {
@@ -258,7 +261,8 @@ public class ProductJson {
 		//we want a single serialized name that includes all the properties
 		//that identify the object. The feature info will do this.
 		//But we will pull the leaeding key out as the propery key
-		FeatureInfo featureInfo = MapDataManager.getObjectFeatureInfo(feature);
+//@TODO clean this line up
+		FeatureInfo featureInfo = intransix.osm.termite.render.map.RenderLayer.getObjectFeatureInfo(feature);
 		String name = featureInfo.getName();
 		int index = name.indexOf(KEY_VALUE_DELIMITER);
 		JSONObject props = new JSONObject();

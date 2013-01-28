@@ -1,10 +1,8 @@
 package intransix.osm.termite.render.edit;
 
-import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.filter.FilterManager;
 import intransix.osm.termite.map.workingdata.OsmSegmentWrapper;
 import intransix.osm.termite.map.workingdata.OsmWay;
-import intransix.osm.termite.render.edit.Style;
-import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.Graphics2D;
 import java.awt.geom.*;
 
@@ -57,7 +55,7 @@ public abstract class EditDrawable {
 			OsmWay way, Style style) {
 		
 		for(OsmSegmentWrapper osw:way.getSegments()) {
-			if(MapDataManager.getSegmentEditEnabled(osw.segment)) {
+			if(FilterManager.getSegmentEditEnabled(osw.segment)) {
 				renderSegment(g2,mercatorToPixels,
 						osw.segment.getNode1().getPoint(),
 						osw.segment.getNode2().getPoint(),

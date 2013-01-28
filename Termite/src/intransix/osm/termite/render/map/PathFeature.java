@@ -6,7 +6,7 @@ import intransix.osm.termite.map.workingdata.OsmMember;
 import intransix.osm.termite.map.workingdata.OsmRelation;
 import intransix.osm.termite.map.workingdata.OsmModel;
 import intransix.osm.termite.map.workingdata.OsmNode;
-import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.filter.FilterManager;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
 import java.awt.Color;
@@ -60,7 +60,7 @@ public class PathFeature extends PiggybackData implements Feature {
 	
 	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
-		if(!MapDataManager.getObjectRenderEnabled(osmWay)) return;
+		if(!FilterManager.getObjectRenderEnabled(osmWay)) return;
 		
 		if(!isUpToDate(osmWay)) {			
 			//load geometry
@@ -155,10 +155,10 @@ public class PathFeature extends PiggybackData implements Feature {
 					currentWay = (OsmWay)member.osmObject;
 					
 					//get the feature for this compononent of the multipoly
-					currentFeature = (PathFeature)currentWay.getPiggybackData(RenderLayer.piggybackIndex);
+					currentFeature = (PathFeature)currentWay.getPiggybackData(RenderLayer.piggybackIndexRender);
 					if(currentFeature == null) {
 						currentFeature = new PathFeature(currentWay);
-						currentWay.setPiggybackData(RenderLayer.piggybackIndex, currentFeature);
+						currentWay.setPiggybackData(RenderLayer.piggybackIndexRender, currentFeature);
 					}
 
 					//just use first as the main

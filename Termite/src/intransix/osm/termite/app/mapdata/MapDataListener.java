@@ -21,4 +21,12 @@ public interface MapDataListener {
 	 *						by this edit action.
 	 */
 	void osmDataChanged(int editNumber);
+	
+	/** This method returns the priority for the listener. It is used to determine
+	 * the order the listeners get called.
+	 * 
+	 * @return				The priority of the map listener
+	 */
+	int getMapDataListenerPriority();
+	
 }
