@@ -41,7 +41,8 @@ public class EditNode extends EditObject {
 	 * Use the static method from EditObject to get an instance of this object. */
 	public EditNode(OsmNode node) {
 		this.node = node;
-		this.featureInfo = MapDataManager.getObjectFeatureInfo(node);
+//@TODO clean this line up
+		this.featureInfo = intransix.osm.termite.render.map.RenderLayer.getObjectFeatureInfo(node);
 		this.point = new Point2D.Double(node.getPoint().getX(),node.getPoint().getY());
 	}
 	

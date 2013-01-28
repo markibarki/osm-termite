@@ -66,7 +66,13 @@ public class PropertyTabPane extends JTabbedPane implements
 		if(structureActive) structurePage.updateProperties();
 		if(levelActive) levelPage.updateProperties();
 		if(featureActive) featurePage.updateProperties();
-	}		
+	}	
+	
+	/** This returns the priority for this object as a map data listener. */
+	@Override
+	public int getMapDataListenerPriority() {
+		return 2;
+	}
 	
 	/** This method is called when a map level is selected. It may be called 
 	 * with the value null for the level or the level and the structure. 

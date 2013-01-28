@@ -9,7 +9,7 @@ import intransix.osm.termite.app.edit.snapobject.SnapNode;
 import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import intransix.osm.termite.map.workingdata.OsmData;
+import intransix.osm.termite.app.filter.FilterManager;
 import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.map.workingdata.OsmObject;
 import intransix.osm.termite.map.workingdata.OsmSegment;
@@ -60,35 +60,34 @@ public class CreateSnapMoveAction implements MouseMoveAction {
 		
 		//check for hovering over these objects
 		SnapObject snapObject;
-		List<OsmObject> objectList = mapDataManager.getFeatureList();
-		for(OsmObject mapObject:objectList) {
+		
+		//check nodes and segments from them
+		for(OsmNode node:mapDataManager.getOsmData().getOsmNodes()) {		
+	
 			//make sure edit is enabled for this object
-			if(!MapDataManager.getObjectEditEnabled(mapObject)) continue;
+			if(!FilterManager.getObjectEditEnabled(node)) continue;
 
-			//do the hover check
-			if(mapObject instanceof OsmNode) {
-				//check for a node hit
-				snapObject = SnapNode.testNode((OsmNode)mapObject, mouseMerc, mercRadSq);
-				if(snapObject != null) {
-					snapObjects.add(snapObject);
-				}
+			//check for a node hit
+			snapObject = SnapNode.testNode(node, mouseMerc, mercRadSq);
+			if(snapObject != null) {
+				snapObjects.add(snapObject);
+			}
 
-				//check for a segment hit
-				for(OsmSegment segment:((OsmNode)mapObject).getSegments()) {
-					if(!MapDataManager.getSegmentEditEnabled(segment)) continue;
+			//check for a segment hit
+			for(OsmSegment segment:(node).getSegments()) {
+				if(!FilterManager.getSegmentEditEnabled(segment)) continue;
 
-					//only do the segments that start with this node, to avoid doing them twice
-					if(segment.getNode1() == mapObject) {
-						//snap preview - when we are in an edit
-						//check for segment and extension hit
-						//do this when a mouse edit action is active
+				//only do the segments that start with this node, to avoid doing them twice
+				if(segment.getNode1() == node) {
+					//snap preview - when we are in an edit
+					//check for segment and extension hit
+					//do this when a mouse edit action is active
 
-						SnapSegment snapSegment = testSegmentHit(segment,
-								mouseMerc,mercRadSq);
-						if(snapSegment != null) {
-							snapObjects.add(snapSegment);
-							workingSnapSegments.add(snapSegment);
-						}
+					SnapSegment snapSegment = testSegmentHit(segment,
+							mouseMerc,mercRadSq);
+					if(snapSegment != null) {
+						snapObjects.add(snapSegment);
+						workingSnapSegments.add(snapSegment);
 					}
 				}
 			}

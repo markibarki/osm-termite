@@ -30,7 +30,8 @@ System.out.println("Update feature Type");
 
 		try {
 			//get the new properties
-			FeatureTypeManager featureTypeManager = getMapDataManager().getFeatureTypeManager();
+//@TODO clean this line up
+			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
 			List<PropertyPair> newProperties = featureTypeManager.getFeatureProperties(featureInfo);
 			
 			//traverse list of objects to update
@@ -47,7 +48,8 @@ System.out.println("Update feature Type");
 				}
 				
 				//remove old feature properties, if needed
-				FeatureInfo oldFeatureInfo = MapDataManager.getObjectFeatureInfo(osmObject);
+//@TODO clean this line up
+				FeatureInfo oldFeatureInfo = intransix.osm.termite.render.map.RenderLayer.getObjectFeatureInfo(osmObject);
 				if(oldFeatureInfo != null) {
 					oldProperties = featureTypeManager.getFeatureProperties(oldFeatureInfo);
 					for(PropertyPair pp:oldProperties) {

@@ -1,8 +1,7 @@
 package intransix.osm.termite.render.map;
 
-import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.filter.FilterManager;
 import intransix.osm.termite.map.workingdata.OsmNode;
-import intransix.osm.termite.map.workingdata.OsmData;
 import intransix.osm.termite.map.workingdata.PiggybackData;
 import intransix.osm.termite.map.theme.Style;
 import intransix.osm.termite.map.theme.Theme;
@@ -44,7 +43,7 @@ public class PointFeature extends PiggybackData implements Feature {
 	
 	public void render(Graphics2D g2, AffineTransform mercatorToLocal, double zoomScale, Theme theme) {
 		
-		if(!MapDataManager.getObjectRenderEnabled(osmNode)) return;
+		if(!FilterManager.getObjectRenderEnabled(osmNode)) return;
 		
 		if(!isUpToDate(osmNode)) {
 			//load geometry

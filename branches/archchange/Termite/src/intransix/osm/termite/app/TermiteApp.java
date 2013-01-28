@@ -192,12 +192,10 @@ public class TermiteApp {
 		//featture type
 		featureTypeManager = new FeatureTypeManager();
 		featureTypeManager.init();
-		mapDataManager.setFeatureTypeManager(featureTypeManager);
 		
 		//filter
 		filterManager = new FilterManager();
-		mapDataManager.setFilterManager(filterManager);
-		filterManager.addFilterListener(mapDataManager);
+		filterManager.setMapDataManager(mapDataManager);
 		
 		//levels
 		levelManager = new LevelManager(mapDataManager, filterManager);
@@ -251,6 +249,8 @@ public class TermiteApp {
 		//more generic init
 		RenderLayer renderLayer = mapDataManager.getRenderLayer();
 		renderLayer.setTheme(theme);
+		renderLayer.setFeatureTypeManager(featureTypeManager);
+		filterManager.addFilterListener(renderLayer);
 		viewRegionManager.addLocalCoordinateListener(renderLayer);
 		
 		TileLayer tileLayer = baseMapManager.getBaseMapLayer();

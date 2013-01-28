@@ -291,6 +291,12 @@ public class TermiteGui extends javax.swing.JFrame implements
 		updateUndoRedoItems();
 	}
 	
+	/** This returns the priority for this object as a map data listener. */
+	@Override
+	public int getMapDataListenerPriority() {
+		return 2;
+	}
+	
 	/** This method is called when the baseMap changes. */
 	@Override
 	public void baseMapChanged(TileInfo tileInfo) {

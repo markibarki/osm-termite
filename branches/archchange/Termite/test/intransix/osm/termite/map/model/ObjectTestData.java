@@ -57,7 +57,8 @@ public abstract class ObjectTestData {
 		}
 		
 		//check feature info
-		FeatureInfo fi = MapDataManager.getObjectFeatureInfo(osmObject);
+//@TODO clean this line up
+		FeatureInfo fi = intransix.osm.termite.render.map.RenderLayer.getObjectFeatureInfo(osmObject);
 		if(fi == null) assert(featureInfoName == null);
 		else assert(featureInfoName.equals(fi.getName()));
 		

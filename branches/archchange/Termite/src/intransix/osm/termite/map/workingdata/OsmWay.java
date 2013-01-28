@@ -37,7 +37,8 @@ public class OsmWay extends OsmObject<OsmWaySrc> {
 	
 	/** This returns true if the way should be an area. False indicates line. */
 	public boolean getIsArea() {
-		FeatureInfo featureInfo = MapDataManager.getObjectFeatureInfo(this);
+//@TODO clean this line up
+		FeatureInfo featureInfo = intransix.osm.termite.render.map.RenderLayer.getObjectFeatureInfo(this);
 		boolean defaultIsArea = (featureInfo.getDefaultPath() == FeatureInfo.GEOM_TYPE_AREA);
 		return this.getBooleanProperty(OsmModel.KEY_AREA,defaultIsArea);
 	}

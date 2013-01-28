@@ -96,6 +96,12 @@ public class EditorModeManager implements MapDataListener {
 		//no action
 	}
 	
+	/** This returns the priority for this object as a map data listener. */
+	@Override
+	public int getMapDataListenerPriority() {
+		return 2;
+	}
+	
 	/** This method retrieves the editor modes. */
 	public List<EditorMode> getEditorModes() {
 		return editorModes;
