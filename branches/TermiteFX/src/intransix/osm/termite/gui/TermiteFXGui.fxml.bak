@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="431.0" prefWidth="495.0" xmlns:fx="http://javafx.com/fxml" fx:controller="fxmltest.FXMLTestController">
+  <children>
+    <MenuBar>
+      <menus>
+        <Menu mnemonicParsing="false" text="File">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Commit" />
+            <MenuItem mnemonicParsing="false" text="Clear Data" />
+            <MenuItem mnemonicParsing="false" text="Quit" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Edit">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Undo" />
+            <MenuItem mnemonicParsing="false" text="Redo" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Map">
+          <items>
+            <Menu mnemonicParsing="false" text="Base Map">
+              <items>
+                <MenuItem mnemonicParsing="false" text="None" />
+              </items>
+            </Menu>
+            <MenuItem mnemonicParsing="false" text="Source Images..." />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Dev">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Publish..." />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+          <items>
+            <MenuItem mnemonicParsing="false" text="About..." />
+          </items>
+        </Menu>
+      </menus>
+    </MenuBar>
+    <HBox id="HBox" alignment="CENTER" prefWidth="415.0">
+      <children>
+        <ToolBar>
+          <items>
+            <Button mnemonicParsing="false" text="Button" />
+          </items>
+        </ToolBar>
+        <ToolBar HBox.hgrow="ALWAYS">
+          <items>
+            <Button mnemonicParsing="false" text="Button" />
+          </items>
+        </ToolBar>
+      </children>
+    </HBox>
+    <SplitPane dividerPositions="0.29006085192697767" focusTraversable="true" prefHeight="286.0" prefWidth="407.0" VBox.vgrow="ALWAYS">
+      <items>
+        <SplitPane dividerPositions="0.3736559139784946" focusTraversable="true" orientation="VERTICAL" prefHeight="280.0" prefWidth="222.0">
+          <items>
+            <ScrollPane id="ScrollPane" fx:id="contentScrollPane" prefViewportHeight="89.0" prefViewportWidth="220.0" />
+            <SplitPane dividerPositions="0.5043859649122807" focusTraversable="true" orientation="VERTICAL" prefHeight="236.0" prefWidth="220.0">
+              <items>
+                <ScrollPane id="ScrollPane" fx:id="featureScrollPane" prefViewportHeight="88.0" prefViewportWidth="218.0" />
+                <TabPane fx:id="propertyTabPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" />
+              </items>
+            </SplitPane>
+          </items>
+        </SplitPane>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+          <children>
+            <SplitPane dividerPositions="0.5698924731182796" focusTraversable="true" orientation="VERTICAL" prefHeight="158.0" prefWidth="136.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <items>
+                <StackPane id="StackPane" fx:id="mapPane" />
+                <TabPane fx:id="dataTabPane" prefHeight="153.0" prefWidth="183.0" tabClosingPolicy="UNAVAILABLE" />
+              </items>
+            </SplitPane>
+          </children>
+        </AnchorPane>
+      </items>
+    </SplitPane>
+  </children>
+</VBox>

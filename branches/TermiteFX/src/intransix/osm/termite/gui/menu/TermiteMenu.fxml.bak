@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import intransix.osm.termite.gui.property.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<fx:root type="javafx.scene.layout.HBox" id="baseMapMenu" xmlns:fx="http://javafx.com/fxml" fx:controller="intransix.osm.termite.gui.menu.TermiteMenu">
+  <children>
+    <MenuBar HBox.hgrow="ALWAYS">
+      <menus>
+        <Menu mnemonicParsing="false" text="File">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#onFileCommit" text="Commit" />
+            <MenuItem mnemonicParsing="false" onAction="#onFileClearData" text="Clear Data" />
+            <MenuItem mnemonicParsing="false" onAction="#onFileQuit" text="Quit" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Edit">
+          <items>
+            <MenuItem disable="true" mnemonicParsing="false" onAction="#onEditUndo" text="Undo" />
+            <MenuItem disable="true" mnemonicParsing="false" onAction="#onEditRedo" text="Redo" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Map">
+          <items>
+            <Menu mnemonicParsing="false" text="Base Map">
+              <items>
+                <MenuItem mnemonicParsing="false" text="None" />
+              </items>
+            </Menu>
+            <MenuItem mnemonicParsing="false" onAction="#onMapSource" text="Source Images..." />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Dev">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#onDevPublish" text="Publish..." />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+          <items>
+            <MenuItem mnemonicParsing="false" onAction="#onHelpAbout" text="About..." />
+          </items>
+        </Menu>
+      </menus>
+    </MenuBar>
+  </children>
+</fx:root>
