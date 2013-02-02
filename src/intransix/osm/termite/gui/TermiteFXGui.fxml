@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import intransix.osm.termite.gui.menu.TermiteMenu?>
+<?import intransix.osm.termite.gui.toolbar.TermiteToolBar?>
+<?import intransix.osm.termite.gui.level.ContentTree?>
+<?import intransix.osm.termite.gui.feature.FeatureTree?>
+<?import intransix.osm.termite.gui.layer.LayerOpacityTable?>
+
+<fx:root type="javafx.scene.layout.VBox" prefHeight="600" prefWidth="800" xmlns:fx="http://javafx.com/fxml">
+  <children>
+    <TermiteMenu fx:id="termiteMenu"/>
+	<TermiteToolBar fx:id="termiteToolBar"/>
+    <SplitPane dividerPositions="0.25" focusTraversable="true" VBox.vgrow="ALWAYS">
+      <items>
+        <SplitPane dividerPositions="0.33,.66" focusTraversable="true" orientation="VERTICAL">
+          <items>
+            <ScrollPane id="ScrollPane" fx:id="contentScrollPane" fitToWidth="true" fitToHeight="true">
+				<ContentTree fx:id="contentTree"/>
+			</ScrollPane>
+            <ScrollPane id="ScrollPane" fx:id="featureScrollPane" fitToWidth="true" fitToHeight="true">
+				<FeatureTree fx:id="featureTree"/>
+			</ScrollPane>
+            <TabPane fx:id="propertyTabPane" tabClosingPolicy="UNAVAILABLE" />
+          </items>
+        </SplitPane>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+          <children>
+            <SplitPane dividerPositions="0.5698924731182796" focusTraversable="true" orientation="VERTICAL" prefHeight="158.0" prefWidth="136.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <items>
+                <StackPane id="StackPane" fx:id="mapPane" />
+                <TabPane fx:id="dataTabPane" prefHeight="153.0" prefWidth="183.0" tabClosingPolicy="UNAVAILABLE">
+					<tabs>
+						<Tab text="Map Layers">
+							<ScrollPane id="ScrollPane" fx:id="featureScrollPane" fitToWidth="true" fitToHeight="true">
+								<LayerOpacityTable fx:id="layerOpacityTable"/>
+							</ScrollPane>
+						</Tab>
+					</tabs>
+				</TabPane>
+              </items>
+            </SplitPane>
+          </children>
+        </AnchorPane>
+      </items>
+    </SplitPane>
+  </children>
+</fx:root>
