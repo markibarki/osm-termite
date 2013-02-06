@@ -83,10 +83,6 @@ public class DownloadEditorMode extends EditorMode {
 		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMinY()));
 		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMaxX()));
 		
-		//set local coordinates
-		ViewRegionManager vrm = downloadLayer.getViewRegionManager();
-		vrm.resetLocalCoordinates();
-		
 		//run the load data task
 		MapDataRequestTask mdrt = new MapDataRequestTask(mapDataManager,minLat,minLon,maxLat,maxLon);
 		mdrt.execute();
