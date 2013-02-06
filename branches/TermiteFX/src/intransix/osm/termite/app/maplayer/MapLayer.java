@@ -5,12 +5,13 @@ import java.awt.Graphics2D;
 import java.awt.Composite;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.render.MapPanel;
+import javafx.scene.layout.Pane;
 
 /**
  *
  * @author sutter
  */
-public abstract class MapLayer {
+public abstract class MapLayer extends Pane {
 	
 	public final static int ORDER_BASE_MAP_1 = 0;
 	public final static int ORDER_BASE_MAP_2 = 1;
@@ -89,9 +90,9 @@ public abstract class MapLayer {
 		if(mapLayerManager != null) mapLayerManager.notifyStateChange(this);
 	}
 	
-	public float getOpacity() {
-		return alpha;
-	}
+//	public float getOpacity() {
+//		return alpha;
+//	}
 		
 	public Composite getComposite() {
 		return composite;
@@ -117,14 +118,14 @@ public abstract class MapLayer {
 	
 	public abstract void render(Graphics2D g2);
 	
-	public void setVisible(boolean visible) {
-		this.visible = visible;
-		if(mapLayerManager != null) mapLayerManager.notifyStateChange(this);
-	}
-	
-	public boolean isVisible() {
-		return visible;
-	}
+//	public void setVisible(boolean visible) {
+//		this.visible = visible;
+//		if(mapLayerManager != null) mapLayerManager.notifyStateChange(this);
+//	}
+//	
+//	public boolean isVisible() {
+//		return visible;
+//	}
 	
 	/** This method notifies any listeners the a mode enabled changed. */
 	public void notifyContentChange() {

@@ -1,45 +1,43 @@
 package intransix.osm.termite.render.tile;
 
-import intransix.osm.termite.map.workingdata.OsmModel;
-import intransix.osm.termite.util.MercatorCoordinates;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
+
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 /**
  *
  * @author sutter
  */
-public class Tile {
+public class Tile extends ImageView {
 	
-	private int x;
-	private int y;
+	private int tileX;
+	private int tileY;
+	private int zoom;
+	private double mercX;
+	private double mercY;
+	private double mercWidth;
+	private double mercHeight;
 	private String url;
 	private long activeTime = 0;
 	private Image image;
-	private AffineTransform tileToMerc;
 	
 	public Tile(int x, int y, int zoom, int numPixels, String url) {
-		this.x = x;
-		this.y = y;
+		this.tileX = x;
+		this.tileY = y;
 		this.url = url;
 		
 		double tileToMercScale = 1.0 / (1 << zoom);
-		tileToMerc = new AffineTransform();
-		tileToMerc.scale(tileToMercScale,tileToMercScale);
-		tileToMerc.translate(x,y);
-		tileToMerc.scale(1.0/numPixels,1.0/numPixels);
+		this.mercX = this.tileX * tileToMercScale;
+		this.mercY = this.tileY * tileToMercScale;
+		this.mercWidth = tileToMercScale;
+		this.mercHeight = tileToMercScale;
 		
-	}
-	
-	public void render(Graphics2D g2) {
-		java.awt.geom.AffineTransform orig = g2.getTransform();
-		g2.transform(tileToMerc);
-		g2.drawImage(image,0,0,null);
-		g2.setTransform(orig);
-	}
-	
-	public String getUrl() {
-		return url;
+		this.setX(mercX);
+		this.setY(mercY);
+		this.setFitHeight(mercHeight);
+		this.setFitWidth(mercWidth);
+		
+		this.image = new Image(url,true);
 	}
 	
 	public long getActiveTime() {
@@ -48,9 +46,5 @@ public class Tile {
 	
 	public void setActive(long activeTime) {
 		this.activeTime = activeTime;
-	}
-	
-	public void setImage(Image image) {
-		this.image = image;
 	}
 }
