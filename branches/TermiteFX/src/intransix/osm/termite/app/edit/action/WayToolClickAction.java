@@ -13,11 +13,11 @@ import intransix.osm.termite.app.level.LevelManager;
 import intransix.osm.termite.app.edit.impl.EditDestPoint;
 import intransix.osm.termite.app.edit.impl.WayNodeEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
-import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.ArrayList;
-import java.awt.event.MouseEvent;
-import javax.swing.JOptionPane;
+//import java.awt.event.MouseEvent;
+//import javax.swing.JOptionPane;
+//import java.awt.geom.Point2D;
 
 /**
  *
@@ -79,130 +79,130 @@ public class WayToolClickAction implements MouseClickAction {
 		}
 		
 		//get the mouse location
-		Point2D mercPoint = editManager.getMousePointMerc();
-		setPendingData(mercPoint);
+//		Point2D mercPoint = editManager.getMousePointMerc();
+//		setPendingData(mercPoint);
 		
 		editManager.getEditLayer().notifyContentChange();
 		
 		return true;
 	}
 	
-	@Override
-	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
-		
-		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
-		
-		//on double click end the way and return
-		if(e.getClickCount() > 1) {
-			resetWayEdit();
-			return;
-		}
-	
-		//process normal click
-		FeatureTypeManager featureTypeManager = editManager.getFeatureTypeManager();
-		LevelManager levelManager = editManager.getLevelManager();
-		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
-		OsmRelation activeLevel = levelManager.getSelectedLevel();
-		
-		if(featureInfo == null) {
-			JOptionPane.showMessageDialog(null,"You must select a feature type before you create a way");
-			return;
-		}
-	
-		//execute a way node addition
-		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
-		boolean success = wne.wayToolClicked(clickDestPoint,activeWay,insertIndex,activeNode,featureInfo,activeLevel);
-		
-		if(success) {
-			//update the selection/pending state
-			activeWay = wne.getActiveWay();
-			activeNode = wne.getActiveNode();
-			int activeIndex = -1;
-			
-			if(activeWay != null) {
-				
-				if(activeWay.isClosed()) {
-					activeWay = null;
-					activeNode = null;
-					resetWayEdit();
-				}
-				else {
-					//make sure this is selected
-
-					activeIndex = activeWay.getNodes().indexOf(activeNode);
-					if(activeIndex == 0) {
-						//insert at start
-						insertIndex = 0;
-					}
-					else {
-						//insert at end
-						insertIndex = activeIndex+1;
-					}
-				}
-			}
-			
-			//update selection
-			List<Object> selection = new ArrayList<Object>();
-			List<Integer> wayNodeSelection = null;
-			if(activeWay != null) {
-				selection.add(activeWay);
-				if(activeIndex != -1) {
-					wayNodeSelection = new ArrayList<Integer>();
-					wayNodeSelection.add(activeIndex);
-				}
-			}
-			else if(activeNode != null) {
-				selection.add(activeNode);
-			}
-			editManager.setSelection(selection, wayNodeSelection);
-
-			//update the click location
-			setPendingData(clickDestPoint.point);
-			
-		}
-		else {
-			//something wrong happened - clean up
-//			editLayer.clearSelection();
-		}
-		
-		editManager.getEditLayer().notifyContentChange();
-	}
-	
-	private void setPendingData(Point2D pendingPoint) {
-		editManager.clearPending();
-		
-		//these lists are to display the move preview
-		List<EditObject> pendingObjects = editManager.getPendingObjects();
-		List<EditNode> movingNodes = editManager.getMovingNodes();
-		List<EditSegment> pendingSnapSegments = editManager.getPendingSnapSegments();
-		
-		//get the node to add
-		editNode = new EditNode(pendingPoint,null);
-		movingNodes.add(editNode);
-		pendingObjects.add(editNode);
-		//get the segment from the previous node
-		if(activeNode != null) {
-
-			EditNode en2 = new EditNode(activeNode);
-
-			EditSegment es = new EditSegment(null,editNode,en2);
-			pendingObjects.add(en2);
-			pendingObjects.add(es);
-			pendingSnapSegments.add(es);
-			
-			if(activeWay != null) {
-				List<OsmNode> nodes = activeWay.getNodes();
-				//get a segment to close the way
-				if(nodes.size() > 2) {
-					int endIndex = nodes.size() - 1 - nodes.indexOf(activeNode);
-					OsmNode endNode = nodes.get(endIndex);
-					EditNode enClose = new EditNode(endNode);
-					EditSegment esClose = new EditSegment(null,editNode,enClose);
-					pendingSnapSegments.add(esClose);
-				}
-			}
-		}
-	}
+//	@Override
+//	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
+//		
+//		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
+//		
+//		//on double click end the way and return
+//		if(e.getClickCount() > 1) {
+//			resetWayEdit();
+//			return;
+//		}
+//	
+//		//process normal click
+//		FeatureTypeManager featureTypeManager = editManager.getFeatureTypeManager();
+//		LevelManager levelManager = editManager.getLevelManager();
+//		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
+//		OsmRelation activeLevel = levelManager.getSelectedLevel();
+//		
+//		if(featureInfo == null) {
+//			JOptionPane.showMessageDialog(null,"You must select a feature type before you create a way");
+//			return;
+//		}
+//	
+//		//execute a way node addition
+//		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
+//		boolean success = wne.wayToolClicked(clickDestPoint,activeWay,insertIndex,activeNode,featureInfo,activeLevel);
+//		
+//		if(success) {
+//			//update the selection/pending state
+//			activeWay = wne.getActiveWay();
+//			activeNode = wne.getActiveNode();
+//			int activeIndex = -1;
+//			
+//			if(activeWay != null) {
+//				
+//				if(activeWay.isClosed()) {
+//					activeWay = null;
+//					activeNode = null;
+//					resetWayEdit();
+//				}
+//				else {
+//					//make sure this is selected
+//
+//					activeIndex = activeWay.getNodes().indexOf(activeNode);
+//					if(activeIndex == 0) {
+//						//insert at start
+//						insertIndex = 0;
+//					}
+//					else {
+//						//insert at end
+//						insertIndex = activeIndex+1;
+//					}
+//				}
+//			}
+//			
+//			//update selection
+//			List<Object> selection = new ArrayList<Object>();
+//			List<Integer> wayNodeSelection = null;
+//			if(activeWay != null) {
+//				selection.add(activeWay);
+//				if(activeIndex != -1) {
+//					wayNodeSelection = new ArrayList<Integer>();
+//					wayNodeSelection.add(activeIndex);
+//				}
+//			}
+//			else if(activeNode != null) {
+//				selection.add(activeNode);
+//			}
+//			editManager.setSelection(selection, wayNodeSelection);
+//
+//			//update the click location
+//			setPendingData(clickDestPoint.point);
+//			
+//		}
+//		else {
+//			//something wrong happened - clean up
+////			editLayer.clearSelection();
+//		}
+//		
+//		editManager.getEditLayer().notifyContentChange();
+//	}
+//	
+//	private void setPendingData(Point2D pendingPoint) {
+//		editManager.clearPending();
+//		
+//		//these lists are to display the move preview
+//		List<EditObject> pendingObjects = editManager.getPendingObjects();
+//		List<EditNode> movingNodes = editManager.getMovingNodes();
+//		List<EditSegment> pendingSnapSegments = editManager.getPendingSnapSegments();
+//		
+//		//get the node to add
+//		editNode = new EditNode(pendingPoint,null);
+//		movingNodes.add(editNode);
+//		pendingObjects.add(editNode);
+//		//get the segment from the previous node
+//		if(activeNode != null) {
+//
+//			EditNode en2 = new EditNode(activeNode);
+//
+//			EditSegment es = new EditSegment(null,editNode,en2);
+//			pendingObjects.add(en2);
+//			pendingObjects.add(es);
+//			pendingSnapSegments.add(es);
+//			
+//			if(activeWay != null) {
+//				List<OsmNode> nodes = activeWay.getNodes();
+//				//get a segment to close the way
+//				if(nodes.size() > 2) {
+//					int endIndex = nodes.size() - 1 - nodes.indexOf(activeNode);
+//					OsmNode endNode = nodes.get(endIndex);
+//					EditNode enClose = new EditNode(endNode);
+//					EditSegment esClose = new EditSegment(null,editNode,enClose);
+//					pendingSnapSegments.add(esClose);
+//				}
+//			}
+//		}
+//	}
 	
 	private void resetWayEdit() {
 		editManager.getWayEditorMode().resetWayEdit();

@@ -77,20 +77,20 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 	
 	/** This method is called when the source layers are updated. */
 	public void updateLayers(java.util.List<MapLayer> mapLayerList) {
-		Object selection = sourceSelector.getSelectedItem();
-		sourceSelector.removeAllItems();
-		for(MapLayer layer:mapLayerList) {
-			if((layer instanceof SourceLayer)&&(layer.isVisible())) {
-				sourceSelector.addItem((SourceLayer)layer);
-			}
-		}
-		if((selection != null)&&(mapLayerList.contains(selection))) {
-			sourceSelector.setSelectedItem(selection);
-		} 
-		boolean newEnableState = (sourceSelector.getItemCount() > 0);
-		if(newEnableState != geocodeEditorMode.getModeEnabled()) {
-			geocodeEditorMode.setEnabled(newEnableState);
-		}
+//		Object selection = sourceSelector.getSelectedItem();
+//		sourceSelector.removeAllItems();
+//		for(MapLayer layer:mapLayerList) {
+//			if((layer instanceof SourceLayer)&&(layer.isVisible())) {
+//				sourceSelector.addItem((SourceLayer)layer);
+//			}
+//		}
+//		if((selection != null)&&(mapLayerList.contains(selection))) {
+//			sourceSelector.setSelectedItem(selection);
+//		} 
+//		boolean newEnableState = (sourceSelector.getItemCount() > 0);
+//		if(newEnableState != geocodeEditorMode.getModeEnabled()) {
+//			geocodeEditorMode.setEnabled(newEnableState);
+//		}
 	}
 	
 	

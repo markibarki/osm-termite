@@ -1,61 +1,88 @@
 package intransix.osm.termite.render.tile;
 
 import intransix.osm.termite.app.maplayer.MapLayer;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
+import intransix.osm.termite.app.maplayer.PaneLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
-import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import java.awt.*;
-import java.awt.geom.*;
-import java.net.URL;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.awt.image.ImageObserver;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.scene.layout.Pane;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Scale;
 
 /**
  * This is a layer for a tile map source.
  * 
  * @author sutter
  */
-public class TileLayer extends MapLayer implements ImageObserver, MapListener {
+public class TileLayer extends PaneLayer implements MapListener {
 	
 	//=========================
 	// Properties
 	//=========================
 	
-	public final static int MAX_CACHE_SIZE = 50;
+	public final static int MAX_CACHE_SIZE = 150;
 	public final static int INVALID_ZOOM = -1;
 	
 	public final static int MAX_ZOOM_EXCESS = 4;
 	
-	private int tileZoom = INVALID_ZOOM;
-	private double mercToTileScale = 1;
+	public final static double MERC_MULTIPLIER_SCALE = (1 << 25);
 	
-	private HashMap<String,Tile> tileCache = new HashMap<String,Tile>();
+	private int tileZoom = INVALID_ZOOM;
+	
+	private HashMap<String,Tile> tileCache = new HashMap<>();
 	private int minZoom;
 	private int maxZoom;
 	private int pixelsPerTile;
 	private TileInfo tileInfo;
 	
-	private boolean zoomTooHigh = false;
+	private final ArrayList<Tile> workingTiles = new ArrayList<>();
+	private final Scale scaleCorrectionForTiles = new Scale(1 / MERC_MULTIPLIER_SCALE,1 / MERC_MULTIPLIER_SCALE);
+	
+	private ViewRegionManager viewRegionManager;
 
 	//=========================
 	// Public Methods
 	//=========================
 	
+	public void connect(MapLayerManager mapLayerManager){}
+	
+	public void disconnect(MapLayerManager mapLayerManager){}
+
+	
 	public TileLayer() {
 		this.setName("Base Map");
 		this.setOrder(MapLayer.ORDER_BASE_MAP_1);
 		this.setVisible(false);
+		
+		//hard code to a fixed zoom for now
+this.tileZoom = INVALID_ZOOM;
+		this.setPrefSize(1.0,1.0);
+		this.setMinSize(1.0,1.0);
+		this.setMaxSize(1.0,1.0);
+	}
+	
+	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
+		this.viewRegionManager = viewRegionManager;
+		viewRegionManager.addMapListener(this);
 	}
 	
 	public void setTileInfo(TileInfo tileInfo) {
 		this.tileInfo = tileInfo;
 		if(tileInfo != null) {
+this.getChildren().clear();
 			minZoom = tileInfo.getMinZoom();
 			maxZoom = tileInfo.getMaxZoom();
 			pixelsPerTile = tileInfo.getTileSize();
 			this.setVisible(true);
 		}
 		else {
+this.getChildren().clear();
 			minZoom = Integer.MIN_VALUE;
 			maxZoom = Integer.MAX_VALUE;
 			pixelsPerTile = 1;
@@ -70,91 +97,7 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	public void reset() {
 		tileZoom = INVALID_ZOOM;
 	}
-	
-	@Override
-	public void render(Graphics2D g2) {
-		
-		if(tileInfo == null) return;
-		if(zoomTooHigh) return;
-		
-		ViewRegionManager vrm = getViewRegionManager();
-		if(vrm == null) return;
-		
-		AffineTransform mercToPixels = vrm.getMercatorToPixels();
-		AffineTransform pixelsToMerc = vrm.getPixelsToMercator();
-		Rectangle visibleRect = vrm.getPixelRect();
-		
-		//we need to select the desired tile zoom
-		if(tileZoom == INVALID_ZOOM) {
-			setZoomScale(vrm.getZoomScalePixelsPerMerc());
-		}
-		
-		//get the current tile zoom
-		int activeZoom = this.tileZoom;
-		
-		//get tile range needed
-		int[] tileRange = {Integer.MAX_VALUE,Integer.MAX_VALUE,0,0};
-		updateRange(visibleRect.x,visibleRect.y,pixelsToMerc,activeZoom,tileRange);
-		updateRange(visibleRect.x+visibleRect.width,visibleRect.y,pixelsToMerc,activeZoom,tileRange);
-		updateRange(visibleRect.x+visibleRect.width,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
-		updateRange(visibleRect.x,visibleRect.y+visibleRect.height,pixelsToMerc,activeZoom,tileRange);
-		
-		//transform to tile coordinates
-		g2.transform(mercToPixels);
-		
-		long currentTime = System.currentTimeMillis();
-		boolean tileRequested = false;
-		int activeTileCount = 0;
-		for(int ix = tileRange[0]; ix <= tileRange[2]; ix++) {
-			for(int iy = tileRange[1]; iy <= tileRange[3]; iy++) {
-				//make sure we don't try to plot too many tiles
-				activeTileCount++;
-				if(activeTileCount >= MAX_CACHE_SIZE-1) {
-					return;
-				}
-					
-				//add a tile to map
-				String key = tileInfo.getUrl(ix, iy, activeZoom);
-				Tile tile = getTile(key);
-				if(tile != null) {
-					tile.render(g2);
-					tile.setActive(currentTime);
-				}
-				else if(!tileRequested) {
-					requestTile(ix,iy,activeZoom,key);
-					tileRequested = true;
-				}
-			}
-		}
-	}
-	
-	@Override
-	public boolean imageUpdate(Image image, int infoflags, int x, int y, int width, int height) {
-		boolean returnValue;
-		boolean contentChanged;
-		
-		if((infoflags & ImageObserver.ALLBITS) != 0) {
-			//just do a repaint
-			contentChanged = true;
-			returnValue = false;
-		}
-		else if((infoflags & ImageObserver.ABORT) != 0) {
-			//just do a repaint, to continue with unloaded tiles
-			contentChanged = true;
-			returnValue = true;
-		}
-		else {
-			contentChanged = false;
-			returnValue = true;
-		}
-		
-		if(contentChanged) {
-			this.notifyContentChange();
-		}
-		
-		return returnValue;
-	}
-	
+
 	
 	//--------------------------
 	// MapListener Interface
@@ -162,116 +105,130 @@ public class TileLayer extends MapLayer implements ImageObserver, MapListener {
 	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onZoom(ViewRegionManager vrm) {
-		setZoomScale(vrm.getZoomScalePixelsPerMerc());
+	public void onZoom(ViewRegionManager vrm) {		
+		double pixelsPerMerc = viewRegionManager.getZoomScalePixelsPerMerc();
+		setZoomScale(pixelsPerMerc);
+		updateTiles();
 	}
 	
 	private void setZoomScale(double pixelsPerMerc) {
 		double tilesPerMerc = pixelsPerMerc / pixelsPerTile;
 		int desiredScale = (int)Math.round(Math.log(tilesPerMerc)/Math.log(2));
-		
-		//make sure we don't try to zoom in too much - will crash system
-		if((desiredScale - maxZoom) > MAX_ZOOM_EXCESS) {
-			this.zoomTooHigh = true;
+	
+		if(desiredScale > maxZoom) {
+			tileZoom = maxZoom;
+		}
+		else if (desiredScale < minZoom) {
+			tileZoom = minZoom;
 		}
 		else {
-			this.zoomTooHigh = false;
-			if(desiredScale > maxZoom) {
-				tileZoom = maxZoom;
-			}
-			else if (desiredScale < minZoom) {
-				tileZoom = minZoom;
-			}
-			else {
-				tileZoom = desiredScale;
-			}
-			
-			mercToTileScale = 1 << tileZoom;
-			
-		}
+			tileZoom = desiredScale;
+		}		
 	}
 	
 	@Override
 	public void onPanStart(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanEnd(ViewRegionManager vrm) {}
+	public void onPanStep(ViewRegionManager vrm) {
+		updateTiles();
+	}
+	
+	@Override
+	public void onPanEnd(ViewRegionManager vrm) {
+		updateTiles();
+	}
 	
 	//=================================
 	// Private Methods
 	//=================================
 	
-	/** This updates the range of tiles as a function of a input point in pixels. */
-	private void updateRange(int pixX, int pixY, AffineTransform pixelsToMerc, 
-			int activeZoom, int[] tileRange) {
+	private void updateTiles() {
 		
-		//convert the point to mercator
-		Point2D mxy = new Point2D.Double(pixX,pixY);
-		pixelsToMerc.transform(mxy, mxy);
+		//get the bounds in merc coordinates
+		Bounds bounds = viewRegionManager.getPixelRect();
+		AffineTransform at = viewRegionManager.getPixelsToMercator();
+		Point2D temp = new Point2D.Double();
+		double[] mercRange = {1.0,1.0,0.0,0.0};
+		temp.setLocation(0,0);
+		updateMercRange(temp,at,mercRange);
+		temp.setLocation(0,bounds.getHeight());
+		updateMercRange(temp,at,mercRange);
+		temp.setLocation(bounds.getWidth(),0);
+		updateMercRange(temp,at,mercRange);
+		temp.setLocation(bounds.getWidth(),bounds.getHeight());
+		updateMercRange(temp,at,mercRange);
 		
-		//get the tile this is on
-		int mercToTiles = (1 << activeZoom);
-		int tileX = (int)(mercToTiles * mxy.getX());
-		int tileY = (int)(mercToTiles * mxy.getY());
+		//get tile range
+		int numTiles = (1 << tileZoom);
+		int minTileX = (int)(numTiles * mercRange[0]);
+		if(minTileX < 0) minTileX = 0;
+		int minTileY = (int)(numTiles * mercRange[1]);
+		if(minTileY < 0) minTileY = 0;
+		int maxTileX = (int)(numTiles * mercRange[2]);
+		if(maxTileX >= numTiles) maxTileX = numTiles - 1;
+		int maxTileY = (int)(numTiles * mercRange[3]);
+		if(maxTileY >= numTiles) maxTileY = numTiles - 1;
 		
-		//make sure we are not out of the bounds
-		int numTiles = mercToTiles;
-		if(tileX < 0) tileX = 0;
-		if(tileX >= numTiles) tileX = numTiles - 1;
-		if(tileY < 0) tileY = 0;
-		if(tileY >= numTiles) tileY = numTiles - 1;
-		//update the required range
-		if(tileRange[0] > tileX) tileRange[0] = tileX;
-		if(tileRange[1] > tileY) tileRange[1] = tileY;
-		if(tileRange[2] < tileX) tileRange[2] = tileX;
-		if(tileRange[3] < tileY) tileRange[3] = tileY;
-	}
-	
-	/** This method loads a tile from the cache. If the tile is not
-	 * present null is returned. The key should be the same as the url. 
-	 * 
-	 * @param key
-	 * @return 
-	 */
-	private Tile getTile(String key) {
-		return tileCache.get(key);
-	}
-
-	/** This method makes an asynchronous request for a tile. */
-	private void requestTile(int x, int y, int zoom, String url) {
-		Tile tile = new Tile(x,y,zoom,pixelsPerTile,url);
-		Image image = getImage(url);
-		tile.setImage(image);
-		if(tileCache.size() > MAX_CACHE_SIZE) {
-			//get rid of the oldest tile
-			long oldestLastActive = Long.MAX_VALUE;
-			Tile oldestTile = null;
-			for(Tile temp:tileCache.values()) {
-				long lastActive = temp.getActiveTime();
-				if(lastActive < oldestLastActive) {
-					oldestLastActive = lastActive;
-					oldestTile = temp;
+System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY + "-" +  maxTileX + "," + maxTileY);
+		
+		//load the tiles
+		workingTiles.clear();
+		Tile tile;
+		for(int ix = minTileX; ix <= maxTileX; ix++) {
+			for(int iy = minTileY; iy <= maxTileY; iy++) {
+				tile = getTile(ix,iy,tileZoom);
+				if(tile != null) {
+					workingTiles.add(tile);
 				}
 			}
-			if(oldestTile != null) {
-				tileCache.remove(oldestTile.getUrl());
-			}	
 		}
+		
+		this.getChildren().setAll(workingTiles);
+		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
+		
+		this.getTransforms().setAll(mercToPixelsFX,scaleCorrectionForTiles); 
+		workingTiles.clear();
+	}
+	
+	private void updateMercRange(Point2D point, AffineTransform pixelsToMerc, double[] mercRange) {
+		pixelsToMerc.transform(point, point);
+		if(point.getX() < mercRange[0]) mercRange[0] = point.getX();
+		if(point.getY() < mercRange[1]) mercRange[1] = point.getY();
+		if(point.getX() > mercRange[2]) mercRange[2] = point.getX();
+		if(point.getY() > mercRange[3]) mercRange[3] = point.getY();
+	}
+	
+	private Tile getTile(int ix, int iy, int zoom) {
+		String url = tileInfo.getUrl(ix, iy, zoom);
+		Tile tile = tileCache.get(url);
+		if(tile == null) {
+			tile = new Tile(ix, iy, zoom, tileInfo.getTileSize(), url);
+			
+			//remove the oldest tile, if necessary
+			if(tileCache.size() > MAX_CACHE_SIZE) {
+				long oldestTime = Long.MAX_VALUE;
+				Tile oldestTile = null;
+				long currentTime;
+				for(Tile currentTile:tileCache.values()) {
+					currentTime = currentTile.getActiveTime();
+					if(currentTime < oldestTime) {
+						oldestTime = currentTime;
+						oldestTile = currentTile;
+					}
+				}
+				if(oldestTile != null) {
+					tileCache.remove(oldestTile.getUrl());
+				}
+			}
+				
+			tileCache.put(url, tile);
+		}
+		
+		//set the active time
 		tile.setActive(System.currentTimeMillis());
-		tileCache.put(url,tile);
+		return tile;
 	}
 
-	/** This method requests an image. */
-	private Image getImage(String urlString) {
-		try {
-			URL url = new URL(urlString);
-			Image image = java.awt.Toolkit.getDefaultToolkit().createImage(url);
-			java.awt.Toolkit.getDefaultToolkit().prepareImage(image,-1,-1,this);
-			return image;
-		} 
-		catch (Exception e) {
-			return null;
-		} 
-	}
 		
 }

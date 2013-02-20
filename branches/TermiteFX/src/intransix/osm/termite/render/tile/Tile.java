@@ -24,6 +24,7 @@ public class Tile extends ImageView {
 	public Tile(int x, int y, int zoom, int numPixels, String url) {
 		this.tileX = x;
 		this.tileY = y;
+		this.zoom = zoom;
 		this.url = url;
 		
 		double tileToMercScale = 1.0 / (1 << zoom);
@@ -32,12 +33,16 @@ public class Tile extends ImageView {
 		this.mercWidth = tileToMercScale;
 		this.mercHeight = tileToMercScale;
 		
-		this.setX(mercX);
-		this.setY(mercY);
-		this.setFitHeight(mercHeight);
-		this.setFitWidth(mercWidth);
+		//Javafx seems to round the image locations even though we are using doubles.
+		//To fix this we are using a large (power of two) integer multiplier
+		this.setX(mercX * TileLayer.MERC_MULTIPLIER_SCALE);
+		this.setY(mercY * TileLayer.MERC_MULTIPLIER_SCALE);
+		this.setFitHeight(mercHeight * TileLayer.MERC_MULTIPLIER_SCALE);
+		this.setFitWidth(mercWidth * TileLayer.MERC_MULTIPLIER_SCALE);
 		
 		this.image = new Image(url,true);
+		
+		this.setImage(image);
 	}
 	
 	public long getActiveTime() {
@@ -46,5 +51,9 @@ public class Tile extends ImageView {
 	
 	public void setActive(long activeTime) {
 		this.activeTime = activeTime;
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 }

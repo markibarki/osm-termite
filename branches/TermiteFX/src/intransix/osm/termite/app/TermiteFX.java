@@ -17,11 +17,13 @@ import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.mode.EditorModeManager;
 import intransix.osm.termite.map.theme.Theme;
+import intransix.osm.termite.render.tile.TileLayer;
 import intransix.osm.termite.util.JsonIO;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.json.JSONObject;
 
@@ -133,23 +135,17 @@ public class TermiteFX extends Application {
 		gui.load(stage);
 		
 		//----------------
-		//create the gui
-		//----------------
-		
-		//ui component needed for initialization
-//		MapPanel mapPanel = gui.getMapPanel();		
-		
-		//----------------
 		// Managers
 		//----------------
 		
 		//map data
-		mapDataManager = new MapDataManager();
-		mapDataManager.init();
+//		mapDataManager = new MapDataManager();
+//		mapDataManager.init();
 		
 		//base map
 		baseMapManager = new BaseMapManager();
 		baseMapManager.init();
+		gui.setBaseMapManager(baseMapManager); //select the base map
 		
 		//featture type
 //		featureTypeManager = new FeatureTypeManager();
@@ -169,20 +165,16 @@ public class TermiteFX extends Application {
 //		editManager = new EditManager(featureTypeManager,levelManager,mapDataManager);
 //		editManager.init();
 //		
-//		//view region manager
-//		viewRegionManager = new ViewRegionManager();
-//		viewRegionManager.setMapComponent(mapPanel);
-//		addShutdownListener(viewRegionManager);
 //		
 //		//map layers
-//		mapLayerManager = new MapLayerManager(viewRegionManager,mapPanel);
+
 //		
 //		//geocode
 //		geocodeManager = new GeocodeManager();
 //		geocodeManager.init(mapLayerManager);
 //		
 //		//populate tghe map layers
-//		mapLayerManager.addLayer(baseMapManager.getBaseMapLayer());
+
 //		mapLayerManager.addLayer(mapDataManager.getRenderLayer());
 //		mapLayerManager.addLayer(mapDataManager.getDownloadLayer());
 //		mapLayerManager.addLayer(editManager.getEditLayer());
@@ -199,13 +191,12 @@ public class TermiteFX extends Application {
 //		modeManager.setDefaultModes(mapDataManager.getDownloadEditorMode(),editManager.getSelectEditorMode());
 //		
 //		//gui initialization
-		gui.setMapDataManager(mapDataManager); //undo/redo
+//		gui.setMapDataManager(mapDataManager); //undo/redo
 //		gui.setFeatureTypeManager(featureTypeManager); //feature selection
-		gui.setBaseMapManager(baseMapManager); //select the base map
 //		gui.setEditManager(editManager); //selection for edit properties
 //		gui.setLevelManager(levelManager);
-//		gui.setMapLayerManager(mapLayerManager); //for map layer state editing (not display)
-//		gui.setViewRegionManager(viewRegionManager);
+//		gui.setMapLayerManager(mapLayerManager); //for map layer state editing and display
+		
 //		gui.setModeManager(modeManager); //sets the mode
 //		this.addShutdownListener(gui);
 //		
@@ -215,11 +206,7 @@ public class TermiteFX extends Application {
 //		renderLayer.setTheme(theme);
 //		viewRegionManager.addLocalCoordinateListener(renderLayer);
 //		
-//		TileLayer tileLayer = baseMapManager.getBaseMapLayer();
-//		viewRegionManager.addMapListener(tileLayer);
-//		
-//		//set the view
-//		viewRegionManager.setInitialView();
+		
 //		mapDataManager.clearData();
 	}
 	

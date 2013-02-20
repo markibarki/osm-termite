@@ -23,9 +23,9 @@ public class MapDataManager {
 	private OsmData osmData;
 	private List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
 	
-	private RenderLayer renderLayer;
-	private DownloadLayer downloadLayer;
-	private DownloadEditorMode downloadEditorMode;
+//	private RenderLayer renderLayer;
+//	private DownloadLayer downloadLayer;
+//	private DownloadEditorMode downloadEditorMode;
 	
 	// start data source and instructions------------
 	
@@ -194,24 +194,24 @@ public class MapDataManager {
 		JSONObject modelJson = JsonIO.readJsonFile(configFileName);
 		OsmModel.parse(modelJson);
 		
-		renderLayer = new RenderLayer(this);
-		this.addMapDataListener(renderLayer);
+//		renderLayer = new RenderLayer(this);
+//		this.addMapDataListener(renderLayer);
 		
-		downloadLayer = new DownloadLayer();
-		downloadEditorMode = new DownloadEditorMode(this,downloadLayer);
+//		downloadLayer = new DownloadLayer();
+//		downloadEditorMode = new DownloadEditorMode(this,downloadLayer);
 	}
 	
-	public DownloadLayer getDownloadLayer() {
-		return downloadLayer;
-	}
+//	public DownloadLayer getDownloadLayer() {
+//		return downloadLayer;
+//	}
 	
-	public RenderLayer getRenderLayer() {
-		return renderLayer;
-	}
+//	public RenderLayer getRenderLayer() {
+//		return renderLayer;
+//	}
 	
-	public DownloadEditorMode getDownloadEditorMode() {
-		return downloadEditorMode;
-	}
+//	public DownloadEditorMode getDownloadEditorMode() {
+//		return downloadEditorMode;
+//	}
 	
 	/** This method gets the map data. */
 	public OsmData getOsmData() {

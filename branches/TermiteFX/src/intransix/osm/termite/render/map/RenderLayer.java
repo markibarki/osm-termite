@@ -11,11 +11,10 @@ import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.mapdata.MapDataManager;
-import intransix.osm.termite.app.viewregion.LocalCoordinateListener;
-import intransix.osm.termite.app.viewregion.ViewRegionManager;
+import intransix.osm.termite.app.maplayer.CanvasLayer;
 import intransix.osm.termite.map.feature.FeatureInfo;
-import java.awt.*;
-import java.awt.geom.*;
+//import java.awt.*;
+//import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -24,8 +23,8 @@ import java.util.Comparator;
  *
  * @author sutter
  */
-public class RenderLayer extends MapLayer implements MapDataListener, 
-		LocalCoordinateListener, FilterListener {
+public class RenderLayer extends CanvasLayer implements MapDataListener, 
+		FilterListener {
 	
 	public final static int DEFAULT_ZLEVEL = 0;
 
@@ -46,10 +45,14 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	private java.util.List<OsmObject> orderedFeatures = new ArrayList<OsmObject>();
 	private FeatureLayerComparator flc = new FeatureLayerComparator();
 	
-	public RenderLayer(MapDataManager mapDataManager) {
-		this.mapDataManager = mapDataManager;
+	public RenderLayer() {
 		this.setName("Render Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MAP);
+	}
+	
+//@TODO Fix setting logic
+	public void setMapDataManager(MapDataManager mapDataManager) {
+		this.mapDataManager = mapDataManager;
 	}
 	
 	@Override
@@ -119,56 +122,56 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 		this.theme = theme;
 	}
 	
-	@Override
-	public void render(Graphics2D g2) {
-		
-		OsmData localData = mapDataManager.getOsmData();
-		Theme localTheme = theme;
-		
-		AffineTransform localToPixels = getViewRegionManager().getLocalToPixels();
-		AffineTransform mercatorToLocal = getViewRegionManager().getMercatorToLocal();
-		double zoomScalePixelsPerLocal = getViewRegionManager().getZoomScalePixelsPerLocal();
-//System.out.println(zoomScalePixelsPerLocal);
-		if((localData == null)||(localTheme == null)) return;
-		
-		g2.transform(localToPixels);		
-			
-		PathFeature pathFeature;
-		PointFeature pointFeature;
-		for(OsmObject mapObject:orderedFeatures) {
-			if(mapObject instanceof OsmWay) {
-				pathFeature = (PathFeature)mapObject.getPiggybackData(piggybackIndexRender);
-				if(pathFeature == null) {
-					pathFeature = new PathFeature((OsmWay)mapObject);
-					mapObject.setPiggybackData(piggybackIndexRender,pathFeature);
-				}
-				pathFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
-			}
-			else if(mapObject instanceof OsmNode) {
-				pointFeature = (PointFeature)mapObject.getPiggybackData(piggybackIndexRender);
-				if(pointFeature == null) {
-					pointFeature = new PointFeature((OsmNode)mapObject);
-					mapObject.setPiggybackData(piggybackIndexRender,pointFeature);
-				}
-				pointFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
-			}
-		}
-	}
-	
-	@Override
-	public void onLocalCoordinateChange(ViewRegionManager viewRegionManager, AffineTransform oldLocalToNewLocal) {
-		OsmData mapData = mapDataManager.getOsmData();
-		if(mapData != null) {
-			Feature feature;
-			//transform the cached data
-			for(OsmObject mapObject:orderedFeatures) {
-				feature = (Feature)mapObject.getPiggybackData(piggybackIndexRender);
-				if(feature != null) {
-					feature.transform(oldLocalToNewLocal);
-				}
-			}
-		}
-	}
+//	@Override
+//	public void render(Graphics2D g2) {
+//		
+//		OsmData localData = mapDataManager.getOsmData();
+//		Theme localTheme = theme;
+//		
+//		AffineTransform localToPixels = getViewRegionManager().getLocalToPixels();
+//		AffineTransform mercatorToLocal = getViewRegionManager().getMercatorToLocal();
+//		double zoomScalePixelsPerLocal = getViewRegionManager().getZoomScalePixelsPerLocal();
+////System.out.println(zoomScalePixelsPerLocal);
+//		if((localData == null)||(localTheme == null)) return;
+//		
+//		g2.transform(localToPixels);		
+//			
+//		PathFeature pathFeature;
+//		PointFeature pointFeature;
+//		for(OsmObject mapObject:orderedFeatures) {
+//			if(mapObject instanceof OsmWay) {
+//				pathFeature = (PathFeature)mapObject.getPiggybackData(piggybackIndexRender);
+//				if(pathFeature == null) {
+//					pathFeature = new PathFeature((OsmWay)mapObject);
+//					mapObject.setPiggybackData(piggybackIndexRender,pathFeature);
+//				}
+//				pathFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
+//			}
+//			else if(mapObject instanceof OsmNode) {
+//				pointFeature = (PointFeature)mapObject.getPiggybackData(piggybackIndexRender);
+//				if(pointFeature == null) {
+//					pointFeature = new PointFeature((OsmNode)mapObject);
+//					mapObject.setPiggybackData(piggybackIndexRender,pointFeature);
+//				}
+//				pointFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
+//			}
+//		}
+//	}
+//	
+//	@Override
+//	public void onLocalCoordinateChange(ViewRegionManager viewRegionManager, AffineTransform oldLocalToNewLocal) {
+//		OsmData mapData = mapDataManager.getOsmData();
+//		if(mapData != null) {
+//			Feature feature;
+//			//transform the cached data
+//			for(OsmObject mapObject:orderedFeatures) {
+//				feature = (Feature)mapObject.getPiggybackData(piggybackIndexRender);
+//				if(feature != null) {
+//					feature.transform(oldLocalToNewLocal);
+//				}
+//			}
+//		}
+//	}
 	
 	//=================================
 	// Private Methods

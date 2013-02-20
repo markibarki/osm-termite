@@ -82,7 +82,8 @@ System.out.println("Add a node to a way");
 
 			//get the properties
 //@TODO clean this line up
-			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
+//			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
+FeatureTypeManager featureTypeManager = null;			
 			List<PropertyPair> properties = featureTypeManager.getFeatureProperties(featureInfo);
 			for(PropertyPair pp:properties) {
 				waySrc.putProperty(pp.key,pp.value);

@@ -44,7 +44,8 @@ if(destPoint.snapNode != null) {
 
 			//get the properties
 //@TODO clean this line up
-			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
+//			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
+FeatureTypeManager featureTypeManager = null;			
 			List<PropertyPair> properties = featureTypeManager.getFeatureProperties(featureInfo);
 			for(PropertyPair pp:properties) {
 				nodeSrc.putProperty(pp.key,pp.value);

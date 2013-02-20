@@ -11,10 +11,10 @@ import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.gui.mode.edit.SelectEditorMode;
 import intransix.osm.termite.app.edit.impl.MoveEdit;
 import intransix.osm.termite.app.edit.impl.EditDestPoint;
-import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.List;
-import java.awt.event.MouseEvent;
+//import java.awt.event.MouseEvent;
+//import java.awt.geom.Point2D;
 
 /**
  *
@@ -84,7 +84,7 @@ public class MoveClickAction implements MouseClickAction {
 		}
 		
 		//set this initial position
-		initMovingNodes();
+//		initMovingNodes();
 		
 		//clean up working data
 		editMap = null;
@@ -92,54 +92,54 @@ public class MoveClickAction implements MouseClickAction {
 		return true;
 	}
 	
-	@Override
-	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
-		
-		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
-		List<Object> selection = editManager.getSelection();
-		
-		if(!selection.isEmpty()) {
-			//execute the move
-			MoveEdit me = new MoveEdit(editManager.getOsmData());
-			boolean success = me.selectionMoved(selection,moveStartPoint,clickDestPoint);
-			
-			if(success) {
-				//if the move caused a node to be deleted, clear the selection
-				//so we don't have the invalid object stroed there
-				boolean nodeDeleted = me.getNodeDeleted();
-				if(nodeDeleted) {
-					editManager.clearSelection();
-				}
-				
-				//update select point
-				editManager.setSelectionPoint(clickDestPoint);
-			}
-		}
-		
-		//clean up and exit move mode
-		editManager.clearPreview();
-		editManager.clearPending();
-		SelectEditorMode sem = editManager.getSelectEditorMode();
-		sem.setSelectState();
-		
-		editManager.getEditLayer().notifyContentChange();
-	}
-	
-	private void initMovingNodes() {
-		Point2D mouseMerc = editManager.getMousePointMerc();
-		double dx = mouseMerc.getX() - moveStartPoint.point.getX();
-		double dy = mouseMerc.getY() - moveStartPoint.point.getY();
-
-		List<EditNode> movingNodes = editManager.getMovingNodes();
-
-		for(EditNode en:movingNodes) {
-			//for a move, all nodes should be real so node should exist
-			if(en.node != null) {
-				Point2D nodePoint = en.node.getPoint();
-				en.point.setLocation(nodePoint.getX() + dx, nodePoint.getY() + dy);
-			}
-		}
-	}
+//	@Override
+//	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
+//		
+//		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
+//		List<Object> selection = editManager.getSelection();
+//		
+//		if(!selection.isEmpty()) {
+//			//execute the move
+//			MoveEdit me = new MoveEdit(editManager.getOsmData());
+//			boolean success = me.selectionMoved(selection,moveStartPoint,clickDestPoint);
+//			
+//			if(success) {
+//				//if the move caused a node to be deleted, clear the selection
+//				//so we don't have the invalid object stroed there
+//				boolean nodeDeleted = me.getNodeDeleted();
+//				if(nodeDeleted) {
+//					editManager.clearSelection();
+//				}
+//				
+//				//update select point
+//				editManager.setSelectionPoint(clickDestPoint);
+//			}
+//		}
+//		
+//		//clean up and exit move mode
+//		editManager.clearPreview();
+//		editManager.clearPending();
+//		SelectEditorMode sem = editManager.getSelectEditorMode();
+//		sem.setSelectState();
+//		
+//		editManager.getEditLayer().notifyContentChange();
+//	}
+//	
+//	private void initMovingNodes() {
+//		Point2D mouseMerc = editManager.getMousePointMerc();
+//		double dx = mouseMerc.getX() - moveStartPoint.point.getX();
+//		double dy = mouseMerc.getY() - moveStartPoint.point.getY();
+//
+//		List<EditNode> movingNodes = editManager.getMovingNodes();
+//
+//		for(EditNode en:movingNodes) {
+//			//for a move, all nodes should be real so node should exist
+//			if(en.node != null) {
+//				Point2D nodePoint = en.node.getPoint();
+//				en.point.setLocation(nodePoint.getX() + dx, nodePoint.getY() + dy);
+//			}
+//		}
+//	}
 
 	private EditNode getEditNode(OsmNode node) {
 		EditObject editObject = editMap.get(node);

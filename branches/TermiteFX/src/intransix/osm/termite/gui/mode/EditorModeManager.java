@@ -53,7 +53,9 @@ public class EditorModeManager implements MapDataListener {
 		activeMode = mode;
 
 		//prepare the new mode
-		mode.turnOn();
+		if(mode != null) {
+			mode.turnOn();
+		}
 
 		//set this mode as active
 		this.activeMode = mode;
