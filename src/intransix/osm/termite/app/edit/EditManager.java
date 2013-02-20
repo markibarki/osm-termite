@@ -13,7 +13,7 @@ import intransix.osm.termite.app.edit.snapobject.SnapNode;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.edit.impl.EditDestPoint;
 import intransix.osm.termite.render.edit.*;
-import java.awt.geom.Point2D;
+//import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,13 +76,6 @@ public class EditManager {
 		this.featureTypeManager = featureTypeManager;
 		this.levelManager = levelManager;
 		this.mapDataManager = mapDataManager;
-	}
-	
-	public void init() {
-		editLayer = new EditLayer(this);
-		selectMode = new SelectEditorMode(this);
-		nodeMode = new NodeEditorMode(this);
-		wayMode = new WayEditorMode(this);
 	}
 	
 	//---------------------
@@ -227,10 +220,10 @@ public class EditManager {
 		featureSelectedListeners.remove(listener);
 	}
 	
-	/** This is a method to look up the current mouse point, from the edit layer. */
-	public Point2D getMousePointMerc() {
-		return editLayer.getMapPanel().getMousePointMerc();
-	}
+//	/** This is a method to look up the current mouse point, from the edit layer. */
+//	public Point2D getMousePointMerc() {
+//		return editLayer.getMapPanel().getMousePointMerc();
+//	}
 	
 	/** This method retrieves the edit layer. */
 	public EditLayer getEditLayer() {
@@ -271,24 +264,24 @@ public class EditManager {
 	 * @param mouseMerc		The location of the mouse in mercator coordinates.
 	 * @return				The EditDestPoint
 	 */
-	public EditDestPoint getDestinationPoint(Point2D mouseMerc) {
-		EditDestPoint edp = new EditDestPoint();
-		edp.point = new Point2D.Double();
-		
-		if((activeSnapObject > -1)&&(activeSnapObject < snapObjects.size())) {
-			SnapObject snapObject = snapObjects.get(activeSnapObject);
-			edp.point.setLocation(snapObject.snapPoint);
-			
-			if(snapObject instanceof SnapNode) {
-				edp.snapNode = ((SnapNode)snapObject).node;
-			}	
-		}
-		else {
-			edp.point.setLocation(mouseMerc);
-		}
-		
-		return edp;
-	}
+//	public EditDestPoint getDestinationPoint(Point2D mouseMerc) {
+//		EditDestPoint edp = new EditDestPoint();
+//		edp.point = new Point2D.Double();
+//		
+//		if((activeSnapObject > -1)&&(activeSnapObject < snapObjects.size())) {
+//			SnapObject snapObject = snapObjects.get(activeSnapObject);
+//			edp.point.setLocation(snapObject.snapPoint);
+//			
+//			if(snapObject instanceof SnapNode) {
+//				edp.snapNode = ((SnapNode)snapObject).node;
+//			}	
+//		}
+//		else {
+//			edp.point.setLocation(mouseMerc);
+//		}
+//		
+//		return edp;
+//	}
 
 	
 		

@@ -1,8 +1,8 @@
 package intransix.osm.termite.app.maplayer;
 
 import java.util.*;
-import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import intransix.osm.termite.render.MapPanel;
+import javafx.scene.Node;
+import javafx.scene.layout.Pane;
 
 
 /**
@@ -15,30 +15,22 @@ public class MapLayerManager {
 	// Properties
 	//======================
 	
-	private ViewRegionManager viewRegionManager;
-	
-	private List<MapLayer> mapLayers = new ArrayList<MapLayer>();
-	
+	private List<MapLayer> mapLayers = new ArrayList<>();
 	
 	private Comparator<MapLayer> comp = new Comparator<MapLayer>() {
+		@Override
 		public int compare(MapLayer ml1, MapLayer ml2) {
 			return Double.compare(ml1.getOrder(),ml2.getOrder());
 		}
 	};
 	
-	private List<MapLayerListener> layerListeners = new ArrayList<MapLayerListener>();
-	
-	//////////////////////////////////////////////////
-	
-	private MapPanel mapPanel;
+	private List<MapLayerListener> layerListeners = new ArrayList<>();
 	
 	//======================
 	// Public Methods
 	//======================
 	
-	public MapLayerManager(ViewRegionManager viewRegionManager, MapPanel mapPanel) {
-		this.viewRegionManager = viewRegionManager;
-		this.mapPanel = mapPanel;
+	public MapLayerManager() {
 	}
 	
 	public List<MapLayer> getMapLayers() {
@@ -48,9 +40,9 @@ public class MapLayerManager {
 	public void addLayer(MapLayer layer) {
 		if(!mapLayers.contains(layer)) {
 			mapLayers.add(layer);
-			layer.connect(this,viewRegionManager,mapPanel);
+			layer.connect(this);
 			
-			//sort collection
+			//sort collection and update layers
 			Collections.sort(mapLayers, comp);
 			notifyListChange();
 		}
@@ -58,6 +50,7 @@ public class MapLayerManager {
 	
 	public void removeLayer(MapLayer layer) {
 		mapLayers.remove(layer);
+		layer.disconnect(this);
 		notifyListChange();
 	}
 	

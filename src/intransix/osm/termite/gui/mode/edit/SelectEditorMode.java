@@ -67,15 +67,21 @@ public class SelectEditorMode extends EditorMode implements FeatureSelectedListe
 	//====================
 	
 	/** Constructor. */
-	public SelectEditorMode(EditManager editManager) {
-		this.editManager = editManager;
-		this.editLayer = editManager.getEditLayer();
+	public SelectEditorMode() {
 		toolBar = new SelectToolbar(this);
-		
+	}
+	
+//@TODO - fix setting of edit manager and layer
+	public void setEditManager(EditManager editManager) {
+		this.editManager = editManager;
 		changeFeatureTypeAction = new ChangeFeatureTypeAction(editManager);
 //		createLevelAction = new CreateLevelAction(editManager);
 		deleteSelectionAction = new DeleteSelectionAction(editManager);
 		removeNodeFromWayAction = new RemoveWayNodeAction(editManager);
+	}
+	
+	public void setEditLayer(EditLayer editLayer) {
+		this.editLayer = editLayer;
 	}
 	
 	/** This method will delete the selected item. */
@@ -123,9 +129,9 @@ throw new RuntimeException("Add create level action back");
 	@Override
 	public void turnOn() {
 		if(editLayer != null) {
-			editLayer.setActiveState(true);
-			setSelectState();
-			editManager.addFeatureSelectedListener(this);
+//			editLayer.setActiveState(true);
+//			setSelectState();
+//			editManager.addFeatureSelectedListener(this);
 		}
 	}
 	
@@ -134,8 +140,8 @@ throw new RuntimeException("Add create level action back");
 	@Override
 	public void turnOff() {
 		if(editLayer != null) {
-			editLayer.setActiveState(false);
-			editManager.removeFeatureSelectedListener(this);
+//			editLayer.setActiveState(false);
+//			editManager.removeFeatureSelectedListener(this);
 		}
 		//remove from move state if it is there
 		inMoveState = false;
@@ -166,9 +172,10 @@ throw new RuntimeException("Add create level action back");
 			
 			MouseMoveAction snapAction = new SelectSnapMoveAction(editManager);	
 			snapAction.init();
-			
-			editLayer.setMouseClickAction(mouseClickAction);
-			editLayer.setMouseMoveActions(null, snapAction);
+
+//@TODO re insert mouse actions			
+//			editLayer.setMouseClickAction(mouseClickAction);
+//			editLayer.setMouseMoveActions(null, snapAction);
 			
 			//clear any old state, but not selection
 			editManager.clearPending();
@@ -212,8 +219,9 @@ throw new RuntimeException("Add create level action back");
 			snapAction.init();
 			moveAction.init();
 			
-			editLayer.setMouseClickAction(mouseClickAction);
-			editLayer.setMouseMoveActions(moveAction, snapAction);
+//@TODO re insert mouse actions	
+//			editLayer.setMouseClickAction(mouseClickAction);
+//			editLayer.setMouseMoveActions(moveAction, snapAction);
 			
 			inMoveState = true;
 			

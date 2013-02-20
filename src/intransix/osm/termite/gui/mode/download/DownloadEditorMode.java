@@ -33,12 +33,14 @@ public class DownloadEditorMode extends EditorMode {
 	// Public Methods
 	//====================
 	
-	public DownloadEditorMode(MapDataManager mapDataManager, DownloadLayer downloadLayer) {
-		this.mapDataManager = mapDataManager;
-		this.downloadLayer = downloadLayer;
+	public DownloadEditorMode() {
 		setDataEnabledStates(false,true);
 		
 		toolBar = new DownloadToolbar(this);
+	}
+	
+	public void setMapDataManager(MapDataManager mapDataManager) {
+		this.mapDataManager = mapDataManager;
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -61,39 +63,42 @@ public class DownloadEditorMode extends EditorMode {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
-		downloadLayer.setActiveState(true);
+//		downloadLayer.setActiveState(true);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
-		downloadLayer.setActiveState(false);
+//		downloadLayer.setActiveState(false);
 	}	
 	
 	public void doDownload() {
-		Rectangle2D selection = downloadLayer.getSelectionMercator();
-		if(selection == null) {
-			JOptionPane.showMessageDialog(null, "You must select a bounding box to download.");
-			return;
-		}
-		
-		//get the bounding box
-		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMaxY()));
-		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMinX()));
-		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMinY()));
-		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMaxX()));
-		
-		//run the load data task
-		MapDataRequestTask mdrt = new MapDataRequestTask(mapDataManager,minLat,minLon,maxLat,maxLon);
-		mdrt.execute();
+//@TODO FIX THIS!
+//		Rectangle2D selection = downloadLayer.getSelectionMercator();
+//		if(selection == null) {
+//			JOptionPane.showMessageDialog(null, "You must select a bounding box to download.");
+//			return;
+//		}
+//		
+//		//get the bounding box
+//		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMaxY()));
+//		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMinX()));
+//		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMinY()));
+//		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMaxX()));
+//		
+//		//run the load data task
+//		MapDataRequestTask mdrt = new MapDataRequestTask(mapDataManager,minLat,minLon,maxLat,maxLon);
+//		mdrt.execute();
 	}
 	
 	public void doSearch(String searchString) {
-		JOptionPane.showMessageDialog(null, "Search is not implmented.");
+//@TODO add message box
+//		JOptionPane.showMessageDialog(null, "Search is not implmented.");
 	}
 	
 	public void clearSelection() {
-		downloadLayer.clearSelection();
+//@TODO fix this	
+//		downloadLayer.clearSelection();
 	}
 	
 	@Override

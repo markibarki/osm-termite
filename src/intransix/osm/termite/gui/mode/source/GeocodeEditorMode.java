@@ -61,13 +61,17 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	//====================
 	
 	/** Constructor */
-	public GeocodeEditorMode(GeocodeManager geocodeManager) {
-		this.geocodeManager = geocodeManager;
+	public GeocodeEditorMode() {
 		this.toolBar = new GeocodeToolbar(this);
 		this.addGeocodeStateListener(this.toolBar);
 		
 		//make this automatically disabled - only enabled manually
 		setDataEnabledStates(false,false);
+	}
+	
+//@TODO fixc this!!!
+	public void setGeocodeManager(GeocodeManager geocodeManager) {
+		this.geocodeManager = geocodeManager;
 	}
 	
 	/** This adds a listener for changes in the geocode state. */
@@ -149,7 +153,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 				break;
 				
 			case SELECT:
-				geocodeLayer.setMouseAction(new SelectAction(geocodeManager,geocodeLayer.getViewRegionManager()));
+				geocodeLayer.setMouseAction(new SelectAction(geocodeManager));
 				break;
 				
 			case PLACE_P0:
@@ -217,12 +221,12 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	@Override
 	public void turnOn() {
 		if(geocodeLayer != null) {
-			geocodeLayer.setActiveState(true);
-			geocodeLayer.setVisible(true);
-			
-			setGeocodeType(GeocodeType.TWO_POINT);
-			setLayerState(LayerState.SELECT);
-			geocodeManager.layerActive();
+//			geocodeLayer.setActiveState(true);
+//			geocodeLayer.setVisible(true);
+//			
+//			setGeocodeType(GeocodeType.TWO_POINT);
+//			setLayerState(LayerState.SELECT);
+//			geocodeManager.layerActive();
 		}
 	}
 	
@@ -231,11 +235,11 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	@Override
 	public void turnOff() {
 		if(geocodeLayer != null) {
-			setLayerState(LayerState.INACTIVE);
-			
-			geocodeLayer.setActiveState(false);
-			geocodeLayer.setVisible(false);
-			geocodeManager.layerInactive();
+//			setLayerState(LayerState.INACTIVE);
+//			
+//			geocodeLayer.setActiveState(false);
+//			geocodeLayer.setVisible(false);
+//			geocodeManager.layerInactive();
 		}
 	}
 	

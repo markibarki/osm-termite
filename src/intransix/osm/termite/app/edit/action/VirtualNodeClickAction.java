@@ -13,9 +13,9 @@ import intransix.osm.termite.app.level.LevelManager;
 import intransix.osm.termite.app.edit.impl.EditDestPoint;
 import intransix.osm.termite.app.edit.impl.WayNodeEdit;
 import intransix.osm.termite.map.feature.FeatureInfo;
-import java.awt.geom.Point2D;
 import java.util.List;
-import java.awt.event.MouseEvent;
+//import java.awt.event.MouseEvent;
+//import java.awt.geom.Point2D;
 
 /**
  *
@@ -63,8 +63,8 @@ public class VirtualNodeClickAction implements MouseClickAction {
 		
 		if(virtualNode != null) {
 			//set initial position
-			Point2D mouseMerc = editManager.getMousePointMerc();
-			editVirtualNode.enVirtual.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
+//			Point2D mouseMerc = editManager.getMousePointMerc();
+//			editVirtualNode.enVirtual.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
 			
 			editManager.getEditLayer().notifyContentChange();
 			return true;
@@ -74,22 +74,22 @@ public class VirtualNodeClickAction implements MouseClickAction {
 		}
 	}
 	
-	@Override
-	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
-		if(virtualNode == null) return;
-		
-		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
-		
-		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
-		wne.nodeInserted(virtualNode.segment,clickDestPoint,levelManager.getSelectedLevel());
-		
-		//clean up and exit move mode
-		editManager.clearPreview();
-		editManager.clearPending();
-		SelectEditorMode sem = editManager.getSelectEditorMode();
-		sem.setSelectState();
-		
-		editManager.getEditLayer().notifyContentChange();
-	}
-		
+//	@Override
+//	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
+//		if(virtualNode == null) return;
+//		
+//		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
+//		
+//		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
+//		wne.nodeInserted(virtualNode.segment,clickDestPoint,levelManager.getSelectedLevel());
+//		
+//		//clean up and exit move mode
+//		editManager.clearPreview();
+//		editManager.clearPending();
+//		SelectEditorMode sem = editManager.getSelectEditorMode();
+//		sem.setSelectState();
+//		
+//		editManager.getEditLayer().notifyContentChange();
+//	}
+//		
 }

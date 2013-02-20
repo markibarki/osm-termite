@@ -28,9 +28,16 @@ public class WayEditorMode extends EditorMode {
 	// Public Methods
 	//====================
 	
-	public WayEditorMode(EditManager editManager) {
+	public WayEditorMode() {
+	}
+	
+//@TODO - fix setting of edit manager and layer
+	public void setEditManager(EditManager editManager) {
 		this.editManager = editManager;
-		this.editLayer = editManager.getEditLayer();
+	}
+	
+	public void setEditLayer(EditLayer editLayer) {
+		this.editLayer = editLayer;
 	}
 	
 	/** This method returns the name of the editor mode. 
@@ -56,11 +63,13 @@ public class WayEditorMode extends EditorMode {
 	@Override
 	public void turnOn() {
 		if(editLayer != null) {
-			editLayer.setActiveState(true);
-			loadMouseActions();
+//			editLayer.setActiveState(true);
+//			loadMouseActions();
 		}
-		MapPanel mapPanel = editLayer.getMapPanel();
-		mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		
+//@TODO fix cursor
+//		MapPanel mapPanel = editLayer.getMapPanel();
+//		mapPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	}
 	
 	/** This method is called when the editor mode is turned off. 
@@ -68,10 +77,11 @@ public class WayEditorMode extends EditorMode {
 	@Override
 	public void turnOff() {
 		if(editLayer != null) {
-			editLayer.setActiveState(false);
+//			editLayer.setActiveState(false);
 			
-			MapPanel mapPanel = editLayer.getMapPanel();
-			mapPanel.setCursor(Cursor.getDefaultCursor());
+//@TODO fix cursor
+//			MapPanel mapPanel = editLayer.getMapPanel();
+//			mapPanel.setCursor(Cursor.getDefaultCursor());
 			
 		}
 	}
@@ -97,9 +107,10 @@ public class WayEditorMode extends EditorMode {
 		snapAction.init();
 		MouseMoveAction moveAction = new CreateMoveMoveAction(editManager);
 		moveAction.init();
-
-		editLayer.setMouseClickAction(mouseClickAction);
-		editLayer.setMouseMoveActions(moveAction, snapAction);
+		
+//@TODO re insert mouse actions	
+//		editLayer.setMouseClickAction(mouseClickAction);
+//		editLayer.setMouseMoveActions(moveAction, snapAction);
 	}
 
 }

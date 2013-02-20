@@ -16,9 +16,9 @@ public interface GeocodeMouseAction {
 	/** This should return false if these if no move action. */
 	public boolean doMove();
 	
-	/** This method is called when the mouse moves, if doMove() returns true. */
-	public void mouseMoved(Point2D mouseMerc, MouseEvent e);
-	
-	/** This method is called when the mouse is clicked. */
-	public void mousePressed(Point2D mouseMerc, MouseEvent e);
+//	/** This method is called when the mouse moves, if doMove() returns true. */
+//	public void mouseMoved(Point2D mouseMerc, MouseEvent e);
+//	
+//	/** This method is called when the mouse is clicked. */
+//	public void mousePressed(Point2D mouseMerc, MouseEvent e);
 }

@@ -1,6 +1,7 @@
 package intransix.osm.termite.app.basemap;
 
 import intransix.osm.termite.app.preferences.Preferences;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.render.tile.*;
 import intransix.osm.termite.util.JsonIO;
 import java.util.ArrayList;
@@ -17,8 +18,6 @@ public class BaseMapManager {
 	private List<TileInfo> baseMapList = new ArrayList<TileInfo>();
 	private List<BaseMapListener> baseMapListeners = new ArrayList<BaseMapListener>();
 	
-	private TileLayer baseMapLayer;
-	
 	/** This method initializes the base map manager.
 	 * 
 	 * @param configFileName	The file name for the base map configuration file.
@@ -29,9 +28,6 @@ public class BaseMapManager {
 		if(configFileName != null) {
 			JSONObject mapInfoJson = JsonIO.readJsonFile(configFileName);
 			baseMapList = TileInfo.parseInfoList(mapInfoJson);
-
-			baseMapLayer = new TileLayer();
-			baseMapLayer.setActiveState(true);
 
 			//set the default map
 			String defaultMapName = Preferences.getProperty("defaultBaseMap");
@@ -44,16 +40,9 @@ public class BaseMapManager {
 		}
 	}
 	
-	/** This gets the map layer for the base map. */
-	public TileLayer getBaseMapLayer() {
-		return baseMapLayer;
-	}
-	
 	/** This method sets the base map. */
 	public void setBaseMap(TileInfo tileInfo) {
 		activeBaseMapInfo = tileInfo;
-		baseMapLayer.setTileInfo(tileInfo);
-		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
 		for(BaseMapListener baseMapListener:baseMapListeners) {
 			baseMapListener.baseMapChanged(tileInfo);
 		}

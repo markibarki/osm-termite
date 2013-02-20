@@ -31,7 +31,8 @@ System.out.println("Update feature Type");
 		try {
 			//get the new properties
 //@TODO clean this line up
-			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
+//			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
+FeatureTypeManager featureTypeManager = null;			
 			List<PropertyPair> newProperties = featureTypeManager.getFeatureProperties(featureInfo);
 			
 			//traverse list of objects to update

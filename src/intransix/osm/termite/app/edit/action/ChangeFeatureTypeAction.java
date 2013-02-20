@@ -7,7 +7,7 @@ import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.map.workingdata.OsmData;
 import intransix.osm.termite.app.edit.impl.TypeChangeEdit;
 import java.util.List;
-import javax.swing.JOptionPane;
+//import javax.swing.JOptionPane;
 
 /**
  *
@@ -32,7 +32,8 @@ public class ChangeFeatureTypeAction {
 			tce.modifyType(selection,featureInfo);
 		}
 		else {
-			JOptionPane.showMessageDialog(null,"An object must be selected.");
+//@TODO add a mesage dialog here
+//			JOptionPane.showMessageDialog(null,"An object must be selected.");
 		}
 	}
 }

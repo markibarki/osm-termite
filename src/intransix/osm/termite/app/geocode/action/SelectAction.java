@@ -5,8 +5,8 @@ import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.geocode.*;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.render.source.GeocodeLayer;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
+//import java.awt.event.MouseEvent;
+//import java.awt.geom.Point2D;
 
 
 /**
@@ -20,16 +20,15 @@ public class SelectAction implements GeocodeMouseAction {
 	//=====================
 	
 	private GeocodeManager geocodeManager;
-	private ViewRegionManager viewRegionManager;
+//	private ViewRegionManager viewRegionManager;
 	private GeocodeLayer geocodeLayer;
 	
 	//=====================
 	// Public Methods
 	//=====================
 	
-	public SelectAction(GeocodeManager geocodeManager, ViewRegionManager viewRegionManager) {
+	public SelectAction(GeocodeManager geocodeManager) {
 		this.geocodeManager = geocodeManager;
-		this.viewRegionManager = viewRegionManager;
 	}
 	
 	@Override
@@ -43,31 +42,31 @@ public class SelectAction implements GeocodeMouseAction {
 		return false;
 	}
 	
-	@Override
-	public void mouseMoved(Point2D mouseMerc, MouseEvent e) {}
-	
-	@Override
-	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
-		AnchorPoint[] anchorPoints = geocodeManager.getAnchorPoints();
-		double mercPerPixelsScale = 1.0 / viewRegionManager.getZoomScalePixelsPerMerc();
-		int cnt = anchorPoints.length;
-		boolean objectSelected = false;
-		for(int i = 0; i < cnt; i++) {
-			AnchorPoint anchorPoint = anchorPoints[i];
-			if(anchorPoint.hitCheck(mouseMerc, mercPerPixelsScale)) {
-				geocodeManager.setSelection(i);
-				objectSelected = true;
-			}
-		}
-		if(!objectSelected) {
-			//if we are still here, nothing was selected
-			geocodeManager.setSelection(GeocodeManager.INVALID_SELECTION);
-		}
-		
-		//exit the move after a click
-		geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
-			
-		geocodeLayer.notifyContentChange();
-	}
+//	@Override
+//	public void mouseMoved(Point2D mouseMerc, MouseEvent e) {}
+//	
+//	@Override
+//	public void mousePressed(Point2D mouseMerc, MouseEvent e) {
+//		AnchorPoint[] anchorPoints = geocodeManager.getAnchorPoints();
+//		double mercPerPixelsScale = viewRegionManager.getZoomScaleMercPerPixels();
+//		int cnt = anchorPoints.length;
+//		boolean objectSelected = false;
+//		for(int i = 0; i < cnt; i++) {
+//			AnchorPoint anchorPoint = anchorPoints[i];
+//			if(anchorPoint.hitCheck(mouseMerc, mercPerPixelsScale)) {
+//				geocodeManager.setSelection(i);
+//				objectSelected = true;
+//			}
+//		}
+//		if(!objectSelected) {
+//			//if we are still here, nothing was selected
+//			geocodeManager.setSelection(GeocodeManager.INVALID_SELECTION);
+//		}
+//		
+//		//exit the move after a click
+//		geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
+//			
+//		geocodeLayer.notifyContentChange();
+//	}
 	
 }

@@ -6,13 +6,15 @@ import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.map.workingdata.OsmData;
 import intransix.osm.termite.map.workingdata.OsmObject;
 import java.util.List;
-import javax.swing.JOptionPane;
+//import javax.swing.JOptionPane;
 
 /**
  *
  * @author sutter
  */
 public class CreateLevelAction {
+
+//@TODO fix this!	
 	
 //	private EditManager editManager;
 //	
