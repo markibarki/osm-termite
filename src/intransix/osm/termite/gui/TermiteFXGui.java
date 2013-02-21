@@ -195,7 +195,7 @@ editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
 		
 		baseMapLayer = new TileLayer();
 		baseMapLayer.setActiveState(true);
-//		mapLayerManager.addLayer(baseMapLayer);
+		mapLayerManager.addLayer(baseMapLayer);
 		baseMapLayer.setViewRegionManager(viewRegionManager);
 		
 		downloadLayer = new DownloadLayer();
