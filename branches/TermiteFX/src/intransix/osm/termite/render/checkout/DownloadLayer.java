@@ -15,6 +15,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
+import javafx.scene.transform.Scale;
 //import java.awt.Graphics2D;
 //import java.awt.event.MouseEvent;
 //import java.awt.event.MouseListener;
@@ -66,7 +67,6 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 			@Override
 			public void handle(MouseEvent e) {
 				if(e.getButton() == MouseButton.PRIMARY) {
-					e = (MouseEvent)e.copyFor(DownloadLayer.this,DownloadLayer.this);
 					double mercX = e.getX();
 					double mercY = e.getY();
 
@@ -78,7 +78,6 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		mouseMoveHandler = new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
-				e = (MouseEvent)e.copyFor(DownloadLayer.this,DownloadLayer.this);
 				double mercX = e.getX();
 				double mercY = e.getY();
 				mouseMoved(mercX,mercY);
@@ -86,18 +85,17 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		};
 		
 		selection = new Rectangle();
-selection.setFill(Color.BLUE);
-//		selection.setFill(FILL_COLOR);
+//selection.setFill(Color.BLUE);
+		selection.setFill(FILL_COLOR);
 //		selection.setStroke(STROKE_COLOR);
 //		selection.setStrokeWidth(0.01);
 		
-		temp = new Rectangle(.1,.1,.4,.5);
-		temp.setFill(Color.RED);
-		this.getChildren().add(temp);
-		
-		this.setStyle("-fx-background-color: yellow;");
+//		temp = new Rectangle(.1,.1,.4,.5);
+//		temp.setFill(Color.RED);
+//		this.getChildren().add(temp);
+//		
+//		this.setStyle("-fx-background-color: yellow;");
 	}
-Rectangle temp;
 	
 	/** This mode sets the edit layer active. */
 	@Override
@@ -105,12 +103,12 @@ Rectangle temp;
 		super.setActiveState(isActive);
 		if(mapLayerManager != null) {
 			if(isActive) {
-				mapLayerManager.addMouseEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-				mapLayerManager.addMouseEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+				this.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+				this.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
 			}
 			else {
-				mapLayerManager.removeMouseEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-				mapLayerManager.removeMouseEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+				this.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+				this.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
 			}
 		}
 	}
@@ -140,7 +138,6 @@ Rectangle temp;
 			selecting = false;
 		}
 
-temp.setX(temp.getX() + .1);
 		notifyContentChange();
 	}
 
@@ -197,9 +194,9 @@ temp.setX(temp.getX() + .1);
 //	// </editor-fold>
 
 
-//=================================
-	// Private Methods
 	//=================================
+	// Private Methods
+	//=================================	
 	
 	private void updateTransform(ViewRegionManager viewRegionManager) {
 		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
@@ -208,7 +205,7 @@ temp.setX(temp.getX() + .1);
 	/** This method updates the selection for a new mouse point. */
 	private void updateSelection(double mercX, double mercY) {
 		selection.setX(startX < mercX ? startX : mercX);
-		selection.setY(startX < mercX ? startX : mercX);
+		selection.setY(startY < mercY ? startY : mercY);
 		selection.setWidth(Math.abs(mercX - startX));
 		selection.setHeight(Math.abs(mercY - startY));
 System.out.println("Selection: " + selection.getX() + "," + selection.getY() + "," + 
