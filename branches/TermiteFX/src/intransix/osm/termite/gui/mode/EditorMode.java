@@ -1,8 +1,6 @@
 package intransix.osm.termite.gui.mode;
 
-import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.render.MapPanel;
-import javax.swing.JToolBar;
+import javafx.scene.control.ToolBar;
 
 /**
  * This is the base class for an editor mode. The editor mode controls what the 
@@ -53,7 +51,7 @@ public abstract class EditorMode {
 	}
 	
 	/** This method returns the submode toolbar for the editor mode. */
-	public JToolBar getToolBar() {
+	public ToolBar getToolBar() {
 		return null;
 	}
 	//---------------------

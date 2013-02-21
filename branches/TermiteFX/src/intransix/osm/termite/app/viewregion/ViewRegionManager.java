@@ -9,6 +9,7 @@ import intransix.osm.termite.app.ShutdownListener;
 import intransix.osm.termite.app.preferences.Preferences;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Transform;

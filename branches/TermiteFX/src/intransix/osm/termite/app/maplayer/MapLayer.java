@@ -1,6 +1,7 @@
 package intransix.osm.termite.app.maplayer;
 
-import javafx.scene.layout.Pane;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 
 /**
  *
@@ -29,10 +30,6 @@ public interface MapLayer {
 	
 	public boolean getActiveState();
 	
-	public void setOpacity(double alpha);
-	
-	public double getOpacity();
-	
 	public boolean hasPreferredAngle();
 	
 	public double getPrerredAngleRadians();
@@ -41,5 +38,14 @@ public interface MapLayer {
 	
 	public void disconnect(MapLayerManager mapLayerManager);
 
+	//--------------------
+	// Methods from Node we will use
+	//--------------------
+	public void setOpacity(double alpha);
+	public double getOpacity();
+	public DoubleProperty opacityProperty();
+	
+	public void setVisible(boolean visible);
+	public BooleanProperty visibleProperty();
 	
 }

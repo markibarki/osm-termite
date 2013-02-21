@@ -15,6 +15,8 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 /**
  *
@@ -22,13 +24,16 @@ import javafx.scene.image.ImageView;
  */
 public class TermiteToolBar extends HBox implements EditorModeListener {
 	private ToolBar modeToolBar;
-	private ToolBar submodeToolBar;
+	private ToolBar emptyToolBar;
 	private ModeGroup group;
 	private HashMap<EditorMode,ToggleButton> buttonMap = new HashMap<>();
 	private EditorModeManager editorModeManager;
 	
 	public TermiteToolBar() {
 		modeToolBar = new ToolBar();
+		HBox.setHgrow(modeToolBar,Priority.NEVER);
+		emptyToolBar = new ToolBar();
+		HBox.setHgrow(modeToolBar,Priority.ALWAYS);
 		group = new ModeGroup() {
 			public void onSelect(Toggle toggle) {
 
@@ -46,7 +51,7 @@ public class TermiteToolBar extends HBox implements EditorModeListener {
 			}
 		};
 		
-		this.getChildren().add(modeToolBar);
+		this.getChildren().addAll(modeToolBar,emptyToolBar);
 	}
 	
 	public void initModes() {
@@ -68,6 +73,9 @@ public class TermiteToolBar extends HBox implements EditorModeListener {
 			ToggleButton button = buttonMap.get(activeMode);
 			if(button != null) {
 				button.setSelected(true);
+				ToolBar subModeToolBar = activeMode.getToolBar();
+				if(subModeToolBar == null) subModeToolBar = emptyToolBar;
+				this.getChildren().setAll(modeToolBar,subModeToolBar);
 			}
 			else {
 				//shouldn't happen

@@ -3,19 +3,30 @@ package intransix.osm.termite.render.source;
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
 import intransix.osm.termite.app.geocode.GeocodeStateListener;
 import intransix.osm.termite.app.maplayer.MapLayer;
-import intransix.osm.termite.app.maplayer.MapLayerListener;
-import intransix.osm.termite.render.source.SourceLayer;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.*;
+import intransix.osm.termite.gui.toolbar.ModeGroup;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 /**
  * This is the submode toolbar for the geocode editor mode. 
  * @author sutter
  */
-public class GeocodeToolbar extends JToolBar implements ActionListener, 
-		GeocodeStateListener {
+public class GeocodeToolbar extends ToolBar implements GeocodeStateListener {
 
 	//=====================
 	// Properties
@@ -34,15 +45,22 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 		"3 Pnt Ortho",
 		"3 Pnt Free"
 	};
-	private final static String[] GEOCODE_CMDS = {
-		"two","three","free"
-	}; 
+	private final static GeocodeEditorMode.GeocodeType[] GEOCODE_CMDS = {
+		GeocodeEditorMode.GeocodeType.TWO_POINT,
+		GeocodeEditorMode.GeocodeType.THREE_POINT_ORTHO,
+		GeocodeEditorMode.GeocodeType.FREE_TRANSFORM
+	};
+
 	private final static String[][] BUTTON_NAMES = {
 		{"Translate [1]","Rotate/Scale [2]",null},
 		{"Translate [1]","Rotate/Scale A [2]","Rotate/Scale B [3]"},
 		{"Point 1 [1]","Point 2 [2]","Point 3 [3]"}
 	};
-	private final static String[] BUTTON_CMDS = {"b0","b1","b2"};
+	private final static GeocodeEditorMode.LayerState[] BUTTON_CMDS = {
+		GeocodeEditorMode.LayerState.PLACE_P0,
+		GeocodeEditorMode.LayerState.PLACE_P1,
+		GeocodeEditorMode.LayerState.PLACE_P2
+	};
 	
 	private final static int TWO_POINT = 0;
 	private final static int THREE_POINT_ORTHO = 1;
@@ -54,17 +72,19 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 	
 	private GeocodeEditorMode geocodeEditorMode;
 	
-	private JComboBox sourceSelector;
+	private ChoiceBox<SourceLayer> sourceSelector;
 	
-	private JToggleButton selectButton;
-	private JToggleButton moveButton;
+	private ToggleButton selectButton;
+	private ToggleButton moveButton;
 	
-	private JToggleButton[] dynamicButtons;
+	private ToggleButton[] dynamicButtons;
 
-	private ButtonGroup modeButtonGroup;
+	private ModeGroup modeButtonGroup;
 	
-	private ButtonGroup typeButtonGroup;
-	private JRadioButton[] radioButtons;
+	private ToggleGroup typeButtonGroup;
+	private RadioButton[] radioButtons;
+	
+	private List<SourceLayer> workingLayers = new ArrayList<>();
 	
 	//=====================
 	// Public Methods
@@ -77,20 +97,28 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 	
 	/** This method is called when the source layers are updated. */
 	public void updateLayers(java.util.List<MapLayer> mapLayerList) {
-//		Object selection = sourceSelector.getSelectedItem();
-//		sourceSelector.removeAllItems();
-//		for(MapLayer layer:mapLayerList) {
-//			if((layer instanceof SourceLayer)&&(layer.isVisible())) {
-//				sourceSelector.addItem((SourceLayer)layer);
-//			}
-//		}
-//		if((selection != null)&&(mapLayerList.contains(selection))) {
-//			sourceSelector.setSelectedItem(selection);
-//		} 
-//		boolean newEnableState = (sourceSelector.getItemCount() > 0);
-//		if(newEnableState != geocodeEditorMode.getModeEnabled()) {
-//			geocodeEditorMode.setEnabled(newEnableState);
-//		}
+		SingleSelectionModel<SourceLayer> model = sourceSelector.getSelectionModel();
+		SourceLayer selectedLayer = model.getSelectedItem();
+		boolean setSelection = false;
+		
+		workingLayers.clear();
+		for(MapLayer mapLayer:mapLayerList) {
+			if((mapLayer instanceof SourceLayer)&&(mapLayer.visibleProperty().getValue())) {
+				workingLayers.add((SourceLayer)mapLayer);
+				if(mapLayer == selectedLayer) {
+					setSelection = true;
+				}
+			}
+		}
+		sourceSelector.getItems().setAll(workingLayers);
+		if(setSelection) {
+			model.select(selectedLayer);
+		}
+		
+		boolean newEnableState = (workingLayers.size() > 0);
+		if(newEnableState != geocodeEditorMode.getModeEnabled()) {
+			geocodeEditorMode.setEnabled(newEnableState);
+		}
 	}
 	
 	
@@ -132,65 +160,12 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 	
 	@Override
 	public void geocodeTypeChanged(GeocodeEditorMode.GeocodeType geocodeType) {
-		switch(geocodeType) {
-			case TWO_POINT:
-				if(!radioButtons[0].isSelected()) {
-					radioButtons[0].setSelected(true);
-					configureForGeocodeType(TWO_POINT);
-				}
-				break;
-				
-			case THREE_POINT_ORTHO:
-				if(!radioButtons[1].isSelected()) {
-					radioButtons[1].setSelected(true);
-					configureForGeocodeType(THREE_POINT_ORTHO);
-				}
-				break;
-				
-			case FREE_TRANSFORM:
-				if(!radioButtons[2].isSelected()) {
-					radioButtons[2].setSelected(true);
-					configureForGeocodeType(FREE_TRANSFORM);
-				}
-				break;
-		}
-	}
-	
-	
-	@Override
-	public void actionPerformed(ActionEvent ae) {
-		String actionCommand = ae.getActionCommand();
-		if(actionCommand == null) return;
+		int geocodeTypeIndex = getGeocodeTypeIndex(geocodeType);
+		if(geocodeTypeIndex == -1) return;
 		
-		if(actionCommand.equals(SOURCE_SELECT_CMD)) {
-			selectSource();
-		}
-		else if(actionCommand.equals(GEOCODE_CMDS[0])) {
-			geocodeEditorMode.setGeocodeType(GeocodeEditorMode.GeocodeType.TWO_POINT);
-			configureForGeocodeType(TWO_POINT);
-		}
-		else if(actionCommand.equals(GEOCODE_CMDS[1])) {
-			geocodeEditorMode.setGeocodeType(GeocodeEditorMode.GeocodeType.THREE_POINT_ORTHO);
-			configureForGeocodeType(THREE_POINT_ORTHO);
-		}
-		else if(actionCommand.equals(GEOCODE_CMDS[2])) {
-			geocodeEditorMode.setGeocodeType(GeocodeEditorMode.GeocodeType.FREE_TRANSFORM);
-			configureForGeocodeType(FREE_TRANSFORM);
-		}
-		else if(actionCommand.equals(SELECT_CMD)) {
-			geocodeEditorMode.setLayerState(GeocodeEditorMode.LayerState.SELECT);
-		}
-		else if(actionCommand.equals(MOVE_CMD)) {
-			geocodeEditorMode.setLayerState(GeocodeEditorMode.LayerState.MOVE);
-		}
-		else if(actionCommand.equals(BUTTON_CMDS[0])) {
-			geocodeEditorMode.setLayerState(GeocodeEditorMode.LayerState.PLACE_P0);
-		}
-		else if(actionCommand.equals(BUTTON_CMDS[1])) {
-			geocodeEditorMode.setLayerState(GeocodeEditorMode.LayerState.PLACE_P1);
-		}
-		else if(actionCommand.equals(BUTTON_CMDS[2])) {
-			geocodeEditorMode.setLayerState(GeocodeEditorMode.LayerState.PLACE_P2);
+		if(!radioButtons[geocodeTypeIndex].isSelected()) {
+			radioButtons[geocodeTypeIndex].setSelected(true);
+			configureForGeocodeType(geocodeTypeIndex);
 		}
 	}
 	
@@ -198,10 +173,25 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 	// Private methods
 	//=====================	
 	
-	private void configureForGeocodeType(int type) {
-		String[] dynamicNames = BUTTON_NAMES[type];
+	/** figure out the index used locally for this command.
+	 * returns -1 for invalid. */
+	private int getGeocodeTypeIndex(GeocodeEditorMode.GeocodeType type) {
+		int index = -1;
+		for(int i = 0; i<GEOCODE_CMDS.length; i++) {
+			if(type == GEOCODE_CMDS[i]) {
+				index = i;
+			}
+		}
+		return index;
+	}
+	
+	private void configureForGeocodeType(int geocodeTypeIndex) {
+
+		if((geocodeTypeIndex < 0)||(geocodeTypeIndex > BUTTON_NAMES.length)) return;
+		
+		String[] dynamicNames = BUTTON_NAMES[geocodeTypeIndex];
 		int i = 0;
-		for(JToggleButton button:dynamicButtons) {
+		for(ToggleButton button:dynamicButtons) {
 			String name = dynamicNames[i++];
 			if(name != null) {
 				button.setVisible(true);
@@ -213,86 +203,119 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 		}
 	}
 	
-	private void selectSource() {
-		SourceLayer layer = (SourceLayer)sourceSelector.getSelectedItem();
-		if(layer != null) {
-			geocodeEditorMode.setSourceLayer(layer);
-			enableButtons(true);
-		}
-		else {
-			geocodeEditorMode.setSourceLayer(null);
-			enableButtons(false);
-		}
-	}
-	
 	private void enableButtons(boolean enable) {
-		selectButton.setEnabled(enable);
-		moveButton.setEnabled(enable);
-		for(JToggleButton button:dynamicButtons) {
-			button.setEnabled(enable);
+		selectButton.setDisable(!enable);
+		moveButton.setDisable(!enable);
+		for(ToggleButton button:dynamicButtons) {
+			button.setDisable(!enable);
 		}
-		for(JRadioButton button:radioButtons) {
+		for(RadioButton button:radioButtons) {
 //free transform is disabled
-if(button == radioButtons[FREE_TRANSFORM]) button.setEnabled(false);
+if(button == radioButtons[FREE_TRANSFORM]) button.setDisable(true);
 else
-			button.setEnabled(enable);
+			button.setDisable(!enable);
 		}		
 	}
 	
 	
 	private void initToolbar() {	
-		setFloatable(false);
 		
-		sourceSelector = new JComboBox();
-		sourceSelector.setActionCommand(SOURCE_SELECT_CMD);
-		sourceSelector.addActionListener(this);
-		add(sourceSelector);
+		HBox.setHgrow(this,Priority.ALWAYS);
+		VBox.setVgrow(this,Priority.ALWAYS);
+		
+		sourceSelector = new ChoiceBox<>();
+		SingleSelectionModel<SourceLayer> model = sourceSelector.getSelectionModel();
+		model.selectedItemProperty().addListener(new ChangeListener<SourceLayer>(){
+			@Override
+			public void changed(ObservableValue<? extends SourceLayer> ov,
+					SourceLayer oldLayer, SourceLayer newLayer) {
+				
+				//select the source
+				if(newLayer != null) {
+					geocodeEditorMode.setSourceLayer(newLayer);
+					enableButtons(true);
+				}
+				else {
+					geocodeEditorMode.setSourceLayer(null);
+					enableButtons(false);
+				}
+				
+			}
+		});
+		this.getItems().add(sourceSelector);
 		
 		//geocode type choice
-		typeButtonGroup = new ButtonGroup();
+		typeButtonGroup = new ToggleGroup();
+		typeButtonGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
+			@Override
+			public void changed(ObservableValue<? extends Toggle> ov,
+					Toggle oldToggle, Toggle newToggle) {
+				
+				if(newToggle != null) {
+					GeocodeEditorMode.GeocodeType type = (GeocodeEditorMode.GeocodeType)newToggle.getUserData();
+					geocodeEditorMode.setGeocodeType(type);
+					int typeIndex = getGeocodeTypeIndex(type);
+					configureForGeocodeType(typeIndex);
+				}
+			}
+		});
+		
 		int cnt = GEOCODE_TYPE_NAMES.length;
-		radioButtons = new JRadioButton[cnt];
+		radioButtons = new RadioButton[cnt];
 		for(int i = 0; i < cnt; i++) {
-			JRadioButton radioButton = new JRadioButton();
+			RadioButton radioButton = new RadioButton();
 			radioButton.setText(GEOCODE_TYPE_NAMES[i]);
-			radioButton.setActionCommand(GEOCODE_CMDS[i]);
-			radioButton.addActionListener(this);
-			typeButtonGroup.add(radioButton);
-			add(radioButton);
+			radioButton.setUserData(GEOCODE_CMDS[i]);
+			radioButton.setToggleGroup(typeButtonGroup);
+			this.getItems().add(radioButton);
 			radioButtons[i] = radioButton;
 		}
 		
 		//mode choice
-		modeButtonGroup = new ButtonGroup();
-		selectButton = new JToggleButton(SELECT_TEXT);
-		selectButton.setActionCommand(SELECT_CMD);
-		selectButton.addActionListener(this);
-		modeButtonGroup.add(selectButton);
-		add(selectButton);
+		modeButtonGroup = new ModeGroup() {
+			public void onSelect(Toggle toggle) {
+				if(toggle == selectButton) {
+					geocodeEditorMode.setLayerState(GeocodeEditorMode.LayerState.SELECT);
+				}
+				else if(toggle == moveButton) {
+					geocodeEditorMode.setLayerState(GeocodeEditorMode.LayerState.MOVE);
+				}
+			}
+		};
+
+		selectButton = new ToggleButton(SELECT_TEXT);
+		selectButton.setToggleGroup(modeButtonGroup);
+		getItems().add(selectButton);
 		
-		moveButton = new JToggleButton(MOVE_TEXT);
-		moveButton.setActionCommand(MOVE_CMD);
-		moveButton.addActionListener(this);
-		modeButtonGroup.add(moveButton);
-		add(moveButton);
+		moveButton = new ToggleButton(MOVE_TEXT);
+		moveButton.setToggleGroup(modeButtonGroup);
+		getItems().add(moveButton);
 		
-		Box.Filler space1 = new Box.Filler(new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y));
-		add(space1);
+//		Box.Filler space1 = new Box.Filler(new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y));
+//		add(space1);
 		
-		JLabel anchorLabel = new JLabel();
+		Label anchorLabel = new Label();
         anchorLabel.setText(ANCHOR_LABEL);
-		add(anchorLabel);
+		getItems().add(anchorLabel);
 		
 		cnt = BUTTON_NAMES[0].length;
-		dynamicButtons = new JToggleButton[cnt];
+		dynamicButtons = new ToggleButton[cnt];
 		for(int i = 0; i < cnt; i++) {
-			JToggleButton button = new JToggleButton();
-			button.addActionListener(this);
-			button.setActionCommand(BUTTON_CMDS[i]);
-			modeButtonGroup.add(button);
-			add(button);
+			ToggleButton button = new ToggleButton();
+			final GeocodeEditorMode.LayerState cmd = BUTTON_CMDS[i];
+			button.setToggleGroup(modeButtonGroup);
+			this.getItems().add(button);
 			dynamicButtons[i] = button;
+			button.setOnAction(new EventHandler<ActionEvent>() {
+				@Override 
+				public void handle(ActionEvent e) {
+					geocodeEditorMode.setLayerState(cmd);
+				}
+			});
 		}
+		
+		
+		
 		
 		//disable all buttons for now
 		enableButtons(false);
