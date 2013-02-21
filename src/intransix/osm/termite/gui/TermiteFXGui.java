@@ -13,6 +13,7 @@ import intransix.osm.termite.gui.feature.FeatureTree;
 import intransix.osm.termite.gui.layer.LayerOpacityTable;
 import intransix.osm.termite.gui.layer.MapPaneLoader;
 import intransix.osm.termite.gui.level.ContentTree;
+import intransix.osm.termite.gui.map.MapPane;
 import intransix.osm.termite.gui.menu.TermiteMenu;
 import intransix.osm.termite.gui.mode.EditorModeManager;
 import intransix.osm.termite.gui.mode.download.DownloadEditorMode;
@@ -39,7 +40,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 import javax.swing.JOptionPane;
@@ -89,7 +89,7 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 	@FXML 
     private TabPane propertyTabPane; // Value injected by FXMLLoader
 	@FXML
-    private Pane mapPane; // Value injected by FXMLLoader
+    private MapPane mapPane; // Value injected by FXMLLoader
 	@FXML
     private TabPane dataTabPane; // Value injected by FXMLLoader
 	
@@ -105,8 +105,9 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 	@FXML
 	private TermiteToolBar termiteToolBar;
 	
-	public TermiteFXGui(TermiteFX app) {
+	public TermiteFXGui(TermiteFX app, Stage stage) {
 		this.app = app;
+		TermiteFXGui.stage = stage;
 		
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("TermiteFXGui.fxml"));
         fxmlLoader.setRoot(this);
@@ -119,13 +120,12 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
         }
 	}
 	
-	public Pane getMapPane() {
+	public MapPane getMapPane() {
 		return mapPane;
 	}
 	
 	/** This method loads the gui. */
-	public void load(Stage stage) throws Exception {
-		TermiteFXGui.stage = stage;
+	public void load() throws Exception {
 		Scene scene = new Scene(this);
 		stage.setScene(scene);
 		stage.show();
@@ -160,10 +160,12 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		
 		mapPaneLoader = new MapPaneLoader(mapPane);
 		
-		mapLayerManager = new MapLayerManager();
+		mapLayerManager = new MapLayerManager(mapPane);
 		mapLayerManager.addLayerListener(mapPaneLoader);
 		
 		viewRegionManager = new ViewRegionManager(mapPane);
+mapPane.gui = this;
+		mapPane.init(viewRegionManager);
 		app.addShutdownListener(viewRegionManager);	
 		
 		editorModeManager = new EditorModeManager();
@@ -188,17 +190,18 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		termiteToolBar.initModes();
 		
 editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
-//@TODO remove this!!!
-editorModeManager.onMapData(false);
 		
 		//create layers
 		
 		baseMapLayer = new TileLayer();
 		baseMapLayer.setActiveState(true);
-		mapLayerManager.addLayer(baseMapLayer);
+//		mapLayerManager.addLayer(baseMapLayer);
 		baseMapLayer.setViewRegionManager(viewRegionManager);
 		
 		downloadLayer = new DownloadLayer();
+		downloadEditorMode.setDownloadLayer(downloadLayer);
+		mapLayerManager.addLayer(downloadLayer);
+		viewRegionManager.addMapListener(downloadLayer);
 		
 		renderLayer = new RenderLayer();
 		
@@ -209,6 +212,9 @@ editorModeManager.onMapData(false);
 //		
 //		//set the view
 		viewRegionManager.setInitialView();
+		
+//@TODO remove this!!!
+editorModeManager.onMapData(false);
 		
 //@TODO fix this - do this better
 //baseMapLayer.onZoom(viewRegionManager);
@@ -254,22 +260,6 @@ featureTree.init();
 */
 layerOpacityTable.init();
 
-//key handlers
-mapPane.addEventHandler(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
-			@Override
-			public void handle(KeyEvent e) {
-				keyPressed(e);
-			}
-		});
-
-mapPane.requestFocus();
-
-mapPane.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED,new EventHandler<javafx.scene.input.MouseEvent>() {
-			@Override
-			public void handle(javafx.scene.input.MouseEvent e) {
-				mapPane.requestFocus();
-			}
-		});
 
 
     }
@@ -302,44 +292,6 @@ mapPane.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED,new EventHan
 		}
 	}
 	
-	
-	
-	
-	
-	private final double PAN_PIX = 30;
-	private final double ZOOM_FACTOR = 1.3;
-	
-	private void keyPressed(KeyEvent e) {
-		if(viewRegionManager == null) return;
-		
-		switch(e.getCode()) {
-			case UP:
-				viewRegionManager.translate(0,PAN_PIX);
-				break;
-				
-			case DOWN:
-				viewRegionManager.translate(0,-PAN_PIX);
-				break;
-				
-			case RIGHT:
-				viewRegionManager.translate(-PAN_PIX,0);
-				break;
-				
-			case LEFT:
-				viewRegionManager.translate(PAN_PIX,0);
-				break;
-				
-			case PAGE_UP:
-				viewRegionManager.zoom(ZOOM_FACTOR); 
-				break;
-			
-			case PAGE_DOWN:
-				viewRegionManager.zoom(1/ZOOM_FACTOR);
-				break;
-				
-		}
-	}
-
 }
 
 

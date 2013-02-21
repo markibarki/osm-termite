@@ -1,7 +1,10 @@
 package intransix.osm.termite.app.maplayer;
 
+import intransix.osm.termite.gui.TermiteFXGui;
 import java.util.*;
-import javafx.scene.Node;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.scene.layout.Pane;
 
 
@@ -15,6 +18,7 @@ public class MapLayerManager {
 	// Properties
 	//======================
 	
+	private Pane mapPane;
 	private List<MapLayer> mapLayers = new ArrayList<>();
 	
 	private Comparator<MapLayer> comp = new Comparator<MapLayer>() {
@@ -30,7 +34,28 @@ public class MapLayerManager {
 	// Public Methods
 	//======================
 	
-	public MapLayerManager() {
+	public MapLayerManager(Pane mapPane) {
+		this.mapPane = mapPane;
+	}
+	
+	/** This method adds a mouse event handler to the proper parent. */
+	public <T extends Event> void addMouseEventHandler(EventType<T> type,EventHandler <? super T> handler) {
+		mapPane.addEventHandler(type,handler);
+	}
+	
+	/** This method removes a mouse event handler from the proper parent. */
+	public <T extends Event> void removeMouseEventHandler(EventType<T> type,EventHandler <? super T> handler) {
+		mapPane.removeEventHandler(type,handler);
+	}
+	
+	/** This method adds a key event handler to the proper parent. */
+	public <T extends Event> void addKeyEventHandler(EventType<T> type,EventHandler <? super T> handler) {
+		TermiteFXGui.getStage().addEventHandler(type,handler);
+	}
+	
+	/** This method removes a key event handler from the proper parent. */
+	public <T extends Event> void removeKeyEventHandler(EventType<T> type,EventHandler <? super T> handler) {
+		TermiteFXGui.getStage().addEventHandler(type,handler);
 	}
 	
 	public List<MapLayer> getMapLayers() {

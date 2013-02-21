@@ -131,8 +131,8 @@ public class TermiteFX extends Application {
 		theme = Theme.parse(themeJson);
 		
 		//create the gui
-		gui = new TermiteFXGui(this);
-		gui.load(stage);
+		gui = new TermiteFXGui(this,stage);
+		gui.load();
 		
 		//----------------
 		// Managers

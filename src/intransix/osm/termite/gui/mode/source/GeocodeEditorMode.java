@@ -11,8 +11,8 @@ import intransix.osm.termite.app.maplayer.MapLayerListener;
 import intransix.osm.termite.render.source.*;
 
 import java.util.ArrayList;
-import javax.swing.*;
 import java.util.List;
+import javafx.scene.control.ToolBar;
 
 /**
  * This is the editor mode for geocoding.
@@ -269,7 +269,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	}
 	
 	@Override
-	public JToolBar getToolBar() {
+	public ToolBar getToolBar() {
 		return toolBar;
 	}
 	

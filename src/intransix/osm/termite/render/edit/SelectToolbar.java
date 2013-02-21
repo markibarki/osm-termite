@@ -1,41 +1,41 @@
 package intransix.osm.termite.render.edit;
 
-import javax.swing.*;
 import intransix.osm.termite.gui.mode.edit.SelectEditorMode;
 import intransix.osm.termite.app.edit.SelectEditStateListener;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import intransix.osm.termite.gui.toolbar.ModeGroup;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.Button;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+
 
 /**
  *
  * @author sutter
  */
-public class SelectToolbar extends JToolBar implements SelectEditStateListener, ActionListener {
+public class SelectToolbar extends ToolBar implements SelectEditStateListener {
 	
 	private final static String SELECT_TEXT = "Select [esc]";
 	private final static String MOVE_TEXT = "Move [m]";
-	
-	private final static String SELECT_CMD = "select";
-	private final static String MOVE_CMD = "move";
-	private final static String DELETE_CMD = "delete";
-	private final static String REMOVE_NODE_CMD = "remove";
-	private final static String CHANGE_FEATURE_TYPE_CMD = "changeFeatureType";
-	private final static String CREATE_LEVEL_CMD = "createLevel";
 	
 	private final static int SPACE_X = 8;
 	private final static int SPACE_Y = 8;
 	
 	private SelectEditorMode selectMode;
 	
-	private ButtonGroup modeButtonGroup;
-	private JToggleButton selectButton;
-	private JToggleButton moveButton;
+	private ModeGroup modeButtonGroup;
+	private ToggleButton selectButton;
+	private ToggleButton moveButton;
 	
-	private JButton deleteButton;
-	private JButton removeNodeButton;
-	private JButton changeFeatureTypeButton;
-	private JButton createLevelButton;
+	private Button deleteButton;
+	private Button removeNodeButton;
+	private Button changeFeatureTypeButton;
+	private Button createLevelButton;
 	
 	public SelectToolbar(SelectEditorMode selectMode) {
 		this.selectMode = selectMode;
@@ -44,18 +44,18 @@ public class SelectToolbar extends JToolBar implements SelectEditStateListener, 
 	}
 	
 	public void enableDelete(boolean deleteEnabled) {
-		deleteButton.setEnabled(deleteEnabled);
+		deleteButton.setDisable(!deleteEnabled);
 	}
 	public void enableRemoveNode(boolean removeEnabled) {
-		removeNodeButton.setEnabled(removeEnabled);
+		removeNodeButton.setDisable(!removeEnabled);
 	}
 	
 	public void enableChangeFeatureType(boolean featureTypeEnabled) {
-		changeFeatureTypeButton.setEnabled(featureTypeEnabled);
+		changeFeatureTypeButton.setDisable(!featureTypeEnabled);
 	}
 	
 	public void enableCreateLevel(boolean levelEnabled) {
-		createLevelButton.setEnabled(levelEnabled);
+		createLevelButton.setDisable(!levelEnabled);
 	}	
 		
 	/** This method is called when the edit state changes. */
@@ -73,71 +73,73 @@ public class SelectToolbar extends JToolBar implements SelectEditStateListener, 
 		}
 	}
 	
-	
-	@Override
-	public void actionPerformed(ActionEvent ae) {
-		if(SELECT_CMD.equals(ae.getActionCommand())) {
-			selectMode.setSelectState();
-		}
-		else if(MOVE_CMD.equals(ae.getActionCommand())) {
-			boolean success = selectMode.setMoveState();
-			if(!success) {
-				//update the edit mode to be the active 
-				this.editStateChanged(false);
-			}
-		}
-		else if(DELETE_CMD.equals(ae.getActionCommand())) {
-			selectMode.deleteSelection();
-		}
-		else if(REMOVE_NODE_CMD.equals(ae.getActionCommand())) {
-			selectMode.removeNodeFromWay();
-		}
-		else if(CHANGE_FEATURE_TYPE_CMD.equals(ae.getActionCommand())) {
-			selectMode.changeSelectionFeatureType();
-		}
-		else if(CREATE_LEVEL_CMD.equals(ae.getActionCommand())) {
-			selectMode.createLevel();
-		}
-	}
-	
 	private void initComponents() {	
-		this.setFloatable(false);
 		
-		modeButtonGroup = new ButtonGroup();
-		selectButton = new JToggleButton(SELECT_TEXT);
-		selectButton.setActionCommand(SELECT_CMD);
-		selectButton.addActionListener(this);
-		modeButtonGroup.add(selectButton);
-		this.add(selectButton);
+		HBox.setHgrow(this,Priority.ALWAYS);
+		VBox.setVgrow(this,Priority.ALWAYS);
 		
-		moveButton = new JToggleButton(MOVE_TEXT);
-		moveButton.setActionCommand(MOVE_CMD);
-		moveButton.addActionListener(this);
-		modeButtonGroup.add(moveButton);
-		this.add(moveButton);
+		modeButtonGroup = new ModeGroup() {
+			public void onSelect(Toggle toggle) {
+				if(toggle == selectButton) {
+					selectMode.setSelectState();
+				}
+				else if(toggle == moveButton) {
+					boolean success = selectMode.setMoveState();
+					if(!success) {
+						//update the edit mode to be the active 
+						SelectToolbar.this.editStateChanged(false);
+					}
+				}
+			}
+		};
 		
-		Box.Filler space1 = new Box.Filler(new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y));
-		this.add(space1);
 		
-		deleteButton = new JButton("Delete");
-		deleteButton.setActionCommand(DELETE_CMD);
-		deleteButton.addActionListener(this);
-		this.add(deleteButton);
+		selectButton = new ToggleButton(SELECT_TEXT);
+		selectButton.setToggleGroup(modeButtonGroup);
+		this.getItems().add(selectButton);
 		
-		removeNodeButton = new JButton("Remove Node");
-		removeNodeButton.setActionCommand(REMOVE_NODE_CMD);
-		removeNodeButton.addActionListener(this);
-		this.add(removeNodeButton);
+		moveButton = new ToggleButton(MOVE_TEXT);
+		moveButton.setToggleGroup(modeButtonGroup);
+		this.getItems().add(moveButton);
 		
-		changeFeatureTypeButton = new JButton("Change Feature Type");
-		changeFeatureTypeButton.setActionCommand(CHANGE_FEATURE_TYPE_CMD);
-		changeFeatureTypeButton.addActionListener(this);
-		this.add(changeFeatureTypeButton);
+//		Box.Filler space1 = new Box.Filler(new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y), new Dimension(SPACE_X, SPACE_Y));
+//		this.add(space1);
 		
-		createLevelButton = new JButton("Create Level");
-		createLevelButton.setActionCommand(CREATE_LEVEL_CMD);
-		createLevelButton.addActionListener(this);
-		this.add(createLevelButton);
+		deleteButton = new Button("Delete");
+		this.getItems().add(deleteButton);
+		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override 
+			public void handle(ActionEvent e) {
+				selectMode.deleteSelection();
+			}
+		});
+		
+		removeNodeButton = new Button("Remove Node");
+		this.getItems().add(removeNodeButton);
+		removeNodeButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override 
+			public void handle(ActionEvent e) {
+				selectMode.removeNodeFromWay();
+			}
+		});
+		
+		changeFeatureTypeButton = new Button("Change Feature Type");
+		this.getItems().add(changeFeatureTypeButton);
+		changeFeatureTypeButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override 
+			public void handle(ActionEvent e) {
+				selectMode.changeSelectionFeatureType();
+			}
+		});
+		
+		createLevelButton = new Button("Create Level");
+		this.getItems().add(createLevelButton);
+		createLevelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override 
+			public void handle(ActionEvent e) {
+				selectMode.createLevel();
+			}
+		});
 		
 		//add action listeners
 		

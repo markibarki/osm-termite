@@ -3,13 +3,8 @@ package intransix.osm.termite.gui.mode.download;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.mode.EditorMode;
 import intransix.osm.termite.render.checkout.DownloadLayer;
-import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import javax.swing.*;
-import java.awt.geom.Rectangle2D;
-
-import intransix.osm.termite.util.*;
-import intransix.osm.termite.gui.task.MapDataRequestTask;
 import intransix.osm.termite.render.checkout.DownloadToolbar;
+import javafx.scene.control.ToolBar;
 
 /**
  *
@@ -43,6 +38,10 @@ public class DownloadEditorMode extends EditorMode {
 		this.mapDataManager = mapDataManager;
 	}
 	
+	public void setDownloadLayer(DownloadLayer downloadLayer) {
+		this.downloadLayer = downloadLayer;
+	}
+	
 	/** This method returns the name of the editor mode. 
 	 * 
 	 * @return		The name of the editor mode 
@@ -63,13 +62,15 @@ public class DownloadEditorMode extends EditorMode {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
-//		downloadLayer.setActiveState(true);
+		downloadLayer.setActiveState(true);
+downloadLayer.visibleProperty().setValue(true);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
-//		downloadLayer.setActiveState(false);
+		downloadLayer.setActiveState(false);
+downloadLayer.visibleProperty().setValue(false);
 	}	
 	
 	public void doDownload() {
@@ -102,7 +103,7 @@ public class DownloadEditorMode extends EditorMode {
 	}
 	
 	@Override
-	public JToolBar getToolBar() {
+	public ToolBar getToolBar() {
 		return toolBar;
 	}
 	

@@ -15,7 +15,7 @@ import intransix.osm.termite.app.edit.action.SelectSnapMoveAction;
 import intransix.osm.termite.app.edit.action.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
+import javafx.scene.control.ToolBar;
 
 /**
  * This method is used to select objects and to take any actions assoicated with
@@ -239,7 +239,7 @@ throw new RuntimeException("Add create level action back");
 	
 	/** This method gets the toolbar. */
 	@Override
-	public JToolBar getToolBar() {
+	public ToolBar getToolBar() {
 		return toolBar;
 	}
 	
