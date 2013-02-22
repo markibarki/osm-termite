@@ -46,13 +46,7 @@ public class PathFeature extends Path implements Feature {
 //	private List<Rectangle2D> virtualNodes = new ArrayList<Rectangle2D>();
 	
 	public FeatureInfo getFeatureInfo() {
-		FeatureData data = (FeatureData)(osmWay.getPiggybackData(RenderLayer.piggybackIndexFeature));
-		if(data != null) {
-			return data.getFeatureInfo();
-		}
-		else {
-			return null;
-		}
+		return RenderLayer.getObjectFeatureInfo(osmWay);
 	}
 	
 	public void initStyle(Theme theme) {
@@ -209,7 +203,6 @@ public class PathFeature extends Path implements Feature {
 			
 			//update this object
 			this.isArea = osmWay.getIsArea();
-
 			addWayToPath(workingElements,osmWay,isArea);
 			
 			this.getElements().setAll(workingElements);
