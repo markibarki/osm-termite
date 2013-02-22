@@ -133,6 +133,7 @@ public class TermiteFX extends Application {
 		//create the gui
 		gui = new TermiteFXGui(this,stage);
 		gui.load();
+		gui.setTheme(theme);
 		
 		//----------------
 		// Managers
@@ -149,14 +150,15 @@ public class TermiteFX extends Application {
 		gui.setBaseMapManager(baseMapManager); //select the base map
 		
 		//featture type
-//		featureTypeManager = new FeatureTypeManager();
-//		featureTypeManager.init();
-//		mapDataManager.setFeatureTypeManager(featureTypeManager);
-//		
-//		//filter
+		featureTypeManager = new FeatureTypeManager();
+		featureTypeManager.init();
+		gui.setFeatureTypeManager(featureTypeManager);
+		
+		
+		//filter
 //		filterManager = new FilterManager();
-//		mapDataManager.setFilterManager(filterManager);
-//		filterManager.addFilterListener(mapDataManager);
+		
+
 //		
 //		//levels
 //		levelManager = new LevelManager(mapDataManager, filterManager);

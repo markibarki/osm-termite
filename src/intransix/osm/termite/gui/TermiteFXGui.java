@@ -3,6 +3,7 @@ package intransix.osm.termite.gui;
 import intransix.osm.termite.app.TermiteFX;
 import intransix.osm.termite.app.basemap.BaseMapListener;
 import intransix.osm.termite.app.basemap.BaseMapManager;
+import intransix.osm.termite.app.feature.FeatureTypeManager;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
@@ -24,6 +25,7 @@ import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
 import intransix.osm.termite.gui.property.PropertyPane;
 import intransix.osm.termite.gui.task.ShutdownTask;
 import intransix.osm.termite.gui.toolbar.TermiteToolBar;
+import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.render.checkout.DownloadLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.map.RenderLayer;
@@ -39,7 +41,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 import javax.swing.JOptionPane;
@@ -204,6 +205,8 @@ editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
 		viewRegionManager.addMapListener(downloadLayer);
 		
 		renderLayer = new RenderLayer();
+		mapLayerManager.addLayer(renderLayer);
+		viewRegionManager.addMapListener(renderLayer);
 		
 		editLayer = new EditLayer();
 		
@@ -264,11 +267,22 @@ layerOpacityTable.init();
 
     }
 	
+	public void setTheme(Theme theme) {
+		renderLayer.setTheme(theme);
+	}
+	
 	public void setMapDataManager(MapDataManager mapDataManager) {
 		termiteMenu.setMapDataManager(mapDataManager);
 		downloadEditorMode.setMapDataManager(mapDataManager);
+		renderLayer.setMapDataManager(mapDataManager);
 		
 		mapDataManager.addMapDataListener(editorModeManager);
+		mapDataManager.addMapDataListener(renderLayer);
+		
+	}
+	
+	public void setFeatureTypeManager(FeatureTypeManager featureTypeManager) {
+		renderLayer.setFeatureTypeManager(featureTypeManager);
 	}
 	
 	public void setBaseMapManager(BaseMapManager baseMapManager) {

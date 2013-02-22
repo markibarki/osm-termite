@@ -30,13 +30,7 @@ public class PointFeature extends Circle implements Feature {
 	private Point2D point = new Point2D.Double();
 	
 	public FeatureInfo getFeatureInfo() {
-		FeatureData data = (FeatureData)(osmNode.getPiggybackData(RenderLayer.piggybackIndexFeature));
-		if(data != null) {
-			return data.getFeatureInfo();
-		}
-		else {
-			return null;
-		}
+		return RenderLayer.getObjectFeatureInfo(osmNode);
 	}
 	
 	public void initStyle(Theme theme) {

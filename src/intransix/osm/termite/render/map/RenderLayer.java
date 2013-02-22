@@ -91,10 +91,12 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		orderedFeatures.clear();
 		Shape shapeFeature;
 		for(OsmNode node:osmData.getOsmNodes()) {
+			checkFeatureInfo(node);
 			shapeFeature = extractPointFeature(node);
 			orderedFeatures.add(shapeFeature);
 		}
 		for(OsmWay way:osmData.getOsmWays()) {
+			checkFeatureInfo(way);
 			shapeFeature = extractWayFeature(way);
 			orderedFeatures.add(shapeFeature);
 		}
@@ -104,6 +106,18 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		orderedFeatures.clear();
 		
 		this.notifyContentChange();
+	}
+	
+	private void checkFeatureInfo(OsmObject osmObject) {
+		FeatureData fd = (FeatureData)osmObject.getPiggybackData(piggybackIndexFeature);
+		if(fd == null) {
+			fd = new FeatureData();
+			osmObject.setPiggybackData(RenderLayer.piggybackIndexFeature,fd);
+		}
+		if(!fd.isUpToDate(osmObject)) {
+			FeatureInfo fi = featureTypeManager.getFeatureInfo(osmObject);
+			fd.setFeatureInfo(fi);
+		}
 	}
 	
 	private Shape extractPointFeature(OsmNode node) {
