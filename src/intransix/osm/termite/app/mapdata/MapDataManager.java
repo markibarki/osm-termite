@@ -5,12 +5,12 @@ import intransix.osm.termite.map.workingdata.*;
 import intransix.osm.termite.map.dataset.*;
 import intransix.osm.termite.app.mapdata.instruction.EditAction;
 import intransix.osm.termite.app.preferences.Preferences;
+import intransix.osm.termite.gui.dialog.MessageDialog;
 import java.util.ArrayList;
 import java.util.List;
 import intransix.osm.termite.render.map.RenderLayer;
 import intransix.osm.termite.render.checkout.DownloadLayer;
 import intransix.osm.termite.util.JsonIO;
-import javax.swing.JOptionPane;
 import org.json.JSONObject;
 
 /**
@@ -110,7 +110,7 @@ public class MapDataManager {
 			}
 		}
 		else {
-			JOptionPane.showMessageDialog(null,"There is no action to undo.");
+			MessageDialog.show("There is no action to undo.");
 			return false;
 		}
 	}
@@ -130,7 +130,7 @@ public class MapDataManager {
 			}
 		}
 		else {
-			JOptionPane.showMessageDialog(null,"There is no action to redo.");
+			MessageDialog.show("There is no action to redo.");
 			return false;
 		}
 	}
@@ -178,7 +178,7 @@ public class MapDataManager {
 
 	
 	private void reportFatalError(String actionDesc, String exceptionMsg) {
-		JOptionPane.showMessageDialog(null,"There was a fatal error on the action: " + actionDesc +
+		MessageDialog.show("There was a fatal error on the action: " + actionDesc +
 				"; " + exceptionMsg + "The application must exit");
 		System.exit(-1);
 	}

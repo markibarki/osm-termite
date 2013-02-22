@@ -139,8 +139,9 @@ public class TermiteFX extends Application {
 		//----------------
 		
 		//map data
-//		mapDataManager = new MapDataManager();
-//		mapDataManager.init();
+		mapDataManager = new MapDataManager();
+		mapDataManager.init();
+		gui.setMapDataManager(mapDataManager);
 		
 		//base map
 		baseMapManager = new BaseMapManager();

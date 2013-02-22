@@ -266,6 +266,9 @@ layerOpacityTable.init();
 	
 	public void setMapDataManager(MapDataManager mapDataManager) {
 		termiteMenu.setMapDataManager(mapDataManager);
+		downloadEditorMode.setMapDataManager(mapDataManager);
+		
+		mapDataManager.addMapDataListener(editorModeManager);
 	}
 	
 	public void setBaseMapManager(BaseMapManager baseMapManager) {
