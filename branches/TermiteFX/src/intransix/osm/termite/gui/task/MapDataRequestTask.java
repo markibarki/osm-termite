@@ -1,11 +1,10 @@
 package intransix.osm.termite.gui.task;
 
-import intransix.osm.termite.app.mapdata.download.MapDataRequest;
 import intransix.osm.termite.app.mapdata.download.RequestAction;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.dialog.BlockerDialog;
 import intransix.osm.termite.gui.dialog.MessageDialog;
-import intransix.osm.termite.net.NetRequest;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 /**
@@ -55,19 +54,20 @@ public class MapDataRequestTask extends Task<Void> {
 			success = false;
 		}
 		
-//		Platform.runLater(new Runnable() {
-//			@Override public void run() {
-//				done();
-//			}
-//		});
-		
 		return null;
 	}
 	
 	
 	@Override
 	public synchronized void done() {
-		
+		Platform.runLater(new Runnable() {
+			@Override public void run() {
+				actionInUIThread();
+			}
+		});
+	}
+	
+	public void actionInUIThread() {
 		if(blocker != null) {
 			blocker.hide();
 		}
@@ -81,6 +81,6 @@ public class MapDataRequestTask extends Task<Void> {
 		
 		if(!success) {
 			MessageDialog.show(errorMsg);
-		}	
+		}
 	}
 }

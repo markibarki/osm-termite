@@ -11,20 +11,25 @@ import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.mapdata.MapDataManager;
-import intransix.osm.termite.app.maplayer.CanvasLayer;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
+import intransix.osm.termite.app.maplayer.PaneLayer;
+import intransix.osm.termite.app.viewregion.MapListener;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.map.feature.FeatureInfo;
 //import java.awt.*;
 //import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import javafx.scene.shape.Shape;
+import javafx.scene.transform.Affine;
 
 /**
  *
  * @author sutter
  */
-public class RenderLayer extends CanvasLayer implements MapDataListener, 
-		FilterListener {
+public class RenderLayer extends PaneLayer implements MapDataListener, 
+		FilterListener, MapListener {
 	
 	public final static int DEFAULT_ZLEVEL = 0;
 
@@ -42,12 +47,22 @@ public class RenderLayer extends CanvasLayer implements MapDataListener,
 	private FeatureTypeManager featureTypeManager;
 	//This list holds the object according to there presentation order as determined
 	//by the feature info map
-	private java.util.List<OsmObject> orderedFeatures = new ArrayList<OsmObject>();
+	private java.util.List<Shape> orderedFeatures = new ArrayList<>();
 	private FeatureLayerComparator flc = new FeatureLayerComparator();
+	
+	public void connect(MapLayerManager mapLayerManager){
+	}
+	
+	public void disconnect(MapLayerManager mapLayerManager){
+	}
 	
 	public RenderLayer() {
 		this.setName("Render Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MAP);
+		
+		this.setPrefSize(1.0,1.0);
+		this.setMinSize(1.0,1.0);
+		this.setMaxSize(1.0,1.0);
 	}
 	
 //@TODO Fix setting logic
@@ -74,17 +89,59 @@ public class RenderLayer extends CanvasLayer implements MapDataListener,
 		OsmData osmData = mapDataManager.getOsmData();
 		
 		orderedFeatures.clear();
+		Shape shapeFeature;
 		for(OsmNode node:osmData.getOsmNodes()) {
-			processFeature(node);
-			orderedFeatures.add(node);
+			shapeFeature = extractPointFeature(node);
+			orderedFeatures.add(shapeFeature);
 		}
 		for(OsmWay way:osmData.getOsmWays()) {
-			processFeature(way);
-			orderedFeatures.add(way);
+			shapeFeature = extractWayFeature(way);
+			orderedFeatures.add(shapeFeature);
 		}
 		Collections.sort(orderedFeatures,flc);
 		
+		this.getChildren().setAll(orderedFeatures);
+		orderedFeatures.clear();
+		
 		this.notifyContentChange();
+	}
+	
+	private Shape extractPointFeature(OsmNode node) {
+		PointFeature feature = null;
+		
+		ShapePiggybackData data = (ShapePiggybackData)node.getPiggybackData(piggybackIndexRender);
+		if(data == null) {
+			feature = new PointFeature(node);
+			data = new ShapePiggybackData();
+			data.setShape(feature);
+			node.setPiggybackData(piggybackIndexRender,data);
+			feature.initStyle(theme);
+		}
+		
+		if(!data.isUpToDate(node)) {
+			feature.updateData();
+		}
+		
+		return data.getShape();
+	}
+	
+	private Shape extractWayFeature(OsmWay way) {
+		PathFeature feature = null;
+		
+		ShapePiggybackData data = (ShapePiggybackData)way.getPiggybackData(piggybackIndexRender);
+		if(data == null) {
+			feature = new PathFeature(way);
+			data = new ShapePiggybackData();
+			data.setShape(feature);
+			way.setPiggybackData(piggybackIndexRender,data);
+			feature.initStyle(theme);
+		}
+		
+		if(!data.isUpToDate(way)) {
+			feature.updateData();
+		}
+		
+		return feature;
 	}
 	
 	/** This returns the priority for this object as a map data listener. */
@@ -173,45 +230,71 @@ public class RenderLayer extends CanvasLayer implements MapDataListener,
 //		}
 //	}
 	
+	//--------------------------
+	// MapListener Interface
+	//--------------------------
+	
+	/** This method updates the active tile zoom used by the map. */
+	@Override
+	public void onZoom(ViewRegionManager vrm) {		
+		updateTransform(vrm);
+	}
+	
+	@Override
+	public void onPanStart(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onPanStep(ViewRegionManager vrm) {
+		updateTransform(vrm);
+	}
+	
+	@Override
+	public void onPanEnd(ViewRegionManager vrm) {
+		updateTransform(vrm);
+	}
+	
 	//=================================
 	// Private Methods
 	//=================================
 	
-	
-	/** This method updates the feature info for the given object. */
-	private void processFeature(OsmObject osmObject) {
-
-		FeatureData featureData = (FeatureData)osmObject.getPiggybackData(piggybackIndexFeature);
-		if(featureData == null) {
-			featureData = new FeatureData();
-			osmObject.setPiggybackData(piggybackIndexFeature, featureData);
-		}
-		
-		if(!featureData.isUpToDate(osmObject)) {
-			//feature info
-			FeatureInfo featureInfo = featureTypeManager.getFeatureInfo(osmObject);
-			featureData.setFeatureInfo(featureInfo);
-			
-			featureData.markAsUpToDate(osmObject);
-		}
+	private void updateTransform(ViewRegionManager viewRegionManager) {
+		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
+		this.getTransforms().setAll(mercToPixelsFX); 
 	}
+	
+	
+//	/** This method updates the feature info for the given object. */
+//	private void processFeature(OsmObject osmObject) {
+//
+//		FeatureData featureData = (FeatureData)osmObject.getPiggybackData(piggybackIndexFeature);
+//		if(featureData == null) {
+//			featureData = new FeatureData();
+//			osmObject.setPiggybackData(piggybackIndexFeature, featureData);
+//		}
+//		
+//		if(!featureData.isUpToDate(osmObject)) {
+//			//feature info
+//			FeatureInfo featureInfo = featureTypeManager.getFeatureInfo(osmObject);
+//			featureData.setFeatureInfo(featureInfo);
+//			
+//			featureData.markAsUpToDate(osmObject);
+//		}
+//	}
 	
 	//========================
 	// Classes
 	//========================
 	
-	private class FeatureLayerComparator implements Comparator<OsmObject> {
-		public int compare(OsmObject o1, OsmObject o2) {
+	private class FeatureLayerComparator implements Comparator<Shape> {
+		public int compare(Shape o1, Shape o2) {
 			//remove sign bit, making negative nubmers larger than positives (with small enough negatives)
 			FeatureData fd;
 			FeatureInfo fi;
 			
-			fd = (FeatureData)o1.getPiggybackData(piggybackIndexFeature);
-			fi = fd.getFeatureInfo();
+			fi = ((Feature)o1).getFeatureInfo();
 			int ord1 = (fi != null) ? fi.getZorder() : FeatureInfo.DEFAULT_ZORDER;
 			
-			fd = (FeatureData)o2.getPiggybackData(piggybackIndexFeature);
-			fi = fd.getFeatureInfo();
+			fi = ((Feature)o2).getFeatureInfo();
 			int ord2 = (fi != null) ? fi.getZorder() : FeatureInfo.DEFAULT_ZORDER;
 			return ord1 - ord2;
 		}

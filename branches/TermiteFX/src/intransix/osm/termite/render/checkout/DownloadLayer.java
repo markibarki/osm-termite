@@ -50,8 +50,14 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		this.mapLayerManager = null;
 	}
 	
+	/** Returns the bounds of the current selection. Returns null if there is no selection. */
 	public Bounds getSelectionBoundsMercator() {
-		return selection.getLayoutBounds();
+		if(selection != null) {
+			return selection.getLayoutBounds();
+		}
+		else {
+			return null;
+		}
 	}
 	
 	public DownloadLayer() {
@@ -84,9 +90,9 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 			}
 		};
 		
-		selection = new Rectangle();
+//		selection = new Rectangle();
 //selection.setFill(Color.BLUE);
-		selection.setFill(FILL_COLOR);
+//		selection.setFill(FILL_COLOR);
 //		selection.setStroke(STROKE_COLOR);
 //		selection.setStrokeWidth(0.01);
 		
@@ -116,6 +122,7 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	/** This method clears the selection. */
 	public void clearSelection() {
 		this.getChildren().remove(selection);
+		selection = null;
 		selecting = false;
 		this.notifyContentChange();
 	}
@@ -128,16 +135,18 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		if(!selecting) {
 			startX = mercX;
 			startY = mercY;
+			if(selection == null) {
+				selection = new Rectangle();
+				selection.setFill(FILL_COLOR);
+				this.getChildren().add(selection);
+			}
 			updateSelection(mercX,mercY);
-			this.getChildren().add(selection);
 			selecting = true;
 		}
 		else {
 			updateSelection(mercX,mercY);
-			this.getChildren().remove(selection);
 			selecting = false;
 		}
-
 		notifyContentChange();
 	}
 
@@ -148,7 +157,7 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		}
 	}
 	
-		//--------------------------
+	//--------------------------
 	// MapListener Interface
 	//--------------------------
 	

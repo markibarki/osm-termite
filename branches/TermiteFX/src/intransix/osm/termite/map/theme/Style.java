@@ -3,8 +3,10 @@ package intransix.osm.termite.map.theme;
 import intransix.osm.termite.map.proptree.DataParser;
 import intransix.osm.termite.map.proptree.KeyNode;
 import intransix.osm.termite.map.proptree.PropertyNode;
-import java.awt.*;
-import java.util.ArrayList;
+//import java.awt.BasicStroke;
+//import java.awt.Stroke;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Shape;
 import org.json.JSONObject;
 
 /**
@@ -17,8 +19,8 @@ public class Style {
 	// Properties
 	//===============
 	
-	public final static Color DEFAULT_BODY_COLOR = Color.LIGHT_GRAY;
-	public final static Color DEFAULT_OUTLINE_COLOR = Color.DARK_GRAY;
+	public final static Color DEFAULT_BODY_COLOR = Color.LIGHTGRAY;
+	public final static Color DEFAULT_OUTLINE_COLOR = Color.DARKGRAY;
 	public final static float DEFAULT_OUTLINE_WIDTH = 2;
 	
 	//persistent fields
@@ -28,11 +30,17 @@ public class Style {
 	
 	//working fields
 	private float outlineScale = 0;
-	private Stroke stroke = null;
+//	private Stroke stroke = null;
 	
 	//===============
 	// Public Methods
 	//===============
+	
+	public void loadStyle(Shape shape) {
+		if(bodyColor != null) {
+			shape.setFill(bodyColor);
+		}
+	}
 	
 	/** This is the body color for the object. For an area, this corresponds to 
 	 * the fill. For a line, this corresponds to the stroke used on the line. */
@@ -57,15 +65,15 @@ public class Style {
 	 *						pixels. This is used so the pixel width comes out correctly.
 	 * @return				A Stroke object
 	 */
-	public Stroke getStroke(double zoomScale) {
-		if((outlineWidth == 0)||(outlineColor == null)) return null;
-		
-		if((outlineScale != zoomScale)||(stroke == null)) {
-			outlineScale = (float)zoomScale;
-			stroke = new BasicStroke(outlineWidth/outlineScale);
-		}
-		return stroke;
-	}
+//	public Stroke getStroke(double zoomScale) {
+//		if((outlineWidth == 0)||(outlineColor == null)) return null;
+//		
+//		if((outlineScale != zoomScale)||(stroke == null)) {
+//			outlineScale = (float)zoomScale;
+//			stroke = new BasicStroke(outlineWidth/outlineScale);
+//		}
+//		return stroke;
+//	}
 	
 		
 	/** This method returns a style object. The JSON can be null. If so, a default 
@@ -77,7 +85,7 @@ public class Style {
 			//load body color
 			String bodyString = json.optString("body",null);
 			if(bodyString != null) {
-				st.bodyColor = Color.decode(bodyString);
+				st.bodyColor = Color.web(bodyString);
 			}
 			else if(parent != null) {
 				st.bodyColor = parent.bodyColor;
@@ -86,7 +94,7 @@ public class Style {
 			//load outline color
 			String outlineString = json.optString("outline",null);
 			if(outlineString != null) {
-				st.outlineColor = Color.decode(outlineString);
+				st.outlineColor = Color.web(outlineString);
 			}
 			else if(parent != null) {
 				st.outlineColor = parent.outlineColor;

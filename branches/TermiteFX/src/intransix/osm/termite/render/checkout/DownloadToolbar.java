@@ -1,6 +1,6 @@
 package intransix.osm.termite.render.checkout;
 
-import javax.swing.*;
+import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.gui.mode.download.DownloadEditorMode;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -42,14 +42,14 @@ public class DownloadToolbar extends ToolBar {
 //		Box.Filler space = new javax.swing.Box.Filler(new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y), new java.awt.Dimension(SPACE_X, SPACE_Y));
 //		this.add(space);
 		
-		TextField textField = new TextField();
-		textField.setPrefWidth(TEXT_FIELD_WIDTH);
-		textField.setMaxWidth(USE_PREF_SIZE);
-		textField.setMinWidth(USE_PREF_SIZE);
+		searchField = new TextField();
+		searchField.setPrefWidth(TEXT_FIELD_WIDTH);
+		searchField.setMaxWidth(USE_PREF_SIZE);
+		searchField.setMinWidth(USE_PREF_SIZE);
 
 		Button searchButton = new Button("Search");
 		
-		this.getItems().setAll(label,downloadButton,clearButton,textField,searchButton);
+		this.getItems().setAll(label,downloadButton,clearButton,searchField,searchButton);
 
 		//set the button handlers
 		
@@ -84,11 +84,11 @@ public class DownloadToolbar extends ToolBar {
 	}
 	
 	private void searchPressed() {
-		String searchText = this.searchField.getText();
-			if(searchText != null) {
-				JOptionPane.showMessageDialog(null,"You must enter a search string");
-				return;
-			}
-			downloadEditorMode.doSearch(searchText);
+		String searchText = this.searchField.getText().trim();
+		if(searchText.length() == 0) {
+			MessageDialog.show("You must enter a search string");
+			return;
+		}
+		downloadEditorMode.doSearch(searchText);
 	}
 }
