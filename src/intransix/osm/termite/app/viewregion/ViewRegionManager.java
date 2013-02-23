@@ -48,6 +48,15 @@ public class ViewRegionManager implements ShutdownListener {
 	private double lastX;
 	private double lastY;
 	
+	
+public AffineTransform mercToLocal;
+public Affine localToMercFX;
+public void setLocalCoordinatesNow() {
+	mercToLocal = new AffineTransform(mercatorToPixels);
+	localToMercFX = pixelsToMercatorFX;
+	this.dispatchLocalEvent();
+}
+	
 	/** Constructor */
 	public ViewRegionManager(Pane mapPane) {
 		this.mapPane = mapPane;
@@ -333,6 +342,12 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 	private void dispatchPanEndEvent() {
 		for(MapListener mapListener:mapListeners) {
 			mapListener.onPanEnd(this);
+		}
+	}
+	
+	private void dispatchLocalEvent() {
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onLocalCoordinateSet(mercToLocal,localToMercFX);
 		}
 	}
 	

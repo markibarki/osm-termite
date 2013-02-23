@@ -16,6 +16,7 @@ import intransix.osm.termite.app.maplayer.PaneLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.map.feature.FeatureInfo;
+import java.awt.geom.AffineTransform;
 //import java.awt.*;
 //import java.awt.geom.*;
 import java.util.ArrayList;
@@ -52,6 +53,9 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	private java.util.List<Shape> orderedFeatures = new ArrayList<>();
 	private FeatureLayerComparator flc = new FeatureLayerComparator();
 	
+public AffineTransform mercToLocal;
+public Affine localToMercFX;
+	
 	public void connect(MapLayerManager mapLayerManager){
 	}
 	
@@ -76,6 +80,7 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	public void onMapData(boolean dataPresent) {
 		//should be active whenever there is map data
 		this.setActiveState(dataPresent);
+
 	}
 	
 	/** This method is called when the data has changed.
@@ -135,7 +140,7 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		}
 		
 		if(!data.isUpToDate(node)) {
-			feature.updateData();
+			feature.updateData(mercToLocal);
 		}
 		
 		return data.getShape();
@@ -154,7 +159,7 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		}
 		
 		if(!data.isUpToDate(way)) {
-			feature.updateData();
+			feature.updateData(mercToLocal);
 		}
 		
 		return feature;
@@ -250,6 +255,11 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	// MapListener Interface
 	//--------------------------
 	
+	public void onLocalCoordinateSet(AffineTransform mercToLocal, Affine localToMercFX) {
+		this.mercToLocal = mercToLocal;
+		this.localToMercFX = localToMercFX;
+	}
+	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
 	public void onZoom(ViewRegionManager vrm) {		
@@ -282,8 +292,10 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	//=================================
 	
 	private void updateTransform(ViewRegionManager viewRegionManager) {
+		if(localToMercFX == null) return;
+		
 		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
-		this.getTransforms().setAll(mercToPixelsFX); 
+		this.getTransforms().setAll(mercToPixelsFX,localToMercFX); 
 		
 	}
 	

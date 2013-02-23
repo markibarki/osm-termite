@@ -1,6 +1,7 @@
 package intransix.osm.termite.gui.mode.download;
 
 import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.gui.mode.EditorMode;
 import intransix.osm.termite.gui.task.MapDataRequestTask;
@@ -26,6 +27,8 @@ public class DownloadEditorMode extends EditorMode {
 	private MapDataManager mapDataManager;
 	private DownloadLayer downloadLayer;
 	private DownloadToolbar toolBar = null;	
+	
+public ViewRegionManager viewRegionManager;
 	
 	
 	//====================
@@ -89,6 +92,8 @@ downloadLayer.visibleProperty().setValue(false);
 		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMinX()));
 		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMinY()));
 		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMaxX()));
+		
+viewRegionManager.setLocalCoordinatesNow();
 		
 		//run the load data task
 		MapDataRequestTask mdrt = new MapDataRequestTask(mapDataManager,minLat,minLon,maxLat,maxLon);
