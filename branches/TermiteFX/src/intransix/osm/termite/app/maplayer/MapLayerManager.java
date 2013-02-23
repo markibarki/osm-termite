@@ -1,5 +1,6 @@
 package intransix.osm.termite.app.maplayer;
 
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.TermiteFXGui;
 import java.util.*;
 import javafx.event.Event;
@@ -19,6 +20,7 @@ public class MapLayerManager {
 	//======================
 	
 	private Pane mapPane;
+	private ViewRegionManager viewRegionManager;
 	private List<MapLayer> mapLayers = new ArrayList<>();
 	
 	private Comparator<MapLayer> comp = new Comparator<MapLayer>() {
@@ -34,8 +36,9 @@ public class MapLayerManager {
 	// Public Methods
 	//======================
 	
-	public MapLayerManager(Pane mapPane) {
+	public MapLayerManager(Pane mapPane, ViewRegionManager viewRegionManager) {
 		this.mapPane = mapPane;
+		this.viewRegionManager = viewRegionManager;
 	}
 	
 	/** This method adds a mouse event handler to the proper parent. */
@@ -56,6 +59,10 @@ public class MapLayerManager {
 	/** This method removes a key event handler from the proper parent. */
 	public <T extends Event> void removeKeyEventHandler(EventType<T> type,EventHandler <? super T> handler) {
 		TermiteFXGui.getStage().addEventHandler(type,handler);
+	}
+	
+	public ViewRegionManager getViewRegionManager() {
+		return viewRegionManager;
 	}
 	
 	public List<MapLayer> getMapLayers() {
