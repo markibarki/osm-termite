@@ -139,6 +139,9 @@ this.getChildren().clear();
 		updateTiles();
 	}
 	
+	public void onLocalCoordinateSet(AffineTransform mercToLocal, Affine localToMercFX) {
+	}
+	
 	//=================================
 	// Private Methods
 	//=================================

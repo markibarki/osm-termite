@@ -1,6 +1,5 @@
 package intransix.osm.termite.render.map;
 
-import intransix.osm.termite.app.feature.FeatureData;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.map.workingdata.OsmWay;
@@ -8,6 +7,7 @@ import intransix.osm.termite.map.workingdata.OsmRelation;
 import intransix.osm.termite.map.workingdata.OsmModel;
 import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.map.theme.Style;
+import java.awt.geom.AffineTransform;
 
 import javafx.scene.shape.Path;
 import javafx.scene.shape.LineTo;
@@ -23,6 +23,7 @@ import java.awt.geom.Point2D;
 //import java.awt.geom.AffineTransform;
 import java.util.*;
 import javafx.scene.shape.PathElement;
+import javafx.scene.transform.Affine;
 
 /**
  *
@@ -152,7 +153,7 @@ public class PathFeature extends Path implements Feature {
 //		}
 //	}
 //	
-	void updateData() {
+	void updateData(AffineTransform mercToLocal) {
 
 		//check if this is the member in a multipolygon
 		OsmRelation multipoly = null;
@@ -219,7 +220,7 @@ public class PathFeature extends Path implements Feature {
 			
 			//update this object
 			this.isArea = osmWay.getIsArea();
-			addWayToPath(workingElements,osmWay,isArea);
+			addWayToPath(workingElements,osmWay,isArea,mercToLocal);
 			
 			this.getElements().setAll(workingElements);
 			workingElements.clear();
@@ -230,7 +231,8 @@ public class PathFeature extends Path implements Feature {
 	// Private Methods
 	//======================
 	
-	private void addWayToPath(List<PathElement> elements, OsmWay way, boolean isArea) {
+	private void addWayToPath(List<PathElement> elements, OsmWay way, 
+			boolean isArea, AffineTransform mercToLocal) {
 		
 		//path working variables
 		boolean started = false;
@@ -241,32 +243,34 @@ public class PathFeature extends Path implements Feature {
 		double oldY = 0;
 		double middleX;
 		double middleY;
+		Point2D localPoint = new Point2D.Double();
 		
 		for(OsmNode node:way.getNodes()) {
 			if(true /* check if node is visible here */) {
 				mercPoint = node.getPoint();
+				mercToLocal.transform(mercPoint,localPoint);
 				
 				if(started) {
 					//path lineto instruction
-					LineTo lineTo = new LineTo(mercPoint.getX(),mercPoint.getY());
+					LineTo lineTo = new LineTo(localPoint.getX(),localPoint.getY());
 					elements.add(lineTo);
 					
 					//create the virtual node
-					middleX = (mercPoint.getX() + oldX)/2;
-					middleY = (mercPoint.getY() + oldY)/2;
+					middleX = (localPoint.getX() + oldX)/2;
+					middleY = (localPoint.getY() + oldY)/2;
 					addVirtualNode(middleX,middleY);
 					
 				}
 				else {
 					//move instructione
-					MoveTo moveTo = new MoveTo(mercPoint.getX(),mercPoint.getY());
+					MoveTo moveTo = new MoveTo(localPoint.getX(),localPoint.getY());
 					elements.add(moveTo);
 					started = true;
 				}
 				
 				//store for virtual nodes
-				oldX = mercPoint.getX();
-				oldY = mercPoint.getY();
+				oldX = localPoint.getX();
+				oldY = localPoint.getY();
 			}
 			else {
 				//if we go out of the level:

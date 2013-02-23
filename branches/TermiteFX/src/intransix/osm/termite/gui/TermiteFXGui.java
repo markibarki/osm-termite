@@ -176,6 +176,7 @@ mapPane.gui = this;
 		//create modes
 		downloadEditorMode = new DownloadEditorMode();
 		editorModeManager.addMode(downloadEditorMode);
+downloadEditorMode.viewRegionManager = viewRegionManager;
 		
 		selectEditorMode = new SelectEditorMode();
 		editorModeManager.addMode(selectEditorMode);

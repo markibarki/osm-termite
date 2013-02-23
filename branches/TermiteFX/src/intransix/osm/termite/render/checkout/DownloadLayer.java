@@ -5,7 +5,7 @@ import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.maplayer.PaneLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import javafx.beans.binding.DoubleBinding;
+import java.awt.geom.AffineTransform;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.input.MouseButton;
@@ -178,6 +178,9 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	@Override
 	public void onPanEnd(ViewRegionManager vrm) {
 		updateTransform(vrm);
+	}
+	
+	public void onLocalCoordinateSet(AffineTransform mercToLocal, Affine localToMercFX) {
 	}
 	
 //	// <editor-fold defaultstate="collapsed" desc="Key Listener">

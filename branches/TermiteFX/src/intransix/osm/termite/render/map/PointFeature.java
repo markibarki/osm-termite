@@ -98,12 +98,14 @@ public class PointFeature extends Circle implements Feature {
 //		oldLocalToNewLocal.transform(point, point);
 //	}
 	
-	void updateData() {
+	void updateData(AffineTransform mercToLocal) {
 		//update this object
-		Point2D point = osmNode.getPoint();
-		setCenterX(point.getX());
-		setCenterY(point.getY());
-		this.setRadius(.0000000001);	
+		Point2D mercPoint = osmNode.getPoint();
+		Point2D localPoint = new Point2D.Double();
+		mercToLocal.transform(mercPoint, localPoint);
+		setCenterX(localPoint.getX());
+		setCenterY(localPoint.getY());
+		this.setRadius(RADIUS_PIXELS);	
 	}	
 		
 }
