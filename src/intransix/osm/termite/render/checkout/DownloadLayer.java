@@ -5,9 +5,7 @@ import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.maplayer.PaneLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import intransix.osm.termite.render.tile.Tile;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import javafx.beans.binding.DoubleBinding;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.input.MouseButton;
@@ -15,7 +13,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
-import javafx.scene.transform.Scale;
 //import java.awt.Graphics2D;
 //import java.awt.event.MouseEvent;
 //import java.awt.event.MouseListener;
@@ -36,7 +33,8 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	private final static float STROKE_WIDTH = 2;
 	
 	private double startX, startY;
-	private Rectangle selection;
+	private Rectangle selection = new Rectangle();
+	private boolean selectionActive = false;
 	private boolean selecting = false;
 	private MapLayerManager mapLayerManager;
 	private EventHandler<MouseEvent> mouseClickHandler;
@@ -52,7 +50,7 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	
 	/** Returns the bounds of the current selection. Returns null if there is no selection. */
 	public Bounds getSelectionBoundsMercator() {
-		if(selection != null) {
+		if(selectionActive) {
 			return selection.getLayoutBounds();
 		}
 		else {
@@ -92,8 +90,8 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		
 //		selection = new Rectangle();
 //selection.setFill(Color.BLUE);
-//		selection.setFill(FILL_COLOR);
-//		selection.setStroke(STROKE_COLOR);
+		selection.setFill(FILL_COLOR);
+		selection.setStroke(STROKE_COLOR);
 //		selection.setStrokeWidth(0.01);
 		
 //		temp = new Rectangle(.1,.1,.4,.5);
@@ -122,7 +120,7 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	/** This method clears the selection. */
 	public void clearSelection() {
 		this.getChildren().remove(selection);
-		selection = null;
+		selectionActive = false;
 		selecting = false;
 		this.notifyContentChange();
 	}
@@ -135,9 +133,8 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		if(!selecting) {
 			startX = mercX;
 			startY = mercY;
-			if(selection == null) {
-				selection = new Rectangle();
-				selection.setFill(FILL_COLOR);
+			if(!selectionActive) {
+				selectionActive = true;
 				this.getChildren().add(selection);
 			}
 			updateSelection(mercX,mercY);
@@ -163,7 +160,10 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onZoom(ViewRegionManager vrm) {		
+	public void onZoom(ViewRegionManager vrm) {	
+		if(selection != null) {
+			selection.setStrokeWidth(STROKE_WIDTH / vrm.getZoomScalePixelsPerMerc());
+		}
 		updateTransform(vrm);
 	}
 	

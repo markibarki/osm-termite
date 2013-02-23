@@ -161,13 +161,14 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		
 		mapPaneLoader = new MapPaneLoader(mapPane);
 		
-		mapLayerManager = new MapLayerManager(mapPane);
-		mapLayerManager.addLayerListener(mapPaneLoader);
-		
 		viewRegionManager = new ViewRegionManager(mapPane);
+		viewRegionManager.setInitialView();
 mapPane.gui = this;
 		mapPane.init(viewRegionManager);
 		app.addShutdownListener(viewRegionManager);	
+		
+		mapLayerManager = new MapLayerManager(mapPane,viewRegionManager);
+		mapLayerManager.addLayerListener(mapPaneLoader);
 		
 		editorModeManager = new EditorModeManager();
 		termiteToolBar.setEditorModeManager(editorModeManager);
@@ -212,9 +213,6 @@ editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
 		
 		geocodeLayer = new GeocodeLayer();
 		
-//		
-//		//set the view
-		viewRegionManager.setInitialView();
 		
 //@TODO remove this!!!
 editorModeManager.onMapData(false);

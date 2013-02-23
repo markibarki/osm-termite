@@ -21,6 +21,7 @@ import intransix.osm.termite.map.feature.FeatureInfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import javafx.scene.Node;
 import javafx.scene.shape.Shape;
 import javafx.scene.transform.Affine;
 
@@ -42,6 +43,7 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	
 	private MapDataManager mapDataManager;
 	private Theme theme;
+	private double pixelsToMercScale = 1.0;
 	
 	//feature info
 	private FeatureTypeManager featureTypeManager;
@@ -252,6 +254,14 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	@Override
 	public void onZoom(ViewRegionManager vrm) {		
 		updateTransform(vrm);
+		
+		//update the stroke values
+		pixelsToMercScale = vrm.getZoomScaleMercPerPixel();
+		for(Node node:getChildren()) {
+			if(node instanceof Feature) {
+				((Feature)node).setPixelsToMerc(pixelsToMercScale);
+			}
+		}
 	}
 	
 	@Override
@@ -274,6 +284,7 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	private void updateTransform(ViewRegionManager viewRegionManager) {
 		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
 		this.getTransforms().setAll(mercToPixelsFX); 
+		
 	}
 	
 	

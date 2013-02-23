@@ -25,9 +25,8 @@ public class PointFeature extends Circle implements Feature {
 	private final static double RADIUS_PIXELS = 3;
 	
 	private OsmNode osmNode;
-	private Style style;
-	private Ellipse2D marker = new Ellipse2D.Double();
-	private Point2D point = new Point2D.Double();
+	private double pixelsToMerc = 1.0;
+	private double radiusPixels = 0.0;
 	
 	public FeatureInfo getFeatureInfo() {
 		return RenderLayer.getObjectFeatureInfo(osmNode);
@@ -35,7 +34,17 @@ public class PointFeature extends Circle implements Feature {
 	
 	public void initStyle(Theme theme) {
 		Style style = theme.getStyle(osmNode);
-		style.loadStyle(this);
+		style.loadPointStyle(this);
+	}
+	
+	public void setPixelsToMerc(double pixelsToMerc) {
+		this.pixelsToMerc = pixelsToMerc;
+		this.setRadius(radiusPixels * pixelsToMerc);
+	}
+	
+	public void setRadiusPixels(double radiusPixels) {
+		this.radiusPixels = radiusPixels;
+		this.setRadius(radiusPixels * pixelsToMerc);
 	}
 	
 	public PointFeature(OsmNode osmNode) {

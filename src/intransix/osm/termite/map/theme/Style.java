@@ -3,10 +3,11 @@ package intransix.osm.termite.map.theme;
 import intransix.osm.termite.map.proptree.DataParser;
 import intransix.osm.termite.map.proptree.KeyNode;
 import intransix.osm.termite.map.proptree.PropertyNode;
+import intransix.osm.termite.render.map.PathFeature;
+import intransix.osm.termite.render.map.PointFeature;
 //import java.awt.BasicStroke;
 //import java.awt.Stroke;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Shape;
 import org.json.JSONObject;
 
 /**
@@ -28,17 +29,31 @@ public class Style {
 	private Color outlineColor = DEFAULT_OUTLINE_COLOR;
 	private float outlineWidth = DEFAULT_OUTLINE_WIDTH;
 	
-	//working fields
-	private float outlineScale = 0;
-//	private Stroke stroke = null;
 	
 	//===============
 	// Public Methods
 	//===============
 	
-	public void loadStyle(Shape shape) {
+	public void loadPointStyle(PointFeature point) {
 		if(bodyColor != null) {
-			shape.setFill(bodyColor);
+			point.setFill(bodyColor);
+		}
+	}
+	
+	public void loadLineStyle(PathFeature path) {
+		if(bodyColor != null) {
+			path.setStroke(bodyColor);
+			path.setStrokeWidthPixels(outlineWidth);
+		}
+	}
+	
+	public void loadAreaStyle(PathFeature path) {
+		if(bodyColor != null) {
+			path.setFill(bodyColor);
+		}
+		if(outlineColor != null) {
+			path.setStroke(outlineColor);
+			path.setStrokeWidthPixels(outlineWidth);
 		}
 	}
 	

@@ -7,9 +7,10 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import intransix.osm.termite.app.ShutdownListener;
 import intransix.osm.termite.app.preferences.Preferences;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Transform;
@@ -82,6 +83,10 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 	
 	public final double getZoomScalePixelsPerMerc() {
 		 return this.zoomScalePixelsPerMerc;
+	}
+	
+	public final double getZoomScaleMercPerPixel() {
+		 return 1/this.zoomScalePixelsPerMerc;
 	}
 	
 	public void setLatLonViewBounds(Rectangle2D latLonBounds) {
