@@ -1,5 +1,7 @@
 package intransix.osm.termite.app.mapdata;
 
+import java.awt.geom.Rectangle2D;
+
 /**
  * This interface is used to receive notification when map data is loaded or cleared. 
  * 

@@ -28,7 +28,6 @@ public class OsmDataSet {
 		this.generator = generator;
 	}
 	
-	
 	//-----------------------------
 	// Commit Actions
 	//-----------------------------

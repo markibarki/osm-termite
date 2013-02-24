@@ -12,7 +12,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import intransix.osm.termite.gui.feature.FeatureTree;
 import intransix.osm.termite.gui.layer.LayerOpacityTable;
-import intransix.osm.termite.gui.layer.MapPaneLoader;
 import intransix.osm.termite.gui.level.ContentTree;
 import intransix.osm.termite.gui.map.MapPane;
 import intransix.osm.termite.gui.menu.TermiteMenu;
@@ -36,11 +35,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.EventHandler;
+import javafx.event.EventTarget;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Control;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 import javax.swing.JOptionPane;
@@ -62,10 +64,11 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 	}
 	
 	private TermiteFX app;
+	
+	//managers
 	private ViewRegionManager viewRegionManager;
 	private EditorModeManager editorModeManager;
 	private MapLayerManager mapLayerManager;
-	private MapPaneLoader mapPaneLoader;
 	
 	//modes
 	private DownloadEditorMode downloadEditorMode;
@@ -106,6 +109,7 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 	@FXML
 	private TermiteToolBar termiteToolBar;
 	
+	/** Constructor */
 	public TermiteFXGui(TermiteFX app, Stage stage) {
 		this.app = app;
 		TermiteFXGui.stage = stage;
@@ -119,10 +123,6 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-	}
-	
-	public MapPane getMapPane() {
-		return mapPane;
 	}
 	
 	/** This method loads the gui. */
@@ -159,16 +159,14 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		
 		//create managers
 		
-		mapPaneLoader = new MapPaneLoader(mapPane);
-		
 		viewRegionManager = new ViewRegionManager(mapPane);
 		viewRegionManager.setInitialView();
-mapPane.gui = this;
+		
 		mapPane.init(viewRegionManager);
 		app.addShutdownListener(viewRegionManager);	
 		
 		mapLayerManager = new MapLayerManager(mapPane,viewRegionManager);
-		mapLayerManager.addLayerListener(mapPaneLoader);
+		mapLayerManager.addLayerListener(mapPane);
 		
 		editorModeManager = new EditorModeManager();
 		termiteToolBar.setEditorModeManager(editorModeManager);
@@ -176,7 +174,6 @@ mapPane.gui = this;
 		//create modes
 		downloadEditorMode = new DownloadEditorMode();
 		editorModeManager.addMode(downloadEditorMode);
-downloadEditorMode.viewRegionManager = viewRegionManager;
 		
 		selectEditorMode = new SelectEditorMode();
 		editorModeManager.addMode(selectEditorMode);
@@ -199,15 +196,19 @@ editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
 		baseMapLayer = new TileLayer();
 		baseMapLayer.setActiveState(true);
 		mapLayerManager.addLayer(baseMapLayer);
+baseMapLayer.onMapViewChange(viewRegionManager, true);
+viewRegionManager.addMapListener(baseMapLayer);
 		baseMapLayer.setViewRegionManager(viewRegionManager);
 		
 		downloadLayer = new DownloadLayer();
 		downloadEditorMode.setDownloadLayer(downloadLayer);
 		mapLayerManager.addLayer(downloadLayer);
+downloadLayer.onMapViewChange(viewRegionManager, true);
 		viewRegionManager.addMapListener(downloadLayer);
 		
 		renderLayer = new RenderLayer();
 		mapLayerManager.addLayer(renderLayer);
+renderLayer.onMapViewChange(viewRegionManager, true);
 		viewRegionManager.addMapListener(renderLayer);
 		
 		editLayer = new EditLayer();
@@ -262,6 +263,23 @@ featureTree.init();
 */
 layerOpacityTable.init();
 
+		//key handlers for navigation
+		this.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent e) {
+				EventTarget target = e.getTarget();
+				System.out.println("Target: " + e.getTarget());
+				if(target instanceof Control) {
+					System.out.println("Event passed through");
+				}
+				else {
+					System.out.println(e.getCode());
+					keyPressed(e);
+					e.consume();
+				}
+			}
+		});
+
 
 
     }
@@ -307,6 +325,53 @@ layerOpacityTable.init();
 			JOptionPane.showMessageDialog(null,"There was an error shutting down.");
 		}
 	}
+	
+	//key inputs
+	
+	private final double PAN_PIX = 30;
+	private final double ZOOM_FACTOR = 1.3;
+	
+	private void keyPressed(KeyEvent e) {
+		if(viewRegionManager == null) return;
+		
+		switch(e.getCode()) {
+			case UP:
+				viewRegionManager.translate(0,PAN_PIX);
+				break;
+				
+			case DOWN:
+				viewRegionManager.translate(0,-PAN_PIX);
+				break;
+				
+			case RIGHT:
+				viewRegionManager.translate(-PAN_PIX,0);
+				break;
+				
+			case LEFT:
+				viewRegionManager.translate(PAN_PIX,0);
+				break;
+				
+			case PAGE_UP:
+				viewRegionManager.zoom(ZOOM_FACTOR); 
+				break;
+			
+			case PAGE_DOWN:
+				viewRegionManager.zoom(1/ZOOM_FACTOR);
+				break;
+				
+			case COMMA:
+				rotAngRad += .2;
+				viewRegionManager.setRotation(rotAngRad);
+				break;
+				
+			case PERIOD:
+				rotAngRad -= .2;
+				viewRegionManager.setRotation(rotAngRad);
+				break;
+		}
+	}
+	
+	private double rotAngRad = 0;
 	
 }
 

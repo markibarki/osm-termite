@@ -25,7 +25,7 @@ public class PointFeature extends Circle implements Feature {
 	private final static double RADIUS_PIXELS = 3;
 	
 	private OsmNode osmNode;
-	private double pixelsToMerc = 1.0;
+	private double pixelsToLocal = 1.0;
 	private double radiusPixels = 0.0;
 	
 	public FeatureInfo getFeatureInfo() {
@@ -37,14 +37,14 @@ public class PointFeature extends Circle implements Feature {
 		style.loadPointStyle(this);
 	}
 	
-	public void setPixelsToMerc(double pixelsToMerc) {
-		this.pixelsToMerc = pixelsToMerc;
-		this.setRadius(radiusPixels * pixelsToMerc);
+	public void setPixelsToLocal(double pixelsToLocal) {
+		this.pixelsToLocal = pixelsToLocal;
+		this.setRadius(radiusPixels * pixelsToLocal);
 	}
 	
 	public void setRadiusPixels(double radiusPixels) {
 		this.radiusPixels = radiusPixels;
-		this.setRadius(radiusPixels * pixelsToMerc);
+		this.setRadius(radiusPixels * pixelsToLocal);
 	}
 	
 	public PointFeature(OsmNode osmNode) {

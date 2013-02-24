@@ -160,28 +160,20 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onZoom(ViewRegionManager vrm) {	
-		if(selection != null) {
-			selection.setStrokeWidth(STROKE_WIDTH / vrm.getZoomScalePixelsPerMerc());
+	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {	
+		if((zoomChanged)&&(selection != null)) {
+			selection.setStrokeWidth(STROKE_WIDTH / viewRegionManager.getZoomScalePixelsPerMerc());
 		}
-		updateTransform(vrm);
 	}
 	
 	@Override
 	public void onPanStart(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanStep(ViewRegionManager vrm) {
-		updateTransform(vrm);
-	}
+	public void onPanStep(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanEnd(ViewRegionManager vrm) {
-		updateTransform(vrm);
-	}
-	
-	public void onLocalCoordinateSet(AffineTransform mercToLocal, Affine localToMercFX) {
-	}
+	public void onPanEnd(ViewRegionManager vrm) {}
 	
 //	// <editor-fold defaultstate="collapsed" desc="Key Listener">
 //	
@@ -210,10 +202,6 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	// Private Methods
 	//=================================	
 	
-	private void updateTransform(ViewRegionManager viewRegionManager) {
-		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
-		this.getTransforms().setAll(mercToPixelsFX); 
-	}
 	/** This method updates the selection for a new mouse point. */
 	private void updateSelection(double mercX, double mercY) {
 		selection.setX(startX < mercX ? startX : mercX);

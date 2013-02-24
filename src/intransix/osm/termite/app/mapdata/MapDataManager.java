@@ -1,6 +1,5 @@
 package intransix.osm.termite.app.mapdata;
 
-import intransix.osm.termite.gui.mode.download.DownloadEditorMode;
 import intransix.osm.termite.map.workingdata.*;
 import intransix.osm.termite.map.dataset.*;
 import intransix.osm.termite.app.mapdata.instruction.EditAction;
@@ -8,9 +7,8 @@ import intransix.osm.termite.app.preferences.Preferences;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import java.util.ArrayList;
 import java.util.List;
-import intransix.osm.termite.render.map.RenderLayer;
-import intransix.osm.termite.render.checkout.DownloadLayer;
 import intransix.osm.termite.util.JsonIO;
+import java.awt.geom.Rectangle2D;
 import org.json.JSONObject;
 
 /**
@@ -22,6 +20,8 @@ public class MapDataManager {
 	private OsmDataSet dataSet;
 	private OsmData osmData;
 	private List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
+	
+	private Rectangle2D downloadBounds = null;
 	
 //	private RenderLayer renderLayer;
 //	private DownloadLayer downloadLayer;
@@ -223,8 +223,14 @@ public class MapDataManager {
 		return dataSet;
 	}
 	
-	public void setData(OsmDataSet dataSet) {
+	/** This returns the requested download bounds for the current data. */
+	public Rectangle2D getDownloadBounds() {
+		return downloadBounds;
+	}
+	
+	public void setData(OsmDataSet dataSet, Rectangle2D downloadBounds) {
 		this.dataSet = dataSet;
+		this.downloadBounds = downloadBounds;
 		int initialVersionNumber = OsmData.INVALID_DATA_VERSION;
 		
 		if(dataSet != null) {
@@ -248,7 +254,7 @@ public class MapDataManager {
 	}
 	
 	public void clearData() {
-		setData(null);
+		setData(null,null);
 	}
 	
 	/** This adds a map data listener. */

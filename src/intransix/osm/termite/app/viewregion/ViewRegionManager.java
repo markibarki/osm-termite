@@ -7,8 +7,8 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import intransix.osm.termite.app.ShutdownListener;
 import intransix.osm.termite.app.preferences.Preferences;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleWrapper;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.layout.Pane;
@@ -48,18 +48,20 @@ public class ViewRegionManager implements ShutdownListener {
 	private double lastX;
 	private double lastY;
 	
-	
-public AffineTransform mercToLocal;
-public Affine localToMercFX;
-public void setLocalCoordinatesNow() {
-	mercToLocal = new AffineTransform(mercatorToPixels);
-	localToMercFX = pixelsToMercatorFX;
-	this.dispatchLocalEvent();
-}
-	
 	/** Constructor */
 	public ViewRegionManager(Pane mapPane) {
 		this.mapPane = mapPane;
+		
+		//add a listener for a viewport change
+		ChangeListener<Number> changeListener = new ChangeListener<Number>() {
+			public void changed(ObservableValue<? extends Number> observable, 
+					Number oldValue, Number newValue) {
+				checkViewportResize();
+			}
+		};
+		mapPane.heightProperty().addListener(changeListener);
+		mapPane.widthProperty().addListener(changeListener);
+
 	}
 	
 	/** This method returns the bounds of the map component in pixels. */
@@ -164,6 +166,7 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		mercatorToPixels.setTransform(matrix[0],matrix[1],matrix[2],matrix[3],matrix[4],matrix[5]);
 
 		updateTransforms();
+		dispatchViewChangeEvent(true);
 	}
 	
 	// </editor-fold>
@@ -206,7 +209,7 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		mercatorToPixels.preConcatenate(zt);
 		updateTransforms();
 
-		dispatchZoomEvent();
+		dispatchViewChangeEvent(true);
 	}
 	
 	public void startPan(double x, double y) {
@@ -226,12 +229,13 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		lastX = x;
 		lastY = y;
 		dispatchPanStepEvent();
+		dispatchViewChangeEvent(false);
 	}
 	
 	public void translate(double dx, double dy) {
 //should we add a pan start and pan step event here?
 		translateStep(dx,dy);
-		dispatchPanEndEvent();
+		dispatchViewChangeEvent(false);
 	}
 	
 	private void translateStep(double dx, double dy) {
@@ -321,9 +325,23 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		}
 	}
 	
-	private void dispatchZoomEvent() {
+	private double lastWidth = -1;
+	private double lastHeight = -1;
+	
+	/** This method triggers a view change event is the viewport size changes. */
+	private void checkViewportResize() {
+		double width = mapPane.getWidth();
+		double height = mapPane.getHeight();
+		if((width != lastWidth)||(height != lastHeight)) {
+			lastWidth = width;
+			lastHeight = height;
+			dispatchViewChangeEvent(false);
+		}
+	}
+	
+	private void dispatchViewChangeEvent(boolean zoomChanged) {
 		for(MapListener mapListener:mapListeners) {
-			mapListener.onZoom(this);
+			mapListener.onMapViewChange(this,zoomChanged);
 		}
 	}
 	
@@ -344,11 +362,4 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 			mapListener.onPanEnd(this);
 		}
 	}
-	
-	private void dispatchLocalEvent() {
-		for(MapListener mapListener:mapListeners) {
-			mapListener.onLocalCoordinateSet(mercToLocal,localToMercFX);
-		}
-	}
-	
 }
