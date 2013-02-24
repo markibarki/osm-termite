@@ -7,7 +7,7 @@ import intransix.osm.termite.gui.mode.EditorMode;
 import intransix.osm.termite.gui.task.MapDataRequestTask;
 import intransix.osm.termite.render.checkout.DownloadLayer;
 import intransix.osm.termite.render.checkout.DownloadToolbar;
-import intransix.osm.termite.util.MercatorCoordinates;
+import java.awt.geom.Rectangle2D;
 import javafx.geometry.Bounds;
 import javafx.scene.control.ToolBar;
 
@@ -27,9 +27,6 @@ public class DownloadEditorMode extends EditorMode {
 	private MapDataManager mapDataManager;
 	private DownloadLayer downloadLayer;
 	private DownloadToolbar toolBar = null;	
-	
-public ViewRegionManager viewRegionManager;
-	
 	
 	//====================
 	// Public Methods
@@ -86,17 +83,12 @@ downloadLayer.visibleProperty().setValue(false);
 			MessageDialog.show("You must select a bounding box to download.");
 			return;
 		}
-		
-		//get the bounding box
-		double minLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMaxY()));
-		double minLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMinX()));
-		double maxLat = Math.toDegrees(MercatorCoordinates.myToLatRad(selection.getMinY()));
-		double maxLon = Math.toDegrees(MercatorCoordinates.mxToLonRad(selection.getMaxX()));
-		
-viewRegionManager.setLocalCoordinatesNow();
+		Rectangle2D downloadRectangle = new Rectangle2D.Double(selection.getMinX(),selection.getMinY(),
+				selection.getWidth(),selection.getHeight());
 		
 		//run the load data task
-		MapDataRequestTask mdrt = new MapDataRequestTask(mapDataManager,minLat,minLon,maxLat,maxLon);
+		MapDataRequestTask mdrt = new MapDataRequestTask(mapDataManager,
+				downloadRectangle);
 		mdrt.execute();
 	}
 	

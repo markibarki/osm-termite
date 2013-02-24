@@ -42,7 +42,7 @@ public class PathFeature extends Path implements Feature {
 	private OsmWay osmWay;
 	private boolean isArea;
 	private List<PathElement> workingElements = new ArrayList<>();
-	private double pixelsToMerc = 1.0;
+	private double pixelsToLocal = 1.0;
 	private double strokeWidthPixels = 0.0;
 	
 //	private List<Rectangle2D> virtualNodes = new ArrayList<Rectangle2D>();
@@ -61,14 +61,14 @@ public class PathFeature extends Path implements Feature {
 		}
 	}
 	
-	public void setPixelsToMerc(double pixelsToMerc) {
-		this.pixelsToMerc = pixelsToMerc;
-		this.setStrokeWidth(strokeWidthPixels * pixelsToMerc);
+	public void setPixelsToLocal(double pixelsToLocal) {
+		this.pixelsToLocal = pixelsToLocal;
+		this.setStrokeWidth(strokeWidthPixels * this.pixelsToLocal);
 	}
 	
 	public void setStrokeWidthPixels(double strokeWidthPixels) {
 		this.strokeWidthPixels = strokeWidthPixels;
-		this.setStrokeWidth(strokeWidthPixels * pixelsToMerc);
+		this.setStrokeWidth(strokeWidthPixels * pixelsToLocal);
 	}
 	
 	public PathFeature(OsmWay osmWay) {

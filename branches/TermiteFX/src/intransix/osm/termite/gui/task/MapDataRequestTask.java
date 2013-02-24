@@ -4,6 +4,8 @@ import intransix.osm.termite.app.mapdata.download.RequestAction;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.dialog.BlockerDialog;
 import intransix.osm.termite.gui.dialog.MessageDialog;
+import intransix.osm.termite.util.MercatorCoordinates;
+import java.awt.geom.Rectangle2D;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 
@@ -21,9 +23,8 @@ public class MapDataRequestTask extends Task<Void> {
 	private boolean success = false;
 	private String errorMsg;
 	
-	public MapDataRequestTask(MapDataManager mapDataManager, double minLat, double minLon, 
-			double maxLat, double maxLon) {
-		this.requestAction = new RequestAction(mapDataManager,minLat,minLon,maxLat,maxLon);
+	public MapDataRequestTask(MapDataManager mapDataManager, Rectangle2D downloadBounds) {
+		this.requestAction = new RequestAction(mapDataManager,downloadBounds);
 	}
 	
 	public void execute() {

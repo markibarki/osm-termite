@@ -12,6 +12,6 @@ public interface Feature {
 	
 	void initStyle(Theme theme);
 	
-	void setPixelsToMerc(double pixelsToMerc);
+	void setPixelsToLocal(double pixelsToLocal);
 	
 }

@@ -76,6 +76,7 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 		assert noneBaseMapMenuItem != null : "None base map menu item not loaded";
 		assert undoMenuItem != null : "Undo menu item not loaded";
 		assert redoMenuItem != null : "Redo menu item not loaded";
+		
     }
 	
 	public void setApp(TermiteFX app) {
@@ -91,13 +92,16 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	/** This method sets the base map manager. */
 	public void setBaseMapManager(BaseMapManager baseMapManager) {
 		this.baseMapManager = baseMapManager;
-		
 		//initialize the base map list
 		EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
 			public void handle(ActionEvent t) {
 				onMapBaseSelection(t);
 			}
 		};
+		//initialize the base map item
+		noneBaseMapMenuItem.setUserData(null);
+		noneBaseMapMenuItem.setOnAction(handler);
+		//initialize map list
 		for(TileInfo tileInfo:baseMapManager.getBaseMapList()) {
 			MenuItem menuItem = new MenuItem(tileInfo.getName());
 			menuItem.setUserData(tileInfo);

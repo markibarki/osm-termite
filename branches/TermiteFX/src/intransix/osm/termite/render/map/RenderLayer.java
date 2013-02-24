@@ -17,6 +17,7 @@ import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 //import java.awt.*;
 //import java.awt.geom.*;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.Comparator;
 import javafx.scene.Node;
 import javafx.scene.shape.Shape;
 import javafx.scene.transform.Affine;
+import javafx.scene.transform.Transform;
 
 /**
  *
@@ -34,6 +36,9 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		FilterListener, MapListener {
 	
 	public final static int DEFAULT_ZLEVEL = 0;
+	
+	/** this arbitrary number is used to set the scale for local coordinates. */
+	private final static double LOCAL_COORDINATE_AREA = 1000000.0;
 
 	static int piggybackIndexRender;
 	static int piggybackIndexFeature;
@@ -44,7 +49,7 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	
 	private MapDataManager mapDataManager;
 	private Theme theme;
-	private double pixelsToMercScale = 1.0;
+	private double pixelsToLocalScale = 1.0;
 	
 	//feature info
 	private FeatureTypeManager featureTypeManager;
@@ -53,8 +58,10 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	private java.util.List<Shape> orderedFeatures = new ArrayList<>();
 	private FeatureLayerComparator flc = new FeatureLayerComparator();
 	
-public AffineTransform mercToLocal;
-public Affine localToMercFX;
+	//local coordinate definitions
+	private AffineTransform mercToLocal;
+	private Affine localToMercFX;
+	private double localToMercScaleFactor = 1.0;
 	
 	public void connect(MapLayerManager mapLayerManager){
 	}
@@ -65,10 +72,6 @@ public Affine localToMercFX;
 	public RenderLayer() {
 		this.setName("Render Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MAP);
-		
-		this.setPrefSize(1.0,1.0);
-		this.setMinSize(1.0,1.0);
-		this.setMaxSize(1.0,1.0);
 	}
 	
 //@TODO Fix setting logic
@@ -78,9 +81,15 @@ public Affine localToMercFX;
 	
 	@Override
 	public void onMapData(boolean dataPresent) {
+		
+		if(dataPresent) {
+			initializeLocalCoordinates();
+		}
+		
 		//should be active whenever there is map data
 		this.setActiveState(dataPresent);
-
+		
+		
 	}
 	
 	/** This method is called when the data has changed.
@@ -137,6 +146,7 @@ public Affine localToMercFX;
 			data.setShape(feature);
 			node.setPiggybackData(piggybackIndexRender,data);
 			feature.initStyle(theme);
+			feature.setPixelsToLocal(pixelsToLocalScale);
 		}
 		
 		if(!data.isUpToDate(node)) {
@@ -156,6 +166,7 @@ public Affine localToMercFX;
 			data.setShape(feature);
 			way.setPiggybackData(piggybackIndexRender,data);
 			feature.initStyle(theme);
+			feature.setPixelsToLocal(pixelsToLocalScale);
 		}
 		
 		if(!data.isUpToDate(way)) {
@@ -255,21 +266,17 @@ public Affine localToMercFX;
 	// MapListener Interface
 	//--------------------------
 	
-	public void onLocalCoordinateSet(AffineTransform mercToLocal, Affine localToMercFX) {
-		this.mercToLocal = mercToLocal;
-		this.localToMercFX = localToMercFX;
-	}
-	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onZoom(ViewRegionManager vrm) {		
-		updateTransform(vrm);
-		
+	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {		
 		//update the stroke values
-		pixelsToMercScale = vrm.getZoomScaleMercPerPixel();
-		for(Node node:getChildren()) {
-			if(node instanceof Feature) {
-				((Feature)node).setPixelsToMerc(pixelsToMercScale);
+		if(zoomChanged) {
+			double pixelsToMercScale = viewRegionManager.getZoomScaleMercPerPixel();
+			pixelsToLocalScale = pixelsToMercScale / localToMercScaleFactor;
+			for(Node node:getChildren()) {
+				if(node instanceof Feature) {
+					((Feature)node).setPixelsToLocal(pixelsToLocalScale);
+				}
 			}
 		}
 	}
@@ -278,26 +285,15 @@ public Affine localToMercFX;
 	public void onPanStart(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanStep(ViewRegionManager vrm) {
-		updateTransform(vrm);
-	}
+	public void onPanStep(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanEnd(ViewRegionManager vrm) {
-		updateTransform(vrm);
-	}
+	public void onPanEnd(ViewRegionManager vrm) {}
 	
 	//=================================
 	// Private Methods
 	//=================================
 	
-	private void updateTransform(ViewRegionManager viewRegionManager) {
-		if(localToMercFX == null) return;
-		
-		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
-		this.getTransforms().setAll(mercToPixelsFX,localToMercFX); 
-		
-	}
 	
 	
 //	/** This method updates the feature info for the given object. */
@@ -317,6 +313,36 @@ public Affine localToMercFX;
 //			featureData.markAsUpToDate(osmObject);
 //		}
 //	}
+	
+	private void initializeLocalCoordinates() {
+		//get the rectangle
+		Rectangle2D downloadRectangle = mapDataManager.getDownloadBounds();
+		//find the local scale
+		double mercArea = downloadRectangle.getWidth()* downloadRectangle.getHeight();
+		localToMercScaleFactor = 1;
+		if(mercArea > 0) {
+			localToMercScaleFactor = Math.sqrt(mercArea / LOCAL_COORDINATE_AREA);
+		}
+		
+		//create transforms
+		AffineTransform localToMerc = new AffineTransform(localToMercScaleFactor,0.0,
+				0.0,localToMercScaleFactor,
+				downloadRectangle.getMinX(),downloadRectangle.getMinY());
+		try {
+			mercToLocal = localToMerc.createInverse();
+		}
+		catch(Exception ex) {
+			//this should not happen
+			throw new RuntimeException("Failed transform inverse");
+		}
+
+		localToMercFX = Transform.affine(localToMercScaleFactor,0.0,
+				0.0,localToMercScaleFactor,
+				downloadRectangle.getMinX(),downloadRectangle.getMinY());
+		
+		
+		this.getTransforms().setAll(localToMercFX);
+	}
 	
 	//========================
 	// Classes

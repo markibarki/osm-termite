@@ -65,29 +65,40 @@ this.tileZoom = INVALID_ZOOM;
 		this.setPrefSize(1.0,1.0);
 		this.setMinSize(1.0,1.0);
 		this.setMaxSize(1.0,1.0);
+		
+		//image doesn't work well if we use coordinates from 0-1 for world
+		//some rounding takes place somewhere
+		this.getTransforms().setAll(scaleCorrectionForTiles); 
 	}
 	
 	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
 		this.viewRegionManager = viewRegionManager;
-		viewRegionManager.addMapListener(this);
 	}
 	
 	public void setTileInfo(TileInfo tileInfo) {
 		this.tileInfo = tileInfo;
 		if(tileInfo != null) {
-this.getChildren().clear();
+			this.getChildren().clear();
 			minZoom = tileInfo.getMinZoom();
 			maxZoom = tileInfo.getMaxZoom();
 			pixelsPerTile = tileInfo.getTileSize();
 			this.setVisible(true);
+			//update zoom if needed
+			if(tileZoom == INVALID_ZOOM) {
+				setZoomScale(viewRegionManager);
+			}
+			//update the tiles
+			updateTiles(viewRegionManager);
 		}
 		else {
-this.getChildren().clear();
+			this.getChildren().clear();
 			minZoom = Integer.MIN_VALUE;
 			maxZoom = Integer.MAX_VALUE;
 			pixelsPerTile = 1;
 			this.setVisible(false);
 		}
+		
+		
 	}
 	
 	//--------------------------
@@ -105,13 +116,18 @@ this.getChildren().clear();
 	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onZoom(ViewRegionManager vrm) {		
-		double pixelsPerMerc = viewRegionManager.getZoomScalePixelsPerMerc();
-		setZoomScale(pixelsPerMerc);
-		updateTiles();
+	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {	
+		if((zoomChanged)||(tileZoom == INVALID_ZOOM)) {
+			setZoomScale(viewRegionManager);
+		}
+		updateTiles(viewRegionManager);
 	}
 	
-	private void setZoomScale(double pixelsPerMerc) {
+	private void setZoomScale(ViewRegionManager viewRegionManager) {
+		if(tileInfo == null) return;
+		
+		double pixelsPerMerc = viewRegionManager.getZoomScalePixelsPerMerc();
+		
 		double tilesPerMerc = pixelsPerMerc / pixelsPerTile;
 		int desiredScale = (int)Math.round(Math.log(tilesPerMerc)/Math.log(2));
 	
@@ -130,23 +146,17 @@ this.getChildren().clear();
 	public void onPanStart(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanStep(ViewRegionManager vrm) {
-		updateTiles();
-	}
+	public void onPanStep(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onPanEnd(ViewRegionManager vrm) {
-		updateTiles();
-	}
-	
-	public void onLocalCoordinateSet(AffineTransform mercToLocal, Affine localToMercFX) {
-	}
-	
+	public void onPanEnd(ViewRegionManager vrm) {}
+
 	//=================================
 	// Private Methods
 	//=================================
 	
-	private void updateTiles() {
+	private void updateTiles(ViewRegionManager viewRegionManager) {
+		if(tileInfo == null) return;
 		
 		//get the bounds in merc coordinates
 		Bounds bounds = viewRegionManager.getPixelRect();
@@ -188,9 +198,6 @@ System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY 
 		}
 		
 		this.getChildren().setAll(workingTiles);
-		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
-		
-		this.getTransforms().setAll(mercToPixelsFX,scaleCorrectionForTiles); 
 		workingTiles.clear();
 	}
 	
@@ -202,7 +209,7 @@ System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY 
 		if(point.getY() > mercRange[3]) mercRange[3] = point.getY();
 	}
 	
-	private Tile getTile(int ix, int iy, int zoom) {
+	private Tile getTile(int ix, int iy, int zoom) {	
 		String url = tileInfo.getUrl(ix, iy, zoom);
 		Tile tile = tileCache.get(url);
 		if(tile == null) {

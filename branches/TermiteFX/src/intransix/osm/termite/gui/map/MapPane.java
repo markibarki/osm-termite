@@ -6,6 +6,7 @@ package intransix.osm.termite.gui.map;
 
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.maplayer.MapLayerListener;
+import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.TermiteFXGui;
 import java.util.ArrayList;
@@ -16,46 +17,28 @@ import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.transform.Affine;
 
 /**
  *
  * @author sutter
  */
-public class MapPane extends Pane implements MapLayerListener {
+public class MapPane extends Pane implements MapLayerListener, MapListener {
 	
-public TermiteFXGui gui;
-	
-	private ViewRegionManager viewRegionManager;
+	private Pane worldPane;
 	private ArrayList<Node> workingList = new ArrayList<>();
 	
 	public void init(ViewRegionManager viewRegionManager) {
-		this.viewRegionManager = viewRegionManager;
 		
-		//key handlers for navigation
-		gui.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
-			@Override
-			public void handle(KeyEvent e) {
-				EventTarget target = e.getTarget();
-				System.out.println("Target: " + e.getTarget());
-				if(target instanceof Control) {
-					System.out.println("Event passed through");
-				}
-				else {
-					System.out.println(e.getCode());
-					keyPressed(e);
-					e.consume();
-				}
-			}
-		});
+		worldPane = new Pane();
+		worldPane.setPrefSize(1.0,1.0);
+		worldPane.setMinSize(1.0,1.0);
+		worldPane.setMaxSize(1.0,1.0);
+		this.getChildren().add(worldPane);
 		
-//		this.addEventHandler(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
-//			@Override
-//			public void handle(KeyEvent e) {
-//System.out.println(e.getCode());
-//				keyPressed(e);
-//			}
-//		});
-
+		//add the view region manager
+		this.onMapViewChange(viewRegionManager, true);
+		viewRegionManager.addMapListener(this);
 		
 		//request focus on mouse press
 		this.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_ENTERED,new EventHandler<javafx.scene.input.MouseEvent>() {
@@ -85,41 +68,33 @@ public TermiteFXGui gui;
 		for(MapLayer layer:mapLayerList) {
 			workingList.add((Node)layer);
 		}
-		getChildren().setAll(workingList);
+		worldPane.getChildren().setAll(workingList);
 		workingList.clear();
 	}
 	
-	private final double PAN_PIX = 30;
-	private final double ZOOM_FACTOR = 1.3;
+	//--------------------------
+	// MapListener Interface
+	//--------------------------
 	
-	private void keyPressed(KeyEvent e) {
-		if(viewRegionManager == null) return;
-		
-		switch(e.getCode()) {
-			case UP:
-				viewRegionManager.translate(0,PAN_PIX);
-				break;
-				
-			case DOWN:
-				viewRegionManager.translate(0,-PAN_PIX);
-				break;
-				
-			case RIGHT:
-				viewRegionManager.translate(-PAN_PIX,0);
-				break;
-				
-			case LEFT:
-				viewRegionManager.translate(PAN_PIX,0);
-				break;
-				
-			case PAGE_UP:
-				viewRegionManager.zoom(ZOOM_FACTOR); 
-				break;
-			
-			case PAGE_DOWN:
-				viewRegionManager.zoom(1/ZOOM_FACTOR);
-				break;
-				
-		}
+	/** This method updates the active tile zoom used by the map. */
+	@Override
+	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {	
+		Affine mercToPixelsFX = viewRegionManager.getMercatorToPixelsFX();
+		this.getTransforms().setAll(mercToPixelsFX);
 	}
+	
+	@Override
+	public void onPanStart(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onPanStep(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onPanEnd(ViewRegionManager vrm) {}
+	
+	//=================================
+	// Private Methods
+	//=================================
+	
+	
 }
