@@ -40,7 +40,7 @@ public class NodeToolClickAction implements MouseClickAction {
 		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
 //		setPendingData(new Point2D.Double(0,0),featureInfo);
 		
-		editManager.getEditLayer().notifyContentChange();
+//		editManager.getEditLayer().notifyContentChange();
 		
 		return true;
 	}

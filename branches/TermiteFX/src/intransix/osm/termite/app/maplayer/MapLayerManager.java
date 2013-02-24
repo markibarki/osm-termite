@@ -19,8 +19,6 @@ public class MapLayerManager {
 	// Properties
 	//======================
 	
-	private Pane mapPane;
-	private ViewRegionManager viewRegionManager;
 	private List<MapLayer> mapLayers = new ArrayList<>();
 	
 	private Comparator<MapLayer> comp = new Comparator<MapLayer>() {
@@ -36,39 +34,12 @@ public class MapLayerManager {
 	// Public Methods
 	//======================
 	
-	public MapLayerManager(Pane mapPane, ViewRegionManager viewRegionManager) {
-		this.mapPane = mapPane;
-		this.viewRegionManager = viewRegionManager;
-	}
-	
-	/** This method adds a mouse event handler to the proper parent. */
-	public <T extends Event> void addMouseEventHandler(EventType<T> type,EventHandler <? super T> handler) {
-		mapPane.addEventHandler(type,handler);
-	}
-	
-	/** This method removes a mouse event handler from the proper parent. */
-	public <T extends Event> void removeMouseEventHandler(EventType<T> type,EventHandler <? super T> handler) {
-		mapPane.removeEventHandler(type,handler);
-	}
-	
-	/** This method adds a key event handler to the proper parent. */
-	public <T extends Event> void addKeyEventHandler(EventType<T> type,EventHandler <? super T> handler) {
-		TermiteFXGui.getStage().addEventHandler(type,handler);
-	}
-	
-	/** This method removes a key event handler from the proper parent. */
-	public <T extends Event> void removeKeyEventHandler(EventType<T> type,EventHandler <? super T> handler) {
-		TermiteFXGui.getStage().addEventHandler(type,handler);
-	}
-	
-	public ViewRegionManager getViewRegionManager() {
-		return viewRegionManager;
-	}
-	
+	/** This method gets the list of map layers. */
 	public List<MapLayer> getMapLayers() {
 		return mapLayers;
 	}
 	
+	/** This method adds a map layer. */
 	public void addLayer(MapLayer layer) {
 		if(!mapLayers.contains(layer)) {
 			mapLayers.add(layer);
@@ -80,40 +51,23 @@ public class MapLayerManager {
 		}
 	}
 	
+	/** This method removes a map layer. */
 	public void removeLayer(MapLayer layer) {
 		mapLayers.remove(layer);
 		layer.disconnect(this);
 		notifyListChange();
 	}
 	
-	/** This method adds a mode listener. */
+	/** This method adds a layer listener. */
 	public void addLayerListener(MapLayerListener layerListener) {
 		if(!layerListeners.contains(layerListener)) {
 			layerListeners.add(layerListener);
 		}
 	}
 	
-	/** This method removes a mode listener. */
+	/** This method removes a layer listener. */
 	public void removeLayerListener(MapLayerListener layerListener) {
 		layerListeners.remove(layerListener);
-	}
-	
-	//========================
-	// Package Methods
-	//========================
-	
-	void notifyContentChange(MapLayer layer) {
-		for(int i = 0; i < layerListeners.size(); i++) {
-			MapLayerListener layerListener = layerListeners.get(i);
-			layerListener.layerContentChanged(layer);
-		}
-	}
-	
-	void notifyStateChange(MapLayer layer) {
-		for(int i = 0; i < layerListeners.size(); i++) {
-			MapLayerListener layerListener = layerListeners.get(i);
-			layerListener.layerStateChanged(layer);
-		}
 	}
 	
 	//======================

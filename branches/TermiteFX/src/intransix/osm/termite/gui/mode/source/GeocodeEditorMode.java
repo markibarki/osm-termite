@@ -247,20 +247,6 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	// Map Layer listener interface
 	//---------------
 	
-	/** This method is called when the map layer state changes, including enable,
-	 * visible and opacity. */
-	@Override
-	public void layerStateChanged(MapLayer mapLayer) {
-		//just reload layers
-		toolBar.updateLayers(mapLayerList);
-	}
-	
-	/** This method is called when the content of a layer changes. */
-	@Override
-	public void layerContentChanged(MapLayer mapLayer) {
-		//no action
-	}
-	
 	/** This method is called when the map layer list changes. */
 	@Override
 	public void layerListChanged(List<MapLayer> mapLayerList) {

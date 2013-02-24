@@ -4,7 +4,6 @@ import intransix.osm.termite.map.workingdata.OsmData;
 import intransix.osm.termite.app.edit.*;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.edit.EditManager;
-import intransix.osm.termite.app.maplayer.CanvasLayer;
 
 /**
  * This layer controls the user interaction with the active map data. It is designed
@@ -12,7 +11,7 @@ import intransix.osm.termite.app.maplayer.CanvasLayer;
  * 
  * @author sutter
  */
-public class EditLayer extends CanvasLayer {
+public class EditLayer extends MapLayer {
 	
 	//=========================
 	// Properties 

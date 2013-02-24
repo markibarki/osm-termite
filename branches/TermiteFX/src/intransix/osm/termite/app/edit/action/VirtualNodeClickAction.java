@@ -66,7 +66,7 @@ public class VirtualNodeClickAction implements MouseClickAction {
 //			Point2D mouseMerc = editManager.getMousePointMerc();
 //			editVirtualNode.enVirtual.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
 			
-			editManager.getEditLayer().notifyContentChange();
+//			editManager.getEditLayer().notifyContentChange();
 			return true;
 		}
 		else {

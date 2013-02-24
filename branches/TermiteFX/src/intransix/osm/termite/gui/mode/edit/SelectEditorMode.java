@@ -180,7 +180,6 @@ throw new RuntimeException("Add create level action back");
 			//clear any old state, but not selection
 			editManager.clearPending();
 			editManager.clearPreview();
-			editLayer.notifyContentChange();
 			
 			inMoveState = false;
 			

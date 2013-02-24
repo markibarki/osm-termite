@@ -35,6 +35,6 @@ public class DeleteSelectionAction {
 			editManager.clearSelection();
 		}
 		
-		editManager.getEditLayer().notifyContentChange();
+//		editManager.getEditLayer().notifyContentChange();
 	}
 }

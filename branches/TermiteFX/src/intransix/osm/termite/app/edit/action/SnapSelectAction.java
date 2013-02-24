@@ -28,7 +28,7 @@ public class SnapSelectAction {
 			activeSnapObject--;
 			if(activeSnapObject < -1) activeSnapObject = snapObjects.size() - 1;
 			editManager.setActiveSnapObject(activeSnapObject);
-			editManager.getEditLayer().notifyContentChange();
+//			editManager.getEditLayer().notifyContentChange();
 		}
 	}
 	
@@ -40,7 +40,7 @@ public class SnapSelectAction {
 			activeSnapObject++;
 			if(activeSnapObject >= snapObjects.size()) activeSnapObject = -1;
 			editManager.setActiveSnapObject(activeSnapObject);
-			editManager.getEditLayer().notifyContentChange();
+//			editManager.getEditLayer().notifyContentChange();
 		}
 	}
 }

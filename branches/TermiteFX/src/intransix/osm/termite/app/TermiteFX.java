@@ -154,63 +154,25 @@ public class TermiteFX extends Application {
 		featureTypeManager.init();
 		gui.setFeatureTypeManager(featureTypeManager);
 		
-		
 		//filter
 //		filterManager = new FilterManager();
-		
-
 //		
 //		//levels
 //		levelManager = new LevelManager(mapDataManager, filterManager);
 //		mapDataManager.addMapDataListener(levelManager);
+//		gui.setLevelManager(levelManager);
 //		
 //		//edit manager
 //		editManager = new EditManager(featureTypeManager,levelManager,mapDataManager);
 //		editManager.init();
-//		
-//		
-//		//map layers
-
+//		gui.setEditManager(editManager); //selection for edit properties
+//
 //		
 //		//geocode
 //		geocodeManager = new GeocodeManager();
 //		geocodeManager.init(mapLayerManager);
 //		
-//		//populate tghe map layers
-
-//		mapLayerManager.addLayer(mapDataManager.getRenderLayer());
-//		mapLayerManager.addLayer(mapDataManager.getDownloadLayer());
-//		mapLayerManager.addLayer(editManager.getEditLayer());
-//		mapLayerManager.addLayer(geocodeManager.getGeocodeLayer());
-//		
-//		//editor modes
-//		modeManager = new EditorModeManager();
-//		mapDataManager.addMapDataListener(modeManager);
-//		modeManager.addMode(mapDataManager.getDownloadEditorMode());
-//		modeManager.addMode(editManager.getSelectEditorMode());
-//		modeManager.addMode(editManager.getNodeEditorMode());
-//		modeManager.addMode(editManager.getWayEditorMode());
-//		modeManager.addMode(geocodeManager.getGeocodeEditorMode());
-//		modeManager.setDefaultModes(mapDataManager.getDownloadEditorMode(),editManager.getSelectEditorMode());
-//		
-//		//gui initialization
-//		gui.setMapDataManager(mapDataManager); //undo/redo
-//		gui.setFeatureTypeManager(featureTypeManager); //feature selection
-//		gui.setEditManager(editManager); //selection for edit properties
-//		gui.setLevelManager(levelManager);
-//		gui.setMapLayerManager(mapLayerManager); //for map layer state editing and display
-		
-//		gui.setModeManager(modeManager); //sets the mode
-//		this.addShutdownListener(gui);
-//		
-//		
-//		//more generic init
-//		RenderLayer renderLayer = mapDataManager.getRenderLayer();
-//		renderLayer.setTheme(theme);
-//		viewRegionManager.addLocalCoordinateListener(renderLayer);
-//		
-		
-//		mapDataManager.clearData();
+		mapDataManager.clearData();
 	}
 	
 	private void loadAppPreferences() {

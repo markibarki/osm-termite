@@ -27,7 +27,7 @@ public class CreateMoveMoveAction implements MouseMoveAction {
 		List<EditNode> movingNodes = editManager.getMovingNodes();
 		if(movingNodes.size() == 1) {
 			editNode = movingNodes.get(0);
-			editManager.getEditLayer().notifyContentChange();
+//			editManager.getEditLayer().notifyContentChange();
 			return true;
 		}
 		else {

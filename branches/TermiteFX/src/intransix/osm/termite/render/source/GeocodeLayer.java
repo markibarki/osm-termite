@@ -5,13 +5,12 @@ import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.geocode.GeocodeManager;
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
 import intransix.osm.termite.app.geocode.GeocodeMouseAction;
-import intransix.osm.termite.app.maplayer.CanvasLayer;
 
 /**
  *
  * @author sutter
  */
-public class GeocodeLayer extends CanvasLayer {
+public class GeocodeLayer extends MapLayer {
 	
 	private GeocodeManager geocodeManager;
 	private GeocodeEditorMode geocodeEditorMode;

@@ -119,9 +119,9 @@ public class GeocodeManager {
 	/** This method should be called if a move is active and the move transform 
 	 * is updated. */
 	public void moveImageToMercUpdated() {
-		if(sourceLayer != null) {
-			sourceLayer.notifyContentChange();
-		}
+//		if(sourceLayer != null) {
+//			sourceLayer.notifyContentChange();
+//		}
 	}
 	
 //	/** This method gets the AffineTransform relating the image pixels to mercator coordinates
