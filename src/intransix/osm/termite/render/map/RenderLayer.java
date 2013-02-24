@@ -11,15 +11,11 @@ import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.map.theme.Theme;
 import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.mapdata.MapDataManager;
-import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.app.maplayer.PaneLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.map.feature.FeatureInfo;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-//import java.awt.*;
-//import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,13 +25,16 @@ import javafx.scene.transform.Affine;
 import javafx.scene.transform.Transform;
 
 /**
- *
+ * This class renders the map data.
+ * 
  * @author sutter
  */
-public class RenderLayer extends PaneLayer implements MapDataListener, 
+public class RenderLayer extends MapLayer implements MapDataListener, 
 		FilterListener, MapListener {
 	
-	public final static int DEFAULT_ZLEVEL = 0;
+	//====================
+	// Properties
+	//====================
 	
 	/** this arbitrary number is used to set the scale for local coordinates. */
 	private final static double LOCAL_COORDINATE_AREA = 1000000.0;
@@ -49,7 +48,6 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	
 	private MapDataManager mapDataManager;
 	private Theme theme;
-	private double pixelsToLocalScale = 1.0;
 	
 	//feature info
 	private FeatureTypeManager featureTypeManager;
@@ -61,20 +59,21 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	//local coordinate definitions
 	private AffineTransform mercToLocal;
 	private Affine localToMercFX;
-	private double localToMercScaleFactor = 1.0;
+	private double pixelsToLocalScale = 1.0;
+	private double pixelsToMercScale = 1.0;
+	private double mercToLocalScale = 1.0;
 	
-	public void connect(MapLayerManager mapLayerManager){
-	}
+	//====================
+	// Public Methods
+	//====================
 	
-	public void disconnect(MapLayerManager mapLayerManager){
-	}
-	
+	/** Constructor */
 	public RenderLayer() {
 		this.setName("Render Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MAP);
 	}
 	
-//@TODO Fix setting logic
+	/** This method sets the map data manager. */
 	public void setMapDataManager(MapDataManager mapDataManager) {
 		this.mapDataManager = mapDataManager;
 	}
@@ -83,13 +82,12 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	public void onMapData(boolean dataPresent) {
 		
 		if(dataPresent) {
+			//set up the local coordinates - doesn't work well if we try global
 			initializeLocalCoordinates();
 		}
 		
 		//should be active whenever there is map data
 		this.setActiveState(dataPresent);
-		
-		
 	}
 	
 	/** This method is called when the data has changed.
@@ -120,60 +118,6 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		
 		this.getChildren().setAll(orderedFeatures);
 		orderedFeatures.clear();
-		
-		this.notifyContentChange();
-	}
-	
-	private void checkFeatureInfo(OsmObject osmObject) {
-		FeatureData fd = (FeatureData)osmObject.getPiggybackData(piggybackIndexFeature);
-		if(fd == null) {
-			fd = new FeatureData();
-			osmObject.setPiggybackData(RenderLayer.piggybackIndexFeature,fd);
-		}
-		if(!fd.isUpToDate(osmObject)) {
-			FeatureInfo fi = featureTypeManager.getFeatureInfo(osmObject);
-			fd.setFeatureInfo(fi);
-		}
-	}
-	
-	private Shape extractPointFeature(OsmNode node) {
-		PointFeature feature = null;
-		
-		ShapePiggybackData data = (ShapePiggybackData)node.getPiggybackData(piggybackIndexRender);
-		if(data == null) {
-			feature = new PointFeature(node);
-			data = new ShapePiggybackData();
-			data.setShape(feature);
-			node.setPiggybackData(piggybackIndexRender,data);
-			feature.initStyle(theme);
-			feature.setPixelsToLocal(pixelsToLocalScale);
-		}
-		
-		if(!data.isUpToDate(node)) {
-			feature.updateData(mercToLocal);
-		}
-		
-		return data.getShape();
-	}
-	
-	private Shape extractWayFeature(OsmWay way) {
-		PathFeature feature = null;
-		
-		ShapePiggybackData data = (ShapePiggybackData)way.getPiggybackData(piggybackIndexRender);
-		if(data == null) {
-			feature = new PathFeature(way);
-			data = new ShapePiggybackData();
-			data.setShape(feature);
-			way.setPiggybackData(piggybackIndexRender,data);
-			feature.initStyle(theme);
-			feature.setPixelsToLocal(pixelsToLocalScale);
-		}
-		
-		if(!data.isUpToDate(way)) {
-			feature.updateData(mercToLocal);
-		}
-		
-		return feature;
 	}
 	
 	/** This returns the priority for this object as a map data listener. */
@@ -182,16 +126,18 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		return PRIORITY_DATA_CONSUME;
 	}
 	
+	/** This method is called when the filter changes. */
 	@Override
 	public void onFilterChanged() {
-		//manually update the render layer with the new filter
-		this.notifyContentChange();
+		throw new RuntimeException("Implement filter change action in rener layer!");
 	}	
 	
+	/** This method sets the feature manager. */
 	public void setFeatureTypeManager(FeatureTypeManager featureTypeManager) {
 		this.featureTypeManager = featureTypeManager;
 	}
 	
+	/** This method gets the feature manager. */
 	public FeatureTypeManager getFeatureTypeManager() {
 		return featureTypeManager;
 	}
@@ -207,60 +153,11 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		}
 	}
 	
+	/** This method sets the theme. IT does not update existing data at the time
+	 * of calling. It only apples to data loaded after the call to this function. */
 	public void setTheme(Theme theme) {
 		this.theme = theme;
 	}
-	
-//	@Override
-//	public void render(Graphics2D g2) {
-//		
-//		OsmData localData = mapDataManager.getOsmData();
-//		Theme localTheme = theme;
-//		
-//		AffineTransform localToPixels = getViewRegionManager().getLocalToPixels();
-//		AffineTransform mercatorToLocal = getViewRegionManager().getMercatorToLocal();
-//		double zoomScalePixelsPerLocal = getViewRegionManager().getZoomScalePixelsPerLocal();
-////System.out.println(zoomScalePixelsPerLocal);
-//		if((localData == null)||(localTheme == null)) return;
-//		
-//		g2.transform(localToPixels);		
-//			
-//		PathFeature pathFeature;
-//		PointFeature pointFeature;
-//		for(OsmObject mapObject:orderedFeatures) {
-//			if(mapObject instanceof OsmWay) {
-//				pathFeature = (PathFeature)mapObject.getPiggybackData(piggybackIndexRender);
-//				if(pathFeature == null) {
-//					pathFeature = new PathFeature((OsmWay)mapObject);
-//					mapObject.setPiggybackData(piggybackIndexRender,pathFeature);
-//				}
-//				pathFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
-//			}
-//			else if(mapObject instanceof OsmNode) {
-//				pointFeature = (PointFeature)mapObject.getPiggybackData(piggybackIndexRender);
-//				if(pointFeature == null) {
-//					pointFeature = new PointFeature((OsmNode)mapObject);
-//					mapObject.setPiggybackData(piggybackIndexRender,pointFeature);
-//				}
-//				pointFeature.render(g2,mercatorToLocal,zoomScalePixelsPerLocal,localTheme);
-//			}
-//		}
-//	}
-//	
-//	@Override
-//	public void onLocalCoordinateChange(ViewRegionManager viewRegionManager, AffineTransform oldLocalToNewLocal) {
-//		OsmData mapData = mapDataManager.getOsmData();
-//		if(mapData != null) {
-//			Feature feature;
-//			//transform the cached data
-//			for(OsmObject mapObject:orderedFeatures) {
-//				feature = (Feature)mapObject.getPiggybackData(piggybackIndexRender);
-//				if(feature != null) {
-//					feature.transform(oldLocalToNewLocal);
-//				}
-//			}
-//		}
-//	}
 	
 	//--------------------------
 	// MapListener Interface
@@ -271,8 +168,7 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {		
 		//update the stroke values
 		if(zoomChanged) {
-			double pixelsToMercScale = viewRegionManager.getZoomScaleMercPerPixel();
-			pixelsToLocalScale = pixelsToMercScale / localToMercScaleFactor;
+			this.setPixelsToMercScale(viewRegionManager.getZoomScaleMercPerPixel());
 			for(Node node:getChildren()) {
 				if(node instanceof Feature) {
 					((Feature)node).setPixelsToLocal(pixelsToLocalScale);
@@ -294,37 +190,30 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 	// Private Methods
 	//=================================
 	
+	/** This method updates the pixelToLocal scale factor. */
+	private void setPixelsToMercScale(double pixelsToMercScale) {
+		this.pixelsToMercScale = pixelsToMercScale;
+		this.pixelsToLocalScale = pixelsToMercScale * mercToLocalScale;
+	}
 	
+	/** This method updates the pixelToLocal scale factor. */
+	private void setMercToLocalScale(double mercToLocalScale) {
+		this.mercToLocalScale = mercToLocalScale;
+		this.pixelsToLocalScale = pixelsToMercScale * mercToLocalScale;
+	}
 	
-//	/** This method updates the feature info for the given object. */
-//	private void processFeature(OsmObject osmObject) {
-//
-//		FeatureData featureData = (FeatureData)osmObject.getPiggybackData(piggybackIndexFeature);
-//		if(featureData == null) {
-//			featureData = new FeatureData();
-//			osmObject.setPiggybackData(piggybackIndexFeature, featureData);
-//		}
-//		
-//		if(!featureData.isUpToDate(osmObject)) {
-//			//feature info
-//			FeatureInfo featureInfo = featureTypeManager.getFeatureInfo(osmObject);
-//			featureData.setFeatureInfo(featureInfo);
-//			
-//			featureData.markAsUpToDate(osmObject);
-//		}
-//	}
-	
+	/** This method sets local coordinates based on the area of downloaded data. */
 	private void initializeLocalCoordinates() {
 		//get the rectangle
 		Rectangle2D downloadRectangle = mapDataManager.getDownloadBounds();
 		//find the local scale
 		double mercArea = downloadRectangle.getWidth()* downloadRectangle.getHeight();
-		localToMercScaleFactor = 1;
 		if(mercArea > 0) {
-			localToMercScaleFactor = Math.sqrt(mercArea / LOCAL_COORDINATE_AREA);
+			setMercToLocalScale(Math.sqrt(LOCAL_COORDINATE_AREA/mercArea));
 		}
 		
 		//create transforms
+		double localToMercScaleFactor = 1.0 / mercToLocalScale;
 		AffineTransform localToMerc = new AffineTransform(localToMercScaleFactor,0.0,
 				0.0,localToMercScaleFactor,
 				downloadRectangle.getMinX(),downloadRectangle.getMinY());
@@ -344,11 +233,69 @@ public class RenderLayer extends PaneLayer implements MapDataListener,
 		this.getTransforms().setAll(localToMercFX);
 	}
 	
+	/** This method makes sure the piggyback feature info is up to date. */
+	private void checkFeatureInfo(OsmObject osmObject) {
+		FeatureData fd = (FeatureData)osmObject.getPiggybackData(piggybackIndexFeature);
+		if(fd == null) {
+			fd = new FeatureData();
+			osmObject.setPiggybackData(RenderLayer.piggybackIndexFeature,fd);
+		}
+		if(!fd.isUpToDate(osmObject)) {
+			FeatureInfo fi = featureTypeManager.getFeatureInfo(osmObject);
+			fd.setFeatureInfo(fi);
+		}
+	}
+	
+	/** This method gets the shape object for a node, creating it if needed. */
+	private Shape extractPointFeature(OsmNode node) {
+		PointFeature feature = null;
+		
+		ShapePiggybackData data = (ShapePiggybackData)node.getPiggybackData(piggybackIndexRender);
+		if(data == null) {
+			feature = new PointFeature(node);
+			data = new ShapePiggybackData();
+			data.setShape(feature);
+			node.setPiggybackData(piggybackIndexRender,data);
+			feature.initStyle(theme);
+			feature.setPixelsToLocal(pixelsToLocalScale);
+		}
+		
+		if(!data.isUpToDate(node)) {
+			feature.updateData(mercToLocal);
+		}
+		
+		return data.getShape();
+	}
+	
+	/** This method gets the shape object for a way, creating it if needed. */
+	private Shape extractWayFeature(OsmWay way) {
+		PathFeature feature = null;
+		
+		ShapePiggybackData data = (ShapePiggybackData)way.getPiggybackData(piggybackIndexRender);
+		if(data == null) {
+			feature = new PathFeature(way);
+			data = new ShapePiggybackData();
+			data.setShape(feature);
+			way.setPiggybackData(piggybackIndexRender,data);
+			feature.initStyle(theme);
+			feature.setPixelsToLocal(pixelsToLocalScale);
+		}
+		
+		if(!data.isUpToDate(way)) {
+			feature.updateData(mercToLocal);
+		}
+		
+		return feature;
+	}
+	
+	
 	//========================
 	// Classes
 	//========================
 	
+	/** This method orders the features for display. */
 	private class FeatureLayerComparator implements Comparator<Shape> {
+		@Override
 		public int compare(Shape o1, Shape o2) {
 			//remove sign bit, making negative nubmers larger than positives (with small enough negatives)
 			FeatureData fd;

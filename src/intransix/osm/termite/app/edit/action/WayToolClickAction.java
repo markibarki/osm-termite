@@ -82,7 +82,7 @@ public class WayToolClickAction implements MouseClickAction {
 //		Point2D mercPoint = editManager.getMousePointMerc();
 //		setPendingData(mercPoint);
 		
-		editManager.getEditLayer().notifyContentChange();
+//		editManager.getEditLayer().notifyContentChange();
 		
 		return true;
 	}

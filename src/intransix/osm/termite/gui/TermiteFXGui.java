@@ -47,11 +47,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 import javax.swing.JOptionPane;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  *
  * @author sutter
@@ -157,21 +152,31 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 
         // initialize your logic here: all @FXML variables will have been injected
 		
+		//---------------
 		//create managers
+		//---------------
 		
+		//view region manager
 		viewRegionManager = new ViewRegionManager(mapPane);
 		viewRegionManager.setInitialView();
-		
-		mapPane.init(viewRegionManager);
+		//pass initial view
+		mapPane.onMapViewChange(viewRegionManager, true);
+		viewRegionManager.addMapListener(mapPane);
+		//configure so state is saved on shutdown
 		app.addShutdownListener(viewRegionManager);	
 		
-		mapLayerManager = new MapLayerManager(mapPane,viewRegionManager);
+		//map layer manager
+		mapLayerManager = new MapLayerManager();
 		mapLayerManager.addLayerListener(mapPane);
 		
+		//editor manager
 		editorModeManager = new EditorModeManager();
 		termiteToolBar.setEditorModeManager(editorModeManager);
 		
+		//-------------
 		//create modes
+		//-------------
+		
 		downloadEditorMode = new DownloadEditorMode();
 		editorModeManager.addMode(downloadEditorMode);
 		
@@ -188,22 +193,26 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		editorModeManager.addMode(geocodeEditorMode);
 		
 		termiteToolBar.initModes();
+		editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
 		
-editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
-		
+		//--------------
 		//create layers
+		//--------------
 		
 		baseMapLayer = new TileLayer();
 		baseMapLayer.setActiveState(true);
 		mapLayerManager.addLayer(baseMapLayer);
-baseMapLayer.onMapViewChange(viewRegionManager, true);
-viewRegionManager.addMapListener(baseMapLayer);
+		//passs initial view
+		baseMapLayer.onMapViewChange(viewRegionManager, true);
+		viewRegionManager.addMapListener(baseMapLayer);
+		//needed to update config when tiles change
 		baseMapLayer.setViewRegionManager(viewRegionManager);
 		
 		downloadLayer = new DownloadLayer();
 		downloadEditorMode.setDownloadLayer(downloadLayer);
 		mapLayerManager.addLayer(downloadLayer);
-downloadLayer.onMapViewChange(viewRegionManager, true);
+		//pass initial view
+		downloadLayer.onMapViewChange(viewRegionManager, true);
 		viewRegionManager.addMapListener(downloadLayer);
 		
 		renderLayer = new RenderLayer();
@@ -214,14 +223,6 @@ renderLayer.onMapViewChange(viewRegionManager, true);
 		editLayer = new EditLayer();
 		
 		geocodeLayer = new GeocodeLayer();
-		
-		
-//@TODO remove this!!!
-editorModeManager.onMapData(false);
-		
-//@TODO fix this - do this better
-//baseMapLayer.onZoom(viewRegionManager);
-
 		
 		//add conent pane
 /*		ContentTree contentTree = new ContentTree();

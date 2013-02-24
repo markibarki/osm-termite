@@ -7,6 +7,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import intransix.osm.termite.app.ShutdownListener;
 import intransix.osm.termite.app.preferences.Preferences;
+import intransix.osm.termite.gui.map.MapPane;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.BoundingBox;
@@ -16,11 +17,16 @@ import javafx.scene.transform.Affine;
 import javafx.scene.transform.Transform;
 
 /**
- *
+ * This class controls the viewport for the map. It takes inputs to pan, zoom 
+ * and set the viewport. It also monitors the pixels size of the viewport, which
+ * in turn affects the visible viewport. When the viewport changes an event is
+ * triggered.
+ * 
  * @author sutter
  */
 public class ViewRegionManager implements ShutdownListener {
 	
+	//These constants are used to read and wrtie the stored configuration
 	private final static String MIN_LAT_TAG = "minLat";
 	private final static String MIN_LON_TAG = "minLon";
 	private final static String MAX_LAT_TAG = "maxLat";
@@ -37,19 +43,19 @@ public class ViewRegionManager implements ShutdownListener {
 	private AffineTransform pixelsToMercator = new AffineTransform();
 	private Affine mercatorToPixelsFX = new Affine();
 	private Affine pixelsToMercatorFX = new Affine();
-	private double angleRad = 0;
 	private double zoomScalePixelsPerMerc = 1.0;
 	
 	private java.util.List<MapListener> mapListeners = new ArrayList<MapListener>();
 
-	private Pane mapPane;
+	//This is the pa
+	private MapPane mapPane;
 	
 	private boolean panOn = false;
 	private double lastX;
 	private double lastY;
 	
 	/** Constructor */
-	public ViewRegionManager(Pane mapPane) {
+	public ViewRegionManager(MapPane mapPane) {
 		this.mapPane = mapPane;
 		
 		//add a listener for a viewport change
@@ -67,39 +73,52 @@ public class ViewRegionManager implements ShutdownListener {
 	/** This method returns the bounds of the map component in pixels. */
 	public Bounds getPixelRect() {
 		Bounds bounds = mapPane.getLayoutBounds();
-//@TODO temporary colution
-if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
-	bounds = new BoundingBox(0,0,500,500);
-}
+
+		//just in case...
+		if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
+			bounds = new BoundingBox(0,0,500,500);
+			System.out.println("Map pane not initialized prior to bounds check.");
+		}
+		
 		return bounds;
 	}
 	
-	// <editor-fold defaultstate="collapsed" desc="Transform Methods">
+	//-------------------
+	// Transform Methods
+	//-------------------
 	
+	/** This method gets the transform from pixels to mercator coordinates. */
 	public final AffineTransform getPixelsToMercator() {
 		return pixelsToMercator;
 	}
 	
+	/** This method gets the transform from mercator to pixels coordinates. */
 	public final AffineTransform getMercatorToPixels() {
 		return mercatorToPixels;
 	}
 	
+	/** This method gets the transform from pixels to mercator coordinates. */
 	public final Affine getPixelsToMercatorFX() {
 		return pixelsToMercatorFX;
 	}
 	
+	/** This method gets the transform from mercator to pixels coordinates. */
 	public final Affine getMercatorToPixelsFX() {
 		return mercatorToPixelsFX;
 	}
 	
+	/** This method gets the scale factor between pixels and mercator coordinates. */
 	public final double getZoomScalePixelsPerMerc() {
 		 return this.zoomScalePixelsPerMerc;
 	}
 	
+	/** This method gets the scale factor between pixels and mercator coordinates. */
 	public final double getZoomScaleMercPerPixel() {
 		 return 1/this.zoomScalePixelsPerMerc;
 	}
 	
+	/** This method sets the lat lon bounds for the visible display. The actual
+	 * bounds will be modified depending on the dimensions of the map display. */
 	public void setLatLonViewBounds(Rectangle2D latLonBounds) {
 		double minLat = Math.toRadians(latLonBounds.getMinY());
 		double minLon = Math.toRadians(latLonBounds.getMinX());
@@ -114,6 +133,9 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		setMercViewBounds(mercBounds);
 	}
 	
+	/** This method sets the bounds in mercator coordinates (range 0 to 1) for the 
+	 * display. The actual bounds will be modified depending on the dimensions
+	 * of the map display. */
 	public void setMercViewBounds(Bounds mercBounds) {
 		Bounds pixelBounds = this.getPixelRect();
 		
@@ -136,52 +158,25 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		updateTransforms();
 	}
 	
-	/** This method sets the base rotation angle. Setting angleRad = 0 radians
-	 * means north up.
-	 * 
-	 * @param angleRad	The rotation angle in radians.
-	 */
-	public void setRotation(double angleRad) {
-		this.angleRad = angleRad;
-		double scale = Math.sqrt(mercatorToPixels.getDeterminant());
-		
-		Bounds bounds = this.getPixelRect();
-		Point2D centerPix = new Point2D.Double((bounds.getMinX() + bounds.getMaxX())/2,
-				(bounds.getMinY() + bounds.getMaxY())/2);
-		Point2D centerMerc = new Point2D.Double();
-		pixelsToMercator.transform(centerPix, centerMerc);
-		
-		//rotate and scale matrix
-		mercatorToPixels = new AffineTransform();
-		mercatorToPixels.setToRotation(angleRad);
-		mercatorToPixels.scale(scale, scale);
-		
-		//correct so we have the right center point in pixels.
-		Point2D centerPix2 = new Point2D.Double();
-		mercatorToPixels.transform(centerMerc, centerPix2);
-		double[] matrix = new double[6];
-		mercatorToPixels.getMatrix(matrix);
-		matrix[4] += centerPix.getX() - centerPix2.getX();
-		matrix[5] += centerPix.getY() - centerPix2.getY();
-		mercatorToPixels.setTransform(matrix[0],matrix[1],matrix[2],matrix[3],matrix[4],matrix[5]);
-
-		updateTransforms();
-		dispatchViewChangeEvent(true);
-	}
+	//------------------------
+	// Map Listeners
+	//------------------------
 	
-	// </editor-fold>
-	
-		// <editor-fold defaultstate="collapsed" desc="Listeners">
-	
+	/** This method adds a map listener. */
 	public void addMapListener(MapListener listener) {
-		this.mapListeners.add(listener);
+		if(!mapListeners.contains(listener)) {
+			this.mapListeners.add(listener);
+		}
 	}
 	
+	/** This method removes a map listener. */
 	public void removeMapListener(MapListener listener) {
 		this.mapListeners.remove(listener);
 	}
 	
-	// </editor-fold>
+	//--------------------------------
+	// Viewport Control Methods
+	//--------------------------------
 
 	/** This method returns true if a pan is active. */
 	public boolean isPanning() {
@@ -212,6 +207,7 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		dispatchViewChangeEvent(true);
 	}
 	
+	/** This method sets up dynamic panning, such as with a mouse or an animation. */
 	public void startPan(double x, double y) {
 		lastX = x;
 		lastY = y;
@@ -219,11 +215,13 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		dispatchPanStartEvent();
 	}
 	
+	/** This method should be called at the end of a dynamic pan event. */
 	public void endPan(double x, double y) {
 		panOn = false;
 		dispatchPanEndEvent();
 	}
 	
+	/** This method should be called to increment a dynamic pan. */
 	public void panStep(double x, double y) {
 		translateStep(x-lastX,y-lastY);
 		lastX = x;
@@ -232,17 +230,43 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		dispatchViewChangeEvent(false);
 	}
 	
+	/** This method translates the system the given number of pixels. This should
+	 be used for a one-time pan event*/
 	public void translate(double dx, double dy) {
-//should we add a pan start and pan step event here?
 		translateStep(dx,dy);
 		dispatchViewChangeEvent(false);
 	}
 	
-	private void translateStep(double dx, double dy) {
-		AffineTransform zt = new AffineTransform();
-		zt.translate(dx,dy);
-		mercatorToPixels.preConcatenate(zt);
+	/** This method sets the base rotation angle. Setting angleRad = 0 radians
+	 * means north up.
+	 * 
+	 * @param angleRad	The rotation angle in radians.
+	 */
+	public void setRotation(double angleRad) {
+		double scale = Math.sqrt(mercatorToPixels.getDeterminant());
+		
+		Bounds bounds = this.getPixelRect();
+		Point2D centerPix = new Point2D.Double((bounds.getMinX() + bounds.getMaxX())/2,
+				(bounds.getMinY() + bounds.getMaxY())/2);
+		Point2D centerMerc = new Point2D.Double();
+		pixelsToMercator.transform(centerPix, centerMerc);
+		
+		//rotate and scale matrix
+		mercatorToPixels = new AffineTransform();
+		mercatorToPixels.setToRotation(angleRad);
+		mercatorToPixels.scale(scale, scale);
+		
+		//correct so we have the right center point in pixels.
+		Point2D centerPix2 = new Point2D.Double();
+		mercatorToPixels.transform(centerMerc, centerPix2);
+		double[] matrix = new double[6];
+		mercatorToPixels.getMatrix(matrix);
+		matrix[4] += centerPix.getX() - centerPix2.getX();
+		matrix[5] += centerPix.getY() - centerPix2.getY();
+		mercatorToPixels.setTransform(matrix[0],matrix[1],matrix[2],matrix[3],matrix[4],matrix[5]);
+
 		updateTransforms();
+		dispatchViewChangeEvent(true);
 	}
 	
 	/** This method should be called after the UI is set up and the initial view 
@@ -272,6 +296,7 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		setLatLonViewBounds(rect);
 	}
 	
+	/** This is a shutdown event to save the view of the map. */
 	@Override
 	public void onShutdown() {
 		//save the viewport
@@ -297,7 +322,17 @@ if((bounds.getHeight() <= 0)||(bounds.getWidth() <= 0)) {
 		}
 	}
 	
+	//===================================
+	// Private Methods
+	//===================================
 	
+	/** This method does a pan, implementing the action for a one time or dynamic pan. */
+	private void translateStep(double dx, double dy) {
+		AffineTransform zt = new AffineTransform();
+		zt.translate(dx,dy);
+		mercatorToPixels.preConcatenate(zt);
+		updateTransforms();
+	}
 
 	/** This method takes should be called with the transforms mercatorToPixels
 	 * and mercatorToLocal set. It calculates the rest of the matrices. */

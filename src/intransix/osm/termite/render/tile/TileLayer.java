@@ -1,26 +1,27 @@
 package intransix.osm.termite.render.tile;
 
 import intransix.osm.termite.app.maplayer.MapLayer;
-import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.app.maplayer.PaneLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
-import javafx.scene.layout.Pane;
-import javafx.scene.transform.Affine;
 import javafx.scene.transform.Scale;
 
 /**
  * This is a layer for a tile map source.
  * 
+ * ENHANCEMENTS NEEDED:
+ * - This class currently loads all tiles that are requested, whether or not
+ * they are still needed by the time the http request starts. This should be fixed.
+ * - On zooming this clears the old tiles before new tiles are added. The old tiles
+ * should be cleared after the new tiles are added.
+ * 
  * @author sutter
  */
-public class TileLayer extends PaneLayer implements MapListener {
+public class TileLayer extends MapLayer implements MapListener {
 	
 	//=========================
 	// Properties
@@ -36,13 +37,9 @@ public class TileLayer extends PaneLayer implements MapListener {
 	private int tileZoom = INVALID_ZOOM;
 	
 	private HashMap<String,Tile> tileCache = new HashMap<>();
-	private int minZoom;
-	private int maxZoom;
-	private int pixelsPerTile;
 	private TileInfo tileInfo;
 	
 	private final ArrayList<Tile> workingTiles = new ArrayList<>();
-	private final Scale scaleCorrectionForTiles = new Scale(1 / MERC_MULTIPLIER_SCALE,1 / MERC_MULTIPLIER_SCALE);
 	
 	private ViewRegionManager viewRegionManager;
 
@@ -50,65 +47,46 @@ public class TileLayer extends PaneLayer implements MapListener {
 	// Public Methods
 	//=========================
 	
-	public void connect(MapLayerManager mapLayerManager){}
-	
-	public void disconnect(MapLayerManager mapLayerManager){}
-
-	
+	/** Constructor. */
 	public TileLayer() {
 		this.setName("Base Map");
 		this.setOrder(MapLayer.ORDER_BASE_MAP_1);
 		this.setVisible(false);
 		
-		//hard code to a fixed zoom for now
-this.tileZoom = INVALID_ZOOM;
-		this.setPrefSize(1.0,1.0);
-		this.setMinSize(1.0,1.0);
-		this.setMaxSize(1.0,1.0);
+		this.tileZoom = INVALID_ZOOM;
 		
 		//image doesn't work well if we use coordinates from 0-1 for world
 		//some rounding takes place somewhere
+		this.setPrefSize(MERC_MULTIPLIER_SCALE,MERC_MULTIPLIER_SCALE);
+		this.setMinSize(MERC_MULTIPLIER_SCALE,MERC_MULTIPLIER_SCALE);
+		this.setMaxSize(MERC_MULTIPLIER_SCALE,MERC_MULTIPLIER_SCALE);
+		Scale scaleCorrectionForTiles = new Scale(1 / MERC_MULTIPLIER_SCALE,1 / MERC_MULTIPLIER_SCALE);
 		this.getTransforms().setAll(scaleCorrectionForTiles); 
 	}
 	
+	/** This method sets the view region manager. */
 	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
 		this.viewRegionManager = viewRegionManager;
 	}
 	
+	/** This sets the tile info for the active tile set. */
 	public void setTileInfo(TileInfo tileInfo) {
 		this.tileInfo = tileInfo;
 		if(tileInfo != null) {
-			this.getChildren().clear();
-			minZoom = tileInfo.getMinZoom();
-			maxZoom = tileInfo.getMaxZoom();
-			pixelsPerTile = tileInfo.getTileSize();
 			this.setVisible(true);
 			//update zoom if needed
-			if(tileZoom == INVALID_ZOOM) {
-				setZoomScale(viewRegionManager);
-			}
+			setZoomScale(viewRegionManager);
 			//update the tiles
 			updateTiles(viewRegionManager);
 		}
 		else {
-			this.getChildren().clear();
-			minZoom = Integer.MIN_VALUE;
-			maxZoom = Integer.MAX_VALUE;
-			pixelsPerTile = 1;
 			this.setVisible(false);
+			//clear tiles
+			this.getChildren().clear();
 		}
 		
 		
 	}
-	
-	//--------------------------
-	// Layer Interface
-	//--------------------------
-	
-	public void reset() {
-		tileZoom = INVALID_ZOOM;
-	}
-
 	
 	//--------------------------
 	// MapListener Interface
@@ -121,25 +99,6 @@ this.tileZoom = INVALID_ZOOM;
 			setZoomScale(viewRegionManager);
 		}
 		updateTiles(viewRegionManager);
-	}
-	
-	private void setZoomScale(ViewRegionManager viewRegionManager) {
-		if(tileInfo == null) return;
-		
-		double pixelsPerMerc = viewRegionManager.getZoomScalePixelsPerMerc();
-		
-		double tilesPerMerc = pixelsPerMerc / pixelsPerTile;
-		int desiredScale = (int)Math.round(Math.log(tilesPerMerc)/Math.log(2));
-	
-		if(desiredScale > maxZoom) {
-			tileZoom = maxZoom;
-		}
-		else if (desiredScale < minZoom) {
-			tileZoom = minZoom;
-		}
-		else {
-			tileZoom = desiredScale;
-		}		
 	}
 	
 	@Override
@@ -155,6 +114,26 @@ this.tileZoom = INVALID_ZOOM;
 	// Private Methods
 	//=================================
 	
+	/** This method picks an optimal scale for this given viewport. */
+	private void setZoomScale(ViewRegionManager viewRegionManager) {
+		if(tileInfo == null) return;
+		
+		double pixelsPerMerc = viewRegionManager.getZoomScalePixelsPerMerc();
+		double tilesPerMerc = pixelsPerMerc / tileInfo.getTileSize();
+		int desiredScale = (int)Math.round(Math.log(tilesPerMerc)/Math.log(2));
+	
+		if(desiredScale > tileInfo.getMaxZoom()) {
+			tileZoom = tileInfo.getMaxZoom();
+		}
+		else if (desiredScale < tileInfo.getMinZoom()) {
+			tileZoom = tileInfo.getMinZoom();
+		}
+		else {
+			tileZoom = desiredScale;
+		}		
+	}
+	
+	/** This method updates the active tiles. */
 	private void updateTiles(ViewRegionManager viewRegionManager) {
 		if(tileInfo == null) return;
 		
@@ -201,6 +180,7 @@ System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY 
 		workingTiles.clear();
 	}
 	
+	/** This updates the mercRange for the given pixel point and pixel to merc transform. */
 	private void updateMercRange(Point2D point, AffineTransform pixelsToMerc, double[] mercRange) {
 		pixelsToMerc.transform(point, point);
 		if(point.getX() < mercRange[0]) mercRange[0] = point.getX();
@@ -209,6 +189,7 @@ System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY 
 		if(point.getY() > mercRange[3]) mercRange[3] = point.getY();
 	}
 	
+	/** This method retrieves a tile. */
 	private Tile getTile(int ix, int iy, int zoom) {	
 		String url = tileInfo.getUrl(ix, iy, zoom);
 		Tile tile = tileCache.get(url);

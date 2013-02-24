@@ -4,7 +4,6 @@ import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.edit.MouseClickAction;
 import intransix.osm.termite.app.edit.MouseMoveAction;
 import intransix.osm.termite.gui.mode.EditorMode;
-import intransix.osm.termite.render.MapPanel;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.app.edit.action.NodeToolClickAction;
 import intransix.osm.termite.app.edit.action.CreateMoveMoveAction;

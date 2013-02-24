@@ -88,7 +88,7 @@ public class MoveClickAction implements MouseClickAction {
 		
 		//clean up working data
 		editMap = null;
-		editManager.getEditLayer().notifyContentChange();
+//		editManager.getEditLayer().notifyContentChange();
 		return true;
 	}
 	

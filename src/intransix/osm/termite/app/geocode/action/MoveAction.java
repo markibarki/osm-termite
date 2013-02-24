@@ -45,7 +45,7 @@ public class MoveAction implements GeocodeMouseAction {
 //			Point2D mouseMerc = geocodeLayer.getMapPanel().getMousePointMerc();
 //			updateMoveTransform(anchorPoint,mouseMerc);
 
-			geocodeLayer.notifyContentChange();
+//			geocodeLayer.notifyContentChange();
 		}
 	}
 	

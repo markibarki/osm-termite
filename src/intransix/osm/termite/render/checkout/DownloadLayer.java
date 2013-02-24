@@ -1,33 +1,24 @@
 package intransix.osm.termite.render.checkout;
 
 import intransix.osm.termite.app.maplayer.MapLayer;
-import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.app.maplayer.PaneLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import java.awt.geom.AffineTransform;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.transform.Affine;
-//import java.awt.Graphics2D;
-//import java.awt.event.MouseEvent;
-//import java.awt.event.MouseListener;
-//import java.awt.event.MouseMotionListener;
-//import java.awt.geom.AffineTransform;
-//import java.awt.*;
-//import java.awt.event.*;
-//import java.awt.geom.*;
 
 /**
- *
+ * This class allows the user to select a region of the map for which to download data.
  * @author sutter
  */
-public class DownloadLayer extends PaneLayer implements MapListener {
+public class DownloadLayer extends MapLayer implements MapListener {
 	
+	//======================
+	// Properties
+	//======================
 	private final static Color FILL_COLOR = Color.rgb(0,0,255,.25);
 	private final static Color STROKE_COLOR = Color.rgb(0,0,255,.75);
 	private final static float STROKE_WIDTH = 2;
@@ -36,28 +27,14 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	private Rectangle selection = new Rectangle();
 	private boolean selectionActive = false;
 	private boolean selecting = false;
-	private MapLayerManager mapLayerManager;
 	private EventHandler<MouseEvent> mouseClickHandler;
 	private EventHandler<MouseEvent> mouseMoveHandler;
 	
-	public void connect(MapLayerManager mapLayerManager){
-		this.mapLayerManager = mapLayerManager;
-	}
+	//======================
+	// Public Methods
+	//======================
 	
-	public void disconnect(MapLayerManager mapLayerManager){
-		this.mapLayerManager = null;
-	}
-	
-	/** Returns the bounds of the current selection. Returns null if there is no selection. */
-	public Bounds getSelectionBoundsMercator() {
-		if(selectionActive) {
-			return selection.getLayoutBounds();
-		}
-		else {
-			return null;
-		}
-	}
-	
+	/** Constructor */
 	public DownloadLayer() {
 		this.setName("Checkout Search Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
@@ -88,32 +65,32 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 			}
 		};
 		
-//		selection = new Rectangle();
-//selection.setFill(Color.BLUE);
 		selection.setFill(FILL_COLOR);
 		selection.setStroke(STROKE_COLOR);
-//		selection.setStrokeWidth(0.01);
-		
-//		temp = new Rectangle(.1,.1,.4,.5);
-//		temp.setFill(Color.RED);
-//		this.getChildren().add(temp);
-//		
-//		this.setStyle("-fx-background-color: yellow;");
 	}
 	
 	/** This mode sets the edit layer active. */
 	@Override
 	public void setActiveState(boolean isActive) {
 		super.setActiveState(isActive);
-		if(mapLayerManager != null) {
-			if(isActive) {
-				this.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-				this.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
-			}
-			else {
-				this.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-				this.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
-			}
+		if(isActive) {
+			this.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+			this.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+		}
+		else {
+			this.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+			this.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+		}
+	}
+	
+		
+	/** Returns the bounds of the current selection. Returns null if there is no selection. */
+	public Bounds getSelectionBoundsMercator() {
+		if(selectionActive) {
+			return selection.getLayoutBounds();
+		}
+		else {
+			return null;
 		}
 	}
 	
@@ -122,13 +99,13 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		this.getChildren().remove(selection);
 		selectionActive = false;
 		selecting = false;
-		this.notifyContentChange();
 	}
 	
 	//-------------------------
 	// Mouse Events
 	//-------------------------
 	
+	/** Processes a mouse click. */
 	public void mouseClicked(double mercX, double mercY) {
 		if(!selecting) {
 			startX = mercX;
@@ -144,13 +121,12 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 			updateSelection(mercX,mercY);
 			selecting = false;
 		}
-		notifyContentChange();
 	}
 
+	/** Processes a mouse move. */
 	public void mouseMoved(double mercX, double mercY) {
 		if(selecting) {
 			updateSelection(mercX,mercY);
-			notifyContentChange();
 		}
 	}
 	
@@ -160,7 +136,8 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 	
 	/** This method updates the active tile zoom used by the map. */
 	@Override
-	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {	
+	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {
+		//update the stroke width to be the right nubmer of pixels
 		if((zoomChanged)&&(selection != null)) {
 			selection.setStrokeWidth(STROKE_WIDTH / viewRegionManager.getZoomScalePixelsPerMerc());
 		}
@@ -208,8 +185,5 @@ public class DownloadLayer extends PaneLayer implements MapListener {
 		selection.setY(startY < mercY ? startY : mercY);
 		selection.setWidth(Math.abs(mercX - startX));
 		selection.setHeight(Math.abs(mercY - startY));
-System.out.println("Selection: " + selection.getX() + "," + selection.getY() + "," + 
-		selection.getWidth() + "," + selection.getHeight());
-		
 	}
 }

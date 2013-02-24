@@ -1,18 +1,13 @@
 package intransix.osm.termite.render.source;
 
-import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.app.maplayer.PaneLayer;
-import javafx.scene.layout.Pane;
+import intransix.osm.termite.app.maplayer.MapLayer;
 
 /**
  *
  * @author sutter
  */
-public class SourceLayer extends PaneLayer {
-	
-	public void connect(MapLayerManager mapLayerManager){}
-	
-	public void disconnect(MapLayerManager mapLayerManager){}
+public class SourceLayer extends MapLayer {
+
 	
 //	private File imageFile;
 //	private Image sourceImage;
