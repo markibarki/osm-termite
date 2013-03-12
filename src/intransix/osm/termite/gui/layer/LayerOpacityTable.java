@@ -4,9 +4,10 @@
  */
 package intransix.osm.termite.gui.layer;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
+
+import intransix.osm.termite.app.maplayer.MapLayer;
+import intransix.osm.termite.app.maplayer.MapLayerListener;
+import java.util.List;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -15,6 +16,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -24,20 +26,19 @@ import javafx.util.Callback;
  *
  * @author sutter
  */
-public class LayerOpacityTable extends TableView {
+public class LayerOpacityTable extends TableView implements MapLayerListener {
 	
-	private final ObservableList<LayerOpacityTable.LayerData> data =
-	FXCollections.observableArrayList(
-		new LayerOpacityTable.LayerData("Jacob", .4),
-		new LayerOpacityTable.LayerData("Isabella", .6),
-		new LayerOpacityTable.LayerData("Ethan",.3),
-		new LayerOpacityTable.LayerData("Emma",.7),
-		new LayerOpacityTable.LayerData("Michael",1.0)
-	);
+//	private final ObservableList<LayerOpacityTable.LayerData> data = FXCollections.observableArrayList();
+private final ObservableList<MapLayer> data = FXCollections.observableArrayList();
 	
 	public LayerOpacityTable() {		
 	}
-   
+	
+	/** This method is called when the map layer list changes. */
+	@Override
+	public void layerListChanged(List<MapLayer> mapLayerList) {
+		data.setAll(mapLayerList);
+	}
 		
     public void init() {
 
@@ -60,32 +61,30 @@ public class LayerOpacityTable extends TableView {
         TableColumn firstNameCol = new TableColumn("Layer");
         firstNameCol.setMinWidth(100);
 		firstNameCol.setSortable(false);
-        firstNameCol.setCellValueFactory(
-                new PropertyValueFactory<LayerOpacityTable.LayerData, String>("layerName"));
+		firstNameCol.setCellValueFactory(new PropertyValueFactory<MapLayer, String>("Name"));
 		firstNameCol.setCellFactory(textCellFactory);
 		firstNameCol.setOnEditCommit(
-			new EventHandler<TableColumn.CellEditEvent<LayerOpacityTable.LayerData, String>>() {
+			new EventHandler<TableColumn.CellEditEvent<MapLayer, String>>() {
 				@Override
-				public void handle(TableColumn.CellEditEvent<LayerOpacityTable.LayerData, String> t) {
-					((LayerOpacityTable.LayerData) t.getTableView().getItems().get(
+				public void handle(TableColumn.CellEditEvent<MapLayer, String> t) {
+					((MapLayer) t.getTableView().getItems().get(
 						t.getTablePosition().getRow())
-						).setLayerName(t.getNewValue());
-				}
-			}
+						).setName(t.getNewValue());
+				}		
+			}				
 		);
  
         TableColumn lastNameCol = new TableColumn("Opacity");
         lastNameCol.setMinWidth(100);
 		lastNameCol.setPrefWidth(200);
 		lastNameCol.setSortable(false);
-        lastNameCol.setCellValueFactory(
-                new PropertyValueFactory<LayerOpacityTable.LayerData, Double>("opacity"));
+		lastNameCol.setCellValueFactory(new PropertyValueFactory<MapLayer, Double>("Opacity"));
 		lastNameCol.setCellFactory(doubleCellFactory);
 		lastNameCol.setOnEditCommit(
-			new EventHandler<TableColumn.CellEditEvent<LayerOpacityTable.LayerData, Double>>() {
+			new EventHandler<TableColumn.CellEditEvent<MapLayer, Double>>() {
 				@Override
-				public void handle(TableColumn.CellEditEvent<LayerOpacityTable.LayerData, Double> t) {
-					((LayerOpacityTable.LayerData) t.getTableView().getItems().get(
+				public void handle(TableColumn.CellEditEvent<MapLayer, Double> t) {
+					((MapLayer) t.getTableView().getItems().get(
 						t.getTablePosition().getRow())
 						).setOpacity(t.getNewValue());
 				}
@@ -96,36 +95,8 @@ public class LayerOpacityTable extends TableView {
         this.getColumns().addAll(firstNameCol, lastNameCol);
     }
  
-    public static class LayerData {
- 
-        private final SimpleStringProperty layerName;
-        private final DoubleProperty opacity;
- 
-        private LayerData(String layerName, double opacity) {
-            this.layerName = new SimpleStringProperty(layerName);
-            this.opacity = new SimpleDoubleProperty(opacity);
-        }
- 
-        public String getLayerName() {
-            return layerName.get();
-        }
- 
-        public void setLayerName(String layerName) {
-            this.layerName.set(layerName);
-        }
- 
-        public double getOpacity() {
-            return opacity.get();
-        }
- 
-        public void setOpacity(double opacity) {
-            this.opacity.set(opacity);
-        }
- 
-
-    }
 	
-	 class TextEditingCell extends TableCell<LayerOpacityTable.LayerData, String> {
+	 class TextEditingCell extends TableCell<MapLayer, String> {
  
         private TextField textField;
  
@@ -175,13 +146,14 @@ public class LayerOpacityTable extends TableView {
         private void createTextField() {
             textField = new TextField(getString());
             textField.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
-            textField.focusedProperty().addListener(new ChangeListener<Boolean>(){
+            textField.textProperty().addListener(new ChangeListener<String>(){
                 @Override
-                public void changed(ObservableValue<? extends Boolean> arg0, 
-                    Boolean arg1, Boolean arg2) {
-                        if (!arg2) {
-                            commitEdit(textField.getText());
-                        }
+                public void changed(ObservableValue<? extends String> arg0, 
+						String oldValue, String newValue) {
+					if (newValue != null) {
+						commitEdit(newValue);
+
+					}
                 }
             });
         }
@@ -191,29 +163,12 @@ public class LayerOpacityTable extends TableView {
         }
 	 }
 	 
-	class OpacityEditingCell extends TableCell<LayerOpacityTable.LayerData, Double> {
+	class OpacityEditingCell extends TableCell<MapLayer, Double> {
  
         private Slider slider;
  
         public OpacityEditingCell() {
 			createSlider();
-        }
- 
-        @Override
-        public void startEdit() {
-            if (!isEmpty()) {
-                super.startEdit();
-                setText(null);
-                setGraphic(slider);
-            }
-        }
- 
-        @Override
-        public void cancelEdit() {
-            super.cancelEdit();
- 
-            slider.setValue(getItem());
-            setGraphic(null);
         }
  
         @Override
@@ -223,7 +178,8 @@ public class LayerOpacityTable extends TableView {
             if (empty) {
                 setText(null);
                 setGraphic(null);
-            } else {
+            } 
+			else {
 				slider.setValue(getItem());
 				setText(null);
 				setGraphic(slider);
@@ -234,21 +190,21 @@ public class LayerOpacityTable extends TableView {
 			slider = new Slider();
 			slider.setMin(0);
 			slider.setMax(1.0);
-
- //           slider.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
-            slider.focusedProperty().addListener(new ChangeListener<Boolean>(){
+			
+            slider.valueProperty().addListener(new ChangeListener<Number>(){
                 @Override
-                public void changed(ObservableValue<? extends Boolean> arg0, 
-                    Boolean arg1, Boolean arg2) {
-                        if (!arg2) {
-                            commitEdit(slider.getValue());
-                        }
+                public void changed(ObservableValue<? extends Number> arg0, 
+						Number oldValue, Number newValue) {
+				
+					if(newValue != null) {
+						TableView<MapLayer> tv = tableViewProperty().get();
+						TableRow<MapLayer> tr = tableRowProperty().get();
+
+					   tv.getItems().get(tr.getIndex()).setOpacity(newValue.doubleValue());
+					}
                 }
             });
-        }
- 
-        private Double getDouble() {
-            return getItem() == null ? 1.0 : getItem();
+			
         }
     }
 

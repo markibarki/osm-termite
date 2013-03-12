@@ -32,6 +32,10 @@ public class MapLayer extends Pane {
 	private double preferredAngleRadians = INVALID_ANGLE;	
 	private MapLayerManager mapLayerManager;
 	
+public MapLayer() {
+	this.setOpacity(.5);
+}
+	
 	
 	public void setOrder(float order) {
 		this.order = order;

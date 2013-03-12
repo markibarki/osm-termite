@@ -263,6 +263,8 @@ featureTree.init();
 		dataTabPane.getTabs().add(tab);
 */
 layerOpacityTable.init();
+layerOpacityTable.layerListChanged(mapLayerManager.getMapLayers());
+mapLayerManager.addLayerListener(layerOpacityTable);
 
 		//key handlers for navigation
 		this.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
