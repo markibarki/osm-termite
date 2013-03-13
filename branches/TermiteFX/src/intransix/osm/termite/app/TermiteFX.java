@@ -52,9 +52,6 @@ public class TermiteFX extends Application {
 	private FeatureTypeManager featureTypeManager;
 	private EditManager editManager;
 	private GeocodeManager geocodeManager;
-	private MapLayerManager mapLayerManager;
-	private EditorModeManager modeManager;
-	private ViewRegionManager viewRegionManager;
 	private FilterManager filterManager;
 	private LevelManager levelManager;
 	
