@@ -160,8 +160,7 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		viewRegionManager = new ViewRegionManager(mapPane);
 		viewRegionManager.setInitialView();
 		//pass initial view
-		mapPane.onMapViewChange(viewRegionManager, true);
-		viewRegionManager.addMapListener(mapPane);
+		mapPane.setViewRegionManager(viewRegionManager);
 		//configure so state is saved on shutdown
 		app.addShutdownListener(viewRegionManager);	
 		
@@ -224,6 +223,10 @@ renderLayer.onMapViewChange(viewRegionManager, true);
 		
 		geocodeLayer = new GeocodeLayer();
 		
+		//-----------------------
+		// UI elements
+		//-----------------------
+		
 		//add conent pane
 /*		ContentTree contentTree = new ContentTree();
 //		contentTree.init();
@@ -242,29 +245,17 @@ renderLayer.onMapViewChange(viewRegionManager, true);
 */	
 featureTree.init();
 
-		//add a property tab
+		//Initialize property pane
 		PropertyPane propertyPane = new PropertyPane();
 		Tab tab = new Tab();
 		tab.setContent(propertyPane);
 		tab.setText("Test Tab");
 		propertyTabPane.getTabs().add(tab);
 		
-		//add layer tab
-/*
-		LayerOpacityTable layerOpacityTable = new LayerOpacityTable();
+		//Initialize layer tab
 		layerOpacityTable.init();
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setFitToHeight(true);
-		scrollPane.setFitToWidth(true);
-		scrollPane.setContent(layerOpacityTable);
-		tab = new Tab();
-		tab.setContent(scrollPane);
-		tab.setText("Map Layers");
-		dataTabPane.getTabs().add(tab);
-*/
-layerOpacityTable.init();
-layerOpacityTable.layerListChanged(mapLayerManager.getMapLayers());
-mapLayerManager.addLayerListener(layerOpacityTable);
+		layerOpacityTable.layerListChanged(mapLayerManager.getMapLayers());
+		mapLayerManager.addLayerListener(layerOpacityTable);
 
 		//key handlers for navigation
 		this.addEventFilter(KeyEvent.KEY_PRESSED,new EventHandler<KeyEvent>() {
