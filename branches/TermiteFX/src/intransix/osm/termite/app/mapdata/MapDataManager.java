@@ -1,14 +1,15 @@
 package intransix.osm.termite.app.mapdata;
 
-import intransix.osm.termite.map.workingdata.*;
-import intransix.osm.termite.map.dataset.*;
+
 import intransix.osm.termite.app.mapdata.instruction.EditAction;
 import intransix.osm.termite.app.preferences.Preferences;
 import intransix.osm.termite.gui.dialog.MessageDialog;
-import java.util.ArrayList;
-import java.util.List;
+import intransix.osm.termite.map.dataset.*;
+import intransix.osm.termite.map.workingdata.*;
 import intransix.osm.termite.util.JsonIO;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONObject;
 
 /**
@@ -22,10 +23,6 @@ public class MapDataManager {
 	private List<MapDataListener> mapDataListeners = new ArrayList<MapDataListener>();
 	
 	private Rectangle2D downloadBounds = null;
-	
-//	private RenderLayer renderLayer;
-//	private DownloadLayer downloadLayer;
-//	private DownloadEditorMode downloadEditorMode;
 	
 	// start data source and instructions------------
 	
@@ -193,25 +190,7 @@ public class MapDataManager {
 		}
 		JSONObject modelJson = JsonIO.readJsonFile(configFileName);
 		OsmModel.parse(modelJson);
-		
-//		renderLayer = new RenderLayer(this);
-//		this.addMapDataListener(renderLayer);
-		
-//		downloadLayer = new DownloadLayer();
-//		downloadEditorMode = new DownloadEditorMode(this,downloadLayer);
 	}
-	
-//	public DownloadLayer getDownloadLayer() {
-//		return downloadLayer;
-//	}
-	
-//	public RenderLayer getRenderLayer() {
-//		return renderLayer;
-//	}
-	
-//	public DownloadEditorMode getDownloadEditorMode() {
-//		return downloadEditorMode;
-//	}
 	
 	/** This method gets the map data. */
 	public OsmData getOsmData() {

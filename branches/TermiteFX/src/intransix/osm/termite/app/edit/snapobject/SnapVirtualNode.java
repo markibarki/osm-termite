@@ -26,19 +26,19 @@ public class SnapVirtualNode extends SnapObject {
 		this.err2 = err2;
 	}
 	
-	/** This method renders the object.
-	 * 
-	 * @param g2				The graphics context
-	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
-	 * @param styleInfo			The style info for rendering
-	 */
-	@Override
-	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
-			StyleInfo styleInfo) {
-
-		Style style = this.getHoverStyle(styleInfo);
-		renderPoint(g2,mercatorToPixels,snapPoint,style);
-	}
+//	/** This method renders the object.
+//	 * 
+//	 * @param g2				The graphics context
+//	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
+//	 * @param styleInfo			The style info for rendering
+//	 */
+//	@Override
+//	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
+//			StyleInfo styleInfo) {
+//
+//		Style style = this.getHoverStyle(styleInfo);
+//		renderPoint(g2,mercatorToPixels,snapPoint,style);
+//	}
 	
 	/** This method looks up an select object for this snap object.  . 
 	 * 

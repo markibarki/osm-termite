@@ -32,19 +32,20 @@ public class SnapSegment extends SnapObject {
 		super(SnapType.UNKNOWN);
 	}
 	
-	/** This method renders the object.
-	 * 
-	 * @param g2				The graphics context
-	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
-	 * @param styleInfo			The style info for rendering
-	 */
-	@Override
-	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
-			StyleInfo styleInfo) {
-		
-		Style style = this.getHoverStyle(styleInfo);
-		renderSegment(g2,mercatorToPixels,p1,p2,style);
-	}
+//	
+//	/** This method renders the object.
+//	 * 
+//	 * @param g2				The graphics context
+//	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
+//	 * @param styleInfo			The style info for rendering
+//	 */
+//	@Override
+//	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
+//			StyleInfo styleInfo) {
+//		
+//		Style style = this.getHoverStyle(styleInfo);
+//		renderSegment(g2,mercatorToPixels,p1,p2,style);
+//	}
 	
 	/** This method looks up an select object for this snap object.  . There is
 	 * no select object for a segment.

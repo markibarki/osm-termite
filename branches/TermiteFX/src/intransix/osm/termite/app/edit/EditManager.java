@@ -13,6 +13,7 @@ import intransix.osm.termite.app.edit.snapobject.SnapNode;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.edit.impl.EditDestPoint;
 import intransix.osm.termite.render.edit.*;
+import java.awt.geom.Point2D;
 //import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,7 @@ public class EditManager {
 	private List<EditSegment> pendingSnapSegments = new ArrayList<EditSegment>();
 	
 	private List<FeatureSelectedListener> featureSelectedListeners = new ArrayList<FeatureSelectedListener>();
+	private List<EditObjectChangedListener> editObjectChangedListeners = new ArrayList<EditObjectChangedListener>();
 
 	//-----------------
 	// Edit Layer and Modes
@@ -100,6 +102,16 @@ public class EditManager {
 	
 	public void setActiveSnapObject(int setActiveSnapObject) {
 		this.activeSnapObject = setActiveSnapObject;
+		SnapObject snapObject;
+		if((activeSnapObject >= 0)&&(activeSnapObject < snapObjects.size())) {
+			snapObject = snapObjects.get(activeSnapObject);
+		}
+		else {
+			snapObject = null;
+		}
+		for(EditObjectChangedListener listener:editObjectChangedListeners) {
+			listener.activeSnapObjectChanged(snapObject);
+		}
 	}
 	
 	public boolean getVirtualNodeSelected() {
@@ -112,6 +124,13 @@ public class EditManager {
 	
 	public List<EditObject> getPendingObjects() {
 		return pendingObjects;
+	}
+	
+	/** This method should be called when a change is made to the pending objects list. */
+	public void pendingObjectsUpdated() {
+		for(EditObjectChangedListener listener:editObjectChangedListeners) {
+			listener.pendingListChanged(pendingObjects);
+		}
 	}
 	
 	public List<EditNode> getMovingNodes() {
@@ -183,12 +202,13 @@ public class EditManager {
 		pendingObjects.clear();
 		pendingSnapSegments.clear();
 		movingNodes.clear();
+		this.pendingObjectsUpdated();
 	}
 	
 	/** This method clears the preview (snap) objects. */
 	public void clearPreview() {
 		snapObjects.clear();
-		activeSnapObject = -1;
+		this.setActiveSnapObject(-1);
 	}
 	
 	//--------------------
@@ -220,10 +240,20 @@ public class EditManager {
 		featureSelectedListeners.remove(listener);
 	}
 	
-//	/** This is a method to look up the current mouse point, from the edit layer. */
-//	public Point2D getMousePointMerc() {
-//		return editLayer.getMapPanel().getMousePointMerc();
-//	}
+	/** This adds a feature selected listener. */
+	public void addEditObjectChangedListener(EditObjectChangedListener listener) {
+		editObjectChangedListeners.add(listener);
+	}
+	
+	/** This removes a feature selected listener. */
+	public void removeEditObjectChangedListener(EditObjectChangedListener listener) {
+		editObjectChangedListeners.remove(listener);
+	}
+	
+	/** This is a method to look up the current mouse point, from the edit layer. */
+	public Point2D getMousePointMerc() {
+		return editLayer.getMouseMerc();
+	}
 	
 	/** This method retrieves the edit layer. */
 	public EditLayer getEditLayer() {
@@ -264,24 +294,24 @@ public class EditManager {
 	 * @param mouseMerc		The location of the mouse in mercator coordinates.
 	 * @return				The EditDestPoint
 	 */
-//	public EditDestPoint getDestinationPoint(Point2D mouseMerc) {
-//		EditDestPoint edp = new EditDestPoint();
-//		edp.point = new Point2D.Double();
-//		
-//		if((activeSnapObject > -1)&&(activeSnapObject < snapObjects.size())) {
-//			SnapObject snapObject = snapObjects.get(activeSnapObject);
-//			edp.point.setLocation(snapObject.snapPoint);
-//			
-//			if(snapObject instanceof SnapNode) {
-//				edp.snapNode = ((SnapNode)snapObject).node;
-//			}	
-//		}
-//		else {
-//			edp.point.setLocation(mouseMerc);
-//		}
-//		
-//		return edp;
-//	}
+	public EditDestPoint getDestinationPoint(Point2D mouseMerc) {
+		EditDestPoint edp = new EditDestPoint();
+		edp.point = new Point2D.Double();
+		
+		if((activeSnapObject > -1)&&(activeSnapObject < snapObjects.size())) {
+			SnapObject snapObject = snapObjects.get(activeSnapObject);
+			edp.point.setLocation(snapObject.snapPoint);
+			
+			if(snapObject instanceof SnapNode) {
+				edp.snapNode = ((SnapNode)snapObject).node;
+			}	
+		}
+		else {
+			edp.point.setLocation(mouseMerc);
+		}
+		
+		return edp;
+	}
 
 	
 		

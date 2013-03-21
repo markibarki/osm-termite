@@ -62,7 +62,6 @@ public class MapPane extends Pane implements MapLayerListener, MapListener {
 		this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(javafx.scene.input.MouseEvent e) {
-				System.out.println("Mouse pressed: " + e.isStillSincePress());
 				panStartPixelX = e.getSceneX();
 				panStartPixelY = e.getSceneY();
 			}
@@ -70,7 +69,6 @@ public class MapPane extends Pane implements MapLayerListener, MapListener {
 		this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(javafx.scene.input.MouseEvent e) {
-				System.out.println("Mouse released: " + e.isStillSincePress());
 				if(panOn) {
 					panOn = false;
 				}
@@ -79,7 +77,6 @@ public class MapPane extends Pane implements MapLayerListener, MapListener {
 		this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED,new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(javafx.scene.input.MouseEvent e) {
-				System.out.println("Mouse dragged: " + e.isStillSincePress());
 				if(!e.isStillSincePress()) {
 					double mousePixelX = e.getSceneX();
 					double mousePixelY = e.getSceneY();
@@ -96,7 +93,6 @@ public class MapPane extends Pane implements MapLayerListener, MapListener {
 		this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_CLICKED,new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(javafx.scene.input.MouseEvent e) {
-				System.out.println("Mouse clicked: " + e.isStillSincePress());
 				if(!e.isStillSincePress()) {
 					e.consume();
 				}

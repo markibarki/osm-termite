@@ -129,9 +129,9 @@ throw new RuntimeException("Add create level action back");
 	@Override
 	public void turnOn() {
 		if(editLayer != null) {
-//			editLayer.setActiveState(true);
-//			setSelectState();
-//			editManager.addFeatureSelectedListener(this);
+			editLayer.setActiveState(true);
+			setSelectState();
+			editManager.addFeatureSelectedListener(this);
 		}
 	}
 	
@@ -140,8 +140,8 @@ throw new RuntimeException("Add create level action back");
 	@Override
 	public void turnOff() {
 		if(editLayer != null) {
-//			editLayer.setActiveState(false);
-//			editManager.removeFeatureSelectedListener(this);
+			editLayer.setActiveState(false);
+			editManager.removeFeatureSelectedListener(this);
 		}
 		//remove from move state if it is there
 		inMoveState = false;
@@ -172,10 +172,9 @@ throw new RuntimeException("Add create level action back");
 			
 			MouseMoveAction snapAction = new SelectSnapMoveAction(editManager);	
 			snapAction.init();
-
-//@TODO re insert mouse actions			
-//			editLayer.setMouseClickAction(mouseClickAction);
-//			editLayer.setMouseMoveActions(null, snapAction);
+		
+			editLayer.setMouseClickAction(mouseClickAction);
+			editLayer.setMouseMoveActions(null, snapAction);
 			
 			//clear any old state, but not selection
 			editManager.clearPending();
