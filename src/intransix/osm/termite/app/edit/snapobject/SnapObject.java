@@ -1,6 +1,5 @@
 package intransix.osm.termite.app.edit.snapobject;
 
-import intransix.osm.termite.render.edit.EditDrawable;
 import intransix.osm.termite.render.edit.Style;
 import intransix.osm.termite.render.edit.StyleInfo;
 import java.awt.geom.Point2D;
@@ -8,7 +7,7 @@ import java.awt.geom.Point2D;
  *
  * @author sutter
  */
-public abstract class SnapObject extends EditDrawable implements Comparable<SnapObject> {
+public abstract class SnapObject implements Comparable<SnapObject> {
 	
 	/** This indicates the type of snap that is being done. */
 	public enum SnapType {

@@ -15,19 +15,19 @@ public class EditSegment extends EditObject {
 	public EditNode en2;
 	public OsmSegment osmSegment;
 	
-	/** This method renders the object.
-	 * 
-	 * @param g2				The graphics context
-	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
-	 * @param styleInfo			The style info for rendering
-	 */
-	@Override
-	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
-			StyleInfo styleInfo) {
-
-		Style style = styleInfo.PENDING_STYLE;
-		renderSegment(g2,mercatorToPixels,en1.point,en2.point,style);
-	}
+//	/** This method renders the object.
+//	 * 
+//	 * @param g2				The graphics context
+//	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
+//	 * @param styleInfo			The style info for rendering
+//	 */
+//	@Override
+//	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
+//			StyleInfo styleInfo) {
+//
+//		Style style = styleInfo.PENDING_STYLE;
+//		renderSegment(g2,mercatorToPixels,en1.point,en2.point,style);
+//	}
 	
 	//=======================
 	// Package Methods

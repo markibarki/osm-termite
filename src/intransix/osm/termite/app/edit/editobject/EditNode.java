@@ -19,18 +19,18 @@ public class EditNode extends EditObject {
 	public FeatureInfo featureInfo;
 	public OsmNode node;
 	
-	/** This method renders the object.
-	 * 
-	 * @param g2				The graphics context
-	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
-	 * @param styleInfo			The style info for rendering
-	 */
-	@Override
-	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
-			StyleInfo styleInfo) {
-		Style style = styleInfo.PENDING_STYLE;
-		renderPoint(g2,mercatorToPixels,point,style);
-	}
+//	/** This method renders the object.
+//	 * 
+//	 * @param g2				The graphics context
+//	 * @param mercatorToPixels	The transform from mercator coordinates to pixels
+//	 * @param styleInfo			The style info for rendering
+//	 */
+//	@Override
+//	public void render(Graphics2D g2, AffineTransform mercatorToPixels, 
+//			StyleInfo styleInfo) {
+//		Style style = styleInfo.PENDING_STYLE;
+//		renderPoint(g2,mercatorToPixels,point,style);
+//	}
 
 	
 	//=======================

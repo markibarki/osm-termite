@@ -3,6 +3,7 @@ package intransix.osm.termite.gui;
 import intransix.osm.termite.app.TermiteFX;
 import intransix.osm.termite.app.basemap.BaseMapListener;
 import intransix.osm.termite.app.basemap.BaseMapManager;
+import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.feature.FeatureTypeManager;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
@@ -219,7 +220,16 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 renderLayer.onMapViewChange(viewRegionManager, true);
 		viewRegionManager.addMapListener(renderLayer);
 		
-		editLayer = new EditLayer();
+		editLayer = new EditLayer(viewRegionManager);
+		selectEditorMode.setEditLayer(editLayer);
+		nodeEditorMode.setEditLayer(editLayer);
+		wayEditorMode.setEditLayer(editLayer);
+		mapLayerManager.addLayer(editLayer);
+		//pass initial view
+		editLayer.onMapViewChange(viewRegionManager, true);
+		viewRegionManager.addMapListener(editLayer);
+
+editLayer.setActiveState(false);
 		
 		geocodeLayer = new GeocodeLayer();
 		
@@ -301,6 +311,14 @@ featureTree.init();
 		TileInfo tileInfo = baseMapManager.getBaseMapInfo();
 		this.baseMapChanged(tileInfo);
 		baseMapManager.addBaseMapListener(this);
+	}
+	
+	public void setEditManager(EditManager editManager) {
+		editManager.addEditObjectChangedListener(editLayer);
+		editManager.addFeatureSelectedListener(editLayer);
+		selectEditorMode.setEditManager(editManager);
+		nodeEditorMode.setEditManager(editManager);
+		wayEditorMode.setEditManager(editManager);
 	}
 	
 	/** This method is called when the baseMap changes. */

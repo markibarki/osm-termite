@@ -152,7 +152,7 @@ public class TermiteFX extends Application {
 		gui.setFeatureTypeManager(featureTypeManager);
 		
 		//filter
-//		filterManager = new FilterManager();
+		filterManager = new FilterManager();
 //		
 //		//levels
 //		levelManager = new LevelManager(mapDataManager, filterManager);
@@ -160,9 +160,8 @@ public class TermiteFX extends Application {
 //		gui.setLevelManager(levelManager);
 //		
 //		//edit manager
-//		editManager = new EditManager(featureTypeManager,levelManager,mapDataManager);
-//		editManager.init();
-//		gui.setEditManager(editManager); //selection for edit properties
+		editManager = new EditManager(featureTypeManager,levelManager,mapDataManager);
+		gui.setEditManager(editManager); //selection for edit properties
 //
 //		
 //		//geocode
