@@ -33,8 +33,6 @@ public class MapPane extends Pane implements MapLayerListener, MapListener {
 	private boolean panOn;
 	private double panStartPixelX;
 	private double panStartPixelY;
-	private double panLastPixelX;
-	private double panLastPixelY;
 	
 	//===================
 	// Public Methods
@@ -153,6 +151,9 @@ public class MapPane extends Pane implements MapLayerListener, MapListener {
 	
 	@Override
 	public void onPanEnd(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onLocalCoordinatesSet(ViewRegionManager vrm) {}
 	
 	//=================================
 	// Private Methods

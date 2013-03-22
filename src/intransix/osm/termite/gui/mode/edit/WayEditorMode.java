@@ -4,8 +4,8 @@ import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.edit.MouseClickAction;
 import intransix.osm.termite.app.edit.MouseMoveAction;
 import intransix.osm.termite.app.edit.action.*;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.gui.mode.EditorMode;
-import intransix.osm.termite.render.*;
 import intransix.osm.termite.render.edit.EditLayer;
 import java.awt.Cursor;
 
@@ -28,7 +28,8 @@ public class WayEditorMode extends EditorMode {
 	// Public Methods
 	//====================
 	
-	public WayEditorMode() {
+	public WayEditorMode(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 	}
 	
 //@TODO - fix setting of edit manager and layer

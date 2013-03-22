@@ -93,5 +93,4 @@ public MapLayer() {
 	
 	public void disconnect(MapLayerManager mapLayerManager) {
 	}	
-	
 }

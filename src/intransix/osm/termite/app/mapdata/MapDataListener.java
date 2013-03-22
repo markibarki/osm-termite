@@ -20,14 +20,14 @@ public interface MapDataListener {
 	 * 
 	 * @param dataPresent	Set to true if data is present, false if data is cleared.
 	 */
-	void onMapData(boolean dataPresent);
+	void onMapData(MapDataManager mapDataManager, boolean dataPresent);
 	
 	/** This method is called when the data has changed.
 	 * 
 	 * @param editNumber	This is the data version that will be reflected in any data changed 
 	 *						by this edit action.
 	 */
-	void osmDataChanged(int editNumber);
+	void osmDataChanged(MapDataManager mapDataManager, int editNumber);
 	
 	/** This method returns the priority for the listener. It is used to determine
 	 * the order the listeners get called.

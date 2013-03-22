@@ -13,6 +13,7 @@ import intransix.osm.termite.render.edit.SelectToolbar;
 import intransix.osm.termite.app.edit.action.SelectClickAction;
 import intransix.osm.termite.app.edit.action.SelectSnapMoveAction;
 import intransix.osm.termite.app.edit.action.*;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.control.ToolBar;
@@ -67,7 +68,8 @@ public class SelectEditorMode extends EditorMode implements FeatureSelectedListe
 	//====================
 	
 	/** Constructor. */
-	public SelectEditorMode() {
+	public SelectEditorMode(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		toolBar = new SelectToolbar(this);
 	}
 	
@@ -129,6 +131,8 @@ throw new RuntimeException("Add create level action back");
 	@Override
 	public void turnOn() {
 		if(editLayer != null) {
+			getMapLayerManager().addLayer(editLayer);
+
 			editLayer.setActiveState(true);
 			setSelectState();
 			editManager.addFeatureSelectedListener(this);
@@ -140,6 +144,8 @@ throw new RuntimeException("Add create level action back");
 	@Override
 	public void turnOff() {
 		if(editLayer != null) {
+			getMapLayerManager().removeLayer(editLayer);
+			
 			editLayer.setActiveState(false);
 			editManager.removeFeatureSelectedListener(this);
 		}

@@ -6,6 +6,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import intransix.osm.termite.app.ShutdownListener;
+import intransix.osm.termite.app.mapdata.MapDataListener;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.preferences.Preferences;
 import intransix.osm.termite.gui.map.MapPane;
 import javafx.beans.value.ChangeListener;
@@ -24,7 +26,7 @@ import javafx.scene.transform.Transform;
  * 
  * @author sutter
  */
-public class ViewRegionManager implements ShutdownListener {
+public class ViewRegionManager implements ShutdownListener, MapDataListener {
 	
 	//These constants are used to read and wrtie the stored configuration
 	private final static String MIN_LAT_TAG = "minLat";
@@ -38,12 +40,20 @@ public class ViewRegionManager implements ShutdownListener {
 	private final static double DEFAULT_MAX_LAT = 60.0;
 	private final static double DEFAULT_MAX_LON = 150.0;
 	
+	/** this arbitrary number is used to set the scale for local coordinates. */
+	private final static double LOCAL_COORDINATE_AREA = 1000000.0;
+	
 	//transforms
 	private AffineTransform mercatorToPixels = new AffineTransform();
 	private AffineTransform pixelsToMercator = new AffineTransform();
+	private AffineTransform mercatorToLocal = new AffineTransform();
+	private AffineTransform localToMercator = new AffineTransform();
 	private Affine mercatorToPixelsFX = new Affine();
 	private Affine pixelsToMercatorFX = new Affine();
+	private Affine localToMercFX = new Affine();
 	private double zoomScalePixelsPerMerc = 1.0;
+	private double zoomScaleLocalPerMerc = 1.0;
+	private double zoomScaleLocalPerPixel = 1.0;
 	
 	private java.util.List<MapListener> mapListeners = new ArrayList<MapListener>();
 
@@ -97,6 +107,16 @@ public class ViewRegionManager implements ShutdownListener {
 		return mercatorToPixels;
 	}
 	
+	/** This method gets the transform from mercator to pixels coordinates. */
+	public final AffineTransform getMercatorToLocal() {
+		return mercatorToLocal;
+	}
+	
+	/** This method gets the transform from pixels to mercator coordinates. */
+	public final AffineTransform getLocalToMercator() {
+		return localToMercator;
+	}
+	
 	/** This method gets the transform from pixels to mercator coordinates. */
 	public final Affine getPixelsToMercatorFX() {
 		return pixelsToMercatorFX;
@@ -107,6 +127,11 @@ public class ViewRegionManager implements ShutdownListener {
 		return mercatorToPixelsFX;
 	}
 	
+	/** This method gets the transform from pixels to mercator coordinates. */
+	public final Affine getLocalToMercatorFX() {
+		return localToMercFX;
+	}
+	
 	/** This method gets the scale factor between pixels and mercator coordinates. */
 	public final double getZoomScalePixelsPerMerc() {
 		 return this.zoomScalePixelsPerMerc;
@@ -115,6 +140,15 @@ public class ViewRegionManager implements ShutdownListener {
 	/** This method gets the scale factor between pixels and mercator coordinates. */
 	public final double getZoomScaleMercPerPixel() {
 		 return 1/this.zoomScalePixelsPerMerc;
+	}
+	
+	public final double getZoomScaleLocalPerPixel() {
+		return this.zoomScaleLocalPerPixel;
+	}
+	
+	/** This method gets the scale factor between pixels and mercator coordinates. */
+	public final double getZoomScaleLocalPerMerc() {
+		 return this.zoomScaleLocalPerMerc;
 	}
 	
 	/** This method sets the lat lon bounds for the visible display. The actual
@@ -296,6 +330,30 @@ public class ViewRegionManager implements ShutdownListener {
 		setLatLonViewBounds(rect);
 	}
 	
+	@Override
+	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
+		if(dataPresent) {
+			//set up the local coordinates - doesn't work well if we try global
+			initializeLocalCoordinates(mapDataManager);
+			dispatchLocalCoordinateEvent();
+		}
+	}
+	
+	/** This method is called when the data has changed.
+	 * 
+	 * @param editNumber	This is the data version that will be reflected in any data changed 
+	 *						by this edit action.
+	 */
+	@Override
+	public void osmDataChanged(MapDataManager mapDataManager, int editNumber) {
+	}
+	
+	/** This returns the priority for this object as a map data listener. */
+	@Override
+	public int getMapDataListenerPriority() {
+		return MapDataListener.PRIORITY_DATA_MODIFY_1;
+	}
+	
 	/** This is a shutdown event to save the view of the map. */
 	@Override
 	public void onShutdown() {
@@ -326,6 +384,35 @@ public class ViewRegionManager implements ShutdownListener {
 	// Private Methods
 	//===================================
 	
+	/** This method sets local coordinates based on the area of downloaded data. */
+	private void initializeLocalCoordinates(MapDataManager mapDataManager) {
+		//get the rectangle
+		Rectangle2D downloadRectangle = mapDataManager.getDownloadBounds();
+		//find the local scale
+		double mercArea = downloadRectangle.getWidth()* downloadRectangle.getHeight();
+		if(mercArea > 0) {
+			zoomScaleLocalPerMerc = Math.sqrt(LOCAL_COORDINATE_AREA/mercArea);
+			zoomScaleLocalPerPixel = this.zoomScaleLocalPerMerc / this.zoomScalePixelsPerMerc;
+		}
+		
+		//create transforms
+		double localToMercScaleFactor = 1.0 / zoomScaleLocalPerMerc;
+		localToMercator = new AffineTransform(localToMercScaleFactor,0.0,
+				0.0,localToMercScaleFactor,
+				downloadRectangle.getMinX(),downloadRectangle.getMinY());
+		try {
+			mercatorToLocal = localToMercator.createInverse();
+		}
+		catch(Exception ex) {
+			//this should not happen
+			throw new RuntimeException("Failed transform inverse");
+		}
+
+		localToMercFX = Transform.affine(localToMercScaleFactor,0.0,
+				0.0,localToMercScaleFactor,
+				downloadRectangle.getMinX(),downloadRectangle.getMinY());
+	}
+	
 	/** This method does a pan, implementing the action for a one time or dynamic pan. */
 	private void translateStep(double dx, double dy) {
 		AffineTransform zt = new AffineTransform();
@@ -354,6 +441,8 @@ public class ViewRegionManager implements ShutdownListener {
 					pixelsToMercator.getScaleY(),
 					pixelsToMercator.getTranslateX(),
 					pixelsToMercator.getTranslateY());
+			
+			zoomScaleLocalPerPixel = this.zoomScaleLocalPerMerc / this.zoomScalePixelsPerMerc;
 		}
 		catch(Exception ex) {
 			//should not fail
@@ -395,6 +484,12 @@ public class ViewRegionManager implements ShutdownListener {
 	private void dispatchPanEndEvent() {
 		for(MapListener mapListener:mapListeners) {
 			mapListener.onPanEnd(this);
+		}
+	}
+	
+	private void dispatchLocalCoordinateEvent() {
+		for(MapListener mapListener:mapListeners) {
+			mapListener.onLocalCoordinatesSet(this);
 		}
 	}
 }

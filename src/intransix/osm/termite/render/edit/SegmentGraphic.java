@@ -4,6 +4,7 @@
  */
 package intransix.osm.termite.render.edit;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import javafx.scene.shape.Line;
 
@@ -15,18 +16,27 @@ public class SegmentGraphic extends Line implements ShapeGraphic {
 	
 	private double widthPixels;
 	
-	public SegmentGraphic(Point2D p1, Point2D p2) {
-		super(p1.getX(),p2.getY(),p2.getX(),p2.getY());	
+	public SegmentGraphic(Point2D p1, Point2D p2, AffineTransform mercToLocal) {
+
+		Point2D localPoint = new Point2D.Double();
+		
+		mercToLocal.transform(p1,localPoint);
+		this.setStartX(localPoint.getX());
+		this.setStartY(localPoint.getY());
+		
+		mercToLocal.transform(p2,localPoint);
+		this.setEndX(localPoint.getX());
+		this.setEndY(localPoint.getY());
 	}
 	
-	public void setStyle(Style style, double pixelsToMerc) {
+	public void setStyle(Style style, double pixelsToLocalScale) {
 		widthPixels = style.getStrokeWidth();
 		style.setLineStyle(this);
-		setPixelsToMerc(pixelsToMerc);
+		setPixelsToLocalScale(pixelsToLocalScale);
 	}
 	
-	public void setPixelsToMerc(double pixelsToMerc) {
-		this.setStrokeWidth(widthPixels * pixelsToMerc);
+	public void setPixelsToLocalScale(double pixelsToLocalScale) {
+		this.setStrokeWidth(widthPixels * pixelsToLocalScale);
 	}
 	
 }

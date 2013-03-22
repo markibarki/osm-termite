@@ -177,19 +177,19 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		//create modes
 		//-------------
 		
-		downloadEditorMode = new DownloadEditorMode();
+		downloadEditorMode = new DownloadEditorMode(mapLayerManager);
 		editorModeManager.addMode(downloadEditorMode);
 		
-		selectEditorMode = new SelectEditorMode();
+		selectEditorMode = new SelectEditorMode(mapLayerManager);
 		editorModeManager.addMode(selectEditorMode);
 		
-		nodeEditorMode = new NodeEditorMode();
+		nodeEditorMode = new NodeEditorMode(mapLayerManager);
 		editorModeManager.addMode(nodeEditorMode);
 		
-		wayEditorMode = new WayEditorMode();
+		wayEditorMode = new WayEditorMode(mapLayerManager);
 		editorModeManager.addMode(wayEditorMode);
 		
-		geocodeEditorMode = new GeocodeEditorMode();
+		geocodeEditorMode = new GeocodeEditorMode(mapLayerManager);
 		editorModeManager.addMode(geocodeEditorMode);
 		
 		termiteToolBar.initModes();
@@ -208,28 +208,27 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		//needed to update config when tiles change
 		baseMapLayer.setViewRegionManager(viewRegionManager);
 		
+		renderLayer = new RenderLayer();
+		mapLayerManager.addLayer(renderLayer);
+		//pass initial view
+		renderLayer.onMapViewChange(viewRegionManager, true);
+		viewRegionManager.addMapListener(renderLayer);
+		
 		downloadLayer = new DownloadLayer();
 		downloadEditorMode.setDownloadLayer(downloadLayer);
-		mapLayerManager.addLayer(downloadLayer);
+//		mapLayerManager.addLayer(downloadLayer);
 		//pass initial view
 		downloadLayer.onMapViewChange(viewRegionManager, true);
 		viewRegionManager.addMapListener(downloadLayer);
 		
-		renderLayer = new RenderLayer();
-		mapLayerManager.addLayer(renderLayer);
-renderLayer.onMapViewChange(viewRegionManager, true);
-		viewRegionManager.addMapListener(renderLayer);
-		
-		editLayer = new EditLayer(viewRegionManager);
+		editLayer = new EditLayer();
 		selectEditorMode.setEditLayer(editLayer);
 		nodeEditorMode.setEditLayer(editLayer);
 		wayEditorMode.setEditLayer(editLayer);
-		mapLayerManager.addLayer(editLayer);
+//		mapLayerManager.addLayer(editLayer);
 		//pass initial view
 		editLayer.onMapViewChange(viewRegionManager, true);
 		viewRegionManager.addMapListener(editLayer);
-
-editLayer.setActiveState(false);
 		
 		geocodeLayer = new GeocodeLayer();
 		
@@ -295,11 +294,11 @@ featureTree.init();
 	public void setMapDataManager(MapDataManager mapDataManager) {
 		termiteMenu.setMapDataManager(mapDataManager);
 		downloadEditorMode.setMapDataManager(mapDataManager);
-		renderLayer.setMapDataManager(mapDataManager);
-		
+		 
+		mapDataManager.addMapDataListener(viewRegionManager);
 		mapDataManager.addMapDataListener(editorModeManager);
 		mapDataManager.addMapDataListener(renderLayer);
-		
+		mapDataManager.addMapDataListener(editLayer);
 	}
 	
 	public void setFeatureTypeManager(FeatureTypeManager featureTypeManager) {

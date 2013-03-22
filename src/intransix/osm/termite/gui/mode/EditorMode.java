@@ -1,5 +1,6 @@
 package intransix.osm.termite.gui.mode;
 
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 import javafx.scene.control.ToolBar;
 
 /**
@@ -14,6 +15,11 @@ public abstract class EditorMode {
 	private boolean dataPresentEnabled = true;
 	private boolean dataMissingEnabled = false;
 	private EditorModeManager editorModeManager;
+	private MapLayerManager mapLayerManager;
+	
+	public EditorMode(MapLayerManager mapLayerManager) {
+		this.mapLayerManager = mapLayerManager;
+	}
 	
 	/** This method returns the name of the editor mode. 
 	 * 
@@ -60,6 +66,10 @@ public abstract class EditorMode {
 	
 	public void setEditorModeManager(EditorModeManager editorModeManager) {
 		this.editorModeManager = editorModeManager;
+	}
+	
+	public MapLayerManager getMapLayerManager() {
+		return mapLayerManager;
 	}
 	
 	/** This method is called when the map data present state changes. */

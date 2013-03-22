@@ -1,6 +1,7 @@
 package intransix.osm.termite.gui.mode.download;
 
 import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.gui.mode.EditorMode;
@@ -32,7 +33,8 @@ public class DownloadEditorMode extends EditorMode {
 	// Public Methods
 	//====================
 	
-	public DownloadEditorMode() {
+	public DownloadEditorMode(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		setDataEnabledStates(false,true);
 		
 		toolBar = new DownloadToolbar(this);
@@ -66,15 +68,17 @@ public class DownloadEditorMode extends EditorMode {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	public void turnOn() {
+		getMapLayerManager().addLayer(downloadLayer);
+		downloadLayer.relocate(0,0);
 		downloadLayer.setActiveState(true);
-downloadLayer.visibleProperty().setValue(true);
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
 	public void turnOff() {
+		getMapLayerManager().removeLayer(downloadLayer);
+		
 		downloadLayer.setActiveState(false);
-downloadLayer.visibleProperty().setValue(false);
 	}	
 	
 	public void doDownload() {

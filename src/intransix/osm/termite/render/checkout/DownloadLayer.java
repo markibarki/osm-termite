@@ -9,6 +9,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Affine;
 
 /**
  * This class allows the user to select a region of the map for which to download data.
@@ -30,6 +31,8 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	private EventHandler<MouseEvent> mouseClickHandler;
 	private EventHandler<MouseEvent> mouseMoveHandler;
 	
+	private Rectangle sizeTemplate;
+	
 	//======================
 	// Public Methods
 	//======================
@@ -40,9 +43,7 @@ public class DownloadLayer extends MapLayer implements MapListener {
 		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
 		this.setVisible(false);
 		
-		this.setPrefSize(1.0,1.0);
-		this.setMinSize(1.0,1.0);
-		this.setMaxSize(1.0,1.0);
+		createSizeTemplate();
 		
 		mouseClickHandler = new EventHandler<MouseEvent>() {
 			@Override
@@ -76,10 +77,16 @@ public class DownloadLayer extends MapLayer implements MapListener {
 		if(isActive) {
 			this.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
 			this.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+			
+			//I don't know how else to size this properly
+			this.getChildren().add(sizeTemplate);
 		}
 		else {
 			this.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
 			this.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+			
+			//I don't know how else to set the size properly
+			this.getChildren().remove(sizeTemplate);
 		}
 	}
 	
@@ -152,6 +159,9 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	@Override
 	public void onPanEnd(ViewRegionManager vrm) {}
 	
+	@Override
+	public void onLocalCoordinatesSet(ViewRegionManager vrm) {}
+	
 //	// <editor-fold defaultstate="collapsed" desc="Key Listener">
 //	
 //	/** Handle the key typed event from the text field. */
@@ -185,5 +195,13 @@ public class DownloadLayer extends MapLayer implements MapListener {
 		selection.setY(startY < mercY ? startY : mercY);
 		selection.setWidth(Math.abs(mercX - startX));
 		selection.setHeight(Math.abs(mercY - startY));
+	}
+	
+	private void createSizeTemplate() {
+		sizeTemplate = new Rectangle(0,0,1,1);
+		sizeTemplate.relocate(0,0);
+		sizeTemplate.setStroke(Color.BLUE);
+		sizeTemplate.setStrokeWidth(.00001);
+		sizeTemplate.setFill(Color.AQUA);
 	}
 }
