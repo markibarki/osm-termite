@@ -124,9 +124,9 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	 * @param dataPresent	Set to true if data is present, false if data is cleared.
 	 */
 	@Override
-	public void onMapData(boolean dataPresent) {
+	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
 		//update the menu items
-		osmDataChanged(0);
+		osmDataChanged(mapDataManager,0);
 	}
 	
 	/** This method is called when the data has changed. It is used here to update the undo/redo status and message
@@ -135,7 +135,7 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	 *						by this edit action.
 	 */
 	@Override
-	public void osmDataChanged(int editNumber) {
+	public void osmDataChanged(MapDataManager mapDataManager, int editNumber) {
 		String undoMessage = mapDataManager.getUndoMessage();
 		if(undoMessage != null) {
 			undoMenuItem.setDisable(false);

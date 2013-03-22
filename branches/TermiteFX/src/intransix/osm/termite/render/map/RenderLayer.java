@@ -35,9 +35,6 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	//====================
 	// Properties
 	//====================
-	
-	/** this arbitrary number is used to set the scale for local coordinates. */
-	private final static double LOCAL_COORDINATE_AREA = 1000000.0;
 
 	static int piggybackIndexRender;
 	static int piggybackIndexFeature;
@@ -45,8 +42,7 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 		piggybackIndexFeature = OsmObject.registerPiggybackUser();
 		piggybackIndexRender = OsmObject.registerPiggybackUser();
 	}
-	
-	private MapDataManager mapDataManager;
+
 	private Theme theme;
 	
 	//feature info
@@ -58,10 +54,7 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	
 	//local coordinate definitions
 	private AffineTransform mercToLocal;
-	private Affine localToMercFX;
 	private double pixelsToLocalScale = 1.0;
-	private double pixelsToMercScale = 1.0;
-	private double mercToLocalScale = 1.0;
 	
 	//====================
 	// Public Methods
@@ -73,18 +66,8 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 		this.setOrder(MapLayer.ORDER_EDIT_MAP);
 	}
 	
-	/** This method sets the map data manager. */
-	public void setMapDataManager(MapDataManager mapDataManager) {
-		this.mapDataManager = mapDataManager;
-	}
-	
 	@Override
-	public void onMapData(boolean dataPresent) {
-		
-		if(dataPresent) {
-			//set up the local coordinates - doesn't work well if we try global
-			initializeLocalCoordinates();
-		}
+	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
 		
 		//should be active whenever there is map data
 		this.setActiveState(dataPresent);
@@ -96,7 +79,7 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	 *						by this edit action.
 	 */
 	@Override
-	public void osmDataChanged(int editNumber) {
+	public void osmDataChanged(MapDataManager mapDataManager, int editNumber) {
 		
 		//update the feature list
 		//update feature info
@@ -168,7 +151,7 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {		
 		//update the stroke values
 		if(zoomChanged) {
-			this.setPixelsToMercScale(viewRegionManager.getZoomScaleMercPerPixel());
+			pixelsToLocalScale = viewRegionManager.getZoomScaleLocalPerPixel();
 			for(Node node:getChildren()) {
 				if(node instanceof Feature) {
 					((Feature)node).setPixelsToLocal(pixelsToLocalScale);
@@ -186,52 +169,17 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	@Override
 	public void onPanEnd(ViewRegionManager vrm) {}
 	
+	@Override
+	public void onLocalCoordinatesSet(ViewRegionManager vrm) {
+		this.mercToLocal = vrm.getMercatorToLocal();
+		this.pixelsToLocalScale = vrm.getZoomScaleLocalPerPixel();
+		Affine localToMercFX = vrm.getLocalToMercatorFX();
+		this.getTransforms().setAll(localToMercFX);
+	}
+	
 	//=================================
 	// Private Methods
 	//=================================
-	
-	/** This method updates the pixelToLocal scale factor. */
-	private void setPixelsToMercScale(double pixelsToMercScale) {
-		this.pixelsToMercScale = pixelsToMercScale;
-		this.pixelsToLocalScale = pixelsToMercScale * mercToLocalScale;
-	}
-	
-	/** This method updates the pixelToLocal scale factor. */
-	private void setMercToLocalScale(double mercToLocalScale) {
-		this.mercToLocalScale = mercToLocalScale;
-		this.pixelsToLocalScale = pixelsToMercScale * mercToLocalScale;
-	}
-	
-	/** This method sets local coordinates based on the area of downloaded data. */
-	private void initializeLocalCoordinates() {
-		//get the rectangle
-		Rectangle2D downloadRectangle = mapDataManager.getDownloadBounds();
-		//find the local scale
-		double mercArea = downloadRectangle.getWidth()* downloadRectangle.getHeight();
-		if(mercArea > 0) {
-			setMercToLocalScale(Math.sqrt(LOCAL_COORDINATE_AREA/mercArea));
-		}
-		
-		//create transforms
-		double localToMercScaleFactor = 1.0 / mercToLocalScale;
-		AffineTransform localToMerc = new AffineTransform(localToMercScaleFactor,0.0,
-				0.0,localToMercScaleFactor,
-				downloadRectangle.getMinX(),downloadRectangle.getMinY());
-		try {
-			mercToLocal = localToMerc.createInverse();
-		}
-		catch(Exception ex) {
-			//this should not happen
-			throw new RuntimeException("Failed transform inverse");
-		}
-
-		localToMercFX = Transform.affine(localToMercScaleFactor,0.0,
-				0.0,localToMercScaleFactor,
-				downloadRectangle.getMinX(),downloadRectangle.getMinY());
-		
-		
-		this.getTransforms().setAll(localToMercFX);
-	}
 	
 	/** This method makes sure the piggyback feature info is up to date. */
 	private void checkFeatureInfo(OsmObject osmObject) {

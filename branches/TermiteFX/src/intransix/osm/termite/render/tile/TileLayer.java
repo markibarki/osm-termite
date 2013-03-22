@@ -109,6 +109,9 @@ public class TileLayer extends MapLayer implements MapListener {
 	
 	@Override
 	public void onPanEnd(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onLocalCoordinatesSet(ViewRegionManager vrm) {}
 
 	//=================================
 	// Private Methods

@@ -42,6 +42,10 @@ public class EditorModeManager implements MapDataListener {
 	
 	/** This method sets the editor mode. */
 	public void setEditorMode(EditorMode mode) {
+		
+		if(mode == activeMode) {
+			return;
+		}
 
 		//get rid of old mode
 		if(activeMode != null) {
@@ -67,7 +71,7 @@ public class EditorModeManager implements MapDataListener {
 	/** This method will dispatch a map data event. It should be called
 	 * when a map data is set to notify all interested objects. */
 	@Override
-	public void onMapData(boolean dataPresent) {
+	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
 		boolean modeEnabled;
 		for(EditorMode mode:editorModes) {
 			modeEnabled = mode.getEnableStateForDataState(dataPresent);
@@ -94,7 +98,7 @@ public class EditorModeManager implements MapDataListener {
 	 *						by this edit action.
 	 */
 	@Override			
-	public void osmDataChanged(int editNumber){
+	public void osmDataChanged(MapDataManager mapDataManager, int editNumber){
 		//no action
 	}
 	

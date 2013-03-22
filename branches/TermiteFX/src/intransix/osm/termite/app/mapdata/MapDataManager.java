@@ -168,7 +168,7 @@ public class MapDataManager {
 		//notify listeners
 		synchronized(mapDataListeners) {
 			for(MapDataListener listener:mapDataListeners) {
-				listener.osmDataChanged(editNumber);
+				listener.osmDataChanged(this,editNumber);
 			}
 		}
 	}
@@ -223,7 +223,7 @@ public class MapDataManager {
 		
 		synchronized(mapDataListeners) {
 			for(MapDataListener listener:mapDataListeners) {
-				listener.onMapData(osmData != null);
+				listener.onMapData(this,osmData != null);
 			}
 		}
 		

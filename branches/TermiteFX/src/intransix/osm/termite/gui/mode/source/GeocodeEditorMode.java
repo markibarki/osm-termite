@@ -8,6 +8,7 @@ import intransix.osm.termite.gui.mode.EditorMode;
 import intransix.osm.termite.app.geocode.action.*;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.maplayer.MapLayerListener;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.render.source.*;
 
 import java.util.ArrayList;
@@ -61,7 +62,8 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	//====================
 	
 	/** Constructor */
-	public GeocodeEditorMode() {
+	public GeocodeEditorMode(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 		this.toolBar = new GeocodeToolbar(this);
 		this.addGeocodeStateListener(this.toolBar);
 		

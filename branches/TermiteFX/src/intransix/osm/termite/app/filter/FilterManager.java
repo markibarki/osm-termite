@@ -17,15 +17,9 @@ public class FilterManager implements MapDataListener {
 	}
 	
 	//this is for filtering the features
-
 	private MapDataManager mapDataManager;
 	private FeatureFilter filter = null;
 	private List<FilterListener> filterListeners = new ArrayList<FilterListener>();
-	
-	public void setMapDataManager(MapDataManager mapDataManager) {
-		this.mapDataManager = mapDataManager;
-		mapDataManager.addMapDataListener(this);
-	}	
 	
 	public void setFilter(FeatureFilter filter) {
 		this.filter = filter;
@@ -57,7 +51,8 @@ public class FilterManager implements MapDataListener {
 	 * 
 	 * @param dataPresent	Set to true if data is present, false if data is cleared.
 	 */
-	public void onMapData(boolean dataPresent) {
+	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
+		this.mapDataManager = mapDataManager;
 	}
 	
 	/** This method is called when the data has changed.
@@ -65,7 +60,7 @@ public class FilterManager implements MapDataListener {
 	 * @param editNumber	This is the data version that will be reflected in any data changed 
 	 *						by this edit action.
 	 */
-	public void osmDataChanged(int editNumber) {
+	public void osmDataChanged(MapDataManager mapDataManager, int editNumber) {
 		OsmData osmData = mapDataManager.getOsmData();
 		
 		//update feature info

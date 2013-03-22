@@ -14,17 +14,27 @@ import intransix.osm.termite.app.edit.snapobject.SnapObject.SnapType;
 import intransix.osm.termite.app.edit.snapobject.SnapSegment;
 import intransix.osm.termite.app.edit.snapobject.SnapVirtualNode;
 import intransix.osm.termite.app.edit.snapobject.SnapWay;
+import intransix.osm.termite.app.mapdata.MapDataListener;
+import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.map.workingdata.OsmWay;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.ClosePath;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
+import javafx.scene.transform.Affine;
 
 /**
  * This layer controls the user interaction with the active map data. It is designed
@@ -32,7 +42,7 @@ import javafx.scene.input.MouseEvent;
  * 
  * @author sutter
  */
-public class EditLayer extends MapLayer implements FeatureSelectedListener, EditObjectChangedListener, MapListener {
+public class EditLayer extends MapLayer implements FeatureSelectedListener, EditObjectChangedListener, MapListener, MapDataListener {
 	
 	//=========================
 	// Properties 
@@ -41,8 +51,6 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	// <editor-fold defaultstate="collapsed" desc="Properties">
 	
 	public final static double SNAP_RADIUS_PIXELS = 4;
-	
-	private ViewRegionManager viewRegionManager;
 	
 	private StyleInfo styleInfo = new StyleInfo();
 
@@ -57,10 +65,15 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	private List<Node> activeSnapObjects = new ArrayList<>();
 	private List<Node> pendingObjects = new ArrayList<>();
 	
-	//initialize this with a dummy value
-	private double pixelsToMerc = 1;
+	//local coordinate definitions
+	private AffineTransform mercToLocal;
+	private AffineTransform localToMerc;
+	private double pixelsToLocalScale = 1.0;
+	private double pixelsToMercatorScale = 1.0;
 	
-	Point2D latestMouseMerc = null;
+	private Point2D latestMouseMerc = null;
+	
+	private Rectangle2D dataBounds = null;
 	
 	// </editor-fold>
 	
@@ -68,10 +81,11 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	// Public Methods
 	//=========================
 	
-	public EditLayer(ViewRegionManager viewRegionManager) {
+	public EditLayer() {
 		this.setName("Edit Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
-		this.viewRegionManager = viewRegionManager;
+		
+		this.setStyle("-fx-background-color: yellow;");
 		
 		this.setPrefSize(1.0,1.0);
 		this.setMinSize(1.0,1.0);
@@ -97,6 +111,29 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	
 	// <editor-fold defaultstate="collapsed" desc="Listener Implementation">
 	
+	
+	@Override
+	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
+		if(dataPresent) {
+			Rectangle2D dataBounds = mapDataManager.getDownloadBounds();
+			setReticle(dataBounds);
+		}
+	}
+	
+	/** This method is called when the data has changed.
+	 * 
+	 * @param editNumber	This is the data version that will be reflected in any data changed 
+	 *						by this edit action.
+	 */
+	@Override
+	public void osmDataChanged(MapDataManager mapDataManager, int editNumber) {	}
+	
+	/** This returns the priority for this object as a map data listener. */
+	@Override
+	public int getMapDataListenerPriority() {
+		return PRIORITY_DATA_CONSUME;
+	}
+	
 	@Override
 	public void activeSnapObjectChanged(SnapObject snapObject) {
 		List<Node> newSnapObjects = new ArrayList<>();
@@ -104,41 +141,41 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		if(snapObject instanceof SnapIntersection) {
 			SnapSegment s1 = ((SnapIntersection)snapObject).s1;
 			SnapSegment s2 = ((SnapIntersection)snapObject).s2;
-			SegmentGraphic sg1 = new SegmentGraphic(s1.p1,s1.p2);
-			SegmentGraphic sg2 = new SegmentGraphic(s2.p1,s2.p2);
+			SegmentGraphic sg1 = new SegmentGraphic(s1.p1,s1.p2,mercToLocal);
+			SegmentGraphic sg2 = new SegmentGraphic(s2.p1,s2.p2,mercToLocal);
 			
-			sg1.setStyle(getSegmentHoverStyle(s1),pixelsToMerc);
-			sg2.setStyle(getSegmentHoverStyle(s2),pixelsToMerc);
+			sg1.setStyle(getSegmentHoverStyle(s1),pixelsToLocalScale);
+			sg2.setStyle(getSegmentHoverStyle(s2),pixelsToLocalScale);
 
 			newSnapObjects.add(sg1);
 			newSnapObjects.add(sg2);
 		}
 		else if(snapObject instanceof SnapNode) {
-			NodeGraphic ng = new NodeGraphic(((SnapNode)snapObject).node);
+			NodeGraphic ng = new NodeGraphic(((SnapNode)snapObject).node,mercToLocal);
 			
-			ng.setStyle(styleInfo.HOVER_SEGMENT_STYLE,pixelsToMerc);
+			ng.setStyle(styleInfo.HOVER_SEGMENT_STYLE,pixelsToLocalScale);
 			
 			newSnapObjects.add(ng);
 		}
 		else if(snapObject instanceof SnapSegment) {
 			SnapSegment s = ((SnapIntersection)snapObject).s1;
-			SegmentGraphic sg = new SegmentGraphic(s.p1,s.p2);
+			SegmentGraphic sg = new SegmentGraphic(s.p1,s.p2,mercToLocal);
 			
-			sg.setStyle(getSegmentHoverStyle(s),pixelsToMerc);
+			sg.setStyle(getSegmentHoverStyle(s),pixelsToLocalScale);
 			
 			newSnapObjects.add(sg);
 		}
 		else if(snapObject instanceof SnapVirtualNode) {
-			NodeGraphic ng = new NodeGraphic(((SnapVirtualNode)snapObject).snapPoint);
+			NodeGraphic ng = new NodeGraphic(((SnapVirtualNode)snapObject).snapPoint,mercToLocal);
 			
-			ng.setStyle(styleInfo.HOVER_SEGMENT_STYLE,pixelsToMerc);
+			ng.setStyle(styleInfo.HOVER_SEGMENT_STYLE,pixelsToLocalScale);
 			
 			newSnapObjects.add(ng);
 		}
 		else if(snapObject instanceof SnapWay) {
-			WayGraphic ng = new WayGraphic(((SnapWay)snapObject).way);
+			WayGraphic ng = new WayGraphic(((SnapWay)snapObject).way,mercToLocal);
 			
-			ng.setStyle(styleInfo.HOVER_SEGMENT_STYLE,pixelsToMerc);
+			ng.setStyle(styleInfo.HOVER_SEGMENT_STYLE,pixelsToLocalScale);
 			
 			newSnapObjects.add(ng);
 		}
@@ -168,18 +205,18 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		for(EditObject editObject:editObjects) {
 
 			if(editObject instanceof EditNode) {
-				NodeGraphic ng = new NodeGraphic(((EditNode)editObject).node);
-				ng.setStyle(style,this.pixelsToMerc);
+				NodeGraphic ng = new NodeGraphic(((EditNode)editObject).node,mercToLocal);
+				ng.setStyle(style,this.pixelsToLocalScale);
 				newEditObjects.add(ng);
 			}
 			else if(editObject instanceof EditSegment) {
-				SegmentGraphic sg = new SegmentGraphic(((EditSegment)editObject).en1.node.getPoint(),((EditSegment)editObject).en2.node.getPoint());
-				sg.setStyle(style,this.pixelsToMerc);
+				SegmentGraphic sg = new SegmentGraphic(((EditSegment)editObject).en1.node.getPoint(),((EditSegment)editObject).en2.node.getPoint(),mercToLocal);
+				sg.setStyle(style,this.pixelsToLocalScale);
 				newEditObjects.add(sg);
 			}
 			else if(editObject instanceof EditVirtualNode) {
-				NodeGraphic ng = new NodeGraphic(((EditVirtualNode)editObject).enVirtual.point);
-				ng.setStyle(style,this.pixelsToMerc);
+				NodeGraphic ng = new NodeGraphic(((EditVirtualNode)editObject).enVirtual.point,mercToLocal);
+				ng.setStyle(style,this.pixelsToLocalScale);
 				newEditObjects.add(ng);
 			}
 		}
@@ -198,18 +235,18 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		//main selection objects
 		for(Object object:selection) {
 			if(object instanceof OsmNode) {
-				NodeGraphic ng = new NodeGraphic((OsmNode)object);
-				ng.setStyle(style,this.pixelsToMerc);
+				NodeGraphic ng = new NodeGraphic((OsmNode)object,mercToLocal);
+				ng.setStyle(style,this.pixelsToLocalScale);
 				newSelectObjects.add(ng);
 			}
 			else if(object instanceof OsmWay) {
-				WayGraphic wg = new WayGraphic((OsmWay)object);
-				wg.setStyle(style,this.pixelsToMerc);
+				WayGraphic wg = new WayGraphic((OsmWay)object,mercToLocal);
+				wg.setStyle(style,this.pixelsToLocalScale);
 				newSelectObjects.add(wg);
 			}
 			else if(object instanceof VirtualNode) {
-				NodeGraphic ng = new NodeGraphic(((VirtualNode)object).point);
-				ng.setStyle(style,this.pixelsToMerc);
+				NodeGraphic ng = new NodeGraphic(((VirtualNode)object).point,mercToLocal);
+				ng.setStyle(style,this.pixelsToLocalScale);
 				newSelectObjects.add(ng);
 			}
 		}
@@ -223,8 +260,8 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 				for(Integer i:wayNodeSelection) {
 					if((i >= 0)&&(i < nodes.size())) {
 						node = nodes.get(i);
-						NodeGraphic ng = new NodeGraphic((OsmNode)object);
-						ng.setStyle(style,this.pixelsToMerc);
+						NodeGraphic ng = new NodeGraphic((OsmNode)object,mercToLocal);
+						ng.setStyle(style,this.pixelsToLocalScale);
 						newSelectObjects.add(ng);
 					}
 				}
@@ -245,31 +282,24 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {		
 		//update the stroke values
 		if(zoomChanged) {
-			this.pixelsToMerc = viewRegionManager.getZoomScaleMercPerPixel();
+			this.pixelsToLocalScale = viewRegionManager.getZoomScaleLocalPerPixel();
+			this.pixelsToMercatorScale = viewRegionManager.getZoomScaleMercPerPixel();
 			
 			if(this.selectObjects != null) {
 				for(Node node:selectObjects) {
-					((ShapeGraphic)node).setPixelsToMerc(pixelsToMerc);
+					((ShapeGraphic)node).setPixelsToLocalScale(pixelsToLocalScale);
 				}
 			}
 			if(this.pendingObjects != null) {
 				for(Node node:pendingObjects) {
-					((ShapeGraphic)node).setPixelsToMerc(pixelsToMerc);
+					((ShapeGraphic)node).setPixelsToLocalScale(pixelsToLocalScale);
 				}
 			}
 			if(this.activeSnapObjects != null) {
 				for(Node node:activeSnapObjects) {
-					((ShapeGraphic)node).setPixelsToMerc(pixelsToMerc);
+					((ShapeGraphic)node).setPixelsToLocalScale(pixelsToLocalScale);
 				}
 			}
-			
-			
-//			this.setPixelsToMercScale(viewRegionManager.getZoomScaleMercPerPixel());
-//			for(Node node:getChildren()) {
-//				if(node instanceof Feature) {
-//					((Feature)node).setPixelsToLocal(pixelsToLocalScale);
-//				}
-//			}
 		}
 	}
 	
@@ -281,6 +311,93 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	
 	@Override
 	public void onPanEnd(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onLocalCoordinatesSet(ViewRegionManager vrm) {
+		this.mercToLocal = vrm.getMercatorToLocal();
+		this.localToMerc = vrm.getLocalToMercator();
+		this.pixelsToLocalScale = vrm.getZoomScaleLocalPerPixel();
+		Affine localToMercFX = vrm.getLocalToMercatorFX();
+		this.getTransforms().setAll(localToMercFX);
+	}
+	
+	private void setReticle(Rectangle2D dataBounds) {
+		Style style = styleInfo.SELECT_STYLE;
+		
+		Point2D localPoint = new Point2D.Double();
+		Path path = new Path();
+		MoveTo moveTo;
+		LineTo lineTo;
+		ClosePath closePath;
+		
+		//outer boundary
+		moveTo = new MoveTo();
+		localPoint.setLocation(0,0);
+		mercToLocal.transform(localPoint,localPoint);
+		moveTo.setX(localPoint.getX());
+		moveTo.setY(localPoint.getY());
+		path.getElements().add(moveTo);
+		
+		lineTo = new LineTo();
+		localPoint.setLocation(1,0);
+		mercToLocal.transform(localPoint,localPoint);
+		lineTo.setX(localPoint.getX());
+		lineTo.setY(localPoint.getY());
+		path.getElements().add(lineTo);
+		
+		lineTo = new LineTo();
+		localPoint.setLocation(1,1);
+		mercToLocal.transform(localPoint,localPoint);
+		lineTo.setX(localPoint.getX());
+		lineTo.setY(localPoint.getY());
+		path.getElements().add(lineTo);
+		
+		lineTo = new LineTo();
+		localPoint.setLocation(0,1);
+		mercToLocal.transform(localPoint,localPoint);
+		lineTo.setX(localPoint.getX());
+		lineTo.setY(localPoint.getY());
+		path.getElements().add(lineTo);
+		
+		closePath = new ClosePath();
+		path.getElements().add(closePath);
+		
+		//inner boundary
+		moveTo = new MoveTo();
+		localPoint.setLocation(dataBounds.getMinX(),dataBounds.getMinY());
+		mercToLocal.transform(localPoint,localPoint);
+		moveTo.setX(localPoint.getX());
+		moveTo.setY(localPoint.getY());
+		path.getElements().add(moveTo);
+		
+		lineTo = new LineTo();
+		localPoint.setLocation(dataBounds.getMinX(),dataBounds.getMaxY());
+		mercToLocal.transform(localPoint,localPoint);
+		lineTo.setX(localPoint.getX());
+		lineTo.setY(localPoint.getY());
+		path.getElements().add(lineTo);
+		
+		lineTo = new LineTo();
+		localPoint.setLocation(dataBounds.getMaxX(),dataBounds.getMaxY());
+		mercToLocal.transform(localPoint,localPoint);
+		lineTo.setX(localPoint.getX());
+		lineTo.setY(localPoint.getY());
+		path.getElements().add(lineTo);
+		
+		lineTo = new LineTo();
+		localPoint.setLocation(dataBounds.getMaxX(),dataBounds.getMinY());
+		mercToLocal.transform(localPoint,localPoint);
+		lineTo.setX(localPoint.getX());
+		lineTo.setY(localPoint.getY());
+		path.getElements().add(lineTo);
+		
+		closePath = new ClosePath();
+		path.getElements().add(closePath);		
+		
+		path.setFill(Color.BLUE);
+
+		this.getChildren().add(path);
+	}
 	
 	// </editor-fold>
 	
@@ -301,30 +418,17 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	@Override
 	public void setActiveState(boolean isActive) {
 		super.setActiveState(isActive);
-//		MapPanel mapPanel = this.getMapPanel();
-//		if(mapPanel != null) {
-//			if(isActive) {
-//				mapPanel.addMouseListener(this);
-//				mapPanel.addMouseMotionListener(this);
-//				mapPanel.addKeyListener(this);
-//			}
-//			else {
-//				mapPanel.removeMouseListener(this);
-//				mapPanel.removeMouseMotionListener(this);
-//				mapPanel.removeKeyListener(this);
-//			}
-//		}
 		if(isActive) {
 			this.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
 			this.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
-			this.setVisible(true);
+//			this.setVisible(true);
 		}
 		else {
 			this.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
 			this.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
 			//clear the last point received
 			latestMouseMerc = null;
-			this.setVisible(false);
+//			this.setVisible(false);
 		}
 	}
 	
@@ -393,6 +497,7 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 
 	public void mouseClicked(MouseEvent e) {
 		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
+		localToMerc.transform(mouseMerc,mouseMerc);
 		if(e.getButton() == MouseButton.PRIMARY) {
 			if(mouseClickAction != null) {
 				//let the mouse edit action handle the press
@@ -419,9 +524,10 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	public void mouseMoved(MouseEvent e) {
 		
 		//read mouse location in global coordinates
-		latestMouseMerc = new Point2D.Double(e.getX(),e.getY());
-		double scalePixelsPerMerc = viewRegionManager.getZoomScalePixelsPerMerc();
-		double mercRad = SNAP_RADIUS_PIXELS / scalePixelsPerMerc;
+		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
+		localToMerc.transform(mouseMerc,mouseMerc);
+		latestMouseMerc = mouseMerc;
+		double mercRad = SNAP_RADIUS_PIXELS * this.pixelsToMercatorScale;
 		double mercRadSq = mercRad * mercRad;
 		
 		//handle a move preview

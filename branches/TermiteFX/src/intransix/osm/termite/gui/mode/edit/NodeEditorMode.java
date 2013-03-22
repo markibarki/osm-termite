@@ -8,6 +8,7 @@ import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.app.edit.action.NodeToolClickAction;
 import intransix.osm.termite.app.edit.action.CreateMoveMoveAction;
 import intransix.osm.termite.app.edit.action.CreateSnapMoveAction;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 //import java.awt.Cursor;
 
 /**
@@ -31,7 +32,8 @@ public class NodeEditorMode extends EditorMode {
 	//====================
 	
 	/** Constructor */
-	public NodeEditorMode() {
+	public NodeEditorMode(MapLayerManager mapLayerManager) {
+		super(mapLayerManager);
 	}
 	
 //@TODO - fix setting of edit manager and layer

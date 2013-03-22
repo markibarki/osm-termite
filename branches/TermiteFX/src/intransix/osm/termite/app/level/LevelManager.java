@@ -18,7 +18,6 @@ import java.util.*;
  */
 public class LevelManager implements MapDataListener {
 	
-	private MapDataManager mapDataManager;
 	private FilterManager filterManager;
 	
 	private OsmWay selectedStructure;
@@ -28,8 +27,7 @@ public class LevelManager implements MapDataListener {
 	
 	private TreeMap<OsmWay,List<OsmRelation>> activeTreeMap = null;
 	
-	public LevelManager(MapDataManager mapDataManager, FilterManager filterManager) {
-		this.mapDataManager = mapDataManager;
+	public LevelManager(FilterManager filterManager) {
 		this.filterManager = filterManager;
 	}
 	
@@ -38,7 +36,7 @@ public class LevelManager implements MapDataListener {
 	 * UI thread.
 	 */
 	@Override
-	public void onMapData(boolean dataPresent) {
+	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
 		
 	}
 	
@@ -48,8 +46,8 @@ public class LevelManager implements MapDataListener {
 	 *						by this edit action.
 	 */
 	@Override
-	public void osmDataChanged(int editNumber) {
-		mapDataUpdated();
+	public void osmDataChanged(MapDataManager mapDataManager, int editNumber) {
+		mapDataUpdated(mapDataManager);
 	}
 	
 	/** This returns the priority for this object as a map data listener. */
@@ -59,7 +57,7 @@ public class LevelManager implements MapDataListener {
 	}
 	
 	/** This method should be called when the map data is updated, from the UI thread. */
-	public void mapDataUpdated() {
+	public void mapDataUpdated(MapDataManager mapDataManager) {
 		OsmData osmData = mapDataManager.getOsmData();
 		if(osmData != null) {
 			TreeMap<OsmWay,List<OsmRelation>> newTreeMap = new TreeMap<OsmWay,List<OsmRelation>>(new WayComparator());

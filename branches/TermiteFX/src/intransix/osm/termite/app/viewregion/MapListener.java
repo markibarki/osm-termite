@@ -14,4 +14,5 @@ public interface MapListener {
 	public void onPanStep(ViewRegionManager vrm);
 	public void onPanEnd(ViewRegionManager vrm);
 	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged);
+	public void onLocalCoordinatesSet(ViewRegionManager vrm);
 }

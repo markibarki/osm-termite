@@ -153,6 +153,7 @@ public class TermiteFX extends Application {
 		
 		//filter
 		filterManager = new FilterManager();
+		mapDataManager.addMapDataListener(filterManager);
 //		
 //		//levels
 //		levelManager = new LevelManager(mapDataManager, filterManager);
