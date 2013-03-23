@@ -28,7 +28,7 @@ public class ChangeFeatureTypeAction {
 		MapDataManager mapDataManager = editManager.getOsmData();
 		
 		if(!selection.isEmpty()) {
-			TypeChangeEdit tce = new TypeChangeEdit(mapDataManager);
+			TypeChangeEdit tce = new TypeChangeEdit(mapDataManager,featureTypeManager);
 			tce.modifyType(selection,featureInfo);
 		}
 		else {

@@ -1,12 +1,7 @@
 package intransix.osm.termite.app.maplayer;
 
-import intransix.osm.termite.app.viewregion.ViewRegionManager;
-import intransix.osm.termite.gui.TermiteFXGui;
+import intransix.osm.termite.gui.map.MapPane;
 import java.util.*;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
-import javafx.scene.layout.Pane;
 
 
 /**
@@ -20,6 +15,7 @@ public class MapLayerManager {
 	//======================
 	
 	private List<MapLayer> mapLayers = new ArrayList<>();
+	private MapPane mapPane;
 	
 	private Comparator<MapLayer> comp = new Comparator<MapLayer>() {
 		@Override
@@ -39,11 +35,23 @@ public class MapLayerManager {
 		return mapLayers;
 	}
 	
+	/** This should be called to set the world pane into the layer manager. It
+	 * is used by layers to provide mouse events. */
+	public void setMapPane(MapPane mapPane) {
+		this.mapPane = mapPane;
+	}
+	
+	/** This method returns the pane the represents the world. The coordinates
+	 * are the Mercator coordinates defined in this project. IT can be used to handle
+	 * mouse events tied to a geographic coordinates. */
+	public MapPane getMapPane() {
+		return mapPane;
+	}
+	
 	/** This method adds a map layer. */
 	public void addLayer(MapLayer layer) {
 		if(!mapLayers.contains(layer)) {
 			mapLayers.add(layer);
-			layer.connect(this);
 			
 			//sort collection and update layers
 			Collections.sort(mapLayers, comp);
@@ -54,7 +62,6 @@ public class MapLayerManager {
 	/** This method removes a map layer. */
 	public void removeLayer(MapLayer layer) {
 		mapLayers.remove(layer);
-		layer.disconnect(this);
 		notifyListChange();
 	}
 	

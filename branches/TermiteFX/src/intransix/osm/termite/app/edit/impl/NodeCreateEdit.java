@@ -23,8 +23,11 @@ import java.util.List;
  */
 public class NodeCreateEdit extends EditOperation {
 	
-	public NodeCreateEdit(MapDataManager mapDataManager) {
+	FeatureTypeManager featureTypeManager;
+	
+	public NodeCreateEdit(MapDataManager mapDataManager, FeatureTypeManager featureTypeManager) {
 		super(mapDataManager);
+		this.featureTypeManager = featureTypeManager;
 	}
 	
 	public OsmNode nodeToolClicked(EditDestPoint destPoint, FeatureInfo featureInfo, 
@@ -42,10 +45,7 @@ if(destPoint.snapNode != null) {
 			OsmNodeSrc nodeSrc = new OsmNodeSrc();
 			nodeSrc.setPosition(destPoint.point.getX(),destPoint.point.getY());
 
-			//get the properties
-//@TODO clean this line up
-//			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
-FeatureTypeManager featureTypeManager = null;			
+			//get the properties	
 			List<PropertyPair> properties = featureTypeManager.getFeatureProperties(featureInfo);
 			for(PropertyPair pp:properties) {
 				nodeSrc.putProperty(pp.key,pp.value);

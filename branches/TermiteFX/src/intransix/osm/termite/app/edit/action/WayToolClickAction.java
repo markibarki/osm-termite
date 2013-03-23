@@ -80,7 +80,8 @@ public class WayToolClickAction implements MouseClickAction {
 		}
 		
 		//get the mouse location
-		Point2D mercPoint = editManager.getMousePointMerc();
+//		Point2D mercPoint = editManager.getMousePointMerc();
+Point2D mercPoint = null;
 //handle this better!!!
 if(mercPoint == null) {
 	mercPoint = new Point2D.Double();
@@ -115,7 +116,7 @@ if(mercPoint == null) {
 		}
 	
 		//execute a way node addition
-		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
+		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData(),featureTypeManager);
 		boolean success = wne.wayToolClicked(clickDestPoint,activeWay,insertIndex,activeNode,featureInfo,activeLevel);
 		
 		if(success) {
@@ -207,6 +208,8 @@ if(mercPoint == null) {
 				}
 			}
 		}
+		
+		editManager.pendingObjectsUpdated();
 	}
 	
 	private void resetWayEdit() {

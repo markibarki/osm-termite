@@ -80,6 +80,14 @@ public class EditManager {
 		this.mapDataManager = mapDataManager;
 	}
 	
+	public void setEditModes(SelectEditorMode selectMode,
+			NodeEditorMode nodeMode,
+			WayEditorMode wayMode) {
+		this.selectMode = selectMode;
+		this.nodeMode = nodeMode;
+		this.wayMode = wayMode;
+	}
+	
 	//---------------------
 	// Edit State Accessors
 	//---------------------
@@ -251,9 +259,9 @@ public class EditManager {
 	}
 	
 	/** This is a method to look up the current mouse point, from the edit layer. */
-	public Point2D getMousePointMerc() {
-		return editLayer.getMouseMerc();
-	}
+//	public Point2D getMousePointMerc() {
+//		return editLayer.getMouseMerc();
+//	}
 	
 	/** This method retrieves the edit layer. */
 	public EditLayer getEditLayer() {

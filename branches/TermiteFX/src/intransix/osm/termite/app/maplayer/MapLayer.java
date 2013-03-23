@@ -27,10 +27,8 @@ public class MapLayer extends Pane {
 	
 	
 	private StringProperty nameProperty = new SimpleStringProperty();
-	private boolean active = false;
 	private float order;
 	private double preferredAngleRadians = INVALID_ANGLE;	
-	private MapLayerManager mapLayerManager;
 	
 public MapLayer() {
 	this.setOpacity(.5);
@@ -62,14 +60,6 @@ public MapLayer() {
 		return getName();
 	}
 	
-	public void setActiveState(boolean active) {
-		this.active = active;
-	}
-	
-	public final boolean getActiveState() {
-		return active;
-	}
-	
 	public boolean hasPreferredAngle() {
 		return (preferredAngleRadians != INVALID_ANGLE);
 	}
@@ -87,10 +77,4 @@ public MapLayer() {
 	public void setPreferredAngleRadians(double preferredAngleRadians) {
 		this.preferredAngleRadians = preferredAngleRadians;
 	}
-	
-	public void connect(MapLayerManager mapLayerManager) {
-	}
-	
-	public void disconnect(MapLayerManager mapLayerManager) {
-	}	
 }

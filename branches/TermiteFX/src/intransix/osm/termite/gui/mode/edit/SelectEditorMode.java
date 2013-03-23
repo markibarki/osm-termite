@@ -14,9 +14,14 @@ import intransix.osm.termite.app.edit.action.SelectClickAction;
 import intransix.osm.termite.app.edit.action.SelectSnapMoveAction;
 import intransix.osm.termite.app.edit.action.*;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.event.EventHandler;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 
 /**
  * This method is used to select objects and to take any actions assoicated with
@@ -129,12 +134,12 @@ throw new RuntimeException("Add create level action back");
 	/** This method is called when the editor mode is turned on. 
 	 */
 	@Override
-	public void turnOn() {
+	public void turnOn(MapLayerManager mapLayerManager) {
 		if(editLayer != null) {
-			getMapLayerManager().addLayer(editLayer);
-
-			editLayer.setActiveState(true);
+			mapLayerManager.addLayer(editLayer);
+editLayer.on(mapLayerManager.getMapPane());			
 			setSelectState();
+			
 			editManager.addFeatureSelectedListener(this);
 		}
 	}
@@ -142,11 +147,10 @@ throw new RuntimeException("Add create level action back");
 	/** This method is called when the editor mode is turned off. 
 	 */
 	@Override
-	public void turnOff() {
+	public void turnOff(MapLayerManager mapLayerManager) {
 		if(editLayer != null) {
 			getMapLayerManager().removeLayer(editLayer);
-			
-			editLayer.setActiveState(false);
+editLayer.off(mapLayerManager.getMapPane());			
 			editManager.removeFeatureSelectedListener(this);
 		}
 		//remove from move state if it is there
@@ -173,14 +177,14 @@ throw new RuntimeException("Add create level action back");
 	/** This method sets the select submode. */
 	public boolean setSelectState() {
 		if(this.getModeEnabled()) {
-			MouseClickAction mouseClickAction = new SelectClickAction(editManager);
-			mouseClickAction.init();
+			MouseClickAction clickAction = new SelectClickAction(editManager);
+			clickAction.init();
 			
 			MouseMoveAction snapAction = new SelectSnapMoveAction(editManager);	
 			snapAction.init();
-		
-			editLayer.setMouseClickAction(mouseClickAction);
-			editLayer.setMouseMoveActions(null, snapAction);
+
+			editLayer.setMouseClickAction(clickAction);
+			editLayer.setMouseMoveActions(null,snapAction);
 			
 			//clear any old state, but not selection
 			editManager.clearPending();
@@ -207,25 +211,24 @@ throw new RuntimeException("Add create level action back");
 			if(selection.isEmpty()) return false;
 			
 			//set up move state
-			MouseClickAction mouseClickAction;
+			MouseClickAction clickAction;
 			MouseMoveAction moveAction;
 			if(editManager.getVirtualNodeSelected()) {
-				mouseClickAction = new VirtualNodeClickAction(editManager);	
+				clickAction = new VirtualNodeClickAction(editManager);	
 				moveAction = new CreateMoveMoveAction(editManager);
 			}
 			else {
-				mouseClickAction = new MoveClickAction(editManager);
+				clickAction = new MoveClickAction(editManager);
 				moveAction = new MoveMoveMoveAction(editManager);
 			}
-			mouseClickAction.init();
+			clickAction.init();
 			
 			MouseMoveAction snapAction = new CreateSnapMoveAction(editManager);
 			snapAction.init();
 			moveAction.init();
 			
-//@TODO re insert mouse actions	
-//			editLayer.setMouseClickAction(mouseClickAction);
-//			editLayer.setMouseMoveActions(moveAction, snapAction);
+			editLayer.setMouseClickAction(clickAction);
+			editLayer.setMouseMoveActions(moveAction,snapAction);
 			
 			inMoveState = true;
 			

@@ -221,7 +221,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	/** This method is called when the editor mode is turned on. 
 	 */
 	@Override
-	public void turnOn() {
+	public void turnOn(MapLayerManager mapLayerManager) {
 		if(geocodeLayer != null) {
 //			geocodeLayer.setActiveState(true);
 //			geocodeLayer.setVisible(true);
@@ -235,7 +235,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	/** This method is called when the editor mode is turned off. 
 	 */
 	@Override
-	public void turnOff() {
+	public void turnOff(MapLayerManager mapLayerManager) {
 		if(geocodeLayer != null) {
 //			setLayerState(LayerState.INACTIVE);
 //			

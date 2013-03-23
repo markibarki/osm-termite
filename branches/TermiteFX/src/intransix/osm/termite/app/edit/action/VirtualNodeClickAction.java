@@ -62,13 +62,15 @@ public class VirtualNodeClickAction implements MouseClickAction {
 		
 		if(virtualNode != null) {
 			//set initial position
-			Point2D mouseMerc = editManager.getMousePointMerc();
+//			Point2D mouseMerc = editManager.getMousePointMerc();
+Point2D mouseMerc = null;
 //handle this better!!!
 if(mouseMerc == null) {
 	mouseMerc = new Point2D.Double();
 }
 			editVirtualNode.enVirtual.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
 			
+editManager.pendingObjectsUpdated();
 //			editManager.getEditLayer().notifyContentChange();
 			return true;
 		}
@@ -83,7 +85,7 @@ if(mouseMerc == null) {
 		
 		EditDestPoint clickDestPoint = editManager.getDestinationPoint(mouseMerc);
 		
-		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData());
+		WayNodeEdit wne = new WayNodeEdit(editManager.getOsmData(),editManager.getFeatureTypeManager());
 		wne.nodeInserted(virtualNode.segment,clickDestPoint,levelManager.getSelectedLevel());
 		
 		//clean up and exit move mode

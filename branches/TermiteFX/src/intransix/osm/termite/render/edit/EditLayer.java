@@ -18,6 +18,7 @@ import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
+import intransix.osm.termite.gui.map.MapPane;
 import intransix.osm.termite.map.workingdata.OsmNode;
 import intransix.osm.termite.map.workingdata.OsmWay;
 import java.awt.geom.AffineTransform;
@@ -68,12 +69,9 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	//local coordinate definitions
 	private AffineTransform mercToLocal;
 	private AffineTransform localToMerc;
+	private AffineTransform pixelToMerc;
 	private double pixelsToLocalScale = 1.0;
 	private double pixelsToMercatorScale = 1.0;
-	
-	private Point2D latestMouseMerc = null;
-	
-	private Rectangle2D dataBounds = null;
 	
 	// </editor-fold>
 	
@@ -84,12 +82,6 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	public EditLayer() {
 		this.setName("Edit Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
-		
-		this.setStyle("-fx-background-color: yellow;");
-		
-		this.setPrefSize(1.0,1.0);
-		this.setMinSize(1.0,1.0);
-		this.setMaxSize(1.0,1.0);
 		
 		mouseClickHandler = new EventHandler<MouseEvent>() {
 			@Override
@@ -107,7 +99,17 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 			}
 		};
 	}
-
+	
+	public void on(MapPane mapPane) {
+		mapPane.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+		mapPane.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+	}
+	
+	public void off(MapPane mapPane) {
+		mapPane.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+		mapPane.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+	}
+	
 	
 	// <editor-fold defaultstate="collapsed" desc="Listener Implementation">
 	
@@ -158,7 +160,7 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 			newSnapObjects.add(ng);
 		}
 		else if(snapObject instanceof SnapSegment) {
-			SnapSegment s = ((SnapIntersection)snapObject).s1;
+			SnapSegment s = (SnapSegment)snapObject;
 			SegmentGraphic sg = new SegmentGraphic(s.p1,s.p2,mercToLocal);
 			
 			sg.setStyle(getSegmentHoverStyle(s),pixelsToLocalScale);
@@ -205,12 +207,12 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		for(EditObject editObject:editObjects) {
 
 			if(editObject instanceof EditNode) {
-				NodeGraphic ng = new NodeGraphic(((EditNode)editObject).node,mercToLocal);
+				NodeGraphic ng = new NodeGraphic(((EditNode)editObject).point,mercToLocal);
 				ng.setStyle(style,this.pixelsToLocalScale);
 				newEditObjects.add(ng);
 			}
 			else if(editObject instanceof EditSegment) {
-				SegmentGraphic sg = new SegmentGraphic(((EditSegment)editObject).en1.node.getPoint(),((EditSegment)editObject).en2.node.getPoint(),mercToLocal);
+				SegmentGraphic sg = new SegmentGraphic(((EditSegment)editObject).en1.point,((EditSegment)editObject).en2.point,mercToLocal);
 				sg.setStyle(style,this.pixelsToLocalScale);
 				newEditObjects.add(sg);
 			}
@@ -260,7 +262,7 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 				for(Integer i:wayNodeSelection) {
 					if((i >= 0)&&(i < nodes.size())) {
 						node = nodes.get(i);
-						NodeGraphic ng = new NodeGraphic((OsmNode)object,mercToLocal);
+						NodeGraphic ng = new NodeGraphic((OsmNode)node,mercToLocal);
 						ng.setStyle(style,this.pixelsToLocalScale);
 						newSelectObjects.add(ng);
 					}
@@ -284,6 +286,7 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		if(zoomChanged) {
 			this.pixelsToLocalScale = viewRegionManager.getZoomScaleLocalPerPixel();
 			this.pixelsToMercatorScale = viewRegionManager.getZoomScaleMercPerPixel();
+			this.pixelToMerc = viewRegionManager.getPixelsToMercator();
 			
 			if(this.selectObjects != null) {
 				for(Node node:selectObjects) {
@@ -322,8 +325,6 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	}
 	
 	private void setReticle(Rectangle2D dataBounds) {
-		Style style = styleInfo.SELECT_STYLE;
-		
 		Point2D localPoint = new Point2D.Double();
 		Path path = new Path();
 		MoveTo moveTo;
@@ -395,6 +396,7 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		path.getElements().add(closePath);		
 		
 		path.setFill(Color.BLUE);
+		path.setOpacity(.5);
 
 		this.getChildren().add(path);
 	}
@@ -413,24 +415,7 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		this.moveMouseMoveAction = moveMouseMoveAction;
 		this.snapMouseMoveAction = snapMouseMoveAction;
 	}
-	
-	/** This mode sets the edit layer active. */
-	@Override
-	public void setActiveState(boolean isActive) {
-		super.setActiveState(isActive);
-		if(isActive) {
-			this.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-			this.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
-//			this.setVisible(true);
-		}
-		else {
-			this.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-			this.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
-			//clear the last point received
-			latestMouseMerc = null;
-//			this.setVisible(false);
-		}
-	}
+
 	
 	// </editor-fold>
 	
@@ -492,12 +477,9 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	
 	// </editor-fold>
 	
-	// <editor-fold defaultstate="collapsed" desc="Mouse Listeners">
-	
-
 	public void mouseClicked(MouseEvent e) {
 		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
-		localToMerc.transform(mouseMerc,mouseMerc);
+		pixelToMerc.transform(mouseMerc,mouseMerc);
 		if(e.getButton() == MouseButton.PRIMARY) {
 			if(mouseClickAction != null) {
 				//let the mouse edit action handle the press
@@ -505,57 +487,27 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 			}
 		}
 	}
-//	
-//	@Override
-//	public void mouseDragged(MouseEvent e) {
-//		//no edit move with mouse drag - explicit move command needed
-//	}
-//	
-//	@Override
-//	public void mouseEntered(MouseEvent e) {
-//	}
-//	
-//	@Override
-//	public void mouseExited(MouseEvent e) {
-//		editManager.clearPreview();
-//	}
-//	
-//	@Override
+	
 	public void mouseMoved(MouseEvent e) {
 		
 		//read mouse location in global coordinates
 		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
-		localToMerc.transform(mouseMerc,mouseMerc);
-		latestMouseMerc = mouseMerc;
+		pixelToMerc.transform(mouseMerc,mouseMerc);
 		double mercRad = SNAP_RADIUS_PIXELS * this.pixelsToMercatorScale;
 		double mercRadSq = mercRad * mercRad;
 		
 		//handle a move preview
 		if(moveMouseMoveAction != null) {
-			moveMouseMoveAction.mouseMoved(latestMouseMerc,mercRadSq,e);
+			moveMouseMoveAction.mouseMoved(mouseMerc,mercRadSq,e);
 		}
 		
 		//get the snap nodes for the move
 		if(snapMouseMoveAction != null) {
-			snapMouseMoveAction.mouseMoved(latestMouseMerc,mercRadSq,e);
+			snapMouseMoveAction.mouseMoved(mouseMerc,mercRadSq,e);
 		}
 	}
 	
-	public Point2D getMouseMerc() {
-		return latestMouseMerc;
-	}
-//	
-//	@Override
-//	public void mousePressed(MouseEvent e) {
-//		
-//	}
-//	
-//	@Override
-//	public void mouseReleased(MouseEvent e) {
-//	}
-//	
-//	// </editor-fold>
-//	
+	
 //	// <editor-fold defaultstate="collapsed" desc="Key Listener">
 //	
 //	/** Handle the key typed event from the text field. */
@@ -608,13 +560,7 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 //    }
 //	
 //	// </editor-fold>
-//
-//
-//	//============================
-//	// Private Methods
-//	//============================
-//
-//	
+
 
 
 }

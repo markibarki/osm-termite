@@ -2,15 +2,18 @@ package intransix.osm.termite.gui.mode.download;
 
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
-import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.gui.mode.EditorMode;
 import intransix.osm.termite.gui.task.MapDataRequestTask;
 import intransix.osm.termite.render.checkout.DownloadLayer;
 import intransix.osm.termite.render.checkout.DownloadToolbar;
 import java.awt.geom.Rectangle2D;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 
 /**
  *
@@ -67,18 +70,16 @@ public class DownloadEditorMode extends EditorMode {
 	
 	/** This method is called when the editor mode is turned on. 
 	 */
-	public void turnOn() {
-		getMapLayerManager().addLayer(downloadLayer);
-		downloadLayer.relocate(0,0);
-		downloadLayer.setActiveState(true);
+	public void turnOn(MapLayerManager mapLayerManager) {
+		mapLayerManager.addLayer(downloadLayer);
+downloadLayer.on(mapLayerManager.getMapPane());	
 	}
 	
 	/** This method is called when the editor mode is turned off. 
 	 */
-	public void turnOff() {
-		getMapLayerManager().removeLayer(downloadLayer);
-		
-		downloadLayer.setActiveState(false);
+	public void turnOff(MapLayerManager mapLayerManager) {
+		mapLayerManager.removeLayer(downloadLayer);
+downloadLayer.off(mapLayerManager.getMapPane());	
 	}	
 	
 	public void doDownload() {

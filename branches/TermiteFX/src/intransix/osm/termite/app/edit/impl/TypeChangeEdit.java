@@ -16,9 +16,12 @@ import java.util.List;
  */
 public class TypeChangeEdit extends EditOperation {
 	
+	FeatureTypeManager featureTypeManager;
+	
 	/** Constructor. */
-	public TypeChangeEdit(MapDataManager mapDataManager) {
+	public TypeChangeEdit(MapDataManager mapDataManager, FeatureTypeManager featureTypeManager) {
 		super(mapDataManager);
+		this.featureTypeManager = featureTypeManager;
 	}
 	
 	/* This method updates the feature type associated with an object or set of objects.
@@ -30,9 +33,6 @@ System.out.println("Update feature Type");
 
 		try {
 			//get the new properties
-//@TODO clean this line up
-//			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
-FeatureTypeManager featureTypeManager = null;			
 			List<PropertyPair> newProperties = featureTypeManager.getFeatureProperties(featureInfo);
 			
 			//traverse list of objects to update

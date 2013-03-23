@@ -168,9 +168,11 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		//map layer manager
 		mapLayerManager = new MapLayerManager();
 		mapLayerManager.addLayerListener(mapPane);
+mapLayerManager.setMapPane(mapPane);
 		
 		//editor manager
 		editorModeManager = new EditorModeManager();
+		editorModeManager.setMapLayerManager(mapLayerManager);
 		termiteToolBar.setEditorModeManager(editorModeManager);
 		
 		//-------------
@@ -200,7 +202,6 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 		//--------------
 		
 		baseMapLayer = new TileLayer();
-		baseMapLayer.setActiveState(true);
 		mapLayerManager.addLayer(baseMapLayer);
 		//passs initial view
 		baseMapLayer.onMapViewChange(viewRegionManager, true);
@@ -318,6 +319,7 @@ featureTree.init();
 		selectEditorMode.setEditManager(editManager);
 		nodeEditorMode.setEditManager(editManager);
 		wayEditorMode.setEditManager(editManager);
+		editManager.setEditModes(selectEditorMode, nodeEditorMode, wayEditorMode);
 	}
 	
 	/** This method is called when the baseMap changes. */

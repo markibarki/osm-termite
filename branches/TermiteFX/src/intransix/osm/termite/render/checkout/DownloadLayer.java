@@ -3,6 +3,9 @@ package intransix.osm.termite.render.checkout;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
+import intransix.osm.termite.gui.map.MapPane;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.input.MouseButton;
@@ -28,10 +31,11 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	private Rectangle selection = new Rectangle();
 	private boolean selectionActive = false;
 	private boolean selecting = false;
+	
+	private AffineTransform pixelToMerc;
+	
 	private EventHandler<MouseEvent> mouseClickHandler;
 	private EventHandler<MouseEvent> mouseMoveHandler;
-	
-	private Rectangle sizeTemplate;
 	
 	//======================
 	// Public Methods
@@ -41,18 +45,15 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	public DownloadLayer() {
 		this.setName("Checkout Search Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
-		this.setVisible(false);
 		
-		createSizeTemplate();
-		
+		selection.setFill(FILL_COLOR);
+		selection.setStroke(STROKE_COLOR);
+	
 		mouseClickHandler = new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
 				if(e.getButton() == MouseButton.PRIMARY) {
-					double mercX = e.getX();
-					double mercY = e.getY();
-
-					mouseClicked(mercX,mercY);
+					mouseClicked(e);
 				}
 			}
 		};
@@ -60,34 +61,19 @@ public class DownloadLayer extends MapLayer implements MapListener {
 		mouseMoveHandler = new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
-				double mercX = e.getX();
-				double mercY = e.getY();
-				mouseMoved(mercX,mercY);
+				mouseMoved(e);
 			}
 		};
-		
-		selection.setFill(FILL_COLOR);
-		selection.setStroke(STROKE_COLOR);
 	}
 	
-	/** This mode sets the edit layer active. */
-	@Override
-	public void setActiveState(boolean isActive) {
-		super.setActiveState(isActive);
-		if(isActive) {
-			this.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-			this.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
-			
-			//I don't know how else to size this properly
-			this.getChildren().add(sizeTemplate);
-		}
-		else {
-			this.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
-			this.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
-			
-			//I don't know how else to set the size properly
-			this.getChildren().remove(sizeTemplate);
-		}
+	public void on(MapPane mapPane) {
+		mapPane.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+		mapPane.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+	}
+	
+	public void off(MapPane mapPane) {
+		mapPane.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+		mapPane.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
 	}
 	
 		
@@ -113,7 +99,11 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	//-------------------------
 	
 	/** Processes a mouse click. */
-	public void mouseClicked(double mercX, double mercY) {
+	public void mouseClicked(MouseEvent e) {
+		Point2D point = new Point2D.Double(e.getX(),e.getY());
+		pixelToMerc.transform(point,point);
+		double mercX = point.getX();
+		double mercY = point.getY();
 		if(!selecting) {
 			startX = mercX;
 			startY = mercY;
@@ -131,8 +121,12 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	}
 
 	/** Processes a mouse move. */
-	public void mouseMoved(double mercX, double mercY) {
+	public void mouseMoved(MouseEvent e) {
 		if(selecting) {
+			Point2D point = new Point2D.Double(e.getX(),e.getY());
+			pixelToMerc.transform(point,point);
+			double mercX = point.getX();
+			double mercY = point.getY();
 			updateSelection(mercX,mercY);
 		}
 	}
@@ -144,6 +138,9 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	/** This method updates the active tile zoom used by the map. */
 	@Override
 	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {
+		
+		this.pixelToMerc = viewRegionManager.getPixelsToMercator();
+		
 		//update the stroke width to be the right nubmer of pixels
 		if((zoomChanged)&&(selection != null)) {
 			selection.setStrokeWidth(STROKE_WIDTH / viewRegionManager.getZoomScalePixelsPerMerc());
@@ -160,7 +157,8 @@ public class DownloadLayer extends MapLayer implements MapListener {
 	public void onPanEnd(ViewRegionManager vrm) {}
 	
 	@Override
-	public void onLocalCoordinatesSet(ViewRegionManager vrm) {}
+	public void onLocalCoordinatesSet(ViewRegionManager vrm) {
+	}
 	
 //	// <editor-fold defaultstate="collapsed" desc="Key Listener">
 //	
@@ -196,12 +194,5 @@ public class DownloadLayer extends MapLayer implements MapListener {
 		selection.setWidth(Math.abs(mercX - startX));
 		selection.setHeight(Math.abs(mercY - startY));
 	}
-	
-	private void createSizeTemplate() {
-		sizeTemplate = new Rectangle(0,0,1,1);
-		sizeTemplate.relocate(0,0);
-		sizeTemplate.setStroke(Color.BLUE);
-		sizeTemplate.setStrokeWidth(.00001);
-		sizeTemplate.setFill(Color.AQUA);
-	}
+
 }

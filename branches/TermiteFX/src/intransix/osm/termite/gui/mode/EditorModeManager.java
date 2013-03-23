@@ -1,8 +1,7 @@
 package intransix.osm.termite.gui.mode;
 
-import intransix.osm.termite.map.workingdata.OsmData;
 import intransix.osm.termite.app.mapdata.*;
-import intransix.osm.termite.app.edit.*;
+import intransix.osm.termite.app.maplayer.MapLayerManager;
 import java.util.*;
 
 /**
@@ -15,6 +14,8 @@ public class EditorModeManager implements MapDataListener {
 	// Properties
 	//========================
 	
+	private MapLayerManager mapLayerManager;
+	
 	private List<EditorMode> editorModes = new ArrayList<EditorMode>();
 	private EditorMode activeMode = null; //the active editor mode
 	private EditorMode defaultNonDataMode;
@@ -25,6 +26,10 @@ public class EditorModeManager implements MapDataListener {
 	//========================
 	// Public Methods
 	//========================
+	
+	public void setMapLayerManager(MapLayerManager mapLayerManager) {
+		this.mapLayerManager = mapLayerManager;
+	}
 	
 	public EditorMode getActiveMode() {
 		return activeMode;
@@ -50,19 +55,18 @@ public class EditorModeManager implements MapDataListener {
 		//get rid of old mode
 		if(activeMode != null) {
 			//turn off mode
-			this.activeMode.turnOff();
+			this.activeMode.turnOff(mapLayerManager);
 			this.activeMode = null;
 		}
 
 		activeMode = mode;
 
 		//prepare the new mode
-		if(mode != null) {
-			mode.turnOn();
+		if(activeMode != null) {
+			activeMode.turnOn(mapLayerManager);
 		}
 
 		//set this mode as active
-		this.activeMode = mode;
 		for(EditorModeListener modeListener:modeListeners) {
 			modeListener.activeModeChanged(activeMode);
 		}
