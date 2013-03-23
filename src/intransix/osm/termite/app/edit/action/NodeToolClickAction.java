@@ -38,7 +38,7 @@ public class NodeToolClickAction implements MouseClickAction {
 		//It will be overwritten on the first mouse move
 		FeatureTypeManager featureTypeManager = editManager.getFeatureTypeManager();
 		FeatureInfo featureInfo = featureTypeManager.getActiveFeatureType();
-//		setPendingData(new Point2D.Double(0,0),featureInfo);
+		setPendingData(new Point2D.Double(0,0),featureInfo);
 		
 //		editManager.getEditLayer().notifyContentChange();
 		
@@ -68,7 +68,7 @@ public class NodeToolClickAction implements MouseClickAction {
 		}
 	
 		//execute a node addition
-		NodeCreateEdit nce = new NodeCreateEdit(mapDataManager);
+		NodeCreateEdit nce = new NodeCreateEdit(mapDataManager,featureTypeManager);
 		OsmNode node = nce.nodeToolClicked(clickDestPoint,featureInfo,activeLevel);
 		
 		//prepare for next
@@ -87,6 +87,8 @@ public class NodeToolClickAction implements MouseClickAction {
 		editNode = new EditNode(pendingPoint,featureInfo);
 		movingNodes.add(editNode);
 		pendingObjects.add(editNode);
+		
+		editManager.pendingObjectsUpdated();
 	}
 	
 }

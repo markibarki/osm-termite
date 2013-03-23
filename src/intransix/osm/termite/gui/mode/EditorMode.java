@@ -34,17 +34,11 @@ public abstract class EditorMode {
 	 */
 	public abstract String getIconImageName();
 	
-	/** This method is called when the editor mode is turned on. 
-	 * 
-	 * @param mapPanel	The UI component for the map 
-	 */
-	public abstract void turnOn();
+	/** This method is called when the editor mode is turned on. */
+	public abstract void turnOn(MapLayerManager mapLayerManager);
 	
-	/** This method is called when the editor mode is turned off.
-	 * 
-	 * @param mapPanel The UI component for the map 
-	 */
-	public abstract void turnOff();
+	/** This method is called when the editor mode is turned off. */
+	public abstract void turnOff(MapLayerManager mapLayerManager);
 	
 	/** This method returns true if the mode is enabled. */
 	public boolean getModeEnabled() {

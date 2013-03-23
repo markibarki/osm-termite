@@ -43,6 +43,7 @@ public class CreateMoveMoveAction implements MouseMoveAction {
 			editNode = movingNodes.get(0);
 			editNode.point.setLocation(mouseMerc.getX(), mouseMerc.getY());
 //			editManager.getEditLayer().notifyContentChange();
+editManager.pendingObjectsUpdated();
 		}
 	}
 }

@@ -84,7 +84,9 @@ public class MoveClickAction implements MouseClickAction {
 		}
 		
 		//set this initial position
-//		initMovingNodes();
+		initMovingNodes();
+		
+editManager.pendingObjectsUpdated();		
 		
 		//clean up working data
 		editMap = null;
@@ -126,7 +128,8 @@ public class MoveClickAction implements MouseClickAction {
 	}
 	
 	private void initMovingNodes() {
-		Point2D mouseMerc = editManager.getMousePointMerc();
+//		Point2D mouseMerc = editManager.getMousePointMerc();
+Point2D mouseMerc = null;
 //handle this better!!!
 if(mouseMerc == null) {
 	mouseMerc = moveStartPoint.point;

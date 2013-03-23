@@ -47,8 +47,7 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	
 	//feature info
 	private FeatureTypeManager featureTypeManager;
-	//This list holds the object according to there presentation order as determined
-	//by the feature info map
+	//This is a workign list of hold the ordered features
 	private java.util.List<Shape> orderedFeatures = new ArrayList<>();
 	private FeatureLayerComparator flc = new FeatureLayerComparator();
 	
@@ -69,8 +68,10 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 	@Override
 	public void onMapData(MapDataManager mapDataManager, boolean dataPresent) {
 		
-		//should be active whenever there is map data
-		this.setActiveState(dataPresent);
+		//when data is not present, clear all children
+		if(!dataPresent) {
+			this.getChildren().clear();
+		}
 	}
 	
 	/** This method is called when the data has changed.
@@ -207,6 +208,9 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 			feature.initStyle(theme);
 			feature.setPixelsToLocal(pixelsToLocalScale);
 		}
+		else {
+			feature = (PointFeature)data.getShape();
+		}
 		
 		if(!data.isUpToDate(node)) {
 			feature.updateData(mercToLocal);
@@ -227,6 +231,9 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 			way.setPiggybackData(piggybackIndexRender,data);
 			feature.initStyle(theme);
 			feature.setPixelsToLocal(pixelsToLocalScale);
+		}
+		else {
+			feature = (PathFeature)data.getShape();
 		}
 		
 		if(!data.isUpToDate(way)) {

@@ -150,17 +150,20 @@ public class TermiteFX extends Application {
 		featureTypeManager = new FeatureTypeManager();
 		featureTypeManager.init();
 		gui.setFeatureTypeManager(featureTypeManager);
+	
+//set a feature type temporarily
+featureTypeManager.setActiveFeatureType(featureTypeManager.getFeatureInfoMap().getRoot().getData());
 		
 		//filter
 		filterManager = new FilterManager();
 		mapDataManager.addMapDataListener(filterManager);
-//		
-//		//levels
-//		levelManager = new LevelManager(mapDataManager, filterManager);
-//		mapDataManager.addMapDataListener(levelManager);
-//		gui.setLevelManager(levelManager);
-//		
-//		//edit manager
+		
+		//levels
+		levelManager = new LevelManager(filterManager);
+		mapDataManager.addMapDataListener(levelManager);
+
+		
+		//edit manager
 		editManager = new EditManager(featureTypeManager,levelManager,mapDataManager);
 		gui.setEditManager(editManager); //selection for edit properties
 //

@@ -31,10 +31,11 @@ public class WayNodeEdit extends EditOperation {
 	
 	private OsmWay activeWay;
 	private OsmNode activeNode;
+	private FeatureTypeManager featureTypeManager;
 	
-	
-	public WayNodeEdit(MapDataManager mapDataManager) {
+	public WayNodeEdit(MapDataManager mapDataManager, FeatureTypeManager featureTypeManager) {
 		super(mapDataManager);
+		this.featureTypeManager = featureTypeManager;
 	}
 	
 	public OsmWay getActiveWay() {
@@ -81,9 +82,6 @@ System.out.println("Add a node to a way");
 			}
 
 			//get the properties
-//@TODO clean this line up
-//			FeatureTypeManager featureTypeManager = getMapDataManager().getRenderLayer().getFeatureTypeManager();
-FeatureTypeManager featureTypeManager = null;			
 			List<PropertyPair> properties = featureTypeManager.getFeatureProperties(featureInfo);
 			for(PropertyPair pp:properties) {
 				waySrc.putProperty(pp.key,pp.value);
