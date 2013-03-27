@@ -8,16 +8,20 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.geometry.Bounds;
-import javafx.scene.transform.Scale;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Transform;
 
 /**
- * This is a layer for a tile map source.
+ * This is a layer for a tile map source. I jumped through a few hoops to get 
+ * javafx to do this without rounding problems. I am sure there is a better way
+ * to handle the transformation.
  * 
  * ENHANCEMENTS NEEDED:
  * - This class currently loads all tiles that are requested, whether or not
  * they are still needed by the time the http request starts. This should be fixed.
  * - On zooming this clears the old tiles before new tiles are added. The old tiles
- * should be cleared after the new tiles are added.
+ * should be cleared after the new tiles are added. However, some updates to the 
+ * scale/transformation mechanism would be needed.
  * 
  * @author sutter
  */
@@ -32,9 +36,12 @@ public class TileLayer extends MapLayer implements MapListener {
 	
 	public final static int MAX_ZOOM_EXCESS = 4;
 	
-	public final static double MERC_MULTIPLIER_SCALE = (1 << 16);
+	public final static double MERC_MULTIPLIER_SCALE = (1 << 18);
 	
 	private int tileZoom = INVALID_ZOOM;
+	private AffineTransform mercToTileLayerTransform;
+	private double mercToTileLayerScale;
+	private Transform tileLayerToMercTransformFX;
 	
 	private HashMap<String,Tile> tileCache = new HashMap<>();
 	private TileInfo tileInfo;
@@ -54,14 +61,10 @@ public class TileLayer extends MapLayer implements MapListener {
 		this.setVisible(false);
 		
 		this.tileZoom = INVALID_ZOOM;
-		
-		//image doesn't work well if we use coordinates from 0-1 for world
-		//some rounding takes place somewhere
-		this.setPrefSize(MERC_MULTIPLIER_SCALE,MERC_MULTIPLIER_SCALE);
-		this.setMinSize(MERC_MULTIPLIER_SCALE,MERC_MULTIPLIER_SCALE);
-		this.setMaxSize(MERC_MULTIPLIER_SCALE,MERC_MULTIPLIER_SCALE);
-		Scale scaleCorrectionForTiles = new Scale(1 / MERC_MULTIPLIER_SCALE,1 / MERC_MULTIPLIER_SCALE);
-		this.getTransforms().setAll(scaleCorrectionForTiles); 
+
+		mercToTileLayerScale = MERC_MULTIPLIER_SCALE;
+		mercToTileLayerTransform = AffineTransform.getScaleInstance(mercToTileLayerScale, mercToTileLayerScale);
+		tileLayerToMercTransformFX = Affine.scale(1/mercToTileLayerScale,1/mercToTileLayerScale);	
 	}
 	
 	/** This method sets the view region manager. */
@@ -117,19 +120,6 @@ public class TileLayer extends MapLayer implements MapListener {
 	// Private Methods
 	//=================================
 	
-//	private void updateLayerCoordinates(int tileZoom, int pixelsPerTile) {
-//		
-//		double imagePixelsPerMerc = pixelsPerTile * 2^tileZoom;
-//		
-//		//image doesn't work well if we use coordinates from 0-1 for world
-//		//some rounding takes place somewhere
-//		this.setPrefSize(imagePixelsPerMerc,imagePixelsPerMerc);
-//		this.setMinSize(imagePixelsPerMerc,imagePixelsPerMerc);
-//		this.setMaxSize(imagePixelsPerMerc,imagePixelsPerMerc);
-//		Scale scaleCorrectionForTiles = new Scale(1 / imagePixelsPerMerc,1 / imagePixelsPerMerc);
-//		this.getTransforms().setAll(scaleCorrectionForTiles); 
-//	}
-	
 	/** This method picks an optimal scale for this given viewport. */
 	private void setZoomScale(ViewRegionManager viewRegionManager) {
 		if(tileInfo == null) return;
@@ -147,6 +137,12 @@ public class TileLayer extends MapLayer implements MapListener {
 		else {
 			tileZoom = desiredScale;
 		}		
+		
+		//on a zoom change, update the coordinates of the layer
+		//the update is applied when the tiles are changed
+		mercToTileLayerTransform = viewRegionManager.getMercatorToPixels();
+		mercToTileLayerScale = viewRegionManager.getZoomScalePixelsPerMerc();
+		tileLayerToMercTransformFX = viewRegionManager.getPixelsToMercatorFX();
 	}
 	
 	/** This method updates the active tiles. */
@@ -188,10 +184,14 @@ System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY 
 				tile = getTile(ix,iy,tileZoom);
 				if(tile != null) {
 					workingTiles.add(tile);
+					tile.setLocation(mercToTileLayerTransform, mercToTileLayerScale);
 				}
 			}
 		}
 		
+		this.getChildren().clear();
+		//set the transform used for these tiles - it will be updated on zooming but not pan for now.
+		this.getTransforms().setAll(tileLayerToMercTransformFX); 
 		this.getChildren().setAll(workingTiles);
 		workingTiles.clear();
 	}
