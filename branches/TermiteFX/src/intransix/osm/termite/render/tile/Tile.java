@@ -1,6 +1,8 @@
 package intransix.osm.termite.render.tile;
 
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -20,6 +22,7 @@ public class Tile extends ImageView {
 	private String url;
 	private long activeTime = 0;
 	private Image image;
+	private Point2D workingPoint = new Point2D.Double();
 	
 	public Tile(int x, int y, int zoom, int numPixels, String url) {
 		this.tileX = x;
@@ -33,16 +36,18 @@ public class Tile extends ImageView {
 		this.mercWidth = tileToMercScale;
 		this.mercHeight = tileToMercScale;
 		
-		//Javafx seems to round the image locations even though we are using doubles.
-		//To fix this we are using a large (power of two) integer multiplier
-		this.setX(mercX * TileLayer.MERC_MULTIPLIER_SCALE);
-		this.setY(mercY * TileLayer.MERC_MULTIPLIER_SCALE);
-		this.setFitHeight(mercHeight * TileLayer.MERC_MULTIPLIER_SCALE);
-		this.setFitWidth(mercWidth * TileLayer.MERC_MULTIPLIER_SCALE);
-		
 		this.image = new Image(url,true);
 		
 		this.setImage(image);
+	}
+	
+	public void setLocation(AffineTransform mercToTileLayerTransform, double mercToTileLayerScale) {
+		workingPoint.setLocation(mercX,mercY);
+		mercToTileLayerTransform.transform(workingPoint, workingPoint);
+		this.setX(workingPoint.getX());
+		this.setY(workingPoint.getY());
+		this.setFitHeight(mercHeight * mercToTileLayerScale);
+		this.setFitWidth(mercWidth * mercToTileLayerScale);
 	}
 	
 	public long getActiveTime() {

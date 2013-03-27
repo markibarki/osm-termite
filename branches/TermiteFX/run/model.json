@@ -16,7 +16,7 @@
 		"level","structure","ele"
 	],
 	
-	"_osmServer":"http://api06.dev.openstreetmap.org",
-	"osmServer":"http://api.openstreetmap.org",
+	"osmServer":"http://api06.dev.openstreetmap.org",
+	"_osmServer":"http://api.openstreetmap.org",
 	
 }
