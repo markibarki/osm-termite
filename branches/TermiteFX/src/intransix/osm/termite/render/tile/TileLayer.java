@@ -32,7 +32,7 @@ public class TileLayer extends MapLayer implements MapListener {
 	
 	public final static int MAX_ZOOM_EXCESS = 4;
 	
-	public final static double MERC_MULTIPLIER_SCALE = (1 << 25);
+	public final static double MERC_MULTIPLIER_SCALE = (1 << 16);
 	
 	private int tileZoom = INVALID_ZOOM;
 	
@@ -116,6 +116,19 @@ public class TileLayer extends MapLayer implements MapListener {
 	//=================================
 	// Private Methods
 	//=================================
+	
+//	private void updateLayerCoordinates(int tileZoom, int pixelsPerTile) {
+//		
+//		double imagePixelsPerMerc = pixelsPerTile * 2^tileZoom;
+//		
+//		//image doesn't work well if we use coordinates from 0-1 for world
+//		//some rounding takes place somewhere
+//		this.setPrefSize(imagePixelsPerMerc,imagePixelsPerMerc);
+//		this.setMinSize(imagePixelsPerMerc,imagePixelsPerMerc);
+//		this.setMaxSize(imagePixelsPerMerc,imagePixelsPerMerc);
+//		Scale scaleCorrectionForTiles = new Scale(1 / imagePixelsPerMerc,1 / imagePixelsPerMerc);
+//		this.getTransforms().setAll(scaleCorrectionForTiles); 
+//	}
 	
 	/** This method picks an optimal scale for this given viewport. */
 	private void setZoomScale(ViewRegionManager viewRegionManager) {

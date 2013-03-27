@@ -35,6 +35,7 @@ import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Affine;
 
 /**
@@ -282,11 +283,13 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	/** This method updates the active tile zoom used by the map. */
 	@Override
 	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {		
+		//update the transformation for the mouse
+		this.pixelToMerc = viewRegionManager.getPixelsToMercator();
+		
 		//update the stroke values
 		if(zoomChanged) {
-			this.pixelsToLocalScale = viewRegionManager.getZoomScaleLocalPerPixel();
 			this.pixelsToMercatorScale = viewRegionManager.getZoomScaleMercPerPixel();
-			this.pixelToMerc = viewRegionManager.getPixelsToMercator();
+			this.pixelsToLocalScale = viewRegionManager.getZoomScaleLocalPerPixel();
 			
 			if(this.selectObjects != null) {
 				for(Node node:selectObjects) {
@@ -325,7 +328,37 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	}
 	
 	private void setReticle(Rectangle2D dataBounds) {
-		Point2D localPoint = new Point2D.Double();
+		//convert points - if selection goes outside world bounds, use world bounds for selection
+//		Point2D zeroPoint = new Point2D.Double(0,0);
+//		Point2D minPoint = new Point2D.Double(Math.max(0,dataBounds.getMinX()),Math.max(0,dataBounds.getMinY()));
+//		Point2D maxPoint = new Point2D.Double(Math.min(1,dataBounds.getMaxX()),Math.min(1,dataBounds.getMaxY()));
+//		Point2D onePoint = new Point2D.Double(1,1);
+//		
+//		mercToLocal.transform(zeroPoint, zeroPoint);
+//		mercToLocal.transform(minPoint, minPoint);
+//		mercToLocal.transform(maxPoint, maxPoint);
+//		mercToLocal.transform(onePoint, onePoint);
+//		
+//		addRectangle(zeroPoint.getX(),zeroPoint.getY(),minPoint.getX(),onePoint.getY());
+//		addRectangle(minPoint.getX(),zeroPoint.getY(),maxPoint.getX(),minPoint.getY());
+//		addRectangle(minPoint.getX(),maxPoint.getY(),maxPoint.getX(),onePoint.getY());
+//		addRectangle(maxPoint.getX(),zeroPoint.getY(),onePoint.getX(),onePoint.getY());
+		
+		Point2D minPoint = new Point2D.Double(Math.max(0,dataBounds.getMinX()),Math.max(0,dataBounds.getMinY()));
+		Point2D maxPoint = new Point2D.Double(Math.min(1,dataBounds.getMaxX()),Math.min(1,dataBounds.getMaxY()));
+		
+		double regionWidth = maxPoint.getX() - minPoint.getX();
+		double regionHeight = maxPoint.getY() - minPoint.getY();
+		
+		Point2D zeroPoint = new Point2D.Double(minPoint.getX() - regionWidth,minPoint.getY() - regionHeight);
+		Point2D onePoint = new Point2D.Double(maxPoint.getX() + regionWidth,maxPoint.getY() + regionHeight);
+		
+		
+		mercToLocal.transform(zeroPoint, zeroPoint);
+		mercToLocal.transform(minPoint, minPoint);
+		mercToLocal.transform(maxPoint, maxPoint);
+		mercToLocal.transform(onePoint, onePoint);
+
 		Path path = new Path();
 		MoveTo moveTo;
 		LineTo lineTo;
@@ -333,31 +366,23 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		
 		//outer boundary
 		moveTo = new MoveTo();
-		localPoint.setLocation(0,0);
-		mercToLocal.transform(localPoint,localPoint);
-		moveTo.setX(localPoint.getX());
-		moveTo.setY(localPoint.getY());
+		moveTo.setX(zeroPoint.getX());
+		moveTo.setY(zeroPoint.getY());
 		path.getElements().add(moveTo);
 		
 		lineTo = new LineTo();
-		localPoint.setLocation(1,0);
-		mercToLocal.transform(localPoint,localPoint);
-		lineTo.setX(localPoint.getX());
-		lineTo.setY(localPoint.getY());
+		lineTo.setX(onePoint.getX());
+		lineTo.setY(zeroPoint.getY());
 		path.getElements().add(lineTo);
 		
 		lineTo = new LineTo();
-		localPoint.setLocation(1,1);
-		mercToLocal.transform(localPoint,localPoint);
-		lineTo.setX(localPoint.getX());
-		lineTo.setY(localPoint.getY());
+		lineTo.setX(onePoint.getX());
+		lineTo.setY(onePoint.getY());
 		path.getElements().add(lineTo);
 		
 		lineTo = new LineTo();
-		localPoint.setLocation(0,1);
-		mercToLocal.transform(localPoint,localPoint);
-		lineTo.setX(localPoint.getX());
-		lineTo.setY(localPoint.getY());
+		lineTo.setX(zeroPoint.getX());
+		lineTo.setY(onePoint.getY());
 		path.getElements().add(lineTo);
 		
 		closePath = new ClosePath();
@@ -365,31 +390,23 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		
 		//inner boundary
 		moveTo = new MoveTo();
-		localPoint.setLocation(dataBounds.getMinX(),dataBounds.getMinY());
-		mercToLocal.transform(localPoint,localPoint);
-		moveTo.setX(localPoint.getX());
-		moveTo.setY(localPoint.getY());
+		moveTo.setX(minPoint.getX());
+		moveTo.setY(minPoint.getY());
 		path.getElements().add(moveTo);
 		
 		lineTo = new LineTo();
-		localPoint.setLocation(dataBounds.getMinX(),dataBounds.getMaxY());
-		mercToLocal.transform(localPoint,localPoint);
-		lineTo.setX(localPoint.getX());
-		lineTo.setY(localPoint.getY());
+		lineTo.setX(minPoint.getX());
+		lineTo.setY(maxPoint.getY());
 		path.getElements().add(lineTo);
 		
 		lineTo = new LineTo();
-		localPoint.setLocation(dataBounds.getMaxX(),dataBounds.getMaxY());
-		mercToLocal.transform(localPoint,localPoint);
-		lineTo.setX(localPoint.getX());
-		lineTo.setY(localPoint.getY());
+		lineTo.setX(maxPoint.getX());
+		lineTo.setY(maxPoint.getY());
 		path.getElements().add(lineTo);
 		
 		lineTo = new LineTo();
-		localPoint.setLocation(dataBounds.getMaxX(),dataBounds.getMinY());
-		mercToLocal.transform(localPoint,localPoint);
-		lineTo.setX(localPoint.getX());
-		lineTo.setY(localPoint.getY());
+		lineTo.setX(maxPoint.getX());
+		lineTo.setY(minPoint.getY());
 		path.getElements().add(lineTo);
 		
 		closePath = new ClosePath();
@@ -399,6 +416,14 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		path.setOpacity(.5);
 
 		this.getChildren().add(path);
+	}
+	
+	private void addRectangle(double minX, double minY, double maxX, double maxY) {
+		Rectangle rect;
+		rect = new Rectangle(minX,minY,maxX-minX,maxY-minY);
+		rect.setFill(Color.BLUE);
+		rect.setOpacity(.5);
+		this.getChildren().add(rect);
 	}
 	
 	// </editor-fold>
