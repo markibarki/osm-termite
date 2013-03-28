@@ -99,7 +99,8 @@ public class RenderLayer extends MapLayer implements MapDataListener,
 			orderedFeatures.add(shapeFeature);
 		}
 		Collections.sort(orderedFeatures,flc);
-		
+	
+this.getChildren().clear();
 		this.getChildren().setAll(orderedFeatures);
 		orderedFeatures.clear();
 	}

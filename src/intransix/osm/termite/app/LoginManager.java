@@ -1,6 +1,7 @@
 package intransix.osm.termite.app;
 
-//import intransix.osm.termite.gui.dialog.LoginDialog;
+import intransix.osm.termite.gui.dialog.LoginDialog;
+
 
 /**
  *
@@ -24,10 +25,9 @@ public class LoginManager {
 		return password;
 	}
 	
-	public void loadLoginInfo() {
-throw new RuntimeException("Add login dialog box!");
-//		LoginDialog loginDialog = new LoginDialog(null,this);
-//		loginDialog.setVisible(true);
+	public void loadLoginInfo(Runnable successCallback, Runnable cancelCallback) {
+		LoginDialog loginDialog = new LoginDialog(this, successCallback, cancelCallback);
+		loginDialog.show();
 	}
 	
 }

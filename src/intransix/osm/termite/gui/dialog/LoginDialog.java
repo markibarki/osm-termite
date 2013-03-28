@@ -4,6 +4,7 @@
  */
 package intransix.osm.termite.gui.dialog;
 
+import intransix.osm.termite.app.LoginManager;
 import intransix.osm.termite.gui.TermiteFXGui;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,16 +22,18 @@ import javafx.stage.StageStyle;
  *
  * @author sutter
  */
-public class CommitDialog extends Stage {
+public class LoginDialog extends Stage {
 	
+	private LoginManager loginManager;
 	private Runnable successCallback;
 	private Runnable cancelCallback;
 	
-	public CommitDialog(Runnable successCallback, Runnable cancelCallback) {
+	public LoginDialog(LoginManager loginManager, Runnable successCallback, Runnable cancelCallback) {
 		super(StageStyle.TRANSPARENT);
 		this.initModality(Modality.WINDOW_MODAL);
 		this.initOwner(TermiteFXGui.getStage());
 		
+		this.loginManager = loginManager;
 		this.successCallback = successCallback;
 		this.cancelCallback = cancelCallback;
 		
@@ -42,7 +45,7 @@ public class CommitDialog extends Stage {
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
 		//user name field and label
-		Label label = new Label("Dummy commit...");
+		Label label = new Label("Dummy login...");
 		grid.add(label, 0, 0);
 		
 		//add a button - Use the hbox so we can use a different alignment for button
@@ -50,8 +53,12 @@ public class CommitDialog extends Stage {
 		okButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				CommitDialog.this.hide();
-				CommitDialog.this.successCallback.run();
+//fix this
+String username = "sutter_dave";
+String password = "sungun1!";
+				LoginDialog.this.loginManager.setCredentials(username,password);
+				LoginDialog.this.hide();
+				LoginDialog.this.successCallback.run();
 			}
 		});
 		grid.add(okButton, 0, 1);
@@ -59,9 +66,5 @@ public class CommitDialog extends Stage {
 		//create the scene
 		Scene scene = new Scene(grid, 300, 275);
 		this.setScene(scene);
-	}
-	
-	public String getMessage() {
-		return "dummy message";
 	}
 }

@@ -48,6 +48,7 @@ public class Tile extends ImageView {
 		this.setY(workingPoint.getY());
 		this.setFitHeight(mercHeight * mercToTileLayerScale);
 		this.setFitWidth(mercWidth * mercToTileLayerScale);
+System.out.println("Tile " + this.tileX + "," + this.tileY + ": " + workingPoint.getX() + "," + workingPoint.getY());
 	}
 	
 	public long getActiveTime() {

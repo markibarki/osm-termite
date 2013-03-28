@@ -6,6 +6,7 @@ import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.dialog.BlockerDialog;
 import intransix.osm.termite.gui.dialog.CommitDialog;
 import intransix.osm.termite.gui.dialog.MessageDialog;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javax.swing.JOptionPane;
 
@@ -24,6 +25,7 @@ public class CommitTask extends Task<Void> {
 	private MapDataManager mapDataManager;
 	private CommitAction commitAction;
 	private LoginManager loginManager;
+	private String commitMessage;
 	private BlockerDialog blocker;
 	
 	private boolean success = false;
@@ -36,17 +38,21 @@ public class CommitTask extends Task<Void> {
 	//====================
 	
 	/** Constructor. */
-	public CommitTask(MapDataManager mapDataManager, LoginManager loginManager) {
+	public CommitTask(MapDataManager mapDataManager, LoginManager loginManager, String message) {
 		this.mapDataManager = mapDataManager;
 		this.loginManager = loginManager;
+		this.commitMessage = message;
 	}
 	
-	/** Calling this method will block the UI thread until the task completes. 
-	 * It should preferably be called from the UI thread. */
-	public synchronized void blockUI() {
-		if(!isDone()) {
-			blocker = new BlockerDialog(this,"Loading map data...",false);
-			blocker.show();
+	public void execute() {
+		Thread th = new Thread(this);
+		th.setDaemon(true);
+		th.start();
+		synchronized(this) {
+			if(!isDone()) {
+				blocker = new BlockerDialog(this,"Saving data...",false);
+				blocker.show();
+			}
 		}
 	}
 	
@@ -60,38 +66,38 @@ public class CommitTask extends Task<Void> {
 			success = commitAction.verifyChangeSet();
 			
 			if(!success) {
-				JOptionPane.showMessageDialog(null,commitAction.getErrorMessage());
+				MessageDialog.show(commitAction.getErrorMessage());
 				canceled = true;
 				return null;
 			}
 			
-			//get login info
-			String username = loginManager.getUsername();
-			String password = loginManager.getPassword();
-			if((username == null)||(password == null)) {
-				//get the login info
-				loginManager.loadLoginInfo();
-				username = loginManager.getUsername();
-				password = loginManager.getPassword();
-				if((username == null)||(password == null)) {
-					//user canceled
-					canceled = true;
-					return null;
-				}
-			}
+//			//get login info
+//			String username = loginManager.getUsername();
+//			String password = loginManager.getPassword();
+//			if((username == null)||(password == null)) {
+//				//get the login info
+//				loginManager.loadLoginInfo();
+//				username = loginManager.getUsername();
+//				password = loginManager.getPassword();
+//				if((username == null)||(password == null)) {
+//					//user canceled
+//					canceled = true;
+//					return null;
+//				}
+//			}
+//			
+//			//get commit message
+//			CommitDialog commitDialog = new CommitDialog();
+//			commitDialog.show();
+//		
+//			String message = commitDialog.getMessage();
+//			if(message == null) {
+//				//if not message the commit was canceled
+//				canceled = true;
+//				return null;
+//			}
 			
-			//get commit message
-			CommitDialog commitDialog = new CommitDialog();
-			commitDialog.show();
-		
-			String message = commitDialog.getMessage();
-			if(message == null) {
-				//if not message the commit was canceled
-				canceled = true;
-				return null;
-			}
-			
-			success = commitAction.commit(message);
+			success = commitAction.commit(commitMessage);
 			
 			if(!success) {
 				errorMsg = commitAction.getErrorMessage();
@@ -111,6 +117,14 @@ public class CommitTask extends Task<Void> {
 	/** This method is called in the UI thread on completion of the task. */
 	@Override
 	public synchronized void done() {
+		Platform.runLater(new Runnable() {
+			@Override public void run() {
+				actionInUIThread();
+			}
+		});
+	}
+	
+	public void actionInUIThread() {
 		
 		if(blocker != null) {
 			blocker.hide();
