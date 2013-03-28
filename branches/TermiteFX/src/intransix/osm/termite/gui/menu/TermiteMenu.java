@@ -9,9 +9,12 @@ import intransix.osm.termite.app.basemap.BaseMapListener;
 import intransix.osm.termite.app.basemap.BaseMapManager;
 import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.sequence.ClearDataSequence;
 import intransix.osm.termite.gui.sequence.CommitSequence;
+import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.render.tile.TileInfo;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -41,6 +44,7 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	//=========================
 	
 	private TermiteFX app; 
+	private TermiteFXGui gui;
 	private BaseMapManager baseMapManager;
 	private MapDataManager mapDataManager;
 	
@@ -83,6 +87,10 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	
 	public void setApp(TermiteFX app) {
 		this.app = app;
+	}
+	
+	public void setGui(TermiteFXGui gui) {
+		this.gui = gui;
 	}
 	
 	/** This method sets the map data manager. */
@@ -218,6 +226,10 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	
 	@FXML
 	public void onMapSource(ActionEvent e) {
+		File file = new File("C:/Users/sutter/Desktop/ord3.png");
+		if(file.exists()) {
+			gui.addSourceLayer(file);
+		}
 		
 	}
 	
