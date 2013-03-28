@@ -30,8 +30,10 @@ import intransix.osm.termite.render.checkout.DownloadLayer;
 import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.map.RenderLayer;
 import intransix.osm.termite.render.source.GeocodeLayer;
+import intransix.osm.termite.render.source.SourceLayer;
 import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.tile.TileLayer;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -197,6 +199,8 @@ mapLayerManager.setMapPane(mapPane);
 		termiteToolBar.initModes();
 		editorModeManager.setDefaultModes(downloadEditorMode,selectEditorMode);
 		
+termiteMenu.setGui(this);
+		
 		//--------------
 		//create layers
 		//--------------
@@ -232,7 +236,7 @@ mapLayerManager.setMapPane(mapPane);
 		viewRegionManager.addMapListener(editLayer);
 		
 		geocodeLayer = new GeocodeLayer();
-		
+
 		//-----------------------
 		// UI elements
 		//-----------------------
@@ -327,6 +331,14 @@ featureTree.init();
 	public void baseMapChanged(TileInfo tileInfo) {
 		baseMapLayer.setTileInfo(tileInfo);
 		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
+	}
+	
+	public void addSourceLayer(File file) {
+		SourceLayer layer = new SourceLayer();
+		layer.onMapViewChange(viewRegionManager, true);
+		viewRegionManager.addMapListener(layer);
+		layer.loadImage(file);
+		mapLayerManager.addLayer(layer);
 	}
 	
 	private void shutdown() {
