@@ -5,6 +5,7 @@
 package intransix.osm.termite.gui.dialog;
 
 import intransix.osm.termite.gui.TermiteFXGui;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -21,18 +22,12 @@ import javafx.stage.StageStyle;
  *
  * @author sutter
  */
-public class CommitDialog extends Stage {
-	
-	private Runnable successCallback;
-	private Runnable cancelCallback;
-	
-	public CommitDialog(Runnable successCallback, Runnable cancelCallback) {
-		super(StageStyle.TRANSPARENT);
-		this.initModality(Modality.WINDOW_MODAL);
-		this.initOwner(TermiteFXGui.getStage());
+public class ConfirmDialog {
+	public static void show(String msg, final Runnable okCallback, final Runnable cancelCallback) {
+		final Stage dialog = new Stage(StageStyle.TRANSPARENT);
 		
-		this.successCallback = successCallback;
-		this.cancelCallback = cancelCallback;
+		dialog.initModality(Modality.WINDOW_MODAL);
+		dialog.initOwner(TermiteFXGui.getStage());
 		
 		//create the layout
 		GridPane grid = new GridPane();
@@ -42,26 +37,34 @@ public class CommitDialog extends Stage {
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
 		//user name field and label
-		Label label = new Label("Dummy commit...");
-		grid.add(label, 0, 0);
+		Label label = new Label(msg);
+		grid.add(label, 0, 0, 2, 1);
 		
 		//add a button - Use the hbox so we can use a different alignment for button
-		Button okButton = new Button("OK");
-		okButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				CommitDialog.this.hide();
-				CommitDialog.this.successCallback.run();
-			}
-		});
-		grid.add(okButton, 0, 1);
+			Button okButton = new Button("OK");
+			okButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dialog.hide();
+					okCallback.run();
+				}
+			});
+			grid.add(okButton, 0, 1);
+			
+			Button cancelButton = new Button("Cancel");
+			cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+					dialog.hide();
+					cancelCallback.run();
+				}
+			});
+			grid.add(cancelButton, 1, 1);
+
 		
 		//create the scene
 		Scene scene = new Scene(grid, 300, 275);
-		this.setScene(scene);
-	}
-	
-	public String getMessage() {
-		return "dummy message";
+		dialog.setScene(scene);
+		dialog.show();
 	}
 }

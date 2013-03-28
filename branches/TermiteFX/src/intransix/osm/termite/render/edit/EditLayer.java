@@ -54,6 +54,8 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	
 	public final static double SNAP_RADIUS_PIXELS = 4;
 	
+	public final static double BOUNDARY_MULTIPLIER = 4;
+	
 	private StyleInfo styleInfo = new StyleInfo();
 
 	private EventHandler<MouseEvent> mouseClickHandler;
@@ -120,6 +122,10 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		if(dataPresent) {
 			Rectangle2D dataBounds = mapDataManager.getDownloadBounds();
 			setReticle(dataBounds);
+		}
+		else {
+			//this gets rid of the reticle
+			this.getChildren().clear();
 		}
 	}
 	
@@ -350,8 +356,8 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		double regionWidth = maxPoint.getX() - minPoint.getX();
 		double regionHeight = maxPoint.getY() - minPoint.getY();
 		
-		Point2D zeroPoint = new Point2D.Double(minPoint.getX() - regionWidth,minPoint.getY() - regionHeight);
-		Point2D onePoint = new Point2D.Double(maxPoint.getX() + regionWidth,maxPoint.getY() + regionHeight);
+		Point2D zeroPoint = new Point2D.Double(minPoint.getX() - BOUNDARY_MULTIPLIER * regionWidth,minPoint.getY() - BOUNDARY_MULTIPLIER * regionHeight);
+		Point2D onePoint = new Point2D.Double(maxPoint.getX() + BOUNDARY_MULTIPLIER * regionWidth,maxPoint.getY() + BOUNDARY_MULTIPLIER * regionHeight);
 		
 		
 		mercToLocal.transform(zeroPoint, zeroPoint);

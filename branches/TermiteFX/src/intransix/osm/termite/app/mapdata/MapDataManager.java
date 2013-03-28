@@ -234,6 +234,7 @@ public class MapDataManager {
 	
 	public void clearData() {
 		setData(null,null);
+		this.clearCommandQueue();
 	}
 	
 	/** This adds a map data listener. */

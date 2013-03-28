@@ -9,6 +9,8 @@ import intransix.osm.termite.app.basemap.BaseMapListener;
 import intransix.osm.termite.app.basemap.BaseMapManager;
 import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.gui.sequence.ClearDataSequence;
+import intransix.osm.termite.gui.sequence.CommitSequence;
 import intransix.osm.termite.render.tile.TileInfo;
 import java.io.IOException;
 import java.net.URL;
@@ -177,12 +179,14 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	//------------------------
 	@FXML
 	public void onFileCommit(ActionEvent e) {
-		
+		CommitSequence commitSequence = new CommitSequence();
+		commitSequence.commitData(mapDataManager,app.getLoginManager());
 	}
 	
 	@FXML
 	public void onFileClearData(ActionEvent e) {
-		
+		ClearDataSequence clearDataSequence = new ClearDataSequence();
+		clearDataSequence.clearData(mapDataManager);
 	}
 	
 	@FXML

@@ -106,6 +106,10 @@ public class TermiteFX extends Application {
 		this.shutdownListeners.remove(listener);
 	}
 	
+	public LoginManager getLoginManager() {
+		return loginManager;
+	}
+	
 	//=====================
 	// Private Methods
 	//=====================
@@ -172,6 +176,7 @@ featureTypeManager.setActiveFeatureType(featureTypeManager.getFeatureInfoMap().g
 //		geocodeManager = new GeocodeManager();
 //		geocodeManager.init(mapLayerManager);
 //		
+			
 		mapDataManager.clearData();
 	}
 	

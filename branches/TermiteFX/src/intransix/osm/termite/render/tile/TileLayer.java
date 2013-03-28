@@ -140,9 +140,13 @@ public class TileLayer extends MapLayer implements MapListener {
 		
 		//on a zoom change, update the coordinates of the layer
 		//the update is applied when the tiles are changed
-		mercToTileLayerTransform = viewRegionManager.getMercatorToPixels();
+		
+		//create a copy of this transform
+		mercToTileLayerTransform = new AffineTransform(viewRegionManager.getMercatorToPixels());
 		mercToTileLayerScale = viewRegionManager.getZoomScalePixelsPerMerc();
-		tileLayerToMercTransformFX = viewRegionManager.getPixelsToMercatorFX();
+		//no copy needed here because these are static for now
+		Affine atFX = viewRegionManager.getPixelsToMercatorFX();
+		tileLayerToMercTransformFX = Affine.affine(atFX.getMxx(), atFX.getMyx(), atFX.getMxy(), atFX.getMyy(), atFX.getTx(), atFX.getTy());
 	}
 	
 	/** This method updates the active tiles. */
@@ -189,8 +193,14 @@ System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY 
 			}
 		}
 		
+System.out.println(mercToTileLayerTransform);
+System.out.println(tileLayerToMercTransformFX);
+System.out.println(at);
+		
 		this.getChildren().clear();
 		//set the transform used for these tiles - it will be updated on zooming but not pan for now.
+		this.getTransforms().clear();
+		this.relocate(0,0);
 		this.getTransforms().setAll(tileLayerToMercTransformFX); 
 		this.getChildren().setAll(workingTiles);
 		workingTiles.clear();
