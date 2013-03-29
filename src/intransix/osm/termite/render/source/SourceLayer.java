@@ -92,27 +92,14 @@ public class SourceLayer extends MapLayer implements MapListener {
 			if(!transformLoaded) {
 				//if transform not loaded, create one
 //for now stick it in the latest pixel coordinates - UPDATE THIS TO FIT THE CURRENT SCREEN
+//(panning will screw this up)
 				this.imageToMercFX = this.layerToMercFX;
 			}
 			
-//testing
-if(sourceImage != null) {
-	double height = sourceImage.getHeight();
-	double width = sourceImage.getWidth();
-	if(height <= 0) {
-		height = 1000;
-	}
-	if(width <= 0) {
-		width = 1000;
-	}
-	
-	imageView.setX(0);
-	imageView.setY(0);
-	imageView.setFitHeight(height);
-	imageView.setFitWidth(width);
-}
-			
 			this.updateLocation();
+
+			//add image
+			getChildren().add(imageView);
 			
 			return true;
 		}
@@ -124,6 +111,7 @@ if(sourceImage != null) {
 	}
 	
 	public void clearImage() {
+		this.getChildren().clear();
 		imageView = null;
 		sourceImage = null;
 		imageFile = null;
@@ -198,6 +186,8 @@ if(sourceImage != null) {
 		if(zoomChanged) {
 			mercToLayerFX = viewRegionManager.getMercatorToPixelsFX();
 			layerToMercFX = viewRegionManager.getPixelsToMercatorFX();
+			
+			this.getTransforms().setAll(layerToMercFX);
 		
 			//update image location
 			updateLocation();
@@ -227,10 +217,10 @@ if(sourceImage != null) {
 		if(imageView == null) return;
 		
 		if(inMove) {
-			imageView.getTransforms().setAll(moveImageToMercFX,mercToLayerFX);
+			imageView.getTransforms().setAll(mercToLayerFX,moveImageToMercFX);
 		}
 		else {
-			imageView.getTransforms().setAll(imageToMercFX,mercToLayerFX);
+			imageView.getTransforms().setAll(mercToLayerFX,imageToMercFX);
 		}
 	}
 	
