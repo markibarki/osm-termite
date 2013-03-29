@@ -193,14 +193,8 @@ System.out.println("zoom: " + tileZoom + " range: " + minTileX + "," + minTileY 
 			}
 		}
 		
-System.out.println(mercToTileLayerTransform);
-System.out.println(tileLayerToMercTransformFX);
-System.out.println(at);
-		
 		this.getChildren().clear();
 		//set the transform used for these tiles - it will be updated on zooming but not pan for now.
-		this.getTransforms().clear();
-		this.relocate(0,0);
 		this.getTransforms().setAll(tileLayerToMercTransformFX); 
 		this.getChildren().setAll(workingTiles);
 		workingTiles.clear();
