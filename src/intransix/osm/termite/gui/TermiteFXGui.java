@@ -5,6 +5,7 @@ import intransix.osm.termite.app.basemap.BaseMapListener;
 import intransix.osm.termite.app.basemap.BaseMapManager;
 import intransix.osm.termite.app.edit.EditManager;
 import intransix.osm.termite.app.feature.FeatureTypeManager;
+import intransix.osm.termite.app.geocode.GeocodeManager;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
@@ -67,6 +68,8 @@ public class TermiteFXGui extends VBox implements Initializable, BaseMapListener
 	private ViewRegionManager viewRegionManager;
 	private EditorModeManager editorModeManager;
 	private MapLayerManager mapLayerManager;
+	
+private GeocodeManager geocodeManager;	
 	
 	//modes
 	private DownloadEditorMode downloadEditorMode;
@@ -194,6 +197,7 @@ mapLayerManager.setMapPane(mapPane);
 		editorModeManager.addMode(wayEditorMode);
 		
 		geocodeEditorMode = new GeocodeEditorMode(mapLayerManager);
+		mapLayerManager.addLayerListener(geocodeEditorMode);
 		editorModeManager.addMode(geocodeEditorMode);
 		
 		termiteToolBar.initModes();
@@ -236,6 +240,12 @@ termiteMenu.setGui(this);
 		viewRegionManager.addMapListener(editLayer);
 		
 		geocodeLayer = new GeocodeLayer();
+		geocodeLayer.setGeocodeEditorMode(geocodeEditorMode);
+		geocodeEditorMode.setGeocodeLayer(geocodeLayer);
+		//pass initial view
+		geocodeLayer.onMapViewChange(viewRegionManager, true);
+		viewRegionManager.addMapListener(geocodeLayer);
+		
 
 		//-----------------------
 		// UI elements
@@ -324,6 +334,14 @@ featureTree.init();
 		nodeEditorMode.setEditManager(editManager);
 		wayEditorMode.setEditManager(editManager);
 		editManager.setEditModes(selectEditorMode, nodeEditorMode, wayEditorMode);
+	}
+	
+	public void setGeocodeManager(GeocodeManager geocodeManager) {
+this.geocodeManager = geocodeManager;
+		geocodeManager.setGeocodeLayer(geocodeLayer);
+		geocodeManager.setMode(geocodeEditorMode);
+		geocodeLayer.setGeocodeManager(geocodeManager);
+		geocodeEditorMode.setGeocodeManager(geocodeManager);
 	}
 	
 	/** This method is called when the baseMap changes. */

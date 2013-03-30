@@ -1,25 +1,80 @@
 package intransix.osm.termite.render.source;
 
 
+import intransix.osm.termite.app.filter.FilterListener;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.geocode.GeocodeManager;
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
 import intransix.osm.termite.app.geocode.GeocodeMouseAction;
+import intransix.osm.termite.app.mapdata.MapDataListener;
+import intransix.osm.termite.app.viewregion.MapListener;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
+import intransix.osm.termite.gui.map.MapPane;
+import intransix.osm.termite.render.map.Feature;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.transform.Affine;
 
 /**
  *
  * @author sutter
  */
-public class GeocodeLayer extends MapLayer {
+public class GeocodeLayer extends MapLayer implements MapListener {
+	
+	public final static double SNAP_RADIUS_PIXELS = 4;
 	
 	private GeocodeManager geocodeManager;
 	private GeocodeEditorMode geocodeEditorMode;
 	
+	private EventHandler<MouseEvent> mouseClickHandler;
+	private EventHandler<MouseEvent> mouseMoveHandler;
+	
 	private GeocodeMouseAction mouseAction;
+	
+	//local coordinate definitions
+	private AffineTransform mercToLocal;
+	private AffineTransform localToMerc;
+	private AffineTransform pixelToMerc;
+	private double pixelsToLocalScale = 1.0;
+	private double pixelsToMercatorScale = 1.0;
 	
 	public GeocodeLayer() {
 		this.setName("Geocode Layer");
 		this.setOrder(MapLayer.ORDER_EDIT_MARKINGS);
+		
+		mouseClickHandler = new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				if(e.getButton() == MouseButton.PRIMARY) {
+					mouseClicked(e);
+				}
+			}
+		};
+		
+		mouseMoveHandler = new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				mouseMoved(e);
+			}
+		};
+	}
+	
+	/** This adds an anchor point to the layer. */
+	public void addAnchorPoint(AnchorPoint anchorPoint) {
+		this.getChildren().add(anchorPoint);
+	}
+	
+	public void removeAnchorPoint(AnchorPoint anchorPoint) {
+		this.getChildren().remove(anchorPoint);
+	}
+
+	/** This method clears the anchor points from the level. */
+	public void clearAnchorPoints() {
+		this.getChildren().clear();
 	}
 	
 	public void setGeocodeManager(GeocodeManager geocodeManager) {
@@ -35,6 +90,57 @@ public class GeocodeLayer extends MapLayer {
 		if(mouseAction != null) {
 			mouseAction.init(this);
 		}
+	}
+	
+	public void on(MapPane mapPane) {
+		mapPane.addEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+		mapPane.addEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+	}
+	
+	public void off(MapPane mapPane) {
+		mapPane.removeEventHandler(MouseEvent.MOUSE_CLICKED,mouseClickHandler);
+		mapPane.removeEventHandler(MouseEvent.MOUSE_MOVED,mouseMoveHandler);
+	}
+	
+	//--------------------------
+	// MapListener Interface
+	//--------------------------
+	
+	/** This method updates the active tile zoom used by the map. */
+	@Override
+	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {
+		//update the transformation for the mouse
+		this.pixelToMerc = viewRegionManager.getPixelsToMercator();
+		
+		//update the stroke values
+		if(zoomChanged) {
+			pixelsToMercatorScale = viewRegionManager.getZoomScaleMercPerPixel();
+			pixelsToLocalScale = viewRegionManager.getZoomScaleLocalPerPixel();
+
+			if(geocodeManager != null) {
+				for(AnchorPoint anchorPoint:geocodeManager.getAnchorPoints()) {
+					anchorPoint.updateScale(pixelsToLocalScale);
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void onPanStart(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onPanStep(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onPanEnd(ViewRegionManager vrm) {}
+	
+	@Override
+	public void onLocalCoordinatesSet(ViewRegionManager vrm) {
+		this.mercToLocal = vrm.getMercatorToLocal();
+		this.localToMerc = vrm.getLocalToMercator();
+		this.pixelsToLocalScale = vrm.getZoomScaleLocalPerPixel();
+		Affine localToMercFX = vrm.getLocalToMercatorFX();
+		this.getTransforms().setAll(localToMercFX);
 	}
 	
 //	@Override
@@ -61,54 +167,29 @@ public class GeocodeLayer extends MapLayer {
 //	
 //		
 //	// <editor-fold defaultstate="collapsed" desc="Mouse Listeners">
-//	
-//	@Override
-//	public void mouseClicked(MouseEvent e) {
-//		if(e.getButton() != MouseEvent.BUTTON1) return;
-//		
-//		if(mouseAction != null) {
-//			Point2D mouseMerc = new Point2D.Double();
-//			ViewRegionManager viewRegionManager = getViewRegionManager();
-//			AffineTransform pixelsToMercator = viewRegionManager.getPixelsToMercator();
-//			mouseMerc.setLocation(e.getX(),e.getY());
-//			pixelsToMercator.transform(mouseMerc,mouseMerc);
-//			mouseAction.mousePressed(mouseMerc, e);
-//		}
-//	}
-//	
-//	@Override
-//	public void mouseDragged(MouseEvent e) {
-//		//no edit move with mouse drag - explicit move command needed
-//	}
-//	
-//	@Override
-//	public void mouseEntered(MouseEvent e) {
-//	}
-//	
-//	@Override
-//	public void mouseExited(MouseEvent e) {
-//	}
-//	
-//	@Override
-//	public void mouseMoved(MouseEvent e) {
-//		if((mouseAction != null)&&(mouseAction.doMove())) {
-//			Point2D mouseMerc = new Point2D.Double();
-//			ViewRegionManager viewRegionManager = getViewRegionManager();
-//			AffineTransform pixelsToMercator = viewRegionManager.getPixelsToMercator();
-//			mouseMerc.setLocation(e.getX(),e.getY());
-//			pixelsToMercator.transform(mouseMerc,mouseMerc);
-//			mouseAction.mouseMoved(mouseMerc, e);
-//		}
-//	}
-//	
-//	@Override
-//	public void mousePressed(MouseEvent e) {
-//	}
-//	
-//	@Override
-//	public void mouseReleased(MouseEvent e) {
-//	}
-//	
+	
+	public void mouseClicked(MouseEvent e) {
+		Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
+		pixelToMerc.transform(mouseMerc,mouseMerc);
+		if(e.getButton() == MouseButton.PRIMARY) {
+			if(mouseAction != null) {
+			
+				//let the mouse edit action handle the press
+				mouseAction.mousePressed(mouseMerc, pixelsToMercatorScale,e);
+			}
+		}
+	}
+	
+	public void mouseMoved(MouseEvent e) {
+		if((mouseAction != null)&&(mouseAction.doMove())) {
+			//read mouse location in global coordinates
+			Point2D mouseMerc = new Point2D.Double(e.getX(),e.getY());
+			pixelToMerc.transform(mouseMerc,mouseMerc);
+			
+			mouseAction.mouseMoved(mouseMerc, pixelsToMercatorScale, e);
+		}
+	}
+
 //	// </editor-fold>
 //	
 //	// <editor-fold defaultstate="collapsed" desc="Key Listener">

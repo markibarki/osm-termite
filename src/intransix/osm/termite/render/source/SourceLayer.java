@@ -27,11 +27,14 @@ public class SourceLayer extends MapLayer implements MapListener {
 	private Image sourceImage;
 	private ImageView imageView;
 
+	private AffineTransform imageToMerc = new AffineTransform();
+	private AffineTransform moveImageToMerc = new AffineTransform();
 	private Transform imageToMercFX = new Scale(1,1);
 	private Transform moveImageToMercFX = new Scale(1,1);
 	private boolean inMove = false;
 	private Transform mercToLayerFX;
 	private Transform layerToMercFX;
+	private AffineTransform layerToMerc;
 	
 	private Transform savedImageToMercFX = null;
 	
@@ -43,22 +46,34 @@ public class SourceLayer extends MapLayer implements MapListener {
 	
 	/** This sets move coordinates for the image. If in move is true, the 
 	 * image will be set at the move coordinates rather then the active coordinates. */
-	public void setMove(boolean inMove, Transform moveImageToMercFX) {
+	public void setMove(boolean inMove, AffineTransform moveImageToMerc) {
 		this.inMove = inMove;
-		this.moveImageToMercFX = moveImageToMercFX;
+		this.moveImageToMerc = moveImageToMerc;
+		this.moveImageToMercFX = Transform.affine(moveImageToMerc.getScaleX(),
+					moveImageToMerc.getShearY(),
+					moveImageToMerc.getShearX(),
+					moveImageToMerc.getScaleY(),
+					moveImageToMerc.getTranslateX(),
+					moveImageToMerc.getTranslateY());
 		
 		//update the image location
 		updateLocation();
 	}
 	
 	/** This method gets the image transform. */
-	public Transform getImageToMercFX() {
-		return imageToMercFX;
+	public AffineTransform getImageToMerc() {
+		return imageToMerc;
 	}
 	
 	/** This method sets the active transform for the image. */
-	public void setImageToMerc(Transform imageToMercFX) {
-		this.imageToMercFX = imageToMercFX;
+	public void setImageToMerc(AffineTransform imageToMerc) {
+		this.imageToMerc = imageToMerc;
+		imageToMercFX = Transform.affine(imageToMerc.getScaleX(),
+					imageToMerc.getShearY(),
+					imageToMerc.getShearX(),
+					imageToMerc.getScaleY(),
+					imageToMerc.getTranslateX(),
+					imageToMerc.getTranslateY());
 		
 		double preferredAngleRad;
 		if(imageToMercFX != null) {
@@ -94,6 +109,8 @@ public class SourceLayer extends MapLayer implements MapListener {
 //for now stick it in the latest pixel coordinates - UPDATE THIS TO FIT THE CURRENT SCREEN
 //(panning will screw this up)
 				this.imageToMercFX = this.layerToMercFX;
+				AffineTransform at = new AffineTransform(layerToMerc);
+				this.setImageToMerc(at);
 			}
 			
 			this.updateLocation();
@@ -126,56 +143,6 @@ public class SourceLayer extends MapLayer implements MapListener {
 		maybeSaveTransform();
 	}
 
-	
-//	@Override
-//	public void render(Graphics2D g2) {
-//		
-//		AffineTransform base = g2.getTransform();
-//		AffineTransform mercToPixels = getViewRegionManager().getMercatorToPixels();
-//		
-//		if(imageToMerc == null) {
-//			AffineTransform pixelsToMerc = getViewRegionManager().getPixelsToMercator();
-//			imageToMerc = new AffineTransform(pixelsToMerc);
-//		}
-//
-//		//transform to tile coordinates
-//		g2.transform(mercToPixels);
-//		
-//		AffineTransform activeTransform = inMove ? moveImageToMerc : imageToMerc;
-//		g2.transform(activeTransform);
-//		
-//		if(sourceImage != null) {
-//			g2.drawImage(sourceImage, 0, 0, this);
-//		}
-//	}
-//	
-//	@Override
-//	public boolean imageUpdate(Image image, int infoflags, int x, int y, int width, int height) {
-//		boolean returnValue;
-//		boolean contentChanged;
-//		
-//		if((infoflags & ImageObserver.ALLBITS) != 0) {
-//			//just do a repaint
-//			contentChanged = true;
-//			returnValue = false;
-//		}
-//		else if((infoflags & ImageObserver.ABORT) != 0) {
-//			//just do a repaint, to continue with unloaded tiles
-//			contentChanged = true;
-//			returnValue = true;
-//		}
-//		else {
-//			contentChanged = false;
-//			returnValue = true;
-//		}
-//		
-//		if(contentChanged) {
-//			this.notifyContentChange();
-//		}
-//		
-//		return returnValue;
-//	}
-//
 	//--------------------------
 	// MapListener Interface
 	//--------------------------
@@ -185,6 +152,7 @@ public class SourceLayer extends MapLayer implements MapListener {
 	public void onMapViewChange(ViewRegionManager viewRegionManager, boolean zoomChanged) {	
 		if(zoomChanged) {
 			mercToLayerFX = viewRegionManager.getMercatorToPixelsFX();
+			layerToMerc = viewRegionManager.getPixelsToMercator();
 			layerToMercFX = viewRegionManager.getPixelsToMercatorFX();
 			
 			this.getTransforms().setAll(layerToMercFX);
@@ -262,12 +230,15 @@ public class SourceLayer extends MapLayer implements MapListener {
 					JSONObject json = JsonIO.readJsonFile(transformPath);
 					JSONArray transformJson = json.optJSONArray("transform");
 					if(transformJson != null) {
-						imageToMercFX = Transform.affine(transformJson.getDouble(0),
+						imageToMerc = new AffineTransform(transformJson.getDouble(0),
 								transformJson.getDouble(1),
 								transformJson.getDouble(2),
 								transformJson.getDouble(3),
 								transformJson.getDouble(4),
 								transformJson.getDouble(5));
+						
+						//this will do all the necessary updates, including the FX transfor
+						this.setImageToMerc(imageToMerc);
 
 						//cache the saved value
 						savedImageToMercFX = imageToMercFX;

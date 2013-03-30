@@ -1,15 +1,17 @@
 
 package intransix.osm.termite.render.source;
 
-import java.awt.Color;
-import java.awt.geom.*;
-import java.awt.Graphics2D;
+
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 /**
  * This is an Anchor point for controlling geocoding of an image.
  * @author sutter
  */
-public class AnchorPoint {
+public class AnchorPoint extends Circle {
 	
 	/** This gives the type of anchor point. */
 	public enum PointType {
@@ -34,38 +36,56 @@ public class AnchorPoint {
 	public final static int RADIUS_PIX = 10;
 	private final static Color SELECT_COLOR = Color.RED;
 	
-	public PointType pointType;
+	private PointType pointType;
+	public void setPointType(PointType pointType) {
+		this.pointType = pointType;
+		this.setFill(pointType.getColor());
+	}
+	public PointType getPointType() {
+		return pointType;
+	}
 	
 	public Point2D mercPoint;
 	public Point2D imagePoint;
 	
-	private Point2D pixPoint = new Point2D.Double();
 	
-	/** This method renders the anchor point. */
-	public void renderPoint(Graphics2D g2,AffineTransform mercToPixels, 
-			boolean isSelected, boolean inMove, AffineTransform moveImageToMerc) {
-		
-		if(pointType == null) return;
-		
-		Color color = isSelected ? SELECT_COLOR : pointType.getColor();
-		g2.setColor(color);
-		
-		if(inMove) {
-			//if in move, transform from image to merc using the move transform
-			//then transform to pixels
-			moveImageToMerc.transform(imagePoint,pixPoint);
-			mercToPixels.transform(pixPoint,pixPoint);
-		}
-		else {
-			//not in move, transform straight from merc to pixels
-			mercToPixels.transform(mercPoint,pixPoint);
-		}
-		
-		int x = (int)pixPoint.getX();
-		int y = (int)pixPoint.getY();
-		g2.drawOval(x-RADIUS_PIX, y-RADIUS_PIX, 2*RADIUS_PIX, 2*RADIUS_PIX);
-		g2.drawLine(x-RADIUS_PIX,y,x+RADIUS_PIX,y);
-		g2.drawLine(x,y-RADIUS_PIX,x,y+RADIUS_PIX);
+	private Point2D layerPoint = new Point2D.Double();
+	
+//	/** This method renders the anchor point. */
+//	public void renderPoint(Graphics2D g2,AffineTransform mercToPixels, 
+//			boolean isSelected, boolean inMove, AffineTransform moveImageToMerc) {
+//		
+//		if(pointType == null) return;
+//		
+//		Color color = isSelected ? SELECT_COLOR : pointType.getColor();
+//		g2.setColor(color);
+//		
+//		if(inMove) {
+//			//if in move, transform from image to merc using the move transform
+//			//then transform to pixels
+//			moveImageToMerc.transform(imagePoint,pixPoint);
+//			mercToPixels.transform(pixPoint,pixPoint);
+//		}
+//		else {
+//			//not in move, transform straight from merc to pixels
+//			mercToPixels.transform(mercPoint,pixPoint);
+//		}
+//		
+//		int x = (int)pixPoint.getX();
+//		int y = (int)pixPoint.getY();
+//		g2.drawOval(x-RADIUS_PIX, y-RADIUS_PIX, 2*RADIUS_PIX, 2*RADIUS_PIX);
+//		g2.drawLine(x-RADIUS_PIX,y,x+RADIUS_PIX,y);
+//		g2.drawLine(x,y-RADIUS_PIX,x,y+RADIUS_PIX);
+//	}
+	
+	public void updateLocation(AffineTransform mercToLayerTransform) {
+		mercToLayerTransform.transform(mercPoint,layerPoint);
+		this.setCenterX(layerPoint.getX());
+		this.setCenterY(layerPoint.getY());
+	}
+	
+	public void updateScale(double pixelsToLayerScale) {
+		this.setRadius(RADIUS_PIX * pixelsToLayerScale);
 	}
 	
 	/** This method checks if the test point hits the anchor point. */

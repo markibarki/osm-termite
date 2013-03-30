@@ -170,12 +170,11 @@ featureTypeManager.setActiveFeatureType(featureTypeManager.getFeatureInfoMap().g
 		//edit manager
 		editManager = new EditManager(featureTypeManager,levelManager,mapDataManager);
 		gui.setEditManager(editManager); //selection for edit properties
-//
-//		
-//		//geocode
-//		geocodeManager = new GeocodeManager();
-//		geocodeManager.init(mapLayerManager);
-//		
+
+		
+		//geocode
+		geocodeManager = new GeocodeManager();
+		gui.setGeocodeManager(geocodeManager);
 			
 		mapDataManager.clearData();
 	}
