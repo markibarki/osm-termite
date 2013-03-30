@@ -68,7 +68,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 		this.addGeocodeStateListener(this.toolBar);
 		
 		//make this automatically disabled - only enabled manually
-		setDataEnabledStates(false,false);
+		setDataEnabledStates(true,true);
 	}
 	
 //@TODO fixc this!!!
@@ -113,20 +113,21 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 		AnchorPoint[] anchorPoints = geocodeManager.getAnchorPoints();
 		switch(geocodeType) {
 			case TWO_POINT:
-				anchorPoints[0].pointType = AnchorPoint.PointType.TRANSLATE;
-				anchorPoints[1].pointType = AnchorPoint.PointType.ROTATE_SCALE_XY;
+				anchorPoints[0].setPointType(AnchorPoint.PointType.TRANSLATE);
+				anchorPoints[1].setPointType(AnchorPoint.PointType.ROTATE_SCALE_XY);
 				anchorPoints[2].reset();
+				geocodeLayer.removeAnchorPoint(anchorPoints[2]);
 				break;
 			
 			case THREE_POINT_ORTHO:
-				anchorPoints[0].pointType = AnchorPoint.PointType.TRANSLATE;
+				anchorPoints[0].setPointType(AnchorPoint.PointType.TRANSLATE);
 				AnchorPoint.setScalePointTypes(anchorPoints[1],anchorPoints[2]);
 				break;
 				
 			case FREE_TRANSFORM:
-				anchorPoints[0].pointType = AnchorPoint.PointType.FREE_TRANSFORM;
-				anchorPoints[1].pointType = AnchorPoint.PointType.FREE_TRANSFORM;
-				anchorPoints[2].pointType = AnchorPoint.PointType.FREE_TRANSFORM;
+				anchorPoints[0].setPointType(AnchorPoint.PointType.FREE_TRANSFORM);
+				anchorPoints[1].setPointType(AnchorPoint.PointType.FREE_TRANSFORM);
+				anchorPoints[2].setPointType(AnchorPoint.PointType.FREE_TRANSFORM);
 				break;
 		}
 		
@@ -223,12 +224,12 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	@Override
 	public void turnOn(MapLayerManager mapLayerManager) {
 		if(geocodeLayer != null) {
-//			geocodeLayer.setActiveState(true);
-//			geocodeLayer.setVisible(true);
-//			
-//			setGeocodeType(GeocodeType.TWO_POINT);
-//			setLayerState(LayerState.SELECT);
-//			geocodeManager.layerActive();
+			mapLayerManager.addLayer(geocodeLayer);
+geocodeLayer.on(mapLayerManager.getMapPane());
+	
+			setGeocodeType(GeocodeType.TWO_POINT);
+			setLayerState(LayerState.SELECT);
+			geocodeManager.layerActive();
 		}
 	}
 	
@@ -237,11 +238,11 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 	@Override
 	public void turnOff(MapLayerManager mapLayerManager) {
 		if(geocodeLayer != null) {
-//			setLayerState(LayerState.INACTIVE);
-//			
-//			geocodeLayer.setActiveState(false);
-//			geocodeLayer.setVisible(false);
-//			geocodeManager.layerInactive();
+			mapLayerManager.removeLayer(geocodeLayer);
+geocodeLayer.off(mapLayerManager.getMapPane());
+			
+			setLayerState(LayerState.INACTIVE);
+			geocodeManager.layerInactive();
 		}
 	}
 	
