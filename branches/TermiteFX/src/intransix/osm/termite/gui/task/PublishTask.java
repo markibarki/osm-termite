@@ -3,6 +3,7 @@ package intransix.osm.termite.gui.task;
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.gui.dialog.BlockerDialog;
 import intransix.osm.termite.app.mapdata.publish.PublishAction;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import javafx.concurrent.Task;
 
@@ -31,7 +32,7 @@ public class PublishTask extends Task<Void> {
 	
 	public synchronized void blockUI() {
 		if(!isDone()) {
-			blocker = new BlockerDialog(this,"Publishing map data...",false);
+			blocker = new BlockerDialog(TermiteFXGui.getStage(),this,"Publishing map data...",false);
 			blocker.show();
 		}
 	}
@@ -80,7 +81,7 @@ public class PublishTask extends Task<Void> {
 			//no action needed
 		}
 		else {
-			MessageDialog.show(errorMsg);
+			MessageDialog.show(TermiteFXGui.getStage(),errorMsg);
 		}	
 	}
 }

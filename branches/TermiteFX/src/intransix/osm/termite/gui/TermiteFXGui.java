@@ -32,12 +32,16 @@ import intransix.osm.termite.render.edit.EditLayer;
 import intransix.osm.termite.render.map.RenderLayer;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.render.source.SourceLayer;
+import intransix.osm.termite.render.source.dialog.SourceDialog;
 import intransix.osm.termite.render.tile.TileInfo;
 import intransix.osm.termite.render.tile.TileLayer;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.event.EventTarget;
 import javafx.fxml.FXML;
@@ -351,12 +355,26 @@ this.geocodeManager = geocodeManager;
 		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
 	}
 	
+	public void manageSourceLayers() {
+		
+if(geocodeManager.getSourceLayers().isEmpty()) {
+	File file = new File("C:/Users/sutter/Desktop/ord3.png");
+	addSourceLayer(file);
+}		
+		
+		SourceDialog sourceDialog = new SourceDialog(geocodeManager,mapLayerManager);
+		sourceDialog.init();
+		sourceDialog.show();
+	}
+	
 	public void addSourceLayer(File file) {
 		SourceLayer layer = new SourceLayer();
 		layer.onMapViewChange(viewRegionManager, true);
 		viewRegionManager.addMapListener(layer);
 		layer.loadImage(file);
 		mapLayerManager.addLayer(layer);
+		geocodeManager.addSourceLayer(layer);
+		layer.setIsActive(true);
 	}
 	
 	private void shutdown() {

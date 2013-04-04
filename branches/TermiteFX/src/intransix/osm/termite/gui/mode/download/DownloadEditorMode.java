@@ -2,6 +2,7 @@ package intransix.osm.termite.gui.mode.download;
 
 import intransix.osm.termite.app.mapdata.MapDataManager;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.gui.mode.EditorMode;
 import intransix.osm.termite.gui.task.MapDataRequestTask;
@@ -85,7 +86,7 @@ downloadLayer.off(mapLayerManager.getMapPane());
 	public void doDownload() {
 		Bounds selection = downloadLayer.getSelectionBoundsMercator();
 		if(selection == null) {
-			MessageDialog.show("You must select a bounding box to download.");
+			MessageDialog.show(TermiteFXGui.getStage(),"You must select a bounding box to download.");
 			return;
 		}
 		Rectangle2D downloadRectangle = new Rectangle2D.Double(selection.getMinX(),selection.getMinY(),
@@ -98,7 +99,7 @@ downloadLayer.off(mapLayerManager.getMapPane());
 	}
 	
 	public void doSearch(String searchString) {
-		MessageDialog.show("Search is not implmented.");
+		MessageDialog.show(TermiteFXGui.getStage(),"Search is not implmented.");
 	}
 	
 	public void clearSelection() {	

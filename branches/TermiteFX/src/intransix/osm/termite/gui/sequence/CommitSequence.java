@@ -2,8 +2,11 @@ package intransix.osm.termite.gui.sequence;
 
 import intransix.osm.termite.app.LoginManager;
 import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.CommitDialog;
+import intransix.osm.termite.gui.dialog.DialogCallback;
 import intransix.osm.termite.gui.dialog.MessageDialog;
+import intransix.osm.termite.gui.dialog.TermiteDialog;
 import intransix.osm.termite.gui.task.CommitTask;
 
 /**
@@ -15,7 +18,7 @@ public class CommitSequence {
 	private MapDataManager mapDataManager;
 	private LoginManager loginManager;
 	private CommitDialog commitDialog;
-	private Runnable cancelCallback;
+	private DialogCallback cancelCallback;
 			
 	public void commitData(MapDataManager mapDataManager, LoginManager loginManager) {
 		this.mapDataManager = mapDataManager;
@@ -23,35 +26,42 @@ public class CommitSequence {
 		
 		//get login credentials
 		if((mapDataManager == null)&&(loginManager == null)) {
-			MessageDialog.show("Uer Interface not properly initialized: MapDataManger or LoginManger missing.");
+			MessageDialog.show(TermiteFXGui.getStage(),"Uer Interface not properly initialized: MapDataManger or LoginManger missing.");
 			return;
 		}
 		
-		cancelCallback = new Runnable() {
-			public void run() {
+		cancelCallback = new DialogCallback() {
+			@Override
+			public boolean handle(TermiteDialog dialog) {
 				commitCanceled();
+				return true;
 			}
 		};
 		
-		Runnable loginSuccessCallback = new Runnable() {
-			public void run() {
+		DialogCallback loginSuccessCallback = new DialogCallback() {
+			@Override
+			public boolean handle(TermiteDialog dialog) {
 				commitStep2();
+				return true;
 			}
 		};
 		
 		//get login info
-		String username = loginManager.getUsername();
-		String password = loginManager.getPassword();
-		if((username == null)||(password == null)) {
+		if(!loginManager.loginValid()) {
 			//get the login info
-			loginManager.loadLoginInfo(loginSuccessCallback,cancelCallback);
+			loginManager.loadLoginInfo(loginSuccessCallback, cancelCallback);
+		}
+		else {
+			commitStep2();
 		}
 	}
 	
 	public void commitStep2() {
-		Runnable messageSuccessCallback = new Runnable() {
-			public void run() {
+		DialogCallback messageSuccessCallback = new DialogCallback() {
+			@Override
+			public boolean handle(TermiteDialog dialog) {
 				commitStep3();
+				return true;
 			}
 		};
 		

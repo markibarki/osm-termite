@@ -1,41 +1,46 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.gui.dialog;
 
 import intransix.osm.termite.app.LoginManager;
-import intransix.osm.termite.gui.TermiteFXGui;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 /**
  *
  * @author sutter
  */
-public class LoginDialog extends Stage {
+public class LoginDialog extends TermiteDialog {
 	
-	private LoginManager loginManager;
-	private Runnable successCallback;
-	private Runnable cancelCallback;
+	private TextField nameField;
+	private PasswordField pwdField;
 	
-	public LoginDialog(LoginManager loginManager, Runnable successCallback, Runnable cancelCallback) {
-		super(StageStyle.TRANSPARENT);
-		this.initModality(Modality.WINDOW_MODAL);
-		this.initOwner(TermiteFXGui.getStage());
+	public LoginDialog(Stage parent) {
+		super(parent);
+	}
+	
+	/** This method sets the login manager and the callbacks. */ 
+	public void init(final LoginManager loginManager, final DialogCallback successCallback, final DialogCallback cancelCallback) {
 		
-		this.loginManager = loginManager;
-		this.successCallback = successCallback;
-		this.cancelCallback = cancelCallback;
+		//thei verifies the input
+		DialogCallback okCallback = new DialogCallback() {
+			@Override
+			public boolean handle(TermiteDialog dialog) {
+				String name = nameField.getText().trim();
+				String pwd = pwdField.getText().trim();
+				if((name.length() == 0)||(pwd.length() == 0)) {
+					MessageDialog.show(LoginDialog.this,"Username of password not valid");
+					return false;
+				}
+				
+				loginManager.setCredentials(name, pwd);
+				successCallback.handle(dialog);
+				return true;
+			}
+		};
 		
 		//create the layout
 		GridPane grid = new GridPane();
@@ -45,26 +50,15 @@ public class LoginDialog extends Stage {
 		grid.setPadding(new Insets(25, 25, 25, 25));
 
 		//user name field and label
-		Label label = new Label("Dummy login...");
-		grid.add(label, 0, 0);
+		Label nameLabel = new Label("Username: ");
+		grid.add(nameLabel, 0, 0);
+		nameField = new TextField();
+		grid.add(nameField, 1, 0);
+		Label pwdLabel = new Label("Password: ");
+		grid.add(pwdLabel, 0, 1);
+		pwdField = new PasswordField();
+		grid.add(pwdField, 1, 1);
 		
-		//add a button - Use the hbox so we can use a different alignment for button
-		Button okButton = new Button("OK");
-		okButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-//fix this
-String username = "sutter_dave";
-String password = "sungun1!";
-				LoginDialog.this.loginManager.setCredentials(username,password);
-				LoginDialog.this.hide();
-				LoginDialog.this.successCallback.run();
-			}
-		});
-		grid.add(okButton, 0, 1);
-		
-		//create the scene
-		Scene scene = new Scene(grid, 300, 275);
-		this.setScene(scene);
+		this.init(grid, okCallback, cancelCallback);
 	}
 }

@@ -3,6 +3,7 @@ package intransix.osm.termite.gui.task;
 import intransix.osm.termite.app.mapdata.commit.*;
 import intransix.osm.termite.app.LoginManager;
 import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.BlockerDialog;
 import intransix.osm.termite.gui.dialog.CommitDialog;
 import intransix.osm.termite.gui.dialog.MessageDialog;
@@ -50,7 +51,7 @@ public class CommitTask extends Task<Void> {
 		th.start();
 		synchronized(this) {
 			if(!isDone()) {
-				blocker = new BlockerDialog(this,"Saving data...",false);
+				blocker = new BlockerDialog(TermiteFXGui.getStage(),this,"Saving data...",false);
 				blocker.show();
 			}
 		}
@@ -66,7 +67,7 @@ public class CommitTask extends Task<Void> {
 			success = commitAction.verifyChangeSet();
 			
 			if(!success) {
-				MessageDialog.show(commitAction.getErrorMessage());
+				MessageDialog.show(TermiteFXGui.getStage(),commitAction.getErrorMessage());
 				canceled = true;
 				return null;
 			}
@@ -140,7 +141,7 @@ public class CommitTask extends Task<Void> {
 		}
 		else {
 			//show an error message
-			MessageDialog.show(errorMsg);
+			MessageDialog.show(TermiteFXGui.getStage(),errorMsg);
 		}	
 	}
 }

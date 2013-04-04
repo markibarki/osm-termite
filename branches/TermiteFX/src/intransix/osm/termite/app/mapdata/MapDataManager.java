@@ -3,6 +3,7 @@ package intransix.osm.termite.app.mapdata;
 
 import intransix.osm.termite.app.mapdata.instruction.EditAction;
 import intransix.osm.termite.app.preferences.Preferences;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.map.dataset.*;
 import intransix.osm.termite.map.workingdata.*;
@@ -107,7 +108,7 @@ public class MapDataManager {
 			}
 		}
 		else {
-			MessageDialog.show("There is no action to undo.");
+			MessageDialog.show(TermiteFXGui.getStage(),"There is no action to undo.");
 			return false;
 		}
 	}
@@ -127,7 +128,7 @@ public class MapDataManager {
 			}
 		}
 		else {
-			MessageDialog.show("There is no action to redo.");
+			MessageDialog.show(TermiteFXGui.getStage(),"There is no action to redo.");
 			return false;
 		}
 	}
@@ -175,7 +176,7 @@ public class MapDataManager {
 
 	
 	private void reportFatalError(String actionDesc, String exceptionMsg) {
-		MessageDialog.show("There was a fatal error on the action: " + actionDesc +
+		MessageDialog.show(TermiteFXGui.getStage(),"There was a fatal error on the action: " + actionDesc +
 				"; " + exceptionMsg + "The application must exit");
 		System.exit(-1);
 	}

@@ -16,49 +16,21 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 
 /**
  *
  * @author sutter
  */
-public class CommitDialog extends Stage {
+public class CommitDialog extends TermiteDialog {
 	
-	private Runnable successCallback;
-	private Runnable cancelCallback;
 	
-	public CommitDialog(Runnable successCallback, Runnable cancelCallback) {
-		super(StageStyle.TRANSPARENT);
-		this.initModality(Modality.WINDOW_MODAL);
-		this.initOwner(TermiteFXGui.getStage());
+	public CommitDialog(DialogCallback successCallback, DialogCallback cancelCallback) {
+		super(TermiteFXGui.getStage());
 		
-		this.successCallback = successCallback;
-		this.cancelCallback = cancelCallback;
-		
-		//create the layout
-		GridPane grid = new GridPane();
-		grid.setAlignment(Pos.CENTER);
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(25, 25, 25, 25));
-
-		//user name field and label
+		//construct dialog
 		Label label = new Label("Dummy commit...");
-		grid.add(label, 0, 0);
-		
-		//add a button - Use the hbox so we can use a different alignment for button
-		Button okButton = new Button("OK");
-		okButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				CommitDialog.this.hide();
-				CommitDialog.this.successCallback.run();
-			}
-		});
-		grid.add(okButton, 0, 1);
-		
-		//create the scene
-		Scene scene = new Scene(grid, 300, 275);
-		this.setScene(scene);
+		this.init(label, successCallback, cancelCallback);
 	}
 	
 	public String getMessage() {

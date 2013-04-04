@@ -226,11 +226,7 @@ public class TermiteMenu extends HBox implements Initializable, MapDataListener,
 	
 	@FXML
 	public void onMapSource(ActionEvent e) {
-		File file = new File("C:/Users/sutter/Desktop/ord3.png");
-		if(file.exists()) {
-			gui.addSourceLayer(file);
-		}
-		
+		gui.manageSourceLayers();
 	}
 	
 	@FXML

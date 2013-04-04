@@ -2,10 +2,11 @@ package intransix.osm.termite.app.geocode;
 
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
 import intransix.osm.termite.render.source.AnchorPoint;
-import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.render.source.SourceLayer;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.List;
 //import java.awt.geom.AffineTransform;
 
 
@@ -37,6 +38,8 @@ public class GeocodeManager {
 	private AffineTransform imageToMerc;
 	private AffineTransform mercToImage;
 	private AffineTransform moveImageToMerc = new AffineTransform();
+	
+	private List<SourceLayer> sourceLayers = new ArrayList<>();
 		
 
 	//==================
@@ -50,6 +53,18 @@ public class GeocodeManager {
 		anchorPoints[1] = p1;
 		anchorPoints[2] = p2;
 	}
+	
+	//these methods manage the source layers
+	
+	public void addSourceLayer(SourceLayer sourceLayer) {
+		this.sourceLayers.add(sourceLayer);
+	}
+	
+	public List<SourceLayer> getSourceLayers() {
+		return sourceLayers;
+	}
+	
+	//these methods do other stuff - clean up source layer management
 	
 	public void setMode(GeocodeEditorMode geocodeEditorMode) {
 		this.geocodeEditorMode = geocodeEditorMode;

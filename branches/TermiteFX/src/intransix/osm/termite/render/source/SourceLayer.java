@@ -10,6 +10,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.transform.Transform;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -38,10 +40,26 @@ public class SourceLayer extends MapLayer implements MapListener {
 	
 	private Transform savedImageToMercFX = null;
 	
+	private SimpleBooleanProperty isActive = new SimpleBooleanProperty(false);
+	
 	public SourceLayer() {
 		this.setName("Source Layer");
 		this.setOrder(MapLayer.ORDER_OVERLAY_3);
 		this.setPreferredAngleRadians(0);
+	}
+	
+	/** This is used to manage the active and inactive source layers. */
+	public void setIsActive(Boolean isActive) {
+		this.isActive.setValue(isActive);
+	}
+	
+	/** This is used to manage the active and inactive source layers. */
+	public Boolean getIsActive() {
+		return isActive.getValue();
+	}
+	
+	public BooleanProperty getIsActiveProperty() {
+		return isActive;
 	}
 	
 	/** This sets move coordinates for the image. If in move is true, the 

@@ -1,5 +1,7 @@
 package intransix.osm.termite.app;
 
+import intransix.osm.termite.gui.TermiteFXGui;
+import intransix.osm.termite.gui.dialog.DialogCallback;
 import intransix.osm.termite.gui.dialog.LoginDialog;
 
 
@@ -25,8 +27,13 @@ public class LoginManager {
 		return password;
 	}
 	
-	public void loadLoginInfo(Runnable successCallback, Runnable cancelCallback) {
-		LoginDialog loginDialog = new LoginDialog(this, successCallback, cancelCallback);
+	public boolean loginValid() {
+		return ((username != null)&&(password != null));
+	}
+	
+	public void loadLoginInfo(final DialogCallback successCallback, final DialogCallback cancelCallback) {
+		final LoginDialog loginDialog = new LoginDialog(TermiteFXGui.getStage());
+		loginDialog.init(this, successCallback, cancelCallback);
 		loginDialog.show();
 	}
 	
