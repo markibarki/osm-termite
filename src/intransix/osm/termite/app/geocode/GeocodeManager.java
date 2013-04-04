@@ -57,65 +57,20 @@ public class GeocodeManager {
 		anchorPoints[2] = p2;
 	}
 	
-//	//these methods manage the source layers
-//	
-//	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
-//		this.viewRegionManager = viewRegionManager;
-//	}
-//	
-//	public void setMapLayerManager(MapLayerManager mapLayerManager) {
-//		this.mapLayerManager = mapLayerManager;
-//	}
-//	
+	/** This call should be used to maintain the list of all available source layers. */
 	public void addSourceLayer(SourceLayer sourceLayer) {
 		this.sourceLayers.add(sourceLayer);
 	}
 	
+	/** This call should be used to maintain the list of all available source layers. */
 	public void removeSourceLayer(SourceLayer sourceLayer) {
 		this.sourceLayers.remove(sourceLayer);
 	}
 	
+	/** This call returns the list of all available source layers. */
 	public List<SourceLayer> getSourceLayers() {
 		return sourceLayers;
 	}
-	
-//	/** This method creates a source layer from a file. */
-//	public void createSourceLayer(File file) {
-//		
-//		SourceLayer layer = new SourceLayer();
-//
-////we shouldn't need to put this first - but we have to because we need the transform loaded.
-//setLayerVisible(layer,true);
-//				
-//		layer.loadImage(file);
-//		sourceLayers.add(layer);
-//		
-//		
-//	}
-//	
-//	/** This method hides or shows a source layer. */
-//	public void setLayerVisible(SourceLayer layer, boolean visible) {
-//		if(visible) {
-//			mapLayerManager.addLayer(layer);
-//			layer.onMapViewChange(viewRegionManager, true);
-//			viewRegionManager.addMapListener(layer);
-//			layer.setIsActive(true);
-//		}
-//		else {
-//			mapLayerManager.removeLayer(layer);
-//			viewRegionManager.removeMapListener(layer);
-//			layer.setIsActive(false);
-//		}
-//	}
-//	
-//	/** This method deletes a source layer. */
-//	public void deleteSourceLayer(SourceLayer layer) {
-//		mapLayerManager.removeLayer(layer);
-//		viewRegionManager.removeMapListener(layer);
-//		sourceLayers.remove(layer);
-//	}
-//	
-//	//these methods do other stuff - clean up source layer management
 	
 	public void setMode(GeocodeEditorMode geocodeEditorMode) {
 		this.geocodeEditorMode = geocodeEditorMode;
