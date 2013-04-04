@@ -2,6 +2,7 @@ package intransix.osm.termite.gui.task;
 
 import intransix.osm.termite.app.mapdata.download.RequestAction;
 import intransix.osm.termite.app.mapdata.MapDataManager;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.BlockerDialog;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.util.MercatorCoordinates;
@@ -33,7 +34,7 @@ public class MapDataRequestTask extends Task<Void> {
 		th.start();
 		synchronized(this) {
 			if(!isDone()) {
-				blocker = new BlockerDialog(this,"Loading map data...",false);
+				blocker = new BlockerDialog(TermiteFXGui.getStage(),this,"Loading map data...",false);
 				blocker.show();
 			}
 		}
@@ -81,7 +82,7 @@ public class MapDataRequestTask extends Task<Void> {
 		}
 		
 		if(!success) {
-			MessageDialog.show(errorMsg);
+			MessageDialog.show(TermiteFXGui.getStage(),errorMsg);
 		}
 	}
 }

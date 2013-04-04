@@ -61,7 +61,7 @@ private final ObservableList<MapLayer> data = FXCollections.observableArrayList(
         TableColumn firstNameCol = new TableColumn("Layer");
         firstNameCol.setMinWidth(100);
 		firstNameCol.setSortable(false);
-		firstNameCol.setCellValueFactory(new PropertyValueFactory<MapLayer, String>("Name"));
+		firstNameCol.setCellValueFactory(new PropertyValueFactory<MapLayer, String>("name"));
 		firstNameCol.setCellFactory(textCellFactory);
 		firstNameCol.setOnEditCommit(
 			new EventHandler<TableColumn.CellEditEvent<MapLayer, String>>() {
@@ -78,7 +78,7 @@ private final ObservableList<MapLayer> data = FXCollections.observableArrayList(
         lastNameCol.setMinWidth(100);
 		lastNameCol.setPrefWidth(200);
 		lastNameCol.setSortable(false);
-		lastNameCol.setCellValueFactory(new PropertyValueFactory<MapLayer, Double>("Opacity"));
+		lastNameCol.setCellValueFactory(new PropertyValueFactory<MapLayer, Double>("opacity"));
 		lastNameCol.setCellFactory(doubleCellFactory);
 		lastNameCol.setOnEditCommit(
 			new EventHandler<TableColumn.CellEditEvent<MapLayer, Double>>() {

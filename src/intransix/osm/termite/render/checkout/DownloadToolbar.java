@@ -1,5 +1,6 @@
 package intransix.osm.termite.render.checkout;
 
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import intransix.osm.termite.gui.mode.download.DownloadEditorMode;
 import javafx.event.ActionEvent;
@@ -86,7 +87,7 @@ public class DownloadToolbar extends ToolBar {
 	private void searchPressed() {
 		String searchText = this.searchField.getText().trim();
 		if(searchText.length() == 0) {
-			MessageDialog.show("You must enter a search string");
+			MessageDialog.show(TermiteFXGui.getStage(),"You must enter a search string");
 			return;
 		}
 		downloadEditorMode.doSearch(searchText);

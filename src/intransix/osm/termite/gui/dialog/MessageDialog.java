@@ -1,59 +1,31 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package intransix.osm.termite.gui.dialog;
 
-import intransix.osm.termite.gui.TermiteFXGui;
-import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 /**
  *
  * @author sutter
  */
 public class MessageDialog {
-	public static void show(String msg) {
-		final Stage dialog = new Stage(StageStyle.TRANSPARENT);
-		
-		dialog.initModality(Modality.WINDOW_MODAL);
-		dialog.initOwner(TermiteFXGui.getStage());
-		
-		//create the layout
-		GridPane grid = new GridPane();
-		grid.setAlignment(Pos.CENTER);
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(25, 25, 25, 25));
-
-		//user name field and label
+	/** This brings up a dialog with the given message. The call returns immediately but the UI will be blocked
+	 * until the user presses ok. */
+	public static void show(Stage parent, String msg) {
+		DialogCallback callback = new DialogCallback() {
+			@Override
+			public boolean handle(TermiteDialog dialog) {
+				return true;
+			}
+		};
+		show(parent,msg,callback);
+	}
+	
+	/** This method brings up a dialog with the given message. The call returns immediately but the UI will be blocked.
+	 * It calls the given callback when the user presses the OK button. */
+	public static void show(Stage parent, String msg, DialogCallback callback) {
+		TermiteDialog dialog = new TermiteDialog(parent);
 		Label label = new Label(msg);
-		grid.add(label, 0, 0);
-		
-		//add a button - Use the hbox so we can use a different alignment for button
-			Button okButton = new Button("OK");
-			okButton.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent e) {
-					dialog.hide();
-				}
-			});
-			grid.add(okButton, 0, 1);
-
-		
-		//create the scene
-		Scene scene = new Scene(grid, 300, 275);
-		dialog.setScene(scene);
+		dialog.init(label, callback, null);
 		dialog.show();
 	}
 }

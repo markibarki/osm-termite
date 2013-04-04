@@ -2,6 +2,7 @@ package intransix.osm.termite.gui.task;
 
 import intransix.osm.termite.gui.dialog.BlockerDialog;
 import intransix.osm.termite.app.TermiteFX;
+import intransix.osm.termite.gui.TermiteFXGui;
 import intransix.osm.termite.gui.dialog.MessageDialog;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -28,7 +29,7 @@ public class ShutdownTask extends Task<Void> {
 		th.start();
 		synchronized(this) {
 			if(!isDone()) {
-				blocker = new BlockerDialog(this,"Shutting down...",false);
+				blocker = new BlockerDialog(TermiteFXGui.getStage(),this,"Shutting down...",false);
 				blocker.show();
 			}
 		}
@@ -56,7 +57,7 @@ public class ShutdownTask extends Task<Void> {
 		});
 		
 		if(!success) {
-			MessageDialog.show("There was an error shutting down: " + errorMsg);
+			MessageDialog.show(TermiteFXGui.getStage(),"There was an error shutting down: " + errorMsg);
 		}	
 		
 		return null;
