@@ -334,21 +334,6 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 	}
 	
 	private void setReticle(Rectangle2D dataBounds) {
-		//convert points - if selection goes outside world bounds, use world bounds for selection
-//		Point2D zeroPoint = new Point2D.Double(0,0);
-//		Point2D minPoint = new Point2D.Double(Math.max(0,dataBounds.getMinX()),Math.max(0,dataBounds.getMinY()));
-//		Point2D maxPoint = new Point2D.Double(Math.min(1,dataBounds.getMaxX()),Math.min(1,dataBounds.getMaxY()));
-//		Point2D onePoint = new Point2D.Double(1,1);
-//		
-//		mercToLocal.transform(zeroPoint, zeroPoint);
-//		mercToLocal.transform(minPoint, minPoint);
-//		mercToLocal.transform(maxPoint, maxPoint);
-//		mercToLocal.transform(onePoint, onePoint);
-//		
-//		addRectangle(zeroPoint.getX(),zeroPoint.getY(),minPoint.getX(),onePoint.getY());
-//		addRectangle(minPoint.getX(),zeroPoint.getY(),maxPoint.getX(),minPoint.getY());
-//		addRectangle(minPoint.getX(),maxPoint.getY(),maxPoint.getX(),onePoint.getY());
-//		addRectangle(maxPoint.getX(),zeroPoint.getY(),onePoint.getX(),onePoint.getY());
 		
 		Point2D minPoint = new Point2D.Double(Math.max(0,dataBounds.getMinX()),Math.max(0,dataBounds.getMinY()));
 		Point2D maxPoint = new Point2D.Double(Math.min(1,dataBounds.getMaxX()),Math.min(1,dataBounds.getMaxY()));
@@ -422,14 +407,6 @@ public class EditLayer extends MapLayer implements FeatureSelectedListener, Edit
 		path.setOpacity(.5);
 
 		this.getChildren().add(path);
-	}
-	
-	private void addRectangle(double minX, double minY, double maxX, double maxY) {
-		Rectangle rect;
-		rect = new Rectangle(minX,minY,maxX-minX,maxY-minY);
-		rect.setFill(Color.BLUE);
-		rect.setOpacity(.5);
-		this.getChildren().add(rect);
 	}
 	
 	// </editor-fold>
