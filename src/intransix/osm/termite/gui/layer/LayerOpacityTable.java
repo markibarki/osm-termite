@@ -28,6 +28,9 @@ import javafx.util.Callback;
  */
 public class LayerOpacityTable extends TableView implements MapLayerListener {
 	
+	public final static double MIN_OPACITY = .1;
+	public final static double MAX_OPACITY = 1.0;
+	
 //	private final ObservableList<LayerOpacityTable.LayerData> data = FXCollections.observableArrayList();
 private final ObservableList<MapLayer> data = FXCollections.observableArrayList();
 	
@@ -44,12 +47,12 @@ private final ObservableList<MapLayer> data = FXCollections.observableArrayList(
 
         this.setEditable(true);
 	
-        Callback<TableColumn, TableCell> textCellFactory =
-             new Callback<TableColumn, TableCell>() {
-                 public TableCell call(TableColumn p) {
-                    return new LayerOpacityTable.TextEditingCell();
-                 }
-             };
+//        Callback<TableColumn, TableCell> textCellFactory =
+//             new Callback<TableColumn, TableCell>() {
+//                 public TableCell call(TableColumn p) {
+//                    return new LayerOpacityTable.TextEditingCell();
+//                 }
+//             };
 		
 		Callback<TableColumn, TableCell> doubleCellFactory =
              new Callback<TableColumn, TableCell>() {
@@ -62,17 +65,17 @@ private final ObservableList<MapLayer> data = FXCollections.observableArrayList(
         firstNameCol.setMinWidth(100);
 		firstNameCol.setSortable(false);
 		firstNameCol.setCellValueFactory(new PropertyValueFactory<MapLayer, String>("name"));
-		firstNameCol.setCellFactory(textCellFactory);
-		firstNameCol.setOnEditCommit(
-			new EventHandler<TableColumn.CellEditEvent<MapLayer, String>>() {
-				@Override
-				public void handle(TableColumn.CellEditEvent<MapLayer, String> t) {
-					((MapLayer) t.getTableView().getItems().get(
-						t.getTablePosition().getRow())
-						).setName(t.getNewValue());
-				}		
-			}				
-		);
+//		firstNameCol.setCellFactory(textCellFactory);
+//		firstNameCol.setOnEditCommit(
+//			new EventHandler<TableColumn.CellEditEvent<MapLayer, String>>() {
+//				@Override
+//				public void handle(TableColumn.CellEditEvent<MapLayer, String> t) {
+//					((MapLayer) t.getTableView().getItems().get(
+//						t.getTablePosition().getRow())
+//						).setName(t.getNewValue());
+//				}		
+//			}				
+//		);
  
         TableColumn lastNameCol = new TableColumn("Opacity");
         lastNameCol.setMinWidth(100);
@@ -96,72 +99,72 @@ private final ObservableList<MapLayer> data = FXCollections.observableArrayList(
     }
  
 	
-	 class TextEditingCell extends TableCell<MapLayer, String> {
- 
-        private TextField textField;
- 
-        public TextEditingCell() {
-        }
- 
-        @Override
-        public void startEdit() {
-            if (!isEmpty()) {
-                super.startEdit();
-                createTextField();
-                setText(null);
-                setGraphic(textField);
-                textField.selectAll();
-            }
-        }
- 
-        @Override
-        public void cancelEdit() {
-            super.cancelEdit();
- 
-            setText((String) getItem());
-            setGraphic(null);
-        }
- 
-        @Override
-        public void updateItem(String item, boolean empty) {
-            super.updateItem(item, empty);
- 
-            if (empty) {
-                setText(null);
-                setGraphic(null);
-            } else {
-                if (isEditing()) {
-                    if (textField != null) {
-                        textField.setText(getString());
-                    }
-                    setText(null);
-                    setGraphic(textField);
-                } else {
-                    setText(getString());
-                    setGraphic(null);
-                }
-            }
-        }
- 
-        private void createTextField() {
-            textField = new TextField(getString());
-            textField.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
-            textField.textProperty().addListener(new ChangeListener<String>(){
-                @Override
-                public void changed(ObservableValue<? extends String> arg0, 
-						String oldValue, String newValue) {
-					if (newValue != null) {
-						commitEdit(newValue);
-
-					}
-                }
-            });
-        }
- 
-        private String getString() {
-            return getItem() == null ? "" : getItem().toString();
-        }
-	 }
+//	 class TextEditingCell extends TableCell<MapLayer, String> {
+// 
+//        private TextField textField;
+// 
+//        public TextEditingCell() {
+//        }
+// 
+//        @Override
+//        public void startEdit() {
+//            if (!isEmpty()) {
+//                super.startEdit();
+//                createTextField();
+//                setText(null);
+//                setGraphic(textField);
+//                textField.selectAll();
+//            }
+//        }
+// 
+//        @Override
+//        public void cancelEdit() {
+//            super.cancelEdit();
+// 
+//            setText((String) getItem());
+//            setGraphic(null);
+//        }
+// 
+//        @Override
+//        public void updateItem(String item, boolean empty) {
+//            super.updateItem(item, empty);
+// 
+//            if (empty) {
+//                setText(null);
+//                setGraphic(null);
+//            } else {
+//                if (isEditing()) {
+//                    if (textField != null) {
+//                        textField.setText(getString());
+//                    }
+//                    setText(null);
+//                    setGraphic(textField);
+//                } else {
+//                    setText(getString());
+//                    setGraphic(null);
+//                }
+//            }
+//        }
+// 
+//        private void createTextField() {
+//            textField = new TextField(getString());
+//            textField.setMinWidth(this.getWidth() - this.getGraphicTextGap()* 2);
+//            textField.textProperty().addListener(new ChangeListener<String>(){
+//                @Override
+//                public void changed(ObservableValue<? extends String> arg0, 
+//						String oldValue, String newValue) {
+//					if (newValue != null) {
+//						commitEdit(newValue);
+//
+//					}
+//                }
+//            });
+//        }
+// 
+//        private String getString() {
+//            return getItem() == null ? "" : getItem().toString();
+//        }
+//	 }
 	 
 	class OpacityEditingCell extends TableCell<MapLayer, Double> {
  
@@ -188,8 +191,8 @@ private final ObservableList<MapLayer> data = FXCollections.observableArrayList(
  
         private void createSlider() {
 			slider = new Slider();
-			slider.setMin(0);
-			slider.setMax(1.0);
+			slider.setMin(MIN_OPACITY);
+			slider.setMax(MAX_OPACITY);
 			
             slider.valueProperty().addListener(new ChangeListener<Number>(){
                 @Override

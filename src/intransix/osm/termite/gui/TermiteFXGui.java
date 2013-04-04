@@ -342,6 +342,7 @@ featureTree.init();
 	
 	public void setGeocodeManager(GeocodeManager geocodeManager) {
 this.geocodeManager = geocodeManager;
+
 		geocodeManager.setGeocodeLayer(geocodeLayer);
 		geocodeManager.setMode(geocodeEditorMode);
 		geocodeLayer.setGeocodeManager(geocodeManager);
@@ -355,26 +356,11 @@ this.geocodeManager = geocodeManager;
 		baseMapLayer.setVisible( (tileInfo != null) ? true : false);
 	}
 	
-	public void manageSourceLayers() {
-		
-if(geocodeManager.getSourceLayers().isEmpty()) {
-	File file = new File("C:/Users/sutter/Desktop/ord3.png");
-	addSourceLayer(file);
-}		
-		
-		SourceDialog sourceDialog = new SourceDialog(geocodeManager,mapLayerManager);
-		sourceDialog.init();
+	/** This method opens the dialog to manage the source layers. */
+	public void manageSourceLayers() {		
+		SourceDialog sourceDialog = new SourceDialog();
+		sourceDialog.init(mapLayerManager, viewRegionManager, geocodeManager);
 		sourceDialog.show();
-	}
-	
-	public void addSourceLayer(File file) {
-		SourceLayer layer = new SourceLayer();
-		layer.onMapViewChange(viewRegionManager, true);
-		viewRegionManager.addMapListener(layer);
-		layer.loadImage(file);
-		mapLayerManager.addLayer(layer);
-		geocodeManager.addSourceLayer(layer);
-		layer.setIsActive(true);
 	}
 	
 	private void shutdown() {

@@ -1,10 +1,13 @@
 package intransix.osm.termite.app.geocode;
 
+import intransix.osm.termite.app.maplayer.MapLayerManager;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
 import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.render.source.SourceLayer;
 import java.awt.geom.AffineTransform;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 //import java.awt.geom.AffineTransform;
@@ -28,7 +31,7 @@ public class GeocodeManager {
 
 	private int selection = INVALID_SELECTION;
 	
-	private SourceLayer sourceLayer;
+	private SourceLayer activeSourceLayer;
 	
 	private AnchorPoint[] anchorPoints;
 	private AnchorPoint p0 = new AnchorPoint();
@@ -39,8 +42,8 @@ public class GeocodeManager {
 	private AffineTransform mercToImage;
 	private AffineTransform moveImageToMerc = new AffineTransform();
 	
+	//source layer management
 	private List<SourceLayer> sourceLayers = new ArrayList<>();
-		
 
 	//==================
 	// Public Methods
@@ -54,17 +57,65 @@ public class GeocodeManager {
 		anchorPoints[2] = p2;
 	}
 	
-	//these methods manage the source layers
-	
+//	//these methods manage the source layers
+//	
+//	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
+//		this.viewRegionManager = viewRegionManager;
+//	}
+//	
+//	public void setMapLayerManager(MapLayerManager mapLayerManager) {
+//		this.mapLayerManager = mapLayerManager;
+//	}
+//	
 	public void addSourceLayer(SourceLayer sourceLayer) {
 		this.sourceLayers.add(sourceLayer);
+	}
+	
+	public void removeSourceLayer(SourceLayer sourceLayer) {
+		this.sourceLayers.remove(sourceLayer);
 	}
 	
 	public List<SourceLayer> getSourceLayers() {
 		return sourceLayers;
 	}
 	
-	//these methods do other stuff - clean up source layer management
+//	/** This method creates a source layer from a file. */
+//	public void createSourceLayer(File file) {
+//		
+//		SourceLayer layer = new SourceLayer();
+//
+////we shouldn't need to put this first - but we have to because we need the transform loaded.
+//setLayerVisible(layer,true);
+//				
+//		layer.loadImage(file);
+//		sourceLayers.add(layer);
+//		
+//		
+//	}
+//	
+//	/** This method hides or shows a source layer. */
+//	public void setLayerVisible(SourceLayer layer, boolean visible) {
+//		if(visible) {
+//			mapLayerManager.addLayer(layer);
+//			layer.onMapViewChange(viewRegionManager, true);
+//			viewRegionManager.addMapListener(layer);
+//			layer.setIsActive(true);
+//		}
+//		else {
+//			mapLayerManager.removeLayer(layer);
+//			viewRegionManager.removeMapListener(layer);
+//			layer.setIsActive(false);
+//		}
+//	}
+//	
+//	/** This method deletes a source layer. */
+//	public void deleteSourceLayer(SourceLayer layer) {
+//		mapLayerManager.removeLayer(layer);
+//		viewRegionManager.removeMapListener(layer);
+//		sourceLayers.remove(layer);
+//	}
+//	
+//	//these methods do other stuff - clean up source layer management
 	
 	public void setMode(GeocodeEditorMode geocodeEditorMode) {
 		this.geocodeEditorMode = geocodeEditorMode;
@@ -85,14 +136,14 @@ public class GeocodeManager {
 	}
 	
 	/** This method sets the source layer that will be geocoded. */
-	public void setSourceLayer(SourceLayer sourceLayer) {
+	public void setActiveSourceLayer(SourceLayer sourceLayer) {
 
 //test caching geocode
-if(this.sourceLayer != null) {
-	this.sourceLayer.storeChanges();
+if(this.activeSourceLayer != null) {
+	this.activeSourceLayer.storeChanges();
 }
 
-		this.sourceLayer = sourceLayer;
+		this.activeSourceLayer = sourceLayer;
 		if(sourceLayer != null) {
 			imageToMerc = sourceLayer.getImageToMerc();
 			if(imageToMerc != null) {
@@ -135,7 +186,7 @@ if(this.sourceLayer != null) {
 	/** This method should be called if a move is active and the move transform 
 	 * is updated. */
 	public void moveImageToMercUpdated() {
-		if(sourceLayer != null) {
+		if(activeSourceLayer != null) {
 //			sourceLayer.notifyContentChange();
 		}
 	}
@@ -155,8 +206,8 @@ if(this.sourceLayer != null) {
 	/** This method should be called when the geocode layer is made active. */
 	public void layerActive() {
 		//refresh the source layer transformation
-		if(this.sourceLayer != null) {
-			this.setSourceLayer(sourceLayer);
+		if(this.activeSourceLayer != null) {
+			this.setActiveSourceLayer(activeSourceLayer);
 		}
 	}
 	
@@ -165,8 +216,8 @@ if(this.sourceLayer != null) {
 		selection = INVALID_SELECTION;
 
 //test caching geocode
-if(sourceLayer != null) {
-	sourceLayer.storeChanges();
+if(activeSourceLayer != null) {
+	activeSourceLayer.storeChanges();
 }
 		
 		for(AnchorPoint ap:anchorPoints) {
@@ -181,22 +232,22 @@ if(sourceLayer != null) {
 	
 	/** This method initializes a move operation. */
 	public void initMove() {
-		if(sourceLayer == null) return;
+		if(activeSourceLayer == null) return;
 		
 		moveImageToMerc.setTransform(imageToMerc);
-		sourceLayer.setMove(true, moveImageToMerc);
+		activeSourceLayer.setMove(true, moveImageToMerc);
 	}
 	
 	/** This method should be called to end a move operation. */
 	public void exitMove() {
-		if(sourceLayer == null) return;
+		if(activeSourceLayer == null) return;
 		
-		sourceLayer.setMove(false,null);
+		activeSourceLayer.setMove(false,null);
 	}
 	
 	/** This method executes a move on the source image. */
 	public void executeMove() {
-		if(sourceLayer == null) return;
+		if(activeSourceLayer == null) return;
 		
 		//copy transform
 		imageToMerc.setTransform(moveImageToMerc);
@@ -206,8 +257,8 @@ if(sourceLayer != null) {
 				imageToMerc.transform(ap.imagePoint, ap.mercPoint);
 			}
 		}
-		sourceLayer.setMove(false,null);
-		sourceLayer.setImageToMerc(imageToMerc);
+		activeSourceLayer.setMove(false,null);
+		activeSourceLayer.setImageToMerc(imageToMerc);
 	}
 	
 	//=====================

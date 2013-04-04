@@ -193,7 +193,7 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 		//revert to select mode if we change layers
 		this.setLayerState(LayerState.SELECT);
 		
-		geocodeManager.setSourceLayer(sourceLayer);
+		geocodeManager.setActiveSourceLayer(sourceLayer);
 	}
 	
 	//---------------
