@@ -1,5 +1,6 @@
 package intransix.osm.termite.render.source.dialog;
 
+import intransix.osm.termite.app.geocode.GeocodeManager;
 import intransix.osm.termite.render.source.SourceLayer;
 import java.util.List;
 import javafx.beans.value.ChangeListener;
@@ -9,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
@@ -26,18 +28,34 @@ public class SourceListTable extends TableView<SourceLayer> {
     private final ObservableList<SourceLayer> data =
         FXCollections.observableArrayList();
 	
+	private SourceDialogContent sourceDialogContent;
+	
 	public SourceListTable() {
-		init();
 	}
 	
-	public void setData(List<SourceLayer> sourceLayers) {
-		data.addAll(sourceLayers);
+	/** This call sets the source dialog controller code. */
+	public void init(SourceDialogContent sourceDialogContent) {
+		this.sourceDialogContent = sourceDialogContent;
+		buildTable();
 	}
-   
+	
+	/** This method refreshes the layer list. It should be called if the source layer list changes. */
+	public void updateLayerList(List<SourceLayer> sourceLayers) {
+		data.setAll(sourceLayers);
+	}
+	
+	public SourceLayer getSelectedLayer() {
+		return this.getSelectionModel().getSelectedItem();
+	}
+	
+	//==============================
+	// Private Methods
+	//==============================
  
-    public final void init() {
+    private final void buildTable() {
 
         this.setEditable(true);
+		this.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		
 		final TableColumn layerNameCol = new TableColumn("Layer");
 		final TableColumn visibleCol = new TableColumn("Visible");
@@ -81,9 +99,10 @@ public class SourceListTable extends TableView<SourceLayer> {
 			new EventHandler<CellEditEvent<SourceLayer, Boolean>>() {
 				@Override
 				public void handle(CellEditEvent<SourceLayer, Boolean> t) {
-					((SourceLayer) t.getTableView().getItems().get(
-						t.getTablePosition().getRow())
-						).setIsActive(t.getNewValue());
+					SourceLayer layer = ((SourceLayer) t.getTableView().getItems().get(
+						t.getTablePosition().getRow()));
+					Boolean visible = t.getNewValue();
+					sourceDialogContent.setLayerVisible(layer, visible);
 				}
 			}
 		);
