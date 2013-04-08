@@ -67,12 +67,17 @@ public class SourceLayer extends MapLayer implements MapListener {
 	public void setMove(boolean inMove, AffineTransform moveImageToMerc) {
 		this.inMove = inMove;
 		this.moveImageToMerc = moveImageToMerc;
-		this.moveImageToMercFX = Transform.affine(moveImageToMerc.getScaleX(),
-					moveImageToMerc.getShearY(),
-					moveImageToMerc.getShearX(),
-					moveImageToMerc.getScaleY(),
-					moveImageToMerc.getTranslateX(),
-					moveImageToMerc.getTranslateY());
+		if(moveImageToMerc != null) {
+			this.moveImageToMercFX = Transform.affine(moveImageToMerc.getScaleX(),
+						moveImageToMerc.getShearY(),
+						moveImageToMerc.getShearX(),
+						moveImageToMerc.getScaleY(),
+						moveImageToMerc.getTranslateX(),
+						moveImageToMerc.getTranslateY());
+		}
+		else {
+			this.moveImageToMercFX = null;
+		}
 		
 		//update the image location
 		updateLocation();

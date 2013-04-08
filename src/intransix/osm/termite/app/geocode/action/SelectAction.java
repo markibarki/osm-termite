@@ -1,7 +1,6 @@
 package intransix.osm.termite.app.geocode.action;
 
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
-import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.geocode.*;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import java.awt.geom.Point2D;
@@ -18,7 +17,6 @@ public class SelectAction implements GeocodeMouseAction {
 	//=====================
 	
 	private GeocodeManager geocodeManager;
-	private GeocodeLayer geocodeLayer;
 	
 	//=====================
 	// Public Methods
@@ -26,11 +24,6 @@ public class SelectAction implements GeocodeMouseAction {
 	
 	public SelectAction(GeocodeManager geocodeManager) {
 		this.geocodeManager = geocodeManager;
-	}
-	
-	@Override
-	public void init(GeocodeLayer geocodeLayer) {
-		this.geocodeLayer = geocodeLayer;
 	}
 	
 	/** This should return false if these if no move action. */
@@ -62,6 +55,7 @@ public class SelectAction implements GeocodeMouseAction {
 		//exit the move after a click
 		geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
 			
+		geocodeManager.anchorPointsUpdated();
 //		geocodeLayer.notifyContentChange();
 	}
 	
