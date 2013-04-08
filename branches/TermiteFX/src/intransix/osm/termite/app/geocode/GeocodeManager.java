@@ -3,7 +3,6 @@ package intransix.osm.termite.app.geocode;
 import intransix.osm.termite.app.maplayer.MapLayerManager;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
-import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.render.source.GeocodeLayer;
 import intransix.osm.termite.render.source.SourceLayer;
 import java.awt.geom.AffineTransform;
@@ -44,6 +43,9 @@ public class GeocodeManager {
 	
 	//source layer management
 	private List<SourceLayer> sourceLayers = new ArrayList<>();
+	
+	private List<AnchorPointListener> anchorPointListeners = new ArrayList<>();
+
 
 	//==================
 	// Public Methods
@@ -78,6 +80,7 @@ public class GeocodeManager {
 	
 	public void setGeocodeLayer(GeocodeLayer geocodeLayer) {
 		this.geocodeLayer = geocodeLayer;
+		this.addAnchorPointListener(geocodeLayer);
 	}
 	
 	/** This method retrieves the geocode editor mode. */
@@ -178,7 +181,7 @@ if(activeSourceLayer != null) {
 		for(AnchorPoint ap:anchorPoints) {
 			ap.reset();
 		}
-		geocodeLayer.clearAnchorPoints();
+		this.anchorPointsUpdated();
 	
 
 		imageToMerc = null;
@@ -200,6 +203,13 @@ if(activeSourceLayer != null) {
 		activeSourceLayer.setMove(false,null);
 	}
 	
+	/** This method should be called to update the move preview. */
+	public void updateMove() {
+		if(activeSourceLayer == null) return;
+		
+		activeSourceLayer.setMove(true,moveImageToMerc);
+	}
+	
 	/** This method executes a move on the source image. */
 	public void executeMove() {
 		if(activeSourceLayer == null) return;
@@ -214,6 +224,23 @@ if(activeSourceLayer != null) {
 		}
 		activeSourceLayer.setMove(false,null);
 		activeSourceLayer.setImageToMerc(imageToMerc);
+	}
+	
+	/** This adds an anchor point listener. */
+	public void addAnchorPointListener(AnchorPointListener listener) {
+		anchorPointListeners.add(listener);
+	}
+	
+	/** This removes an anchor point listener. */
+	public void removeAnchorPointListener(AnchorPointListener listener) {
+		anchorPointListeners.remove(listener);
+	}
+	
+	/** This method should be called if the anchor points are updated. */
+	public void anchorPointsUpdated() {
+		for(AnchorPointListener listener:anchorPointListeners) {
+			listener.anchorPointsChanged(anchorPoints);
+		}
 	}
 	
 	//=====================

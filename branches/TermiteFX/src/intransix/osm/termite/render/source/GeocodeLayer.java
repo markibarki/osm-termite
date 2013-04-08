@@ -1,20 +1,20 @@
 package intransix.osm.termite.render.source;
 
 
-import intransix.osm.termite.app.filter.FilterListener;
+import intransix.osm.termite.app.geocode.AnchorPoint;
+import intransix.osm.termite.app.geocode.AnchorPointListener;
 import intransix.osm.termite.app.maplayer.MapLayer;
 import intransix.osm.termite.app.geocode.GeocodeManager;
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
 import intransix.osm.termite.app.geocode.GeocodeMouseAction;
-import intransix.osm.termite.app.mapdata.MapDataListener;
 import intransix.osm.termite.app.viewregion.MapListener;
 import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import intransix.osm.termite.gui.map.MapPane;
-import intransix.osm.termite.render.map.Feature;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.transform.Affine;
@@ -23,7 +23,7 @@ import javafx.scene.transform.Affine;
  *
  * @author sutter
  */
-public class GeocodeLayer extends MapLayer implements MapListener {
+public class GeocodeLayer extends MapLayer implements MapListener, AnchorPointListener {
 	
 	public final static double SNAP_RADIUS_PIXELS = 4;
 	
@@ -41,6 +41,8 @@ public class GeocodeLayer extends MapLayer implements MapListener {
 	private AffineTransform pixelToMerc;
 	private double pixelsToLocalScale = 1.0;
 	private double pixelsToMercatorScale = 1.0;
+	
+	private List<AnchorPointGraphic> anchorPointGraphics = new ArrayList<>();
 	
 	public GeocodeLayer() {
 		this.setName("Geocode Layer");
@@ -63,19 +65,44 @@ public class GeocodeLayer extends MapLayer implements MapListener {
 		};
 	}
 	
-	/** This adds an anchor point to the layer. */
-	public void addAnchorPoint(AnchorPoint anchorPoint) {
-		this.getChildren().add(anchorPoint);
+	public void anchorPointsChanged(AnchorPoint[] anchorPoints) {
+		AnchorPointGraphic apg;
+		Point2D mercPoint;
+		Point2D localPoint = new Point2D.Double();
+		
+		this.anchorPointGraphics.clear();
+		for(AnchorPoint anchorPoint:anchorPoints) {
+			apg = (AnchorPointGraphic)anchorPoint.anchorPointGraphic;
+			if(anchorPoint.isActive) {
+				if(apg == null) {
+					apg = new AnchorPointGraphic();
+					anchorPoint.anchorPointGraphic = apg;
+				}
+				mercPoint = anchorPoint.mercPoint;
+				this.mercToLocal.transform(mercPoint, localPoint);
+				apg.setCenterX(localPoint.getX());
+				apg.setCenterY(localPoint.getY());
+				apg.setRadius(AnchorPoint.RADIUS_PIX * this.pixelsToLocalScale);
+				this.anchorPointGraphics.add(apg);
+			}
+		}
+		
+		this.getChildren().setAll(anchorPointGraphics);
 	}
 	
-	public void removeAnchorPoint(AnchorPoint anchorPoint) {
-		this.getChildren().remove(anchorPoint);
-	}
-
-	/** This method clears the anchor points from the level. */
-	public void clearAnchorPoints() {
-		this.getChildren().clear();
-	}
+//	/** This adds an anchor point to the layer. */
+//	public void addAnchorPoint(AnchorPointGraphic anchorPoint) {
+//		this.getChildren().add(anchorPoint);
+//	}
+//	
+//	public void removeAnchorPoint(AnchorPointGraphic anchorPoint) {
+//		this.getChildren().remove(anchorPoint);
+//	}
+//
+//	/** This method clears the anchor points from the level. */
+//	public void clearAnchorPoints() {
+//		this.getChildren().clear();
+//	}
 	
 	public void setGeocodeManager(GeocodeManager geocodeManager) {
 		this.geocodeManager = geocodeManager;
@@ -87,9 +114,6 @@ public class GeocodeLayer extends MapLayer implements MapListener {
 	
 	public void setMouseAction(GeocodeMouseAction mouseAction) {
 		this.mouseAction = mouseAction;
-		if(mouseAction != null) {
-			mouseAction.init(this);
-		}
 	}
 	
 	public void on(MapPane mapPane) {
@@ -118,8 +142,8 @@ public class GeocodeLayer extends MapLayer implements MapListener {
 			pixelsToLocalScale = viewRegionManager.getZoomScaleLocalPerPixel();
 
 			if(geocodeManager != null) {
-				for(AnchorPoint anchorPoint:geocodeManager.getAnchorPoints()) {
-					anchorPoint.updateScale(pixelsToLocalScale);
+				for(AnchorPointGraphic apg:anchorPointGraphics) {
+					apg.updateScale(pixelsToLocalScale);
 				}
 			}
 		}

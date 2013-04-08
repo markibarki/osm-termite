@@ -1,9 +1,7 @@
 package intransix.osm.termite.app.geocode.action;
 
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
-import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.geocode.*;
-import intransix.osm.termite.render.source.GeocodeLayer;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import javafx.scene.input.MouseEvent;
@@ -20,7 +18,6 @@ public class MoveAction implements GeocodeMouseAction {
 	//=====================
 	
 	private GeocodeManager geocodeManager;
-	private GeocodeLayer geocodeLayer;
 	private AffineTransform workingTransform = new AffineTransform();
 	
 	//=====================
@@ -29,11 +26,6 @@ public class MoveAction implements GeocodeMouseAction {
 	
 	public MoveAction(GeocodeManager geocodeManager) {
 		this.geocodeManager = geocodeManager;
-	}
-	
-	@Override
-	public void init(GeocodeLayer geocodeLayer) {
-		this.geocodeLayer = geocodeLayer;
 	}
 	
 	public void initMove() {
@@ -60,6 +52,7 @@ public class MoveAction implements GeocodeMouseAction {
 		if((anchorPoint != null)&&(anchorPoint.mercPoint != null)) {
 			updateMoveTransform(anchorPoint,mouseMerc);
 			
+			geocodeManager.anchorPointsUpdated();
 //			geocodeLayer.notifyContentChange();
 		}
 	}
@@ -74,6 +67,7 @@ public class MoveAction implements GeocodeMouseAction {
 			//exit the move after a click
 			geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
 			
+			geocodeManager.anchorPointsUpdated();
 //			geocodeLayer.notifyContentChange();
 		}
 	}
@@ -133,6 +127,8 @@ public class MoveAction implements GeocodeMouseAction {
 		
 		moveImageToMerc.setTransform(imageToMerc);
 		moveImageToMerc.preConcatenate(workingTransform);
+		
+		geocodeManager.updateMove();
 	}
 	
 	private void rotateScaleXYTransform(Point2D moveMerc, Point2D baseAnchorMerc,
@@ -171,5 +167,7 @@ if((length1 == 0)||(length2 == 0)) return;
 		moveImageToMerc.translate(-baseAnchorImage.getX(),-baseAnchorImage.getY());
 		
 		moveImageToMerc.preConcatenate(workingTransform);
+		
+		geocodeManager.updateMove();
 	}
 }

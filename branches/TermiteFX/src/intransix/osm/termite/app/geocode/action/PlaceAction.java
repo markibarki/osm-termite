@@ -1,9 +1,7 @@
 package intransix.osm.termite.app.geocode.action;
 
 import intransix.osm.termite.gui.mode.source.GeocodeEditorMode;
-import intransix.osm.termite.render.source.AnchorPoint;
 import intransix.osm.termite.app.geocode.*;
-import intransix.osm.termite.render.source.GeocodeLayer;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import javafx.scene.input.MouseEvent;
@@ -21,7 +19,6 @@ public class PlaceAction implements GeocodeMouseAction {
 	
 	private GeocodeManager geocodeManager;
 	private GeocodeEditorMode geocodeEditorMode;
-	private GeocodeLayer geocodeLayer;
 	
 	//=====================
 	// Public Methods
@@ -31,11 +28,6 @@ public class PlaceAction implements GeocodeMouseAction {
 			GeocodeEditorMode geocodeEditorMode) {
 		this.geocodeManager = geocodeManager;
 		this.geocodeEditorMode = geocodeEditorMode;
-	}
-	
-	@Override
-	public void init(GeocodeLayer geocodeLayer) {
-		this.geocodeLayer = geocodeLayer;
 	}
 	
 	/** This should return false if these if no move action. */
@@ -65,9 +57,10 @@ public class PlaceAction implements GeocodeMouseAction {
 		}
 		
 		//exit the move after a click
-			geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
+		geocodeManager.getGeocodeEditorMode().setLayerState(GeocodeEditorMode.LayerState.SELECT);
 		
-		geocodeLayer.addAnchorPoint(anchorPoint);
+		anchorPoint.setIsActive(true);
+		geocodeManager.anchorPointsUpdated();
 //		geocodeLayer.notifyContentChange();
 	}
 	

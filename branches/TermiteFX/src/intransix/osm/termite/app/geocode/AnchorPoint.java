@@ -1,5 +1,5 @@
 
-package intransix.osm.termite.render.source;
+package intransix.osm.termite.app.geocode;
 
 
 import java.awt.geom.AffineTransform;
@@ -11,81 +11,38 @@ import javafx.scene.shape.Circle;
  * This is an Anchor point for controlling geocoding of an image.
  * @author sutter
  */
-public class AnchorPoint extends Circle {
+public class AnchorPoint {
 	
 	/** This gives the type of anchor point. */
 	public enum PointType {
-		TRANSLATE(Color.BLUE),
-		ROTATE_SCALE_XY(Color.PINK),
-		ROTATE_SCALE_X(Color.PINK),
-		ROTATE_SCALE_Y(Color.ORANGE),
-		FREE_TRANSFORM(Color.BLUE);
-		
-		PointType(Color color) {
-			this.color = color;
-		}
-		
-		public Color getColor() {
-			return color;
-		}
-		
-		private Color color;
-		
+		TRANSLATE,
+		ROTATE_SCALE_XY,
+		ROTATE_SCALE_X,
+		ROTATE_SCALE_Y,
+		FREE_TRANSFORM;	
 	}
 	
 	public final static int RADIUS_PIX = 10;
-	private final static Color SELECT_COLOR = Color.RED;
 	
 	private PointType pointType;
 	public void setPointType(PointType pointType) {
 		this.pointType = pointType;
-		this.setFill(pointType.getColor());
 	}
 	public PointType getPointType() {
 		return pointType;
 	}
 	
+	public boolean isActive;
 	public Point2D mercPoint;
 	public Point2D imagePoint;
+	public Object anchorPointGraphic;
 	
-	
-	private Point2D layerPoint = new Point2D.Double();
-	
-//	/** This method renders the anchor point. */
-//	public void renderPoint(Graphics2D g2,AffineTransform mercToPixels, 
-//			boolean isSelected, boolean inMove, AffineTransform moveImageToMerc) {
-//		
-//		if(pointType == null) return;
-//		
-//		Color color = isSelected ? SELECT_COLOR : pointType.getColor();
-//		g2.setColor(color);
-//		
-//		if(inMove) {
-//			//if in move, transform from image to merc using the move transform
-//			//then transform to pixels
-//			moveImageToMerc.transform(imagePoint,pixPoint);
-//			mercToPixels.transform(pixPoint,pixPoint);
-//		}
-//		else {
-//			//not in move, transform straight from merc to pixels
-//			mercToPixels.transform(mercPoint,pixPoint);
-//		}
-//		
-//		int x = (int)pixPoint.getX();
-//		int y = (int)pixPoint.getY();
-//		g2.drawOval(x-RADIUS_PIX, y-RADIUS_PIX, 2*RADIUS_PIX, 2*RADIUS_PIX);
-//		g2.drawLine(x-RADIUS_PIX,y,x+RADIUS_PIX,y);
-//		g2.drawLine(x,y-RADIUS_PIX,x,y+RADIUS_PIX);
-//	}
-	
-	public void updateLocation(AffineTransform mercToLayerTransform) {
-		mercToLayerTransform.transform(mercPoint,layerPoint);
-		this.setCenterX(layerPoint.getX());
-		this.setCenterY(layerPoint.getY());
+	public boolean getIsActive() {
+		return isActive;
 	}
 	
-	public void updateScale(double pixelsToLayerScale) {
-		this.setRadius(RADIUS_PIX * pixelsToLayerScale);
+	public void setIsActive(boolean isActive) {
+		this.isActive = isActive;
 	}
 	
 	/** This method checks if the test point hits the anchor point. */
@@ -103,6 +60,7 @@ public class AnchorPoint extends Circle {
 		this.pointType = null;
 		this.mercPoint = null;
 		this.imagePoint = null;
+		this.isActive = false;
 	}
 	
 	/** This method is used to for 3 point orthogonal gecodes to determine

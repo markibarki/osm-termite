@@ -10,9 +10,6 @@ import javafx.scene.input.MouseEvent;
  */
 public interface GeocodeMouseAction {
 	
-	/** This method is called when the mouse action is set on the layer. */
-	public void init(GeocodeLayer geocodeLayer);
-	
 	/** This should return false if these if no move action. */
 	public boolean doMove();
 	

@@ -1,9 +1,10 @@
 package intransix.osm.termite.gui.mode.source;
 
+import intransix.osm.termite.app.geocode.AnchorPoint;
 import intransix.osm.termite.app.geocode.GeocodeManager;
 import intransix.osm.termite.app.geocode.GeocodeStateListener;
 import intransix.osm.termite.render.source.GeocodeToolbar;
-import intransix.osm.termite.render.source.AnchorPoint;
+import intransix.osm.termite.render.source.AnchorPointGraphic;
 import intransix.osm.termite.gui.mode.EditorMode;
 import intransix.osm.termite.app.geocode.action.*;
 import intransix.osm.termite.app.maplayer.MapLayer;
@@ -116,7 +117,6 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 				anchorPoints[0].setPointType(AnchorPoint.PointType.TRANSLATE);
 				anchorPoints[1].setPointType(AnchorPoint.PointType.ROTATE_SCALE_XY);
 				anchorPoints[2].reset();
-				geocodeLayer.removeAnchorPoint(anchorPoints[2]);
 				break;
 			
 			case THREE_POINT_ORTHO:
@@ -134,6 +134,8 @@ public class GeocodeEditorMode extends EditorMode implements MapLayerListener  {
 		for(GeocodeStateListener gsl:stateListeners) {
 			gsl.geocodeTypeChanged(this.geocodeType);
 		}
+		
+		geocodeManager.anchorPointsUpdated();
 	}
 	
 	/** This method gets the layer state. */
