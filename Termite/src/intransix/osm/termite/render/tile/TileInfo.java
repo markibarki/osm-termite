@@ -24,6 +24,10 @@ public class TileInfo {
 	private int maxZoom;
 	private int minZoom;
 	private int tileSize;
+	private double xOffset = 0;
+	private double yOffset = 0;
+	private int zOffset = 0;
+	private boolean yOriginTop = true;
 	
 	public String getName() {
 		return name;
@@ -39,6 +43,22 @@ public class TileInfo {
 	
 	public int getTileSize() {
 		return tileSize;
+	}
+
+	public double getXOffset() {
+		return xOffset;
+	}
+
+	public double getYOffset() {
+		return yOffset;
+	}
+
+	public int getZOffset() {
+		return zOffset;
+	}
+
+	public boolean getYOriginTop() {
+		return yOriginTop;
 	}
 	
 	public static List<TileInfo> parseInfoList(JSONObject json) {
@@ -72,6 +92,11 @@ public class TileInfo {
 			tileInfo.minZoom = json.getInt("minZoom");
 			tileInfo.tileSize = json.getInt("tileSize");
 			tileInfo.urlTemplate = json.getString("urlTemplate");
+
+			tileInfo.xOffset = json.optDouble("xOffset",0);
+			tileInfo.yOffset = json.optDouble("yOffset",0);
+			tileInfo.zOffset = json.optInt("zOffset",0);
+			tileInfo.yOriginTop = json.optBoolean("yOriginTop",true);
 			
 			String type = json.getString("requestType");
 			if(XYZ_KEY.equalsIgnoreCase(type)) {
@@ -123,6 +148,16 @@ public class TileInfo {
 	}
 	
 	private String getXYZUrl(int ix, int iy, int zoom) {
+		if(!yOriginTop) {
+			iy = (1 << zoom) - iy - 1;
+		}
+		if(xOffset != 0) {
+			ix = ix - (int)(xOffset * (1 << zoom));
+		}
+		if(yOffset != 0) {
+			iy = iy - (int)(yOffset * (1 << zoom));
+		}
+		zoom = zoom - zOffset;
 		return String.format(Locale.US,urlTemplate,ix,iy,zoom);
 	}
 	
