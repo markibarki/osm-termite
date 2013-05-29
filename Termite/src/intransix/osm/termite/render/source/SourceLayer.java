@@ -13,9 +13,12 @@ import org.json.*;
  * @author sutter
  */
 public class SourceLayer extends MapLayer implements ImageObserver {
+
+	private final static String TRANSFORM_TAG = "transform";
 	
 	private File imageFile;
 	private Image sourceImage;
+	private JSONObject configJson = null;
 
 	private AffineTransform imageToMerc;
 	private AffineTransform moveImageToMerc = new AffineTransform();
@@ -151,9 +154,11 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 				String transformPath = imageFile.getAbsolutePath() + TRANSFORM_FILE_SUFFIX;
 				double[] matrix = new double[6];
 				imageToMerc.getMatrix(matrix);
-				JSONObject json = new JSONObject();
-				json.put("transform",matrix);
-				JsonIO.writeJsonFile(transformPath,json);
+				if(configJson == null) {
+					configJson = new JSONObject();
+				}
+				configJson.put(TRANSFORM_TAG,matrix);
+				JsonIO.writeJsonFile(transformPath,configJson);
 
 				//update the saved value
 				savedImageToMerc = new AffineTransform(imageToMerc);
@@ -171,8 +176,8 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 				String transformPath = imageFile.getAbsolutePath() + TRANSFORM_FILE_SUFFIX;
 				File file = new File(transformPath);
 				if(file.exists()) {
-					JSONObject json = JsonIO.readJsonFile(transformPath);
-					JSONArray transformJson = json.optJSONArray("transform");
+					configJson = JsonIO.readJsonFile(transformPath);
+					JSONArray transformJson = configJson.optJSONArray(TRANSFORM_TAG);
 					if(transformJson != null) {
 						imageToMerc = new AffineTransform();
 						imageToMerc.setTransform(transformJson.getDouble(0),transformJson.getDouble(1),transformJson.getDouble(2),
