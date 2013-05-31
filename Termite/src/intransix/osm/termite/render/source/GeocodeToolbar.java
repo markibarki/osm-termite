@@ -234,6 +234,7 @@ public class GeocodeToolbar extends JToolBar implements ActionListener,
 		for(JRadioButton button:radioButtons) {
 //free transform is disabled
 if(button == radioButtons[FREE_TRANSFORM]) button.setEnabled(false);
+else if(button == radioButtons[THREE_POINT_ORTHO]) button.setEnabled(false);
 else
 			button.setEnabled(enable);
 		}		
