@@ -220,7 +220,7 @@ public class SourceLayerDialog extends javax.swing.JDialog implements TableModel
 			SourceLayer sourceLayer = new SourceLayer();
 			java.io.File file = fc.getSelectedFile();
 			gui.setWorkingDirectory(fc.getCurrentDirectory());
-			boolean success = sourceLayer.loadImage(file);
+			boolean success = sourceLayer.loadImage(file, gui.getViewRegionManager());
 			if(success) {
 				sourceLayer.setActiveState(true);
 				sourceLayer.setName(file.getName());

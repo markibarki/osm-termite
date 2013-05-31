@@ -32,6 +32,17 @@
 			"tileSize":256,
 			"requestType":"XYZ",
 			"urlTemplate":"http://a.tile.openstreetmap.org/%3$d/%1$d/%2$d.png"
+		},
+		{
+			"name":"Yahoo! Japan",
+			"yOriginTop":false,
+			"yOffset":.5,
+			"zOffset":-1,
+			"maxZoom":20,
+			"minZoom":1,
+			"tileSize":256,
+			"requestType":"XYZ",
+			"urlTemplate":"http://m.map.c.yimg.jp/m?r=1&x=%1$d&y=%2$d&z=%3$d"
 		}
 	],
 	"defaultMap":1

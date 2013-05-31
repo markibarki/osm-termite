@@ -77,8 +77,9 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	private TermiteApp app;
 	
-	//map dasta
+	//map data and view
 	private MapDataManager mapDataManager;
+	private ViewRegionManager viewRegionManager;
 	
 	//editor modes
 	private EditorModeManager modeManager;
@@ -267,6 +268,11 @@ public class TermiteGui extends javax.swing.JFrame implements
 	
 	public void setViewRegionManager(ViewRegionManager viewRegionManager) {
 		mapPanel.setViewRegionManager(viewRegionManager);
+		this.viewRegionManager = viewRegionManager;
+	}
+
+	public ViewRegionManager getViewRegionManager() {
+		return viewRegionManager;
 	}
 	
 	// </editor-fold>

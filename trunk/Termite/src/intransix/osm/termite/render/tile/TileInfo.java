@@ -88,8 +88,8 @@ public class TileInfo {
 		try {
 			TileInfo tileInfo = new TileInfo();
 			tileInfo.name = json.getString("name");
-			tileInfo.maxZoom = json.getInt("maxZoom");
-			tileInfo.minZoom = json.getInt("minZoom");
+			int maxZoom = json.getInt("maxZoom");
+			int minZoom = json.getInt("minZoom");
 			tileInfo.tileSize = json.getInt("tileSize");
 			tileInfo.urlTemplate = json.getString("urlTemplate");
 
@@ -97,6 +97,9 @@ public class TileInfo {
 			tileInfo.yOffset = json.optDouble("yOffset",0);
 			tileInfo.zOffset = json.optInt("zOffset",0);
 			tileInfo.yOriginTop = json.optBoolean("yOriginTop",true);
+
+			tileInfo.maxZoom = maxZoom + tileInfo.zOffset;
+			tileInfo.minZoom = minZoom + tileInfo.zOffset;
 			
 			String type = json.getString("requestType");
 			if(XYZ_KEY.equalsIgnoreCase(type)) {
