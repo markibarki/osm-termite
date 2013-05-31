@@ -137,6 +137,7 @@ public class ViewRegionManager implements ShutdownListener {
 		//calculate the offest so the center is the same
 		double xOffset = bounds.getCenterX() - (xScale/scale) * bounds.getWidth()/2;
 		double yOffset = bounds.getCenterY() - (yScale/scale) * bounds.getHeight()/2;
+		mercatorToPixels.setToIdentity();
 		mercatorToPixels.scale(scale, scale);
 		mercatorToPixels.translate(-xOffset,-yOffset);
 		

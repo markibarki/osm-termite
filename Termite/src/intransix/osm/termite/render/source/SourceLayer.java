@@ -1,11 +1,13 @@
 package intransix.osm.termite.render.source;
 
 import intransix.osm.termite.app.maplayer.MapLayer;
+import intransix.osm.termite.app.viewregion.ViewRegionManager;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.ImageObserver;
 import java.io.File;
 import intransix.osm.termite.util.JsonIO;
+import javax.swing.JOptionPane;
 import org.json.*;
 
 /**
@@ -19,6 +21,7 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 	private File imageFile;
 	private Image sourceImage;
 	private JSONObject configJson = null;
+	private boolean loadError = false;
 
 	private AffineTransform imageToMerc;
 	private AffineTransform moveImageToMerc = new AffineTransform();
@@ -64,14 +67,17 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 		this.notifyContentChange();
 	}
 	
-	public boolean loadImage(File file) {
+	public boolean loadImage(File file, ViewRegionManager vrm) {
 		//reset the transform - we need to add a way to sace this
 		imageToMerc = null;
 		
 		try {
 			sourceImage = java.awt.Toolkit.getDefaultToolkit().createImage(file.getAbsolutePath());
+			//kick off loading the image
+			sourceImage.getHeight(this);
+
 			imageFile = file;
-			loadTransform();
+			loadTransform(vrm);
 			this.setVisible(true);
 			return true;
 		}
@@ -128,7 +134,17 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 		else if((infoflags & ImageObserver.ABORT) != 0) {
 			//just do a repaint, to continue with unloaded tiles
 			contentChanged = true;
-			returnValue = true;
+			returnValue = false;
+			if(!loadError) {
+				loadError = true;
+				Thread thread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						JOptionPane.showMessageDialog(null,"Error: Unable to load image!");
+					}
+				});
+				thread.start();
+			}
 		}
 		else {
 			contentChanged = false;
@@ -170,7 +186,7 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 
 	}
 
-	private void loadTransform() {
+	private void loadTransform(ViewRegionManager vrm) {
 		if(imageFile != null) {
 			try {
 				String transformPath = imageFile.getAbsolutePath() + TRANSFORM_FILE_SUFFIX;
@@ -185,6 +201,25 @@ public class SourceLayer extends MapLayer implements ImageObserver {
 
 						//cache the saved value
 						savedImageToMerc = new AffineTransform(imageToMerc);
+
+						//zoom to this input
+						Point2D p1 = new Point2D.Double(0,0);
+						//tryu to read the image dimensions = may fail
+						double width = sourceImage.getWidth(null);
+						double height = sourceImage.getWidth(null);
+						if(width <= 0) width = 500;
+						if(height <= 0) height = 500;
+						Point2D p2 = new Point2D.Double(width,height);
+
+						//set to the image boundary with some padding
+						imageToMerc.transform(p1, p1);
+						imageToMerc.transform(p2, p2);
+						double mercCenterX = (p2.getX() + p1.getX())/2;
+						double mercCenterY = (p2.getY() + p1.getY())/2;
+						double mercWidth = Math.abs(p2.getX() - p1.getX());
+						double mercHeight = Math.abs(p2.getY() - p1.getY());
+						Rectangle2D mercRect = new Rectangle2D.Double(mercCenterX - mercWidth,mercCenterY - mercHeight,2 * mercWidth,2 * mercHeight);
+						vrm.setMercViewBounds(mercRect);
 					}
 				}
 			}
