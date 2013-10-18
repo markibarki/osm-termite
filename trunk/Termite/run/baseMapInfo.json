@@ -6,6 +6,14 @@
 			"maxZoom":19,
 			"minZoom":0,
 			"tileSize":256,
+			"requestType":"Quadkey",
+			"urlTemplate":"http://ecn.t1.tiles.virtualearth.net/tiles/a%1$s.jpeg?g=1780"
+		},
+		{
+			"name":"Bing Aerial OLD",
+			"maxZoom":19,
+			"minZoom":0,
+			"tileSize":256,
 			"requestType":"LatLonMinMax",
 			"urlTemplate":"http://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?mapArea=%1$.8f,%2$.8f,%3$.8f,%4$.8f&mapSize=256,256&key=Ai87HwhYsfWQUjKuR27pP80xO2Rde5If2k-AUGSi5ChVX8XHMdoIc8tKwJQ0uvb8"
 		},
