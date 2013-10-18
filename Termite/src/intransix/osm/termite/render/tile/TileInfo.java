@@ -11,11 +11,13 @@ import java.util.*;
 public class TileInfo {
 	
 	public final static String XYZ_KEY = "XYZ";
-	public final static String LATLON_MINMAX_KEY = "LatLonMinMax"; 
+	public final static String LATLON_MINMAX_KEY = "LatLonMinMax";
+	public final static String QUADKEY_KEY = "Quadkey";
 	
 	public enum RequestType {
 		PARAMS_XYZ, 
-		PARAMS_LATLON_MINMAX
+		PARAMS_LATLON_MINMAX,
+		PARAMS_QUADKEY
 	}
 	
 	private String name;
@@ -108,6 +110,9 @@ public class TileInfo {
 			else if(LATLON_MINMAX_KEY.equalsIgnoreCase(type)) {
 				tileInfo.requestType = RequestType.PARAMS_LATLON_MINMAX;
 			}
+			else if(QUADKEY_KEY.equalsIgnoreCase(type)) {
+				tileInfo.requestType = RequestType.PARAMS_QUADKEY;
+			}
 			else {
 				//type not found
 				return null;
@@ -135,7 +140,6 @@ public class TileInfo {
 			return null;
 		}
 	}
-		
 	
 	public String getUrl(int ix, int iy, int zoom) {
 		switch(requestType) {
@@ -144,6 +148,9 @@ public class TileInfo {
 				
 			case PARAMS_LATLON_MINMAX:
 				return getLatLonMinMaxUrl(ix,iy,zoom);
+
+			case PARAMS_QUADKEY:
+				return getQuadkeyUrl(ix,iy,zoom);
 				
 			default:
 				return null;
@@ -163,6 +170,21 @@ public class TileInfo {
 		zoom = zoom - zOffset;
 		return String.format(Locale.US,urlTemplate,ix,iy,zoom);
 	}
+
+	private String getQuadkeyUrl(int ix, int iy, int zoom) {
+		if(!yOriginTop) {
+			iy = (1 << zoom) - iy - 1;
+		}
+		if(xOffset != 0) {
+			ix = ix - (int)(xOffset * (1 << zoom));
+		}
+		if(yOffset != 0) {
+			iy = iy - (int)(yOffset * (1 << zoom));
+		}
+		zoom = zoom - zOffset;
+		String quadkey = getQuadkey(ix,iy,zoom);
+		return String.format(Locale.US,urlTemplate,quadkey);
+	}
 	
 	private String getLatLonMinMaxUrl(int ix, int iy, int zoom) {
 		double zoomScale = (1 << zoom);
@@ -177,6 +199,27 @@ public class TileInfo {
 		double minLatDeg = Math.toDegrees(MercatorCoordinates.myToLatRad(maxMercY));
 		
 		return String.format(Locale.US,urlTemplate,minLatDeg,minLonDeg,maxLatDeg,maxLonDeg);
+	}
+
+	/** copied from Microsoft documentation for quadkey request. */
+	private String getQuadkey(int ix, int iy, int zoom) {
+		StringBuilder quadKey = new StringBuilder();
+		for (int i = zoom; i > 0; i--)
+		{
+			char digit = '0';
+			int mask = 1 << (i - 1);
+			if ((ix & mask) != 0)
+			{
+				digit++;
+			}
+			if ((iy & mask) != 0)
+			{
+				digit++;
+				digit++;
+			}
+			quadKey.append(digit);
+		}
+		return quadKey.toString();
 	}
 	
 	
