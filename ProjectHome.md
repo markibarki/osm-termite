@@ -1,0 +1,1 @@
+This is an OpenStreetMap editor for indoor maps.
